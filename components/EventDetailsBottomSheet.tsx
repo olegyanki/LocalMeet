@@ -148,7 +148,7 @@ export default function EventDetailsBottomSheet({
   };
 
   const handleConnect = () => {
-    if (existingRequest?.status === 'rejected' || !existingRequest) {
+    if (!existingRequest) {
       setShowContactRequest(true);
     }
   };
@@ -178,6 +178,7 @@ export default function EventDetailsBottomSheet({
 
     switch (existingRequest.status) {
       case 'pending':
+      case 'rejected':
         return {
           text: 'Запит відправлено',
           icon: <ClockIcon size={20} color="#FFFFFF" />,
@@ -190,13 +191,6 @@ export default function EventDetailsBottomSheet({
           icon: <Check size={20} color="#FFFFFF" />,
           color: '#8FD89C',
           disabled: true,
-        };
-      case 'rejected':
-        return {
-          text: 'Відправити знову',
-          icon: <MessageCircle size={20} color="#FFFFFF" />,
-          color: ACCENT_ORANGE,
-          disabled: false,
         };
       default:
         return {
