@@ -16,10 +16,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as ImagePicker from 'expo-image-picker';
 import {
   ChevronLeft,
-  Phone,
-  Video,
   MoreVertical,
-  Camera,
   Mic,
   ImageIcon,
 } from 'lucide-react-native';
@@ -445,12 +442,6 @@ export default function ChatScreen() {
         </View>
 
         <View style={styles.headerRight}>
-          <TouchableOpacity style={styles.iconButton}>
-            <Phone size={24} color={TEXT_DARK} />
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.iconButton}>
-            <Video size={24} color={TEXT_DARK} />
-          </TouchableOpacity>
           <TouchableOpacity style={styles.iconButton}>
             <MoreVertical size={24} color={TEXT_DARK} />
           </TouchableOpacity>
