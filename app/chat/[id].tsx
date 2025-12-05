@@ -20,7 +20,6 @@ import {
   Video,
   MoreVertical,
   Camera,
-  Smile,
   Mic,
   ImageIcon,
 } from 'lucide-react-native';
@@ -501,9 +500,6 @@ export default function ChatScreen() {
             maxLength={1000}
             editable={!uploading}
           />
-          <TouchableOpacity style={styles.inputIconButton}>
-            <Smile size={24} color={TEXT_LIGHT} />
-          </TouchableOpacity>
         </View>
 
         {newMessage.trim() ? (
