@@ -397,3 +397,64 @@ export async function updateWalkStatus(userId: string, data: {
       .eq('is_active', true);
   }
 }
+
+export interface WalkRequest {
+  id: string;
+  walk_id: string;
+  requester_id: string;
+  message: string;
+  status: 'pending' | 'accepted' | 'rejected';
+  created_at: string;
+  updated_at: string;
+}
+
+export async function createWalkRequest(data: {
+  walkId: string;
+  requesterId: string;
+  message: string;
+}) {
+  const { data: request, error } = await supabase
+    .from('walk_requests')
+    .insert({
+      walk_id: data.walkId,
+      requester_id: data.requesterId,
+      message: data.message,
+      status: 'pending',
+    })
+    .select()
+    .single();
+
+  if (error) {
+    throw error;
+  }
+
+  return request;
+}
+
+export async function updateWalkRequestStatus(
+  requestId: string,
+  status: 'accepted' | 'rejected'
+) {
+  const { error } = await supabase
+    .from('walk_requests')
+    .update({ status, updated_at: new Date().toISOString() })
+    .eq('id', requestId);
+
+  if (error) {
+    throw error;
+  }
+}
+
+export async function getWalkRequestsForWalk(walkId: string): Promise<WalkRequest[]> {
+  const { data, error } = await supabase
+    .from('walk_requests')
+    .select('*')
+    .eq('walk_id', walkId)
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    throw error;
+  }
+
+  return data || [];
+}

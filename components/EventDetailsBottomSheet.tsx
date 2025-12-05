@@ -9,12 +9,13 @@ import {
   Animated,
   Dimensions,
   Platform,
-  Linking,
   ActivityIndicator,
 } from 'react-native';
 import { BlurView } from 'expo-blur';
 import { Clock, MapPin, MessageCircle, X, Trash2 } from 'lucide-react-native';
 import { deleteWalk } from '../lib/api';
+import ContactRequestBottomSheet from './ContactRequestBottomSheet';
+import { useAuth } from '../contexts/AuthContext';
 
 const ACCENT_ORANGE = '#FF9500';
 const TEXT_DARK = '#333333';
@@ -73,6 +74,8 @@ export default function EventDetailsBottomSheet({
 }: EventDetailsBottomSheetProps) {
   const slideAnim = React.useRef(new Animated.Value(Dimensions.get('window').height)).current;
   const [isDeleting, setIsDeleting] = React.useState(false);
+  const [showContactRequest, setShowContactRequest] = React.useState(false);
+  const { user: currentUser } = useAuth();
 
   React.useEffect(() => {
     if (visible) {
@@ -125,11 +128,7 @@ export default function EventDetailsBottomSheet({
   };
 
   const handleConnect = () => {
-    const message = encodeURIComponent(
-      `Привіт! Побачив твій івент в додатку для прогулянок. Давай погуляємо разом! 🚶‍♂️`
-    );
-    const telegramUrl = `https://t.me/share/url?url=${message}`;
-    Linking.openURL(telegramUrl);
+    setShowContactRequest(true);
   };
 
   const handleDelete = async () => {
@@ -154,15 +153,16 @@ export default function EventDetailsBottomSheet({
   };
 
   return (
-    <Modal visible={visible} transparent animationType="none" onRequestClose={onClose}>
-      <View style={styles.modalContainer}>
-        <TouchableOpacity style={styles.backdrop} activeOpacity={1} onPress={onClose}>
-          {Platform.OS === 'ios' ? (
-            <BlurView intensity={20} style={StyleSheet.absoluteFill} tint="dark" />
-          ) : (
-            <View style={styles.androidBackdrop} />
-          )}
-        </TouchableOpacity>
+    <>
+      <Modal visible={visible} transparent animationType="none" onRequestClose={onClose}>
+        <View style={styles.modalContainer}>
+          <TouchableOpacity style={styles.backdrop} activeOpacity={1} onPress={onClose}>
+            {Platform.OS === 'ios' ? (
+              <BlurView intensity={20} style={StyleSheet.absoluteFill} tint="dark" />
+            ) : (
+              <View style={styles.androidBackdrop} />
+            )}
+          </TouchableOpacity>
 
         <Animated.View
           style={[
@@ -259,6 +259,17 @@ export default function EventDetailsBottomSheet({
         </Animated.View>
       </View>
     </Modal>
+
+      {currentUser && user?.walk && (
+        <ContactRequestBottomSheet
+          visible={showContactRequest}
+          onClose={() => setShowContactRequest(false)}
+          walkId={user.walk.id}
+          requesterId={currentUser.id}
+          walkOwnerName={user.display_name}
+        />
+      )}
+    </>
   );
 }
 
