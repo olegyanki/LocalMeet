@@ -42,11 +42,11 @@ export default function RequestCard({ request, onReject }: RequestCardProps) {
     PanResponder.create({
       onStartShouldSetPanResponder: () => false,
       onMoveShouldSetPanResponder: (_, gestureState) => {
-        const isHorizontal = Math.abs(gestureState.dx) > Math.abs(gestureState.dy);
-        const hasMovedEnough = Math.abs(gestureState.dx) > 5;
+        const isHorizontal = Math.abs(gestureState.dx) > Math.abs(gestureState.dy * 1.5);
+        const hasMovedEnough = Math.abs(gestureState.dx) > 3;
         return isHorizontal && hasMovedEnough;
       },
-      onPanResponderTerminationRequest: () => true,
+      onPanResponderTerminationRequest: () => false,
       onPanResponderMove: (_, gestureState) => {
         const isHorizontal = Math.abs(gestureState.dx) > Math.abs(gestureState.dy);
         if (isHorizontal) {
