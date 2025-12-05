@@ -1,8 +1,7 @@
 import { View, Text, StyleSheet, Image, Dimensions } from 'react-native';
 import { WalkRequestWithProfile } from '../lib/api';
-import { PanGestureHandler } from 'react-native-gesture-handler';
+import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, {
-  useAnimatedGestureHandler,
   useAnimatedStyle,
   useSharedValue,
   withSpring,
@@ -51,14 +50,11 @@ export default function RequestCard({ request, onReject }: RequestCardProps) {
     onReject(request.id);
   };
 
-  const gestureHandler = useAnimatedGestureHandler({
-    onStart: (_, ctx: any) => {
-      ctx.startX = translateX.value;
-    },
-    onActive: (event, ctx: any) => {
-      translateX.value = ctx.startX + event.translationX;
-    },
-    onEnd: (event) => {
+  const panGesture = Gesture.Pan()
+    .onUpdate((event) => {
+      translateX.value = event.translationX;
+    })
+    .onEnd((event) => {
       const shouldDismiss =
         Math.abs(translateX.value) > SWIPE_THRESHOLD ||
         Math.abs(event.velocityX) > 1000;
@@ -76,8 +72,7 @@ export default function RequestCard({ request, onReject }: RequestCardProps) {
           stiffness: 300,
         });
       }
-    },
-  });
+    });
 
   const cardStyle = useAnimatedStyle(() => {
     const rotate = interpolate(
@@ -161,7 +156,7 @@ export default function RequestCard({ request, onReject }: RequestCardProps) {
         </View>
       </Animated.View>
 
-      <PanGestureHandler onGestureEvent={gestureHandler}>
+      <GestureDetector gesture={panGesture}>
         <Animated.View style={[styles.card, cardStyle]}>
           <View style={styles.header}>
           <View style={styles.avatarContainer}>
@@ -217,7 +212,7 @@ export default function RequestCard({ request, onReject }: RequestCardProps) {
             </Text>
           )}
         </Animated.View>
-      </PanGestureHandler>
+      </GestureDetector>
     </View>
   );
 }
