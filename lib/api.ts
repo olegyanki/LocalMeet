@@ -25,6 +25,7 @@ export interface Walk {
   latitude: number;
   longitude: number;
   is_active: boolean;
+  deleted: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -116,7 +117,8 @@ export async function getNearbyUsers(latitude: number, longitude: number, radius
   const { data: walks, error: walksError } = await supabase
     .from('walks')
     .select('*')
-    .eq('is_active', true);
+    .eq('is_active', true)
+    .or('deleted.is.null,deleted.eq.false');
 
   console.log('getNearbyUsers: raw walks from DB:', walks?.map(w => ({
     id: w.id,
@@ -332,7 +334,11 @@ export async function endWalk(walkId: string) {
 export async function deleteWalk(walkId: string) {
   const { error } = await supabase
     .from('walks')
-    .update({ is_active: false, updated_at: new Date().toISOString() })
+    .update({
+      deleted: true,
+      is_active: false,
+      updated_at: new Date().toISOString()
+    })
     .eq('id', walkId);
 
   if (error) {
@@ -346,6 +352,7 @@ export async function getActiveWalkByUserId(userId: string): Promise<Walk | null
     .select('*')
     .eq('user_id', userId)
     .eq('is_active', true)
+    .or('deleted.is.null,deleted.eq.false')
     .maybeSingle();
 
   if (error) {
