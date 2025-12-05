@@ -332,18 +332,24 @@ export async function endWalk(walkId: string) {
 }
 
 export async function deleteWalk(walkId: string) {
-  const { error } = await supabase
+  console.log('deleteWalk: Attempting to delete walk:', walkId);
+
+  const { data, error } = await supabase
     .from('walks')
     .update({
       deleted: true,
       is_active: false,
       updated_at: new Date().toISOString()
     })
-    .eq('id', walkId);
+    .eq('id', walkId)
+    .select();
 
   if (error) {
+    console.error('deleteWalk: Error deleting walk:', error);
     throw error;
   }
+
+  console.log('deleteWalk: Successfully deleted walk, result:', data);
 }
 
 export async function getActiveWalkByUserId(userId: string): Promise<Walk | null> {

@@ -46,6 +46,7 @@ interface Walk {
   latitude: number;
   longitude: number;
   is_active: boolean;
+  deleted: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -233,7 +234,8 @@ export default function SearchScreen() {
         id: u.id,
         username: u.username,
         walk: u.walk,
-        has_walk: !!u.walk
+        has_walk: !!u.walk,
+        walk_deleted: u.walk?.deleted
       })));
 
       // Перевіряємо і завершуємо власну прогулянку, якщо вона закінчилася
