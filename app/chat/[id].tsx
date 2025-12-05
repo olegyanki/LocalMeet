@@ -8,10 +8,12 @@ import {
   Platform,
   TouchableOpacity,
   Image,
+  ActivityIndicator,
 } from 'react-native';
 import { useState, useEffect, useRef } from 'react';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import * as ImagePicker from 'expo-image-picker';
 import {
   ChevronLeft,
   Phone,
@@ -20,6 +22,7 @@ import {
   Camera,
   Smile,
   Mic,
+  ImageIcon,
 } from 'lucide-react-native';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
@@ -36,6 +39,7 @@ interface Message {
   chat_id: string;
   sender_id: string;
   content: string;
+  image_url?: string | null;
   created_at: string;
   read: boolean;
 }
@@ -62,7 +66,8 @@ interface Chat {
 }
 
 export default function ChatScreen() {
-  const { id: chatId } = useLocalSearchParams();
+  const { id } = useLocalSearchParams();
+  const chatId = Array.isArray(id) ? id[0] : id;
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { user } = useAuth();
@@ -72,6 +77,9 @@ export default function ChatScreen() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
 
   const otherUser =
     chat && user
@@ -182,44 +190,151 @@ export default function ChatScreen() {
     };
   };
 
+  const pickImage = async () => {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+
+    if (status !== 'granted') {
+      setError('Need permission to access photos');
+      return;
+    }
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 0.8,
+      base64: true,
+    });
+
+    if (!result.canceled && result.assets[0]) {
+      setSelectedImage(result.assets[0].uri);
+      await sendImageMessage(result.assets[0]);
+    }
+  };
+
+  const uploadImage = async (
+    asset: ImagePicker.ImagePickerAsset
+  ): Promise<string | null> => {
+    try {
+      setUploading(true);
+      console.log('Starting upload for:', asset.uri);
+
+      let uint8Array: Uint8Array;
+
+      // Use base64 if available (for web), otherwise fetch
+      if (asset.base64) {
+        console.log('Using base64 data');
+        const binaryString = atob(asset.base64);
+        const bytes = new Uint8Array(binaryString.length);
+        for (let i = 0; i < binaryString.length; i++) {
+          bytes[i] = binaryString.charCodeAt(i);
+        }
+        uint8Array = bytes;
+      } else {
+        console.log('Fetching image from URI');
+        const response = await fetch(asset.uri);
+        if (!response.ok) {
+          throw new Error(`Failed to fetch image: ${response.status}`);
+        }
+        const arrayBuffer = await response.arrayBuffer();
+        uint8Array = new Uint8Array(arrayBuffer);
+      }
+
+      console.log('Data size:', uint8Array.length);
+
+      const ext = asset.uri.split('.').pop()?.split('?')[0] || 'jpg';
+      const fileName = `${chatId}/${Date.now()}.${ext}`;
+      console.log('Uploading to:', fileName);
+
+      const { data, error } = await supabase.storage
+        .from('chat-images')
+        .upload(fileName, uint8Array, {
+          contentType: `image/${ext}`,
+          upsert: false,
+        });
+
+      if (error) {
+        console.error('Supabase upload error:', {
+          message: error.message,
+          statusCode: error.statusCode,
+          error: error,
+        });
+        throw new Error(error.message || 'Upload failed');
+      }
+
+      console.log('Upload successful:', data);
+
+      const { data: urlData } = supabase.storage
+        .from('chat-images')
+        .getPublicUrl(fileName);
+
+      console.log('Public URL:', urlData.publicUrl);
+      return urlData.publicUrl;
+    } catch (error: any) {
+      console.error('Error in uploadImage:', {
+        message: error?.message,
+        error: error,
+      });
+      setError(error?.message || 'Failed to upload image');
+      return null;
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const sendImageMessage = async (asset: ImagePicker.ImagePickerAsset) => {
+    if (!user) return;
+
+    setError(null);
+
+    try {
+      const imageUrl = await uploadImage(asset);
+
+      if (!imageUrl) {
+        throw new Error('Failed to upload image');
+      }
+
+      const { error } = await supabase.from('messages').insert({
+        chat_id: chatId,
+        sender_id: user.id,
+        content: '',
+        image_url: imageUrl,
+      });
+
+      if (error) {
+        console.error('Error sending image message:', error);
+        throw error;
+      }
+
+      setSelectedImage(null);
+    } catch (error: any) {
+      console.error('Error sending image:', error);
+      setError(error?.message || 'Failed to send image');
+      setSelectedImage(null);
+    }
+  };
+
   const sendMessage = async () => {
     if (!newMessage.trim() || !user) return;
 
     const messageContent = newMessage.trim();
     setNewMessage('');
-
-    const tempMessage: Message = {
-      id: `temp-${Date.now()}`,
-      chat_id: chatId as string,
-      sender_id: user.id,
-      content: messageContent,
-      created_at: new Date().toISOString(),
-      read: false,
-    };
-
-    setMessages((prev) => [...prev, tempMessage]);
-
-    setTimeout(() => {
-      flatListRef.current?.scrollToEnd({ animated: true });
-    }, 100);
+    setError(null);
 
     try {
-      const { data, error } = await supabase.from('messages').insert({
+      const { error } = await supabase.from('messages').insert({
         chat_id: chatId,
         sender_id: user.id,
         content: messageContent,
-      }).select().single();
+      });
 
-      if (error) throw error;
-
-      if (data) {
-        setMessages((prev) =>
-          prev.map(m => m.id === tempMessage.id ? data as Message : m)
-        );
+      if (error) {
+        console.error('Error sending message:', error);
+        throw error;
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error sending message:', error);
-      setMessages((prev) => prev.filter(m => m.id !== tempMessage.id));
+      setError(error?.message || 'Failed to send message');
       setNewMessage(messageContent);
     }
   };
@@ -263,7 +378,16 @@ export default function ChatScreen() {
             isOwnMessage ? styles.ownBubble : styles.otherBubble,
           ]}
         >
-          <Text style={styles.messageText}>{message.content}</Text>
+          {message.image_url && (
+            <Image
+              source={{ uri: message.image_url }}
+              style={styles.messageImage}
+              resizeMode="cover"
+            />
+          )}
+          {message.content ? (
+            <Text style={styles.messageText}>{message.content}</Text>
+          ) : null}
         </View>
         {isOwnMessage && (
           <Text style={styles.messageStatus}>
@@ -334,6 +458,15 @@ export default function ChatScreen() {
         </View>
       </View>
 
+      {error && (
+        <View style={styles.errorContainer}>
+          <Text style={styles.errorText}>{error}</Text>
+          <TouchableOpacity onPress={() => setError(null)}>
+            <Text style={styles.errorDismiss}>Dismiss</Text>
+          </TouchableOpacity>
+        </View>
+      )}
+
       <FlatList
         ref={flatListRef}
         data={allMessages}
@@ -346,8 +479,16 @@ export default function ChatScreen() {
       />
 
       <View style={[styles.inputContainer, { paddingBottom: insets.bottom }]}>
-        <TouchableOpacity style={styles.inputIconButton}>
-          <Camera size={24} color={TEXT_LIGHT} />
+        <TouchableOpacity
+          style={styles.inputIconButton}
+          onPress={pickImage}
+          disabled={uploading}
+        >
+          {uploading ? (
+            <ActivityIndicator size="small" color={ACCENT_ORANGE} />
+          ) : (
+            <ImageIcon size={24} color={TEXT_LIGHT} />
+          )}
         </TouchableOpacity>
 
         <View style={styles.inputWrapper}>
@@ -358,6 +499,7 @@ export default function ChatScreen() {
             onChangeText={setNewMessage}
             multiline
             maxLength={1000}
+            editable={!uploading}
           />
           <TouchableOpacity style={styles.inputIconButton}>
             <Smile size={24} color={TEXT_LIGHT} />
@@ -368,6 +510,7 @@ export default function ChatScreen() {
           <TouchableOpacity
             style={styles.sendButton}
             onPress={sendMessage}
+            disabled={uploading}
           >
             <Text style={styles.sendButtonText}>Send</Text>
           </TouchableOpacity>
@@ -433,6 +576,27 @@ const styles = StyleSheet.create({
     padding: 8,
     marginLeft: 4,
   },
+  errorContainer: {
+    backgroundColor: '#FFE5E5',
+    padding: 12,
+    marginHorizontal: 16,
+    marginVertical: 8,
+    borderRadius: 8,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  errorText: {
+    color: '#D32F2F',
+    fontSize: 14,
+    flex: 1,
+  },
+  errorDismiss: {
+    color: '#D32F2F',
+    fontSize: 14,
+    fontWeight: '600',
+    marginLeft: 8,
+  },
   messagesList: {
     paddingHorizontal: 16,
     paddingVertical: 16,
@@ -462,6 +626,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 10,
     borderRadius: 20,
+    overflow: 'hidden',
   },
   ownBubble: {
     backgroundColor: MESSAGE_OUTGOING,
@@ -475,6 +640,12 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: TEXT_DARK,
     lineHeight: 22,
+  },
+  messageImage: {
+    width: 200,
+    height: 200,
+    borderRadius: 12,
+    marginBottom: 8,
   },
   messageStatus: {
     fontSize: 12,
