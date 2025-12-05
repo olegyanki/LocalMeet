@@ -1,12 +1,26 @@
-import { View, Text, StyleSheet, Image, Animated } from 'react-native';
+import { View, Text, StyleSheet, Image, Dimensions } from 'react-native';
 import { WalkRequestWithProfile } from '../lib/api';
-import { Swipeable } from 'react-native-gesture-handler';
-import { X } from 'lucide-react-native';
+import { PanGestureHandler } from 'react-native-gesture-handler';
+import Animated, {
+  useAnimatedGestureHandler,
+  useAnimatedStyle,
+  useSharedValue,
+  withSpring,
+  withTiming,
+  runOnJS,
+  interpolate,
+  Extrapolate,
+} from 'react-native-reanimated';
+import { Check, X } from 'lucide-react-native';
+
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
+const SWIPE_THRESHOLD = SCREEN_WIDTH * 0.4;
 
 const ACCENT_ORANGE = '#FF9500';
 const TEXT_LIGHT = '#999999';
 const TEXT_DARK = '#1C1C1E';
 const RED = '#FF3B30';
+const GREEN = '#34C759';
 
 interface RequestCardProps {
   request: WalkRequestWithProfile;
@@ -15,6 +29,9 @@ interface RequestCardProps {
 
 export default function RequestCard({ request, onReject }: RequestCardProps) {
   const { requester } = request;
+  const translateX = useSharedValue(0);
+  const opacity = useSharedValue(1);
+  const cardHeight = useSharedValue(1);
 
   const formatTimeAgo = (dateString: string) => {
     const date = new Date(dateString);
@@ -30,40 +47,123 @@ export default function RequestCard({ request, onReject }: RequestCardProps) {
     return `${diffDays}d ago`;
   };
 
-  const renderRightActions = (
-    progress: Animated.AnimatedInterpolation<number>,
-    dragX: Animated.AnimatedInterpolation<number>
-  ) => {
-    const trans = dragX.interpolate({
-      inputRange: [-100, 0],
-      outputRange: [0, 100],
-      extrapolate: 'clamp',
-    });
-
-    return (
-      <Animated.View
-        style={[
-          styles.swipeAction,
-          {
-            transform: [{ translateX: trans }],
-          },
-        ]}
-      >
-        <X size={24} color="#FFFFFF" />
-        <Text style={styles.swipeActionText}>Reject</Text>
-      </Animated.View>
-    );
+  const handleDismiss = () => {
+    onReject(request.id);
   };
 
+  const gestureHandler = useAnimatedGestureHandler({
+    onStart: (_, ctx: any) => {
+      ctx.startX = translateX.value;
+    },
+    onActive: (event, ctx: any) => {
+      translateX.value = ctx.startX + event.translationX;
+    },
+    onEnd: (event) => {
+      const shouldDismiss =
+        Math.abs(translateX.value) > SWIPE_THRESHOLD ||
+        Math.abs(event.velocityX) > 1000;
+
+      if (shouldDismiss) {
+        const direction = translateX.value > 0 ? 1 : -1;
+        translateX.value = withTiming(direction * SCREEN_WIDTH, { duration: 300 });
+        opacity.value = withTiming(0, { duration: 300 });
+        cardHeight.value = withTiming(0, { duration: 300 }, () => {
+          runOnJS(handleDismiss)();
+        });
+      } else {
+        translateX.value = withSpring(0, {
+          damping: 20,
+          stiffness: 300,
+        });
+      }
+    },
+  });
+
+  const cardStyle = useAnimatedStyle(() => {
+    const rotate = interpolate(
+      translateX.value,
+      [-SCREEN_WIDTH / 2, 0, SCREEN_WIDTH / 2],
+      [-10, 0, 10],
+      Extrapolate.CLAMP
+    );
+
+    const scale = interpolate(
+      Math.abs(translateX.value),
+      [0, SWIPE_THRESHOLD],
+      [1, 0.95],
+      Extrapolate.CLAMP
+    );
+
+    return {
+      transform: [
+        { translateX: translateX.value },
+        { rotate: `${rotate}deg` },
+        { scale: scale * cardHeight.value },
+      ],
+      opacity: opacity.value,
+      height: cardHeight.value === 0 ? 0 : undefined,
+    };
+  });
+
+  const leftIndicatorStyle = useAnimatedStyle(() => {
+    const scale = interpolate(
+      translateX.value,
+      [0, SWIPE_THRESHOLD],
+      [0, 1],
+      Extrapolate.CLAMP
+    );
+
+    const opacityValue = interpolate(
+      translateX.value,
+      [0, SWIPE_THRESHOLD / 2, SWIPE_THRESHOLD],
+      [0, 0.5, 1],
+      Extrapolate.CLAMP
+    );
+
+    return {
+      transform: [{ scale }],
+      opacity: opacityValue,
+    };
+  });
+
+  const rightIndicatorStyle = useAnimatedStyle(() => {
+    const scale = interpolate(
+      translateX.value,
+      [-SWIPE_THRESHOLD, 0],
+      [1, 0],
+      Extrapolate.CLAMP
+    );
+
+    const opacityValue = interpolate(
+      translateX.value,
+      [-SWIPE_THRESHOLD, -SWIPE_THRESHOLD / 2, 0],
+      [1, 0.5, 0],
+      Extrapolate.CLAMP
+    );
+
+    return {
+      transform: [{ scale }],
+      opacity: opacityValue,
+    };
+  });
+
   return (
-    <Swipeable
-      renderRightActions={renderRightActions}
-      onSwipeableOpen={() => onReject(request.id)}
-      overshootRight={false}
-      friction={2}
-    >
-      <View style={styles.card}>
-        <View style={styles.header}>
+    <View style={styles.container}>
+      <Animated.View style={[styles.indicatorLeft, leftIndicatorStyle]}>
+        <View style={styles.indicatorCircle}>
+          <Check size={32} color="#FFFFFF" strokeWidth={3} />
+        </View>
+      </Animated.View>
+
+      <Animated.View style={[styles.indicatorRight, rightIndicatorStyle]}>
+        <View style={[styles.indicatorCircle, styles.indicatorCircleReject]}>
+          <X size={32} color="#FFFFFF" strokeWidth={3} />
+        </View>
+      </Animated.View>
+
+      <PanGestureHandler onGestureEvent={gestureHandler}>
+        <Animated.View style={[styles.card, cardStyle]}>
+          <View style={styles.header}>
           <View style={styles.avatarContainer}>
             {requester.avatar_url ? (
               <Image source={{ uri: requester.avatar_url }} style={styles.avatar} />
@@ -111,23 +211,52 @@ export default function RequestCard({ request, onReject }: RequestCardProps) {
           <Text style={styles.time}>{formatTimeAgo(request.created_at)}</Text>
         </View>
 
-        {request.message && (
-          <Text style={styles.message} numberOfLines={2}>
-            {request.message}
-          </Text>
-        )}
-      </View>
-    </Swipeable>
+          {request.message && (
+            <Text style={styles.message} numberOfLines={2}>
+              {request.message}
+            </Text>
+          )}
+        </Animated.View>
+      </PanGestureHandler>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  container: {
+    position: 'relative',
+  },
   card: {
     backgroundColor: '#FFFFFF',
     paddingHorizontal: 20,
     paddingVertical: 16,
     borderBottomWidth: 1,
     borderBottomColor: '#F2F2F7',
+  },
+  indicatorLeft: {
+    position: 'absolute',
+    left: 40,
+    top: '50%',
+    marginTop: -32,
+    zIndex: -1,
+  },
+  indicatorRight: {
+    position: 'absolute',
+    right: 40,
+    top: '50%',
+    marginTop: -32,
+    zIndex: -1,
+  },
+  indicatorCircle: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    backgroundColor: GREEN,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  indicatorCircleReject: {
+    backgroundColor: RED,
   },
   header: {
     flexDirection: 'row',
@@ -207,18 +336,5 @@ const styles = StyleSheet.create({
     fontSize: 15,
     lineHeight: 20,
     color: TEXT_DARK,
-  },
-  swipeAction: {
-    backgroundColor: RED,
-    justifyContent: 'center',
-    alignItems: 'center',
-    width: 100,
-    height: '100%',
-  },
-  swipeActionText: {
-    color: '#FFFFFF',
-    fontSize: 14,
-    fontWeight: '600',
-    marginTop: 4,
   },
 });
