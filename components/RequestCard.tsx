@@ -45,8 +45,10 @@ export default function RequestCard({ request, onReject }: RequestCardProps) {
         const hasMovedEnough = Math.abs(gestureState.dx) > 5;
         return isHorizontal && hasMovedEnough;
       },
+      onPanResponderTerminationRequest: () => true,
       onPanResponderMove: (_, gestureState) => {
-        if (Math.abs(gestureState.dx) > Math.abs(gestureState.dy)) {
+        const isHorizontal = Math.abs(gestureState.dx) > Math.abs(gestureState.dy);
+        if (isHorizontal) {
           translateX.setValue(gestureState.dx);
         }
       },
