@@ -153,7 +153,19 @@ export default function ChatScreen() {
         },
         (payload) => {
           const newMsg = payload.new as Message;
-          setMessages((prev) => [...prev, newMsg]);
+
+          setMessages((prev) => {
+            const exists = prev.some(m => m.id === newMsg.id);
+            if (exists) return prev;
+
+            const hasTempMsg = prev.some(m => m.id.toString().startsWith('temp-'));
+            if (hasTempMsg && newMsg.sender_id === user?.id) {
+              return prev;
+            }
+
+            return [...prev, newMsg];
+          });
+
           setTimeout(() => {
             flatListRef.current?.scrollToEnd({ animated: true });
           }, 100);
@@ -176,16 +188,38 @@ export default function ChatScreen() {
     const messageContent = newMessage.trim();
     setNewMessage('');
 
+    const tempMessage: Message = {
+      id: `temp-${Date.now()}`,
+      chat_id: chatId as string,
+      sender_id: user.id,
+      content: messageContent,
+      created_at: new Date().toISOString(),
+      read: false,
+    };
+
+    setMessages((prev) => [...prev, tempMessage]);
+
+    setTimeout(() => {
+      flatListRef.current?.scrollToEnd({ animated: true });
+    }, 100);
+
     try {
-      const { error } = await supabase.from('messages').insert({
+      const { data, error } = await supabase.from('messages').insert({
         chat_id: chatId,
         sender_id: user.id,
         content: messageContent,
-      });
+      }).select().single();
 
       if (error) throw error;
+
+      if (data) {
+        setMessages((prev) =>
+          prev.map(m => m.id === tempMessage.id ? data as Message : m)
+        );
+      }
     } catch (error) {
       console.error('Error sending message:', error);
+      setMessages((prev) => prev.filter(m => m.id !== tempMessage.id));
       setNewMessage(messageContent);
     }
   };
