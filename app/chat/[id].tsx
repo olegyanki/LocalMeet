@@ -44,6 +44,7 @@ interface Chat {
   id: string;
   requester_id: string;
   walker_id: string;
+  walk_request_id: string | null;
   requester: {
     id: string;
     name: string;
@@ -53,6 +54,10 @@ interface Chat {
     id: string;
     name: string;
     avatar_url: string | null;
+  };
+  walk_request?: {
+    message: string;
+    created_at: string;
   };
 }
 
@@ -89,8 +94,10 @@ export default function ChatScreen() {
           id,
           requester_id,
           walker_id,
+          walk_request_id,
           requester:profiles!chats_requester_id_fkey(id, name, avatar_url),
-          walker:profiles!chats_walker_id_fkey(id, name, avatar_url)
+          walker:profiles!chats_walker_id_fkey(id, name, avatar_url),
+          walk_request:walk_requests!chats_walk_request_id_fkey(message, created_at)
         `
         )
         .eq('id', chatId)
@@ -183,14 +190,31 @@ export default function ChatScreen() {
     }
   };
 
-  const renderMessage = ({ item }: { item: Message }) => {
-    const isOwnMessage = item.sender_id === user?.id;
-    const messageDate = new Date(item.created_at);
-    const timeString = messageDate.toLocaleTimeString('en-US', {
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: false,
-    });
+  const renderMessage = ({ item, index }: { item: Message | { id: string; isInitial: true }; index: number }) => {
+    if ('isInitial' in item && item.isInitial && chat?.walk_request) {
+      const requestDate = new Date(chat.walk_request.created_at);
+      const dateString = requestDate.toLocaleDateString('en-US', {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric',
+      });
+
+      return (
+        <>
+          <View style={styles.dateContainer}>
+            <Text style={styles.dateText}>{dateString}</Text>
+          </View>
+          <View style={[styles.messageContainer, styles.otherMessage]}>
+            <View style={[styles.messageBubble, styles.otherBubble]}>
+              <Text style={styles.messageText}>{chat.walk_request.message}</Text>
+            </View>
+          </View>
+        </>
+      );
+    }
+
+    const message = item as Message;
+    const isOwnMessage = message.sender_id === user?.id;
 
     return (
       <View
@@ -205,16 +229,20 @@ export default function ChatScreen() {
             isOwnMessage ? styles.ownBubble : styles.otherBubble,
           ]}
         >
-          <Text style={styles.messageText}>{item.content}</Text>
+          <Text style={styles.messageText}>{message.content}</Text>
         </View>
         {isOwnMessage && (
           <Text style={styles.messageStatus}>
-            {item.read ? 'Read' : 'Delivered'}
+            {message.read ? 'Read' : 'Delivered'}
           </Text>
         )}
       </View>
     );
   };
+
+  const allMessages = chat?.walk_request
+    ? [{ id: 'initial-message', isInitial: true as const }, ...messages]
+    : messages;
 
   if (loading || !chat || !otherUser) {
     return (
@@ -274,7 +302,7 @@ export default function ChatScreen() {
 
       <FlatList
         ref={flatListRef}
-        data={messages}
+        data={allMessages}
         keyExtractor={(item) => item.id}
         renderItem={renderMessage}
         contentContainerStyle={styles.messagesList}
@@ -374,6 +402,15 @@ const styles = StyleSheet.create({
   messagesList: {
     paddingHorizontal: 16,
     paddingVertical: 16,
+  },
+  dateContainer: {
+    alignItems: 'center',
+    marginVertical: 16,
+  },
+  dateText: {
+    fontSize: 13,
+    color: TEXT_LIGHT,
+    fontWeight: '500',
   },
   messageContainer: {
     marginBottom: 12,

@@ -143,16 +143,6 @@ export default function ChatsScreen() {
 
         if (chatError) throw chatError;
         chatId = newChat.id;
-
-        const { error: messageError } = await supabase
-          .from('messages')
-          .insert({
-            chat_id: chatId,
-            sender_id: request.requester_id,
-            content: request.message,
-          });
-
-        if (messageError) throw messageError;
       }
 
       await updateWalkRequestStatus(requestId, 'accepted');
