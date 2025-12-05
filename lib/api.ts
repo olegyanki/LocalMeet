@@ -334,6 +334,10 @@ export async function endWalk(walkId: string) {
 export async function deleteWalk(walkId: string) {
   console.log('deleteWalk: Attempting to delete walk:', walkId);
 
+  const { data: { session } } = await supabase.auth.getSession();
+  console.log('deleteWalk: Session exists:', !!session);
+  console.log('deleteWalk: Access token exists:', !!session?.access_token);
+
   const { data: { user } } = await supabase.auth.getUser();
   console.log('deleteWalk: Current user ID:', user?.id);
 
