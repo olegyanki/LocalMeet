@@ -1,16 +1,7 @@
-import { View, Text, StyleSheet, Image, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, Image, Dimensions, Animated, PanResponder } from 'react-native';
 import { WalkRequestWithProfile } from '../lib/api';
-import { Gesture, GestureDetector } from 'react-native-gesture-handler';
-import Animated, {
-  useAnimatedStyle,
-  useSharedValue,
-  withSpring,
-  withTiming,
-  runOnJS,
-  interpolate,
-  Extrapolate,
-} from 'react-native-reanimated';
 import { Check, X } from 'lucide-react-native';
+import { useRef } from 'react';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const SWIPE_THRESHOLD = SCREEN_WIDTH * 0.4;
@@ -28,9 +19,9 @@ interface RequestCardProps {
 
 export default function RequestCard({ request, onReject }: RequestCardProps) {
   const { requester } = request;
-  const translateX = useSharedValue(0);
-  const opacity = useSharedValue(1);
-  const cardHeight = useSharedValue(1);
+  const translateX = useRef(new Animated.Value(0)).current;
+  const opacity = useRef(new Animated.Value(1)).current;
+  const cardHeight = useRef(new Animated.Value(1)).current;
 
   const formatTimeAgo = (dateString: string) => {
     const date = new Date(dateString);
@@ -50,114 +41,136 @@ export default function RequestCard({ request, onReject }: RequestCardProps) {
     onReject(request.id);
   };
 
-  const panGesture = Gesture.Pan()
-    .onUpdate((event) => {
-      translateX.value = event.translationX;
+  const panResponder = useRef(
+    PanResponder.create({
+      onStartShouldSetPanResponder: () => true,
+      onMoveShouldSetPanResponder: () => true,
+      onPanResponderMove: (_, gestureState) => {
+        translateX.setValue(gestureState.dx);
+      },
+      onPanResponderRelease: (_, gestureState) => {
+        const shouldDismiss =
+          Math.abs(gestureState.dx) > SWIPE_THRESHOLD ||
+          Math.abs(gestureState.vx) > 1;
+
+        if (shouldDismiss) {
+          const direction = gestureState.dx > 0 ? 1 : -1;
+          Animated.parallel([
+            Animated.timing(translateX, {
+              toValue: direction * SCREEN_WIDTH,
+              duration: 300,
+              useNativeDriver: true,
+            }),
+            Animated.timing(opacity, {
+              toValue: 0,
+              duration: 300,
+              useNativeDriver: true,
+            }),
+            Animated.timing(cardHeight, {
+              toValue: 0,
+              duration: 300,
+              useNativeDriver: false,
+            }),
+          ]).start(() => {
+            handleDismiss();
+          });
+        } else {
+          Animated.spring(translateX, {
+            toValue: 0,
+            useNativeDriver: true,
+            tension: 20,
+            friction: 7,
+          }).start();
+        }
+      },
     })
-    .onEnd((event) => {
-      const shouldDismiss =
-        Math.abs(translateX.value) > SWIPE_THRESHOLD ||
-        Math.abs(event.velocityX) > 1000;
+  ).current;
 
-      if (shouldDismiss) {
-        const direction = translateX.value > 0 ? 1 : -1;
-        translateX.value = withTiming(direction * SCREEN_WIDTH, { duration: 300 });
-        opacity.value = withTiming(0, { duration: 300 });
-        cardHeight.value = withTiming(0, { duration: 300 }, () => {
-          runOnJS(handleDismiss)();
-        });
-      } else {
-        translateX.value = withSpring(0, {
-          damping: 20,
-          stiffness: 300,
-        });
-      }
-    });
-
-  const cardStyle = useAnimatedStyle(() => {
-    const rotate = interpolate(
-      translateX.value,
-      [-SCREEN_WIDTH / 2, 0, SCREEN_WIDTH / 2],
-      [-10, 0, 10],
-      Extrapolate.CLAMP
-    );
-
-    const scale = interpolate(
-      Math.abs(translateX.value),
-      [0, SWIPE_THRESHOLD],
-      [1, 0.95],
-      Extrapolate.CLAMP
-    );
-
-    return {
-      transform: [
-        { translateX: translateX.value },
-        { rotate: `${rotate}deg` },
-        { scale: scale * cardHeight.value },
-      ],
-      opacity: opacity.value,
-      height: cardHeight.value === 0 ? 0 : undefined,
-    };
+  const rotate = translateX.interpolate({
+    inputRange: [-SCREEN_WIDTH / 2, 0, SCREEN_WIDTH / 2],
+    outputRange: ['-10deg', '0deg', '10deg'],
+    extrapolate: 'clamp',
   });
 
-  const leftIndicatorStyle = useAnimatedStyle(() => {
-    const scale = interpolate(
-      translateX.value,
-      [0, SWIPE_THRESHOLD],
-      [0, 1],
-      Extrapolate.CLAMP
-    );
+  const absTranslateX = Animated.multiply(translateX, translateX.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0, 1],
+  }));
 
-    const opacityValue = interpolate(
-      translateX.value,
-      [0, SWIPE_THRESHOLD / 2, SWIPE_THRESHOLD],
-      [0, 0.5, 1],
-      Extrapolate.CLAMP
-    );
-
-    return {
-      transform: [{ scale }],
-      opacity: opacityValue,
-    };
+  const scale = absTranslateX.interpolate({
+    inputRange: [0, SWIPE_THRESHOLD * SWIPE_THRESHOLD],
+    outputRange: [1, 0.95],
+    extrapolate: 'clamp',
   });
 
-  const rightIndicatorStyle = useAnimatedStyle(() => {
-    const scale = interpolate(
-      translateX.value,
-      [-SWIPE_THRESHOLD, 0],
-      [1, 0],
-      Extrapolate.CLAMP
-    );
+  const leftIndicatorScale = translateX.interpolate({
+    inputRange: [0, SWIPE_THRESHOLD],
+    outputRange: [0, 1],
+    extrapolate: 'clamp',
+  });
 
-    const opacityValue = interpolate(
-      translateX.value,
-      [-SWIPE_THRESHOLD, -SWIPE_THRESHOLD / 2, 0],
-      [1, 0.5, 0],
-      Extrapolate.CLAMP
-    );
+  const leftIndicatorOpacity = translateX.interpolate({
+    inputRange: [0, SWIPE_THRESHOLD / 2, SWIPE_THRESHOLD],
+    outputRange: [0, 0.5, 1],
+    extrapolate: 'clamp',
+  });
 
-    return {
-      transform: [{ scale }],
-      opacity: opacityValue,
-    };
+  const rightIndicatorScale = translateX.interpolate({
+    inputRange: [-SWIPE_THRESHOLD, 0],
+    outputRange: [1, 0],
+    extrapolate: 'clamp',
+  });
+
+  const rightIndicatorOpacity = translateX.interpolate({
+    inputRange: [-SWIPE_THRESHOLD, -SWIPE_THRESHOLD / 2, 0],
+    outputRange: [1, 0.5, 0],
+    extrapolate: 'clamp',
   });
 
   return (
     <View style={styles.container}>
-      <Animated.View style={[styles.indicatorLeft, leftIndicatorStyle]}>
+      <Animated.View
+        style={[
+          styles.indicatorLeft,
+          {
+            transform: [{ scale: leftIndicatorScale }],
+            opacity: leftIndicatorOpacity,
+          },
+        ]}
+      >
         <View style={styles.indicatorCircle}>
           <Check size={32} color="#FFFFFF" strokeWidth={3} />
         </View>
       </Animated.View>
 
-      <Animated.View style={[styles.indicatorRight, rightIndicatorStyle]}>
+      <Animated.View
+        style={[
+          styles.indicatorRight,
+          {
+            transform: [{ scale: rightIndicatorScale }],
+            opacity: rightIndicatorOpacity,
+          },
+        ]}
+      >
         <View style={[styles.indicatorCircle, styles.indicatorCircleReject]}>
           <X size={32} color="#FFFFFF" strokeWidth={3} />
         </View>
       </Animated.View>
 
-      <GestureDetector gesture={panGesture}>
-        <Animated.View style={[styles.card, cardStyle]}>
+      <Animated.View
+        {...panResponder.panHandlers}
+        style={[
+          styles.card,
+          {
+            transform: [
+              { translateX: translateX },
+              { rotate: rotate },
+              { scale: Animated.multiply(scale, cardHeight) },
+            ],
+            opacity: opacity,
+          },
+        ]}
+      >
           <View style={styles.header}>
           <View style={styles.avatarContainer}>
             {requester.avatar_url ? (
@@ -211,8 +224,7 @@ export default function RequestCard({ request, onReject }: RequestCardProps) {
               {request.message}
             </Text>
           )}
-        </Animated.View>
-      </GestureDetector>
+      </Animated.View>
     </View>
   );
 }

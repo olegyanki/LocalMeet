@@ -1,7 +1,6 @@
 import { View, Text, StyleSheet, TouchableOpacity, FlatList, ActivityIndicator } from 'react-native';
 import { useState, useEffect } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { useAuth } from '../../contexts/AuthContext';
 import { getMyWalkRequests, updateWalkRequestStatus, WalkRequestWithProfile } from '../../lib/api';
 import RequestCard from '../../components/RequestCard';
@@ -76,9 +75,8 @@ export default function ChatsScreen() {
   };
 
   return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
-      <View style={[styles.container, { paddingTop: insets.top }]}>
-        <Text style={styles.title}>Messages</Text>
+    <View style={[styles.container, { paddingTop: insets.top }]}>
+      <Text style={styles.title}>Messages</Text>
 
         <View style={styles.switchContainer}>
           <TouchableOpacity
@@ -125,8 +123,7 @@ export default function ChatsScreen() {
             </View>
           )}
         </View>
-      </View>
-    </GestureHandlerRootView>
+    </View>
   );
 }
 
