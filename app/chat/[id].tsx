@@ -223,8 +223,10 @@ export default function ChatScreen() {
         throw new Error(`Failed to fetch image: ${response.status}`);
       }
 
-      const blob = await response.blob();
-      console.log('Blob created:', blob.size, blob.type);
+      // Use arrayBuffer instead of blob for React Native Web compatibility
+      const arrayBuffer = await response.arrayBuffer();
+      const uint8Array = new Uint8Array(arrayBuffer);
+      console.log('ArrayBuffer created:', arrayBuffer.byteLength);
 
       const ext = uri.split('.').pop()?.split('?')[0] || 'jpg';
       const fileName = `${chatId}/${Date.now()}.${ext}`;
@@ -232,8 +234,8 @@ export default function ChatScreen() {
 
       const { data, error } = await supabase.storage
         .from('chat-images')
-        .upload(fileName, blob, {
-          contentType: blob.type || `image/${ext}`,
+        .upload(fileName, uint8Array, {
+          contentType: `image/${ext}`,
           upsert: false,
         });
 
