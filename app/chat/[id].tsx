@@ -214,32 +214,52 @@ export default function ChatScreen() {
   const uploadImage = async (uri: string): Promise<string | null> => {
     try {
       setUploading(true);
+      console.log('Starting upload for:', uri);
 
       const response = await fetch(uri);
+      console.log('Fetch response status:', response.status);
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch image: ${response.status}`);
+      }
+
       const blob = await response.blob();
-      const ext = uri.split('.').pop() || 'jpg';
+      console.log('Blob created:', blob.size, blob.type);
+
+      const ext = uri.split('.').pop()?.split('?')[0] || 'jpg';
       const fileName = `${chatId}/${Date.now()}.${ext}`;
+      console.log('Uploading to:', fileName);
 
       const { data, error } = await supabase.storage
         .from('chat-images')
         .upload(fileName, blob, {
-          contentType: `image/${ext}`,
+          contentType: blob.type || `image/${ext}`,
           upsert: false,
         });
 
       if (error) {
-        console.error('Error uploading image:', error);
-        throw error;
+        console.error('Supabase upload error:', {
+          message: error.message,
+          statusCode: error.statusCode,
+          error: error,
+        });
+        throw new Error(error.message || 'Upload failed');
       }
+
+      console.log('Upload successful:', data);
 
       const { data: urlData } = supabase.storage
         .from('chat-images')
         .getPublicUrl(fileName);
 
+      console.log('Public URL:', urlData.publicUrl);
       return urlData.publicUrl;
-    } catch (error) {
-      console.error('Error in uploadImage:', error);
-      setError('Failed to upload image');
+    } catch (error: any) {
+      console.error('Error in uploadImage:', {
+        message: error?.message,
+        error: error,
+      });
+      setError(error?.message || 'Failed to upload image');
       return null;
     } finally {
       setUploading(false);
@@ -422,6 +442,15 @@ export default function ChatScreen() {
         </View>
       </View>
 
+      {error && (
+        <View style={styles.errorContainer}>
+          <Text style={styles.errorText}>{error}</Text>
+          <TouchableOpacity onPress={() => setError(null)}>
+            <Text style={styles.errorDismiss}>Dismiss</Text>
+          </TouchableOpacity>
+        </View>
+      )}
+
       <FlatList
         ref={flatListRef}
         data={allMessages}
@@ -530,6 +559,27 @@ const styles = StyleSheet.create({
   iconButton: {
     padding: 8,
     marginLeft: 4,
+  },
+  errorContainer: {
+    backgroundColor: '#FFE5E5',
+    padding: 12,
+    marginHorizontal: 16,
+    marginVertical: 8,
+    borderRadius: 8,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  errorText: {
+    color: '#D32F2F',
+    fontSize: 14,
+    flex: 1,
+  },
+  errorDismiss: {
+    color: '#D32F2F',
+    fontSize: 14,
+    fontWeight: '600',
+    marginLeft: 8,
   },
   messagesList: {
     paddingHorizontal: 16,
