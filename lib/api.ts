@@ -7,7 +7,6 @@ export interface UserProfile {
   bio: string | null;
   avatar_url: string | null;
   status: string | null;
-  is_visible: boolean;
   age: number | null;
   gender: string | null;
   languages: string[];
@@ -148,8 +147,7 @@ export async function getNearbyUsers(latitude: number, longitude: number, radius
   const { data: profiles, error: profileError } = await supabase
     .from('profiles')
     .select('*')
-    .in('id', userIds)
-    .eq('is_visible', true);
+    .in('id', userIds);
 
   if (profileError) {
     throw profileError;

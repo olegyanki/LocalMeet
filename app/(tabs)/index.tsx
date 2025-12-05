@@ -57,7 +57,6 @@ interface UserProfile {
   bio: string | null;
   avatar_url: string | null;
   status: string | null;
-  is_visible: boolean;
   distance: number;
   location?: UserLocation | null;
   walk: Walk | null;
