@@ -336,7 +336,7 @@ export async function deleteWalk(walkId: string) {
 
   const { data: { session } } = await supabase.auth.getSession();
   console.log('deleteWalk: Session exists:', !!session);
-  console.log('deleteWalk: Access token exists:', !!session?.access_token);
+  console.log('deleteWalk: Access token (first 20 chars):', session?.access_token?.substring(0, 20));
 
   const { data: { user } } = await supabase.auth.getUser();
   console.log('deleteWalk: Current user ID:', user?.id);
@@ -345,7 +345,7 @@ export async function deleteWalk(walkId: string) {
     .from('walks')
     .select('*')
     .eq('id', walkId)
-    .single();
+    .maybeSingle();
 
   console.log('deleteWalk: Walk data:', walkData);
   console.log('deleteWalk: Walk user_id:', walkData?.user_id);
@@ -353,11 +353,7 @@ export async function deleteWalk(walkId: string) {
 
   const { data, error } = await supabase
     .from('walks')
-    .update({
-      deleted: true,
-      is_active: false,
-      updated_at: new Date().toISOString()
-    })
+    .delete()
     .eq('id', walkId)
     .select();
 
