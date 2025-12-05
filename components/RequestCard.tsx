@@ -1,6 +1,7 @@
 import { View, Text, StyleSheet, Image, Dimensions, Animated, PanResponder } from 'react-native';
 import { WalkRequestWithProfile } from '../lib/api';
 import { useRef } from 'react';
+import { Check, X } from 'lucide-react-native';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const SWIPE_THRESHOLD = SCREEN_WIDTH * 0.3;
@@ -85,8 +86,28 @@ export default function RequestCard({ request, onReject }: RequestCardProps) {
     })
   ).current;
 
+  const acceptOpacity = translateX.interpolate({
+    inputRange: [0, 100],
+    outputRange: [0, 1],
+    extrapolate: 'clamp',
+  });
+
+  const rejectOpacity = translateX.interpolate({
+    inputRange: [-100, 0],
+    outputRange: [1, 0],
+    extrapolate: 'clamp',
+  });
+
   return (
     <View style={styles.container}>
+      <Animated.View style={[styles.acceptBackground, { opacity: acceptOpacity }]}>
+        <Check size={28} color="#FFFFFF" strokeWidth={3} />
+      </Animated.View>
+
+      <Animated.View style={[styles.rejectBackground, { opacity: rejectOpacity }]}>
+        <X size={28} color="#FFFFFF" strokeWidth={3} />
+      </Animated.View>
+
       <Animated.View
         {...panResponder.panHandlers}
         style={[
@@ -158,6 +179,30 @@ export default function RequestCard({ request, onReject }: RequestCardProps) {
 const styles = StyleSheet.create({
   container: {
     backgroundColor: '#FFFFFF',
+    position: 'relative',
+    overflow: 'hidden',
+  },
+  acceptBackground: {
+    position: 'absolute',
+    left: 0,
+    top: 0,
+    bottom: 0,
+    right: 0,
+    backgroundColor: '#34C759',
+    justifyContent: 'center',
+    alignItems: 'flex-start',
+    paddingLeft: 30,
+  },
+  rejectBackground: {
+    position: 'absolute',
+    left: 0,
+    top: 0,
+    bottom: 0,
+    right: 0,
+    backgroundColor: '#FF3B30',
+    justifyContent: 'center',
+    alignItems: 'flex-end',
+    paddingRight: 30,
   },
   card: {
     backgroundColor: '#FFFFFF',
