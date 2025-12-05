@@ -13,11 +13,12 @@ const TEXT_DARK = '#1C1C1E';
 interface RequestCardProps {
   request: WalkRequestWithProfile;
   onReject: (requestId: string) => void;
+  onAccept: (requestId: string) => void;
   onSwipeStart?: () => void;
   onSwipeEnd?: () => void;
 }
 
-export default function RequestCard({ request, onReject, onSwipeStart, onSwipeEnd }: RequestCardProps) {
+export default function RequestCard({ request, onReject, onAccept, onSwipeStart, onSwipeEnd }: RequestCardProps) {
   const { requester } = request;
   const translateX = useRef(new Animated.Value(0)).current;
   const opacity = useRef(new Animated.Value(1)).current;
@@ -36,8 +37,12 @@ export default function RequestCard({ request, onReject, onSwipeStart, onSwipeEn
     return `${diffDays}d ago`;
   };
 
-  const handleDismiss = () => {
-    onReject(request.id);
+  const handleDismiss = (direction: number) => {
+    if (direction > 0) {
+      onAccept(request.id);
+    } else {
+      onReject(request.id);
+    }
   };
 
   const panResponder = useRef(
@@ -88,7 +93,7 @@ export default function RequestCard({ request, onReject, onSwipeStart, onSwipeEn
               useNativeDriver: true,
             }),
           ]).start(() => {
-            handleDismiss();
+            handleDismiss(direction);
           });
         } else {
           Animated.spring(translateX, {

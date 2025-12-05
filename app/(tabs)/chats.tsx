@@ -1,8 +1,10 @@
-import { View, Text, StyleSheet, TouchableOpacity, FlatList, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, FlatList, ActivityIndicator, Image } from 'react-native';
 import { useState, useEffect } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useRouter } from 'expo-router';
 import { useAuth } from '../../contexts/AuthContext';
 import { getMyWalkRequests, updateWalkRequestStatus, WalkRequestWithProfile } from '../../lib/api';
+import { supabase } from '../../lib/supabase';
 import RequestCard from '../../components/RequestCard';
 
 const ACCENT_ORANGE = '#FF9500';
@@ -11,12 +13,37 @@ const TEXT_DARK = '#1C1C1E';
 
 type TabType = 'requests' | 'chats';
 
+interface ChatWithLastMessage {
+  id: string;
+  requester_id: string;
+  walker_id: string;
+  updated_at: string;
+  requester: {
+    id: string;
+    name: string;
+    avatar_url: string | null;
+  };
+  walker: {
+    id: string;
+    name: string;
+    avatar_url: string | null;
+  };
+  lastMessage?: {
+    content: string;
+    created_at: string;
+    sender_id: string;
+    read: boolean;
+  };
+}
+
 export default function ChatsScreen() {
   const [activeTab, setActiveTab] = useState<TabType>('requests');
   const [requests, setRequests] = useState<WalkRequestWithProfile[]>([]);
+  const [chats, setChats] = useState<ChatWithLastMessage[]>([]);
   const [loading, setLoading] = useState(true);
   const [scrollEnabled, setScrollEnabled] = useState(true);
   const insets = useSafeAreaInsets();
+  const router = useRouter();
   const { user } = useAuth();
 
   const loadRequests = async () => {
@@ -33,9 +60,109 @@ export default function ChatsScreen() {
     }
   };
 
+  const loadChats = async () => {
+    if (!user) return;
+
+    try {
+      setLoading(true);
+      const { data: chatsData, error } = await supabase
+        .from('chats')
+        .select(
+          `
+          id,
+          requester_id,
+          walker_id,
+          updated_at,
+          requester:profiles!chats_requester_id_fkey(id, name, avatar_url),
+          walker:profiles!chats_walker_id_fkey(id, name, avatar_url)
+        `
+        )
+        .or(`requester_id.eq.${user.id},walker_id.eq.${user.id}`)
+        .order('updated_at', { ascending: false });
+
+      if (error) throw error;
+
+      const chatsWithMessages = await Promise.all(
+        (chatsData || []).map(async (chat) => {
+          const { data: lastMessage } = await supabase
+            .from('messages')
+            .select('content, created_at, sender_id, read')
+            .eq('chat_id', chat.id)
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .maybeSingle();
+
+          return {
+            ...chat,
+            lastMessage: lastMessage || undefined,
+          } as ChatWithLastMessage;
+        })
+      );
+
+      setChats(chatsWithMessages);
+    } catch (error) {
+      console.error('Error loading chats:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    loadRequests();
-  }, [user]);
+    if (activeTab === 'requests') {
+      loadRequests();
+    } else {
+      loadChats();
+    }
+  }, [user, activeTab]);
+
+  const handleAccept = async (requestId: string) => {
+    if (!user) return;
+
+    try {
+      const request = requests.find(r => r.id === requestId);
+      if (!request) return;
+
+      const { data: existingChat } = await supabase
+        .from('chats')
+        .select('id')
+        .eq('walk_request_id', requestId)
+        .maybeSingle();
+
+      let chatId = existingChat?.id;
+
+      if (!chatId) {
+        const { data: newChat, error: chatError } = await supabase
+          .from('chats')
+          .insert({
+            walk_request_id: requestId,
+            requester_id: request.requester_id,
+            walker_id: user.id,
+          })
+          .select('id')
+          .single();
+
+        if (chatError) throw chatError;
+        chatId = newChat.id;
+
+        const { error: messageError } = await supabase
+          .from('messages')
+          .insert({
+            chat_id: chatId,
+            sender_id: request.requester_id,
+            content: request.message,
+          });
+
+        if (messageError) throw messageError;
+      }
+
+      await updateWalkRequestStatus(requestId, 'accepted');
+      setRequests(prev => prev.filter(r => r.id !== requestId));
+
+      router.push(`/chat/${chatId}`);
+    } catch (error) {
+      console.error('Error accepting request:', error);
+    }
+  };
 
   const handleReject = async (requestId: string) => {
     try {
@@ -44,6 +171,55 @@ export default function ChatsScreen() {
     } catch (error) {
       console.error('Error rejecting request:', error);
     }
+  };
+
+  const renderChatItem = ({ item }: { item: ChatWithLastMessage }) => {
+    const otherUser = item.requester_id === user?.id ? item.walker : item.requester;
+    const lastMessageText = item.lastMessage?.content || 'No messages yet';
+    const isUnread = item.lastMessage && !item.lastMessage.read && item.lastMessage.sender_id !== user?.id;
+
+    const timeAgo = item.lastMessage ? (() => {
+      const date = new Date(item.lastMessage.created_at);
+      const now = new Date();
+      const diffMs = now.getTime() - date.getTime();
+      const diffMins = Math.floor(diffMs / 60000);
+      const diffHours = Math.floor(diffMins / 60);
+      const diffDays = Math.floor(diffHours / 24);
+
+      if (diffMins < 60) return `${diffMins}m`;
+      if (diffHours < 24) return `${diffHours}h`;
+      return `${diffDays}d`;
+    })() : '';
+
+    return (
+      <TouchableOpacity
+        style={styles.chatItem}
+        onPress={() => router.push(`/chat/${item.id}`)}
+      >
+        {otherUser.avatar_url ? (
+          <Image source={{ uri: otherUser.avatar_url }} style={styles.chatAvatar} />
+        ) : (
+          <View style={[styles.chatAvatar, styles.chatAvatarPlaceholder]}>
+            <Text style={styles.chatAvatarText}>
+              {otherUser.name.charAt(0).toUpperCase()}
+            </Text>
+          </View>
+        )}
+        <View style={styles.chatInfo}>
+          <View style={styles.chatHeader}>
+            <Text style={styles.chatName}>{otherUser.name}</Text>
+            {timeAgo && <Text style={styles.chatTime}>{timeAgo}</Text>}
+          </View>
+          <Text
+            style={[styles.chatMessage, isUnread && styles.chatMessageUnread]}
+            numberOfLines={1}
+          >
+            {lastMessageText}
+          </Text>
+        </View>
+        {isUnread && <View style={styles.unreadBadge} />}
+      </TouchableOpacity>
+    );
   };
 
   const renderRequestsContent = () => {
@@ -71,11 +247,39 @@ export default function ChatsScreen() {
           <RequestCard
             request={item}
             onReject={handleReject}
+            onAccept={handleAccept}
             onSwipeStart={() => setScrollEnabled(false)}
             onSwipeEnd={() => setScrollEnabled(true)}
           />
         )}
         scrollEnabled={scrollEnabled}
+        contentContainerStyle={{ paddingBottom: insets.bottom + 80 }}
+      />
+    );
+  };
+
+  const renderChatsContent = () => {
+    if (loading) {
+      return (
+        <View style={styles.emptyState}>
+          <ActivityIndicator size="large" color={ACCENT_ORANGE} />
+        </View>
+      );
+    }
+
+    if (chats.length === 0) {
+      return (
+        <View style={styles.emptyState}>
+          <Text style={styles.emptyText}>No chats yet</Text>
+        </View>
+      );
+    }
+
+    return (
+      <FlatList
+        data={chats}
+        keyExtractor={(item) => item.id}
+        renderItem={renderChatItem}
         contentContainerStyle={{ paddingBottom: insets.bottom + 80 }}
       />
     );
@@ -125,9 +329,7 @@ export default function ChatsScreen() {
           {activeTab === 'requests' ? (
             renderRequestsContent()
           ) : (
-            <View style={styles.emptyState}>
-              <Text style={styles.emptyText}>No chats yet</Text>
-            </View>
+            renderChatsContent()
           )}
         </View>
     </View>
@@ -189,5 +391,65 @@ const styles = StyleSheet.create({
   emptyText: {
     fontSize: 16,
     color: TEXT_LIGHT,
+  },
+  chatItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    backgroundColor: '#FFFFFF',
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E5EA',
+  },
+  chatAvatar: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    marginRight: 12,
+  },
+  chatAvatarPlaceholder: {
+    backgroundColor: ACCENT_ORANGE,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  chatAvatarText: {
+    color: '#FFFFFF',
+    fontSize: 22,
+    fontWeight: '600',
+  },
+  chatInfo: {
+    flex: 1,
+    justifyContent: 'center',
+  },
+  chatHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 4,
+  },
+  chatName: {
+    fontSize: 17,
+    fontWeight: '600',
+    color: TEXT_DARK,
+  },
+  chatTime: {
+    fontSize: 14,
+    color: TEXT_LIGHT,
+  },
+  chatMessage: {
+    fontSize: 15,
+    color: TEXT_LIGHT,
+    lineHeight: 20,
+  },
+  chatMessageUnread: {
+    fontWeight: '600',
+    color: TEXT_DARK,
+  },
+  unreadBadge: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: ACCENT_ORANGE,
+    marginLeft: 8,
   },
 });
