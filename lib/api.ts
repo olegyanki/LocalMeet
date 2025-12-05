@@ -332,6 +332,20 @@ export async function endWalk(walkId: string) {
 }
 
 export async function deleteWalk(walkId: string) {
+  // Check authentication
+  const { data: { user } } = await supabase.auth.getUser();
+  console.log('Current user ID:', user?.id);
+
+  // Get walk details
+  const { data: walkData } = await supabase
+    .from('walks')
+    .select('user_id')
+    .eq('id', walkId)
+    .maybeSingle();
+
+  console.log('Walk user_id:', walkData?.user_id);
+  console.log('IDs match:', user?.id === walkData?.user_id);
+
   const { data, error } = await supabase
     .from('walks')
     .update({
@@ -343,8 +357,11 @@ export async function deleteWalk(walkId: string) {
     .select();
 
   if (error) {
+    console.error('Update error:', error);
     throw error;
   }
+
+  console.log('Successfully updated walk');
 }
 
 export async function getActiveWalkByUserId(userId: string): Promise<Walk | null> {
