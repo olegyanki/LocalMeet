@@ -9,6 +9,7 @@ import {
   TouchableOpacity,
   Image,
   ActivityIndicator,
+  Modal,
 } from 'react-native';
 import { useState, useEffect, useRef } from 'react';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -19,6 +20,7 @@ import {
   MoreVertical,
   Mic,
   ImageIcon,
+  Trash2,
 } from 'lucide-react-native';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
@@ -76,6 +78,8 @@ export default function ChatScreen() {
   const [error, setError] = useState<string | null>(null);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   const otherUser =
     chat && user
@@ -335,6 +339,42 @@ export default function ChatScreen() {
     }
   };
 
+  const deleteChat = async () => {
+    if (!chatId || deleting) return;
+
+    setDeleting(true);
+    setError(null);
+
+    try {
+      const { error: messagesError } = await supabase
+        .from('messages')
+        .delete()
+        .eq('chat_id', chatId);
+
+      if (messagesError) {
+        console.error('Error deleting messages:', messagesError);
+        throw messagesError;
+      }
+
+      const { error: chatError } = await supabase
+        .from('chats')
+        .delete()
+        .eq('id', chatId);
+
+      if (chatError) {
+        console.error('Error deleting chat:', chatError);
+        throw chatError;
+      }
+
+      setShowDeleteModal(false);
+      router.back();
+    } catch (error: any) {
+      console.error('Error deleting chat:', error);
+      setError(error?.message || 'Failed to delete chat');
+      setDeleting(false);
+    }
+  };
+
   const renderMessage = ({ item, index }: { item: Message | { id: string; isInitial: true }; index: number }) => {
     if ('isInitial' in item && item.isInitial && chat?.walk_request) {
       const requestDate = new Date(chat.walk_request.created_at);
@@ -442,7 +482,10 @@ export default function ChatScreen() {
         </View>
 
         <View style={styles.headerRight}>
-          <TouchableOpacity style={styles.iconButton}>
+          <TouchableOpacity
+            style={styles.iconButton}
+            onPress={() => setShowDeleteModal(true)}
+          >
             <MoreVertical size={24} color={TEXT_DARK} />
           </TouchableOpacity>
         </View>
@@ -507,6 +550,47 @@ export default function ChatScreen() {
           </TouchableOpacity>
         )}
       </View>
+
+      <Modal
+        visible={showDeleteModal}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowDeleteModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalIconContainer}>
+              <Trash2 size={32} color="#FF3B30" />
+            </View>
+            <Text style={styles.modalTitle}>Видалити чат?</Text>
+            <Text style={styles.modalMessage}>
+              Усі повідомлення будуть видалені назавжди
+            </Text>
+
+            <View style={styles.modalButtons}>
+              <TouchableOpacity
+                style={[styles.modalButton, styles.modalButtonCancel]}
+                onPress={() => setShowDeleteModal(false)}
+                disabled={deleting}
+              >
+                <Text style={styles.modalButtonTextCancel}>Скасувати</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[styles.modalButton, styles.modalButtonDelete]}
+                onPress={deleteChat}
+                disabled={deleting}
+              >
+                {deleting ? (
+                  <ActivityIndicator size="small" color="#FFFFFF" />
+                ) : (
+                  <Text style={styles.modalButtonTextDelete}>Видалити</Text>
+                )}
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </KeyboardAvoidingView>
   );
 }
@@ -680,5 +764,63 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 16,
     fontWeight: '600',
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  modalContent: {
+    backgroundColor: BACKGROUND,
+    borderRadius: 16,
+    padding: 24,
+    width: '100%',
+    maxWidth: 400,
+  },
+  modalIconContainer: {
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: '600',
+    color: TEXT_DARK,
+    marginBottom: 12,
+    textAlign: 'center',
+  },
+  modalMessage: {
+    fontSize: 16,
+    color: TEXT_LIGHT,
+    marginBottom: 24,
+    textAlign: 'center',
+  },
+  modalButtons: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  modalButton: {
+    flex: 1,
+    paddingVertical: 14,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  modalButtonCancel: {
+    backgroundColor: '#F0F0F0',
+  },
+  modalButtonDelete: {
+    backgroundColor: '#FF3B30',
+  },
+  modalButtonTextCancel: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: TEXT_DARK,
+  },
+  modalButtonTextDelete: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#FFFFFF',
   },
 });
