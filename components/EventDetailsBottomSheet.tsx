@@ -134,25 +134,21 @@ export default function EventDetailsBottomSheet({
 
   const handleDelete = async () => {
     if (!user?.walk?.id) {
-      console.log('handleDelete: No walk ID found');
       return;
     }
 
-    console.log('handleDelete: Deleting walk:', user.walk.id);
     try {
       setIsDeleting(true);
       await deleteWalk(user.walk.id);
-      console.log('handleDelete: Walk deleted successfully');
       setIsDeleting(false);
       onClose();
       setTimeout(() => {
-        console.log('handleDelete: Calling onDelete callback');
         if (onDelete) {
           onDelete();
         }
       }, 300);
     } catch (error) {
-      console.error('handleDelete: Failed to delete walk:', error);
+      console.error('Failed to delete walk:', error);
       setIsDeleting(false);
     }
   };
