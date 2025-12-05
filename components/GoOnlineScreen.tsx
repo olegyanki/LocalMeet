@@ -240,11 +240,15 @@ export default function GoOnlineScreen() {
       const [hours, minutes] = time.split(':').map(Number);
       const walkStartDateTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), hours, minutes, 0, 0);
 
-      // Додаємо буфер 2 хвилини - якщо час минув більше ніж 2 хвилини тому, переносимо на завтра
-      const twoMinutesAgo = new Date(now.getTime() - 2 * 60 * 1000);
-      if (walkStartDateTime < twoMinutesAgo) {
-        walkStartDateTime.setDate(walkStartDateTime.getDate() + 1);
-      }
+      // Не переносимо на завтра - залишаємо обраний час як є
+      // Користувач сам вибирає, коли хоче почати прогулянку
+
+      console.log('Time debug:', {
+        now: now.toLocaleString('uk-UA'),
+        selectedTime: `${hours}:${minutes}`,
+        walkStartDateTime: walkStartDateTime.toLocaleString('uk-UA'),
+        walkStartDateTimeISO: walkStartDateTime.toISOString(),
+      });
 
       await updateWalkStatus(user.id, {
         isWalking: true,
