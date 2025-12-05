@@ -334,6 +334,19 @@ export async function endWalk(walkId: string) {
 export async function deleteWalk(walkId: string) {
   console.log('deleteWalk: Attempting to delete walk:', walkId);
 
+  const { data: { user } } = await supabase.auth.getUser();
+  console.log('deleteWalk: Current user ID:', user?.id);
+
+  const { data: walkData, error: fetchError } = await supabase
+    .from('walks')
+    .select('*')
+    .eq('id', walkId)
+    .single();
+
+  console.log('deleteWalk: Walk data:', walkData);
+  console.log('deleteWalk: Walk user_id:', walkData?.user_id);
+  console.log('deleteWalk: Match:', user?.id === walkData?.user_id);
+
   const { data, error } = await supabase
     .from('walks')
     .update({
