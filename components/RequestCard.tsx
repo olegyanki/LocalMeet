@@ -39,12 +39,16 @@ export default function RequestCard({ request, onReject }: RequestCardProps) {
 
   const panResponder = useRef(
     PanResponder.create({
-      onStartShouldSetPanResponder: () => true,
+      onStartShouldSetPanResponder: () => false,
       onMoveShouldSetPanResponder: (_, gestureState) => {
-        return Math.abs(gestureState.dx) > 5;
+        const isHorizontal = Math.abs(gestureState.dx) > Math.abs(gestureState.dy);
+        const hasMovedEnough = Math.abs(gestureState.dx) > 5;
+        return isHorizontal && hasMovedEnough;
       },
       onPanResponderMove: (_, gestureState) => {
-        translateX.setValue(gestureState.dx);
+        if (Math.abs(gestureState.dx) > Math.abs(gestureState.dy)) {
+          translateX.setValue(gestureState.dx);
+        }
       },
       onPanResponderRelease: (_, gestureState) => {
         const shouldDismiss =
