@@ -1,16 +1,13 @@
 import { View, Text, StyleSheet, Image, Dimensions, Animated, PanResponder } from 'react-native';
 import { WalkRequestWithProfile } from '../lib/api';
-import { Check, X } from 'lucide-react-native';
 import { useRef } from 'react';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
-const SWIPE_THRESHOLD = SCREEN_WIDTH * 0.4;
+const SWIPE_THRESHOLD = SCREEN_WIDTH * 0.3;
 
 const ACCENT_ORANGE = '#FF9500';
 const TEXT_LIGHT = '#999999';
 const TEXT_DARK = '#1C1C1E';
-const RED = '#FF3B30';
-const GREEN = '#34C759';
 
 interface RequestCardProps {
   request: WalkRequestWithProfile;
@@ -21,7 +18,6 @@ export default function RequestCard({ request, onReject }: RequestCardProps) {
   const { requester } = request;
   const translateX = useRef(new Animated.Value(0)).current;
   const opacity = useRef(new Animated.Value(1)).current;
-  const cardHeight = useRef(new Animated.Value(1)).current;
 
   const formatTimeAgo = (dateString: string) => {
     const date = new Date(dateString);
@@ -44,32 +40,29 @@ export default function RequestCard({ request, onReject }: RequestCardProps) {
   const panResponder = useRef(
     PanResponder.create({
       onStartShouldSetPanResponder: () => true,
-      onMoveShouldSetPanResponder: () => true,
+      onMoveShouldSetPanResponder: (_, gestureState) => {
+        return Math.abs(gestureState.dx) > 5;
+      },
       onPanResponderMove: (_, gestureState) => {
         translateX.setValue(gestureState.dx);
       },
       onPanResponderRelease: (_, gestureState) => {
         const shouldDismiss =
           Math.abs(gestureState.dx) > SWIPE_THRESHOLD ||
-          Math.abs(gestureState.vx) > 1;
+          Math.abs(gestureState.vx) > 0.5;
 
         if (shouldDismiss) {
           const direction = gestureState.dx > 0 ? 1 : -1;
           Animated.parallel([
             Animated.timing(translateX, {
-              toValue: direction * SCREEN_WIDTH,
-              duration: 300,
+              toValue: direction * SCREEN_WIDTH * 1.5,
+              duration: 250,
               useNativeDriver: true,
             }),
             Animated.timing(opacity, {
               toValue: 0,
-              duration: 300,
+              duration: 250,
               useNativeDriver: true,
-            }),
-            Animated.timing(cardHeight, {
-              toValue: 0,
-              duration: 300,
-              useNativeDriver: false,
             }),
           ]).start(() => {
             handleDismiss();
@@ -78,95 +71,22 @@ export default function RequestCard({ request, onReject }: RequestCardProps) {
           Animated.spring(translateX, {
             toValue: 0,
             useNativeDriver: true,
-            tension: 20,
-            friction: 7,
+            tension: 40,
+            friction: 8,
           }).start();
         }
       },
     })
   ).current;
 
-  const rotate = translateX.interpolate({
-    inputRange: [-SCREEN_WIDTH / 2, 0, SCREEN_WIDTH / 2],
-    outputRange: ['-10deg', '0deg', '10deg'],
-    extrapolate: 'clamp',
-  });
-
-  const absTranslateX = Animated.multiply(translateX, translateX.interpolate({
-    inputRange: [0, 1],
-    outputRange: [0, 1],
-  }));
-
-  const scale = absTranslateX.interpolate({
-    inputRange: [0, SWIPE_THRESHOLD * SWIPE_THRESHOLD],
-    outputRange: [1, 0.95],
-    extrapolate: 'clamp',
-  });
-
-  const leftIndicatorScale = translateX.interpolate({
-    inputRange: [0, SWIPE_THRESHOLD],
-    outputRange: [0, 1],
-    extrapolate: 'clamp',
-  });
-
-  const leftIndicatorOpacity = translateX.interpolate({
-    inputRange: [0, SWIPE_THRESHOLD / 2, SWIPE_THRESHOLD],
-    outputRange: [0, 0.5, 1],
-    extrapolate: 'clamp',
-  });
-
-  const rightIndicatorScale = translateX.interpolate({
-    inputRange: [-SWIPE_THRESHOLD, 0],
-    outputRange: [1, 0],
-    extrapolate: 'clamp',
-  });
-
-  const rightIndicatorOpacity = translateX.interpolate({
-    inputRange: [-SWIPE_THRESHOLD, -SWIPE_THRESHOLD / 2, 0],
-    outputRange: [1, 0.5, 0],
-    extrapolate: 'clamp',
-  });
-
   return (
     <View style={styles.container}>
-      <Animated.View
-        style={[
-          styles.indicatorLeft,
-          {
-            transform: [{ scale: leftIndicatorScale }],
-            opacity: leftIndicatorOpacity,
-          },
-        ]}
-      >
-        <View style={styles.indicatorCircle}>
-          <Check size={32} color="#FFFFFF" strokeWidth={3} />
-        </View>
-      </Animated.View>
-
-      <Animated.View
-        style={[
-          styles.indicatorRight,
-          {
-            transform: [{ scale: rightIndicatorScale }],
-            opacity: rightIndicatorOpacity,
-          },
-        ]}
-      >
-        <View style={[styles.indicatorCircle, styles.indicatorCircleReject]}>
-          <X size={32} color="#FFFFFF" strokeWidth={3} />
-        </View>
-      </Animated.View>
-
       <Animated.View
         {...panResponder.panHandlers}
         style={[
           styles.card,
           {
-            transform: [
-              { translateX: translateX },
-              { rotate: rotate },
-              { scale: Animated.multiply(scale, cardHeight) },
-            ],
+            transform: [{ translateX: translateX }],
             opacity: opacity,
           },
         ]}
@@ -231,7 +151,7 @@ export default function RequestCard({ request, onReject }: RequestCardProps) {
 
 const styles = StyleSheet.create({
   container: {
-    position: 'relative',
+    backgroundColor: '#FFFFFF',
   },
   card: {
     backgroundColor: '#FFFFFF',
@@ -239,31 +159,6 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     borderBottomWidth: 1,
     borderBottomColor: '#F2F2F7',
-  },
-  indicatorLeft: {
-    position: 'absolute',
-    left: 40,
-    top: '50%',
-    marginTop: -32,
-    zIndex: -1,
-  },
-  indicatorRight: {
-    position: 'absolute',
-    right: 40,
-    top: '50%',
-    marginTop: -32,
-    zIndex: -1,
-  },
-  indicatorCircle: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    backgroundColor: GREEN,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  indicatorCircleReject: {
-    backgroundColor: RED,
   },
   header: {
     flexDirection: 'row',
