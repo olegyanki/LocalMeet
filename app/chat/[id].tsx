@@ -203,32 +203,46 @@ export default function ChatScreen() {
       allowsEditing: true,
       aspect: [4, 3],
       quality: 0.8,
+      base64: true,
     });
 
     if (!result.canceled && result.assets[0]) {
       setSelectedImage(result.assets[0].uri);
-      await sendImageMessage(result.assets[0].uri);
+      await sendImageMessage(result.assets[0]);
     }
   };
 
-  const uploadImage = async (uri: string): Promise<string | null> => {
+  const uploadImage = async (
+    asset: ImagePicker.ImagePickerAsset
+  ): Promise<string | null> => {
     try {
       setUploading(true);
-      console.log('Starting upload for:', uri);
+      console.log('Starting upload for:', asset.uri);
 
-      const response = await fetch(uri);
-      console.log('Fetch response status:', response.status);
+      let uint8Array: Uint8Array;
 
-      if (!response.ok) {
-        throw new Error(`Failed to fetch image: ${response.status}`);
+      // Use base64 if available (for web), otherwise fetch
+      if (asset.base64) {
+        console.log('Using base64 data');
+        const binaryString = atob(asset.base64);
+        const bytes = new Uint8Array(binaryString.length);
+        for (let i = 0; i < binaryString.length; i++) {
+          bytes[i] = binaryString.charCodeAt(i);
+        }
+        uint8Array = bytes;
+      } else {
+        console.log('Fetching image from URI');
+        const response = await fetch(asset.uri);
+        if (!response.ok) {
+          throw new Error(`Failed to fetch image: ${response.status}`);
+        }
+        const arrayBuffer = await response.arrayBuffer();
+        uint8Array = new Uint8Array(arrayBuffer);
       }
 
-      // Use arrayBuffer instead of blob for React Native Web compatibility
-      const arrayBuffer = await response.arrayBuffer();
-      const uint8Array = new Uint8Array(arrayBuffer);
-      console.log('ArrayBuffer created:', arrayBuffer.byteLength);
+      console.log('Data size:', uint8Array.length);
 
-      const ext = uri.split('.').pop()?.split('?')[0] || 'jpg';
+      const ext = asset.uri.split('.').pop()?.split('?')[0] || 'jpg';
       const fileName = `${chatId}/${Date.now()}.${ext}`;
       console.log('Uploading to:', fileName);
 
@@ -268,13 +282,13 @@ export default function ChatScreen() {
     }
   };
 
-  const sendImageMessage = async (imageUri: string) => {
+  const sendImageMessage = async (asset: ImagePicker.ImagePickerAsset) => {
     if (!user) return;
 
     setError(null);
 
     try {
-      const imageUrl = await uploadImage(imageUri);
+      const imageUrl = await uploadImage(asset);
 
       if (!imageUrl) {
         throw new Error('Failed to upload image');
