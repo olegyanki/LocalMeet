@@ -137,13 +137,15 @@ export default function EventDetailsBottomSheet({
     try {
       setIsDeleting(true);
       await deleteWalk(user.walk.id);
+      setIsDeleting(false);
       onClose();
-      if (onDelete) {
-        onDelete();
-      }
+      setTimeout(() => {
+        if (onDelete) {
+          onDelete();
+        }
+      }, 300);
     } catch (error) {
       console.error('Failed to delete walk:', error);
-    } finally {
       setIsDeleting(false);
     }
   };
