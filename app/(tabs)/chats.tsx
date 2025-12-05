@@ -15,6 +15,7 @@ export default function ChatsScreen() {
   const [activeTab, setActiveTab] = useState<TabType>('requests');
   const [requests, setRequests] = useState<WalkRequestWithProfile[]>([]);
   const [loading, setLoading] = useState(true);
+  const [scrollEnabled, setScrollEnabled] = useState(true);
   const insets = useSafeAreaInsets();
   const { user } = useAuth();
 
@@ -67,8 +68,14 @@ export default function ChatsScreen() {
         data={requests}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
-          <RequestCard request={item} onReject={handleReject} />
+          <RequestCard
+            request={item}
+            onReject={handleReject}
+            onSwipeStart={() => setScrollEnabled(false)}
+            onSwipeEnd={() => setScrollEnabled(true)}
+          />
         )}
+        scrollEnabled={scrollEnabled}
         contentContainerStyle={{ paddingBottom: insets.bottom + 80 }}
       />
     );

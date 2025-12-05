@@ -13,9 +13,11 @@ const TEXT_DARK = '#1C1C1E';
 interface RequestCardProps {
   request: WalkRequestWithProfile;
   onReject: (requestId: string) => void;
+  onSwipeStart?: () => void;
+  onSwipeEnd?: () => void;
 }
 
-export default function RequestCard({ request, onReject }: RequestCardProps) {
+export default function RequestCard({ request, onReject, onSwipeStart, onSwipeEnd }: RequestCardProps) {
   const { requester } = request;
   const translateX = useRef(new Animated.Value(0)).current;
   const opacity = useRef(new Animated.Value(1)).current;
@@ -44,9 +46,22 @@ export default function RequestCard({ request, onReject }: RequestCardProps) {
       onMoveShouldSetPanResponder: (_, gestureState) => {
         const isHorizontal = Math.abs(gestureState.dx) > Math.abs(gestureState.dy * 1.5);
         const hasMovedEnough = Math.abs(gestureState.dx) > 3;
-        return isHorizontal && hasMovedEnough;
+        if (isHorizontal && hasMovedEnough) {
+          onSwipeStart?.();
+          return true;
+        }
+        return false;
       },
       onPanResponderTerminationRequest: () => false,
+      onPanResponderTerminate: () => {
+        onSwipeEnd?.();
+        Animated.spring(translateX, {
+          toValue: 0,
+          useNativeDriver: true,
+          tension: 40,
+          friction: 8,
+        }).start();
+      },
       onPanResponderMove: (_, gestureState) => {
         const isHorizontal = Math.abs(gestureState.dx) > Math.abs(gestureState.dy);
         if (isHorizontal) {
@@ -54,6 +69,7 @@ export default function RequestCard({ request, onReject }: RequestCardProps) {
         }
       },
       onPanResponderRelease: (_, gestureState) => {
+        onSwipeEnd?.();
         const shouldDismiss =
           Math.abs(gestureState.dx) > SWIPE_THRESHOLD ||
           Math.abs(gestureState.vx) > 0.5;
