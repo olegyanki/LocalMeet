@@ -329,6 +329,17 @@ export async function endWalk(walkId: string) {
   }
 }
 
+export async function deleteWalk(walkId: string) {
+  const { error } = await supabase
+    .from('walks')
+    .update({ is_active: false, updated_at: new Date().toISOString() })
+    .eq('id', walkId);
+
+  if (error) {
+    throw error;
+  }
+}
+
 export async function getActiveWalkByUserId(userId: string): Promise<Walk | null> {
   const { data, error } = await supabase
     .from('walks')

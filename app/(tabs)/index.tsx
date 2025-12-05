@@ -537,6 +537,9 @@ export default function SearchScreen() {
         onClose={() => setDetailsVisible(false)}
         user={selectedUser}
         isOwnEvent={selectedUser?.id === user?.id}
+        onDelete={() => {
+          loadNearbyUsers();
+        }}
       />
     </View>
   );

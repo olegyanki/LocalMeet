@@ -10,9 +10,11 @@ import {
   Dimensions,
   Platform,
   Linking,
+  ActivityIndicator,
 } from 'react-native';
 import { BlurView } from 'expo-blur';
-import { Clock, MapPin, MessageCircle, X } from 'lucide-react-native';
+import { Clock, MapPin, MessageCircle, X, Trash2 } from 'lucide-react-native';
+import { deleteWalk } from '../lib/api';
 
 const ACCENT_ORANGE = '#FF9500';
 const TEXT_DARK = '#333333';
@@ -58,6 +60,7 @@ interface EventDetailsBottomSheetProps {
   onClose: () => void;
   user: UserProfile | null;
   isOwnEvent: boolean;
+  onDelete?: () => void;
 }
 
 export default function EventDetailsBottomSheet({
@@ -65,8 +68,10 @@ export default function EventDetailsBottomSheet({
   onClose,
   user,
   isOwnEvent,
+  onDelete,
 }: EventDetailsBottomSheetProps) {
   const slideAnim = React.useRef(new Animated.Value(Dimensions.get('window').height)).current;
+  const [isDeleting, setIsDeleting] = React.useState(false);
 
   React.useEffect(() => {
     if (visible) {
@@ -124,6 +129,23 @@ export default function EventDetailsBottomSheet({
     );
     const telegramUrl = `https://t.me/share/url?url=${message}`;
     Linking.openURL(telegramUrl);
+  };
+
+  const handleDelete = async () => {
+    if (!user?.walk?.id) return;
+
+    try {
+      setIsDeleting(true);
+      await deleteWalk(user.walk.id);
+      onClose();
+      if (onDelete) {
+        onDelete();
+      }
+    } catch (error) {
+      console.error('Failed to delete walk:', error);
+    } finally {
+      setIsDeleting(false);
+    }
   };
 
   return (
@@ -214,9 +236,20 @@ export default function EventDetailsBottomSheet({
           )}
 
           {isOwnEvent && (
-            <View style={styles.ownEventBadge}>
-              <Text style={styles.ownEventText}>Це ваш івент</Text>
-            </View>
+            <TouchableOpacity
+              style={[styles.deleteButton, isDeleting && styles.deleteButtonDisabled]}
+              onPress={handleDelete}
+              disabled={isDeleting}
+            >
+              {isDeleting ? (
+                <ActivityIndicator size="small" color="#FFFFFF" />
+              ) : (
+                <>
+                  <Trash2 size={20} color="#FFFFFF" />
+                  <Text style={styles.deleteButtonText}>Видалити івент</Text>
+                </>
+              )}
+            </TouchableOpacity>
           )}
         </Animated.View>
       </View>
@@ -375,16 +408,22 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#FFFFFF',
   },
-  ownEventBadge: {
-    backgroundColor: '#F5F5F5',
-    paddingVertical: 12,
-    borderRadius: 12,
+  deleteButton: {
+    backgroundColor: '#FF3B30',
+    flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    paddingVertical: 16,
+    borderRadius: 16,
     marginTop: 8,
   },
-  ownEventText: {
-    fontSize: 14,
-    fontWeight: '500',
-    color: TEXT_LIGHT,
+  deleteButtonDisabled: {
+    opacity: 0.6,
+  },
+  deleteButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#FFFFFF',
   },
 });
