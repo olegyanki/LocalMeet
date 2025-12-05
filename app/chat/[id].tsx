@@ -47,12 +47,12 @@ interface Chat {
   walk_request_id: string | null;
   requester: {
     id: string;
-    name: string;
+    display_name: string;
     avatar_url: string | null;
   };
   walker: {
     id: string;
-    name: string;
+    display_name: string;
     avatar_url: string | null;
   };
   walk_request?: {
@@ -95,8 +95,8 @@ export default function ChatScreen() {
           requester_id,
           walker_id,
           walk_request_id,
-          requester:profiles!chats_requester_id_fkey(id, name, avatar_url),
-          walker:profiles!chats_walker_id_fkey(id, name, avatar_url),
+          requester:profiles!chats_requester_id_fkey(id, display_name, avatar_url),
+          walker:profiles!chats_walker_id_fkey(id, display_name, avatar_url),
           walk_request:walk_requests!chats_walk_request_id_fkey(message, created_at)
         `
         )
@@ -279,12 +279,12 @@ export default function ChatScreen() {
           ) : (
             <View style={[styles.avatar, styles.avatarPlaceholder]}>
               <Text style={styles.avatarText}>
-                {otherUser.name.charAt(0).toUpperCase()}
+                {otherUser.display_name.charAt(0).toUpperCase()}
               </Text>
             </View>
           )}
 
-          <Text style={styles.headerName}>{otherUser.name}</Text>
+          <Text style={styles.headerName}>{otherUser.display_name}</Text>
         </View>
 
         <View style={styles.headerRight}>

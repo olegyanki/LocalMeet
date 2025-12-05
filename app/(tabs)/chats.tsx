@@ -20,12 +20,12 @@ interface ChatWithLastMessage {
   updated_at: string;
   requester: {
     id: string;
-    name: string;
+    display_name: string;
     avatar_url: string | null;
   };
   walker: {
     id: string;
-    name: string;
+    display_name: string;
     avatar_url: string | null;
   };
   lastMessage?: {
@@ -73,8 +73,8 @@ export default function ChatsScreen() {
           requester_id,
           walker_id,
           updated_at,
-          requester:profiles!chats_requester_id_fkey(id, name, avatar_url),
-          walker:profiles!chats_walker_id_fkey(id, name, avatar_url)
+          requester:profiles!chats_requester_id_fkey(id, display_name, avatar_url),
+          walker:profiles!chats_walker_id_fkey(id, display_name, avatar_url)
         `
         )
         .or(`requester_id.eq.${user.id},walker_id.eq.${user.id}`)
@@ -191,13 +191,13 @@ export default function ChatsScreen() {
         ) : (
           <View style={[styles.chatAvatar, styles.chatAvatarPlaceholder]}>
             <Text style={styles.chatAvatarText}>
-              {otherUser.name.charAt(0).toUpperCase()}
+              {otherUser.display_name.charAt(0).toUpperCase()}
             </Text>
           </View>
         )}
         <View style={styles.chatInfo}>
           <View style={styles.chatHeader}>
-            <Text style={styles.chatName}>{otherUser.name}</Text>
+            <Text style={styles.chatName}>{otherUser.display_name}</Text>
             {timeAgo && <Text style={styles.chatTime}>{timeAgo}</Text>}
           </View>
           <Text
