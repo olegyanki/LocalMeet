@@ -1,7 +1,6 @@
 import { View, Text, StyleSheet, TouchableOpacity, FlatList, ActivityIndicator } from 'react-native';
 import { useState, useEffect } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { useAuth } from '../../contexts/AuthContext';
 import { getMyWalkRequests, updateWalkRequestStatus, WalkRequestWithProfile } from '../../lib/api';
 import RequestCard from '../../components/RequestCard';
@@ -16,6 +15,7 @@ export default function ChatsScreen() {
   const [activeTab, setActiveTab] = useState<TabType>('requests');
   const [requests, setRequests] = useState<WalkRequestWithProfile[]>([]);
   const [loading, setLoading] = useState(true);
+  const [scrollEnabled, setScrollEnabled] = useState(true);
   const insets = useSafeAreaInsets();
   const { user } = useAuth();
 
@@ -68,17 +68,22 @@ export default function ChatsScreen() {
         data={requests}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
-          <RequestCard request={item} onReject={handleReject} />
+          <RequestCard
+            request={item}
+            onReject={handleReject}
+            onSwipeStart={() => setScrollEnabled(false)}
+            onSwipeEnd={() => setScrollEnabled(true)}
+          />
         )}
+        scrollEnabled={scrollEnabled}
         contentContainerStyle={{ paddingBottom: insets.bottom + 80 }}
       />
     );
   };
 
   return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
-      <View style={[styles.container, { paddingTop: insets.top }]}>
-        <Text style={styles.title}>Messages</Text>
+    <View style={[styles.container, { paddingTop: insets.top }]}>
+      <Text style={styles.title}>Messages</Text>
 
         <View style={styles.switchContainer}>
           <TouchableOpacity
@@ -125,8 +130,7 @@ export default function ChatsScreen() {
             </View>
           )}
         </View>
-      </View>
-    </GestureHandlerRootView>
+    </View>
   );
 }
 

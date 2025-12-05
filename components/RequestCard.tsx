@@ -1,20 +1,26 @@
-import { View, Text, StyleSheet, Image, Animated } from 'react-native';
+import { View, Text, StyleSheet, Image, Dimensions, Animated, PanResponder } from 'react-native';
 import { WalkRequestWithProfile } from '../lib/api';
-import { Swipeable } from 'react-native-gesture-handler';
-import { X } from 'lucide-react-native';
+import { useRef } from 'react';
+import { Check, X } from 'lucide-react-native';
+
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
+const SWIPE_THRESHOLD = SCREEN_WIDTH * 0.3;
 
 const ACCENT_ORANGE = '#FF9500';
 const TEXT_LIGHT = '#999999';
 const TEXT_DARK = '#1C1C1E';
-const RED = '#FF3B30';
 
 interface RequestCardProps {
   request: WalkRequestWithProfile;
   onReject: (requestId: string) => void;
+  onSwipeStart?: () => void;
+  onSwipeEnd?: () => void;
 }
 
-export default function RequestCard({ request, onReject }: RequestCardProps) {
+export default function RequestCard({ request, onReject, onSwipeStart, onSwipeEnd }: RequestCardProps) {
   const { requester } = request;
+  const translateX = useRef(new Animated.Value(0)).current;
+  const opacity = useRef(new Animated.Value(1)).current;
 
   const formatTimeAgo = (dateString: string) => {
     const date = new Date(dateString);
@@ -30,40 +36,105 @@ export default function RequestCard({ request, onReject }: RequestCardProps) {
     return `${diffDays}d ago`;
   };
 
-  const renderRightActions = (
-    progress: Animated.AnimatedInterpolation<number>,
-    dragX: Animated.AnimatedInterpolation<number>
-  ) => {
-    const trans = dragX.interpolate({
-      inputRange: [-100, 0],
-      outputRange: [0, 100],
-      extrapolate: 'clamp',
-    });
+  const handleDismiss = () => {
+    onReject(request.id);
+  };
 
-    return (
+  const panResponder = useRef(
+    PanResponder.create({
+      onStartShouldSetPanResponder: () => false,
+      onMoveShouldSetPanResponder: (_, gestureState) => {
+        const isHorizontal = Math.abs(gestureState.dx) > Math.abs(gestureState.dy * 1.5);
+        const hasMovedEnough = Math.abs(gestureState.dx) > 3;
+        if (isHorizontal && hasMovedEnough) {
+          onSwipeStart?.();
+          return true;
+        }
+        return false;
+      },
+      onPanResponderTerminationRequest: () => false,
+      onPanResponderTerminate: () => {
+        onSwipeEnd?.();
+        Animated.spring(translateX, {
+          toValue: 0,
+          useNativeDriver: true,
+          tension: 40,
+          friction: 8,
+        }).start();
+      },
+      onPanResponderMove: (_, gestureState) => {
+        const isHorizontal = Math.abs(gestureState.dx) > Math.abs(gestureState.dy);
+        if (isHorizontal) {
+          translateX.setValue(gestureState.dx);
+        }
+      },
+      onPanResponderRelease: (_, gestureState) => {
+        onSwipeEnd?.();
+        const shouldDismiss =
+          Math.abs(gestureState.dx) > SWIPE_THRESHOLD ||
+          Math.abs(gestureState.vx) > 0.5;
+
+        if (shouldDismiss) {
+          const direction = gestureState.dx > 0 ? 1 : -1;
+          Animated.parallel([
+            Animated.timing(translateX, {
+              toValue: direction * SCREEN_WIDTH * 1.5,
+              duration: 250,
+              useNativeDriver: true,
+            }),
+            Animated.timing(opacity, {
+              toValue: 0,
+              duration: 250,
+              useNativeDriver: true,
+            }),
+          ]).start(() => {
+            handleDismiss();
+          });
+        } else {
+          Animated.spring(translateX, {
+            toValue: 0,
+            useNativeDriver: true,
+            tension: 40,
+            friction: 8,
+          }).start();
+        }
+      },
+    })
+  ).current;
+
+  const acceptOpacity = translateX.interpolate({
+    inputRange: [0, 100],
+    outputRange: [0, 1],
+    extrapolate: 'clamp',
+  });
+
+  const rejectOpacity = translateX.interpolate({
+    inputRange: [-100, 0],
+    outputRange: [1, 0],
+    extrapolate: 'clamp',
+  });
+
+  return (
+    <View style={styles.container}>
+      <Animated.View style={[styles.acceptBackground, { opacity: acceptOpacity }]}>
+        <Check size={28} color="#FFFFFF" strokeWidth={3} />
+      </Animated.View>
+
+      <Animated.View style={[styles.rejectBackground, { opacity: rejectOpacity }]}>
+        <X size={28} color="#FFFFFF" strokeWidth={3} />
+      </Animated.View>
+
       <Animated.View
+        {...panResponder.panHandlers}
         style={[
-          styles.swipeAction,
+          styles.card,
           {
-            transform: [{ translateX: trans }],
+            transform: [{ translateX: translateX }],
+            opacity: opacity,
           },
         ]}
       >
-        <X size={24} color="#FFFFFF" />
-        <Text style={styles.swipeActionText}>Reject</Text>
-      </Animated.View>
-    );
-  };
-
-  return (
-    <Swipeable
-      renderRightActions={renderRightActions}
-      onSwipeableOpen={() => onReject(request.id)}
-      overshootRight={false}
-      friction={2}
-    >
-      <View style={styles.card}>
-        <View style={styles.header}>
+          <View style={styles.header}>
           <View style={styles.avatarContainer}>
             {requester.avatar_url ? (
               <Image source={{ uri: requester.avatar_url }} style={styles.avatar} />
@@ -111,17 +182,44 @@ export default function RequestCard({ request, onReject }: RequestCardProps) {
           <Text style={styles.time}>{formatTimeAgo(request.created_at)}</Text>
         </View>
 
-        {request.message && (
-          <Text style={styles.message} numberOfLines={2}>
-            {request.message}
-          </Text>
-        )}
-      </View>
-    </Swipeable>
+          {request.message && (
+            <Text style={styles.message} numberOfLines={2}>
+              {request.message}
+            </Text>
+          )}
+      </Animated.View>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  container: {
+    backgroundColor: '#FFFFFF',
+    position: 'relative',
+    overflow: 'hidden',
+  },
+  acceptBackground: {
+    position: 'absolute',
+    left: 0,
+    top: 0,
+    bottom: 0,
+    right: 0,
+    backgroundColor: '#34C759',
+    justifyContent: 'center',
+    alignItems: 'flex-start',
+    paddingLeft: 30,
+  },
+  rejectBackground: {
+    position: 'absolute',
+    left: 0,
+    top: 0,
+    bottom: 0,
+    right: 0,
+    backgroundColor: '#FF3B30',
+    justifyContent: 'center',
+    alignItems: 'flex-end',
+    paddingRight: 30,
+  },
   card: {
     backgroundColor: '#FFFFFF',
     paddingHorizontal: 20,
@@ -207,18 +305,5 @@ const styles = StyleSheet.create({
     fontSize: 15,
     lineHeight: 20,
     color: TEXT_DARK,
-  },
-  swipeAction: {
-    backgroundColor: RED,
-    justifyContent: 'center',
-    alignItems: 'center',
-    width: 100,
-    height: '100%',
-  },
-  swipeActionText: {
-    color: '#FFFFFF',
-    fontSize: 14,
-    fontWeight: '600',
-    marginTop: 4,
   },
 });
