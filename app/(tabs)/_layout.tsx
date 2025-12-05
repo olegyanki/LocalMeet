@@ -1,5 +1,5 @@
 import { Tabs } from 'expo-router';
-import { Search, Plus, User } from 'lucide-react-native';
+import { Search, Plus, User, MessageCircle } from 'lucide-react-native';
 import { useAuth } from '../../contexts/AuthContext';
 import { useRouter } from 'expo-router';
 import { useEffect } from 'react';
@@ -55,6 +55,14 @@ export default function TabLayout() {
         options={{
           title: 'GO ONLINE',
           tabBarIcon: ({ size, color }) => <Plus size={20} color={color} />,
+          tabBarLabelStyle: { fontSize: 9, fontWeight: '600' },
+        }}
+      />
+      <Tabs.Screen
+        name="chats"
+        options={{
+          title: 'CHATS',
+          tabBarIcon: ({ size, color }) => <MessageCircle size={20} color={color} />,
           tabBarLabelStyle: { fontSize: 9, fontWeight: '600' },
         }}
       />
