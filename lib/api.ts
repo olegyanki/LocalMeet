@@ -476,3 +476,66 @@ export async function getMyRequestForWalk(
 
   return data;
 }
+
+export interface WalkRequestWithProfile extends WalkRequest {
+  requester: UserProfile;
+  walk: Walk;
+}
+
+export async function getMyWalkRequests(userId: string): Promise<WalkRequestWithProfile[]> {
+  const { data: myWalks, error: walksError } = await supabase
+    .from('walks')
+    .select('*')
+    .eq('user_id', userId)
+    .eq('is_active', true)
+    .or('deleted.is.null,deleted.eq.false');
+
+  if (walksError) {
+    throw walksError;
+  }
+
+  if (!myWalks || myWalks.length === 0) {
+    return [];
+  }
+
+  const walkIds = myWalks.map(w => w.id);
+
+  const { data: requests, error: requestsError } = await supabase
+    .from('walk_requests')
+    .select('*')
+    .in('walk_id', walkIds)
+    .eq('status', 'pending')
+    .order('created_at', { ascending: false });
+
+  if (requestsError) {
+    throw requestsError;
+  }
+
+  if (!requests || requests.length === 0) {
+    return [];
+  }
+
+  const requesterIds = [...new Set(requests.map(r => r.requester_id))];
+
+  const { data: profiles, error: profilesError } = await supabase
+    .from('profiles')
+    .select('*')
+    .in('id', requesterIds);
+
+  if (profilesError) {
+    throw profilesError;
+  }
+
+  const requestsWithProfiles = requests.map(request => {
+    const requester = profiles?.find(p => p.id === request.requester_id);
+    const walk = myWalks.find(w => w.id === request.walk_id);
+
+    return {
+      ...request,
+      requester: requester!,
+      walk: walk!,
+    };
+  }).filter(r => r.requester && r.walk);
+
+  return requestsWithProfiles;
+}
