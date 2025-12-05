@@ -100,6 +100,12 @@ export default function RequestCard({ request, onReject }: RequestCardProps) {
                 )}
               </View>
             )}
+
+            {requester.bio && (
+              <Text style={styles.bio} numberOfLines={2}>
+                {requester.bio}
+              </Text>
+            )}
           </View>
 
           <Text style={styles.time}>{formatTimeAgo(request.created_at)}</Text>
@@ -185,6 +191,12 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: TEXT_LIGHT,
     fontWeight: '500',
+  },
+  bio: {
+    fontSize: 14,
+    lineHeight: 18,
+    color: TEXT_LIGHT,
+    marginTop: 6,
   },
   time: {
     fontSize: 13,
