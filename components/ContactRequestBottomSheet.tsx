@@ -26,6 +26,7 @@ interface ContactRequestBottomSheetProps {
   walkId: string;
   requesterId: string;
   walkOwnerName: string;
+  onRequestSent?: () => void;
 }
 
 export default function ContactRequestBottomSheet({
@@ -34,6 +35,7 @@ export default function ContactRequestBottomSheet({
   walkId,
   requesterId,
   walkOwnerName,
+  onRequestSent,
 }: ContactRequestBottomSheetProps) {
   const slideAnim = React.useRef(new Animated.Value(Dimensions.get('window').height)).current;
   const [message, setMessage] = useState('');
@@ -77,6 +79,11 @@ export default function ContactRequestBottomSheet({
 
       setIsSubmitting(false);
       setMessage('');
+
+      if (onRequestSent) {
+        onRequestSent();
+      }
+
       onClose();
     } catch (err) {
       console.error('Failed to send request:', err);

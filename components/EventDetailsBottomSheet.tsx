@@ -12,8 +12,8 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { BlurView } from 'expo-blur';
-import { Clock, MapPin, MessageCircle, X, Trash2 } from 'lucide-react-native';
-import { deleteWalk } from '../lib/api';
+import { Clock, MapPin, MessageCircle, X, Trash2, Clock as ClockIcon, Check } from 'lucide-react-native';
+import { deleteWalk, getMyRequestForWalk, WalkRequest } from '../lib/api';
 import ContactRequestBottomSheet from './ContactRequestBottomSheet';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -75,6 +75,8 @@ export default function EventDetailsBottomSheet({
   const slideAnim = React.useRef(new Animated.Value(Dimensions.get('window').height)).current;
   const [isDeleting, setIsDeleting] = React.useState(false);
   const [showContactRequest, setShowContactRequest] = React.useState(false);
+  const [existingRequest, setExistingRequest] = React.useState<WalkRequest | null>(null);
+  const [isLoadingRequest, setIsLoadingRequest] = React.useState(false);
   const { user: currentUser } = useAuth();
 
   React.useEffect(() => {
@@ -85,6 +87,10 @@ export default function EventDetailsBottomSheet({
         tension: 65,
         friction: 11,
       }).start();
+
+      if (currentUser && user?.walk && !isOwnEvent) {
+        loadExistingRequest();
+      }
     } else {
       Animated.timing(slideAnim, {
         toValue: Dimensions.get('window').height,
@@ -93,6 +99,20 @@ export default function EventDetailsBottomSheet({
       }).start();
     }
   }, [visible]);
+
+  const loadExistingRequest = async () => {
+    if (!currentUser || !user?.walk) return;
+
+    try {
+      setIsLoadingRequest(true);
+      const request = await getMyRequestForWalk(user.walk.id, currentUser.id);
+      setExistingRequest(request);
+    } catch (error) {
+      console.error('Failed to load request:', error);
+    } finally {
+      setIsLoadingRequest(false);
+    }
+  };
 
   if (!user) return null;
 
@@ -128,7 +148,64 @@ export default function EventDetailsBottomSheet({
   };
 
   const handleConnect = () => {
-    setShowContactRequest(true);
+    if (existingRequest?.status === 'rejected' || !existingRequest) {
+      setShowContactRequest(true);
+    }
+  };
+
+  const handleRequestSent = () => {
+    loadExistingRequest();
+  };
+
+  const getConnectButtonConfig = () => {
+    if (isLoadingRequest) {
+      return {
+        text: 'Завантаження...',
+        icon: null,
+        color: '#CCCCCC',
+        disabled: true,
+      };
+    }
+
+    if (!existingRequest) {
+      return {
+        text: "Зв'язатися",
+        icon: <MessageCircle size={20} color="#FFFFFF" />,
+        color: ACCENT_ORANGE,
+        disabled: false,
+      };
+    }
+
+    switch (existingRequest.status) {
+      case 'pending':
+        return {
+          text: 'Запит відправлено',
+          icon: <ClockIcon size={20} color="#FFFFFF" />,
+          color: '#999999',
+          disabled: true,
+        };
+      case 'accepted':
+        return {
+          text: 'Запит прийнято',
+          icon: <Check size={20} color="#FFFFFF" />,
+          color: '#8FD89C',
+          disabled: true,
+        };
+      case 'rejected':
+        return {
+          text: 'Відправити знову',
+          icon: <MessageCircle size={20} color="#FFFFFF" />,
+          color: ACCENT_ORANGE,
+          disabled: false,
+        };
+      default:
+        return {
+          text: "Зв'язатися",
+          icon: <MessageCircle size={20} color="#FFFFFF" />,
+          color: ACCENT_ORANGE,
+          disabled: false,
+        };
+    }
   };
 
   const handleDelete = async () => {
@@ -233,12 +310,23 @@ export default function EventDetailsBottomSheet({
             </View>
           )}
 
-          {!isOwnEvent && (
-            <TouchableOpacity style={styles.connectButton} onPress={handleConnect}>
-              <MessageCircle size={20} color="#FFFFFF" />
-              <Text style={styles.connectButtonText}>Зв'язатися</Text>
-            </TouchableOpacity>
-          )}
+          {!isOwnEvent && (() => {
+            const buttonConfig = getConnectButtonConfig();
+            return (
+              <TouchableOpacity
+                style={[
+                  styles.connectButton,
+                  { backgroundColor: buttonConfig.color },
+                  buttonConfig.disabled && styles.connectButtonDisabled,
+                ]}
+                onPress={handleConnect}
+                disabled={buttonConfig.disabled}
+              >
+                {buttonConfig.icon}
+                <Text style={styles.connectButtonText}>{buttonConfig.text}</Text>
+              </TouchableOpacity>
+            );
+          })()}
 
           {isOwnEvent && (
             <TouchableOpacity
@@ -267,6 +355,7 @@ export default function EventDetailsBottomSheet({
           walkId={user.walk.id}
           requesterId={currentUser.id}
           walkOwnerName={user.display_name}
+          onRequestSent={handleRequestSent}
         />
       )}
     </>
@@ -423,6 +512,9 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     color: '#FFFFFF',
+  },
+  connectButtonDisabled: {
+    opacity: 0.8,
   },
   deleteButton: {
     backgroundColor: '#FF3B30',

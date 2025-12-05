@@ -458,3 +458,21 @@ export async function getWalkRequestsForWalk(walkId: string): Promise<WalkReques
 
   return data || [];
 }
+
+export async function getMyRequestForWalk(
+  walkId: string,
+  requesterId: string
+): Promise<WalkRequest | null> {
+  const { data, error } = await supabase
+    .from('walk_requests')
+    .select('*')
+    .eq('walk_id', walkId)
+    .eq('requester_id', requesterId)
+    .maybeSingle();
+
+  if (error) {
+    throw error;
+  }
+
+  return data;
+}
