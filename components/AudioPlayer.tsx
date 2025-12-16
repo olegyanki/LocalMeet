@@ -35,6 +35,9 @@ export default function AudioPlayer({ audioUrl, duration, isOwnMessage }: AudioP
             await sound.pauseAsync();
             setIsPlaying(false);
           } else {
+            if (status.positionMillis >= status.durationMillis! - 100) {
+              await sound.setPositionAsync(0);
+            }
             await sound.playAsync();
             setIsPlaying(true);
           }
