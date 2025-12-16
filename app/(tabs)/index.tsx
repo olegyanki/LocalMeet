@@ -21,6 +21,7 @@ import { Clock } from 'lucide-react-native';
 import WebMap from '../../components/WebMap';
 import NativeMap from '../../components/NativeMap';
 import EventDetailsBottomSheet from '../../components/EventDetailsBottomSheet';
+import ContactRequestBottomSheet from '../../components/ContactRequestBottomSheet';
 import { useFocusEffect } from '@react-navigation/native';
 
 const ACCENT_ORANGE = '#FF9500';
@@ -81,6 +82,8 @@ export default function SearchScreen() {
   const previousMarkerIdRef = useRef<string | null>(null);
   const [detailsVisible, setDetailsVisible] = useState(false);
   const [selectedUser, setSelectedUser] = useState<UserProfile | null>(null);
+  const [contactRequestVisible, setContactRequestVisible] = useState(false);
+  const [contactRequestData, setContactRequestData] = useState<{walkId: string; walkOwnerName: string} | null>(null);
 
   const screenWidth = Dimensions.get('window').width;
   const cardWidth = screenWidth - 48;
@@ -536,13 +539,38 @@ export default function SearchScreen() {
 
       <EventDetailsBottomSheet
         visible={detailsVisible}
-        onClose={() => setDetailsVisible(false)}
+        onClose={() => {
+          setDetailsVisible(false);
+        }}
         user={selectedUser}
         isOwnEvent={selectedUser?.id === user?.id}
         onDelete={() => {
           loadNearbyUsers();
         }}
+        onConnectPress={(walkId, walkOwnerName) => {
+          setContactRequestData({ walkId, walkOwnerName });
+          setDetailsVisible(false);
+          setTimeout(() => {
+            setContactRequestVisible(true);
+          }, 300);
+        }}
       />
+
+      {user && contactRequestData && (
+        <ContactRequestBottomSheet
+          visible={contactRequestVisible}
+          onClose={() => {
+            setContactRequestVisible(false);
+            setContactRequestData(null);
+          }}
+          walkId={contactRequestData.walkId}
+          requesterId={user.id}
+          walkOwnerName={contactRequestData.walkOwnerName}
+          onRequestSent={() => {
+            loadNearbyUsers();
+          }}
+        />
+      )}
     </View>
   );
 }

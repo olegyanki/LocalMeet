@@ -14,7 +14,6 @@ import {
 import { BlurView } from 'expo-blur';
 import { Clock, MapPin, MessageCircle, X, Trash2, Clock as ClockIcon, Check } from 'lucide-react-native';
 import { deleteWalk, getMyRequestForWalk, WalkRequest } from '../lib/api';
-import ContactRequestBottomSheet from './ContactRequestBottomSheet';
 import { useAuth } from '../contexts/AuthContext';
 
 const ACCENT_ORANGE = '#FF9500';
@@ -63,6 +62,7 @@ interface EventDetailsBottomSheetProps {
   user: UserProfile | null;
   isOwnEvent: boolean;
   onDelete?: () => void;
+  onConnectPress?: (walkId: string, walkOwnerName: string) => void;
 }
 
 export default function EventDetailsBottomSheet({
@@ -71,10 +71,10 @@ export default function EventDetailsBottomSheet({
   user,
   isOwnEvent,
   onDelete,
+  onConnectPress,
 }: EventDetailsBottomSheetProps) {
   const slideAnim = React.useRef(new Animated.Value(Dimensions.get('window').height)).current;
   const [isDeleting, setIsDeleting] = React.useState(false);
-  const [showContactRequest, setShowContactRequest] = React.useState(false);
   const [existingRequest, setExistingRequest] = React.useState<WalkRequest | null>(null);
   const [isLoadingRequest, setIsLoadingRequest] = React.useState(false);
   const { user: currentUser } = useAuth();
@@ -87,10 +87,6 @@ export default function EventDetailsBottomSheet({
         tension: 65,
         friction: 11,
       }).start();
-
-      if (currentUser && user?.walk && !isOwnEvent) {
-        loadExistingRequest();
-      }
     } else {
       Animated.timing(slideAnim, {
         toValue: Dimensions.get('window').height,
@@ -100,21 +96,28 @@ export default function EventDetailsBottomSheet({
     }
   }, [visible]);
 
-  const loadExistingRequest = async () => {
-    if (!currentUser || !user?.walk) return;
+  React.useEffect(() => {
+    const loadExistingRequest = async () => {
+      if (!currentUser || !user?.walk) return;
 
-    try {
-      setIsLoadingRequest(true);
-      const request = await getMyRequestForWalk(user.walk.id, currentUser.id);
-      setExistingRequest(request);
-    } catch (error) {
-      console.error('Failed to load request:', error);
-    } finally {
+      try {
+        setIsLoadingRequest(true);
+        const request = await getMyRequestForWalk(user.walk.id, currentUser.id);
+        setExistingRequest(request);
+      } catch (error) {
+        console.error('Failed to load request:', error);
+      } finally {
+        setIsLoadingRequest(false);
+      }
+    };
+
+    if (visible && currentUser && user?.walk && !isOwnEvent) {
+      loadExistingRequest();
+    } else if (!visible) {
+      setExistingRequest(null);
       setIsLoadingRequest(false);
     }
-  };
-
-  if (!user) return null;
+  }, [visible, currentUser, user?.walk?.id, isOwnEvent]);
 
   const getTimeText = (walkStartTime: string | null) => {
     if (!walkStartTime) return 'Час не вказано';
@@ -148,13 +151,9 @@ export default function EventDetailsBottomSheet({
   };
 
   const handleConnect = () => {
-    if (!existingRequest) {
-      setShowContactRequest(true);
+    if (!existingRequest && user?.walk && onConnectPress) {
+      onConnectPress(user.walk.id, user.display_name);
     }
-  };
-
-  const handleRequestSent = () => {
-    loadExistingRequest();
   };
 
   const getConnectButtonConfig = () => {
@@ -223,17 +222,18 @@ export default function EventDetailsBottomSheet({
     }
   };
 
+  if (!user) return null;
+
   return (
-    <>
-      <Modal visible={visible} transparent animationType="none" onRequestClose={onClose}>
-        <View style={styles.modalContainer}>
-          <TouchableOpacity style={styles.backdrop} activeOpacity={1} onPress={onClose}>
-            {Platform.OS === 'ios' ? (
-              <BlurView intensity={20} style={StyleSheet.absoluteFill} tint="dark" />
-            ) : (
-              <View style={styles.androidBackdrop} />
-            )}
-          </TouchableOpacity>
+    <Modal visible={visible} transparent animationType="none" onRequestClose={onClose}>
+      <View style={styles.modalContainer}>
+        <TouchableOpacity style={styles.backdrop} activeOpacity={1} onPress={onClose}>
+          {Platform.OS === 'ios' ? (
+            <BlurView intensity={20} style={StyleSheet.absoluteFill} tint="dark" />
+          ) : (
+            <View style={styles.androidBackdrop} />
+          )}
+        </TouchableOpacity>
 
         <Animated.View
           style={[
@@ -341,18 +341,6 @@ export default function EventDetailsBottomSheet({
         </Animated.View>
       </View>
     </Modal>
-
-      {currentUser && user?.walk && (
-        <ContactRequestBottomSheet
-          visible={showContactRequest}
-          onClose={() => setShowContactRequest(false)}
-          walkId={user.walk.id}
-          requesterId={currentUser.id}
-          walkOwnerName={user.display_name}
-          onRequestSent={handleRequestSent}
-        />
-      )}
-    </>
   );
 }
 
