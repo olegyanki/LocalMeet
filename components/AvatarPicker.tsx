@@ -3,6 +3,7 @@ import { View, Text, TouchableOpacity, StyleSheet, Image, Alert, ActivityIndicat
 import { Camera } from 'lucide-react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { supabase } from '../lib/supabase';
+import { updateProfile } from '../lib/api';
 
 const AVATAR_PLACEHOLDER = 'https://api.dicebear.com/7.x/initials/svg?seed=';
 
@@ -62,11 +63,11 @@ export default function AvatarPicker({
       const contentType = contentTypeMap[fileExt] || 'image/jpeg';
 
       const response = await fetch(uri);
-      const blob = await response.blob();
+      const fileData = await response.blob();
 
       const { data, error } = await supabase.storage
         .from('avatars')
-        .upload(fileName, blob, {
+        .upload(fileName, fileData, {
           contentType,
           upsert: true,
         });
@@ -80,8 +81,11 @@ export default function AvatarPicker({
         .from('avatars')
         .getPublicUrl(fileName);
 
-      console.log('Public URL:', urlData.publicUrl);
-      onAvatarChange(urlData.publicUrl);
+      const publicUrl = urlData.publicUrl;
+
+      await updateProfile(userId, { avatar_url: publicUrl } as any);
+
+      onAvatarChange(`${publicUrl}?t=${Date.now()}`);
     } catch (error) {
       console.error('Error uploading avatar:', error);
       Alert.alert('Помилка', 'Не вдалося завантажити фото');
