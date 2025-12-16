@@ -20,6 +20,7 @@ import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
 import AudioRecorder from '@/components/AudioRecorder';
 import AudioPlayer from '@/components/AudioPlayer';
+import EventDetailsBottomSheet from '@/components/EventDetailsBottomSheet';
 
 const BACKGROUND = '#FFFFFF';
 const TEXT_DARK = '#1C1C1E';
@@ -40,6 +41,17 @@ interface Message {
   read: boolean;
 }
 
+interface Walk {
+  id: string;
+  title: string;
+  description: string | null;
+  start_time: string | null;
+  duration: string;
+  latitude: number;
+  longitude: number;
+  user_id: string;
+}
+
 interface Chat {
   id: string;
   requester_id: string;
@@ -58,6 +70,8 @@ interface Chat {
   walk_request?: {
     message: string;
     created_at: string;
+    walk_id: string;
+    walk?: Walk;
   };
 }
 
@@ -79,6 +93,7 @@ export default function ChatScreen() {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
+  const [showEventDetails, setShowEventDetails] = useState(false);
 
   const preloadedUserName = Array.isArray(otherUserName) ? otherUserName[0] : otherUserName;
   const preloadedUserAvatar = Array.isArray(otherUserAvatar) ? otherUserAvatar[0] : otherUserAvatar;
@@ -115,7 +130,7 @@ export default function ChatScreen() {
           walk_request_id,
           requester:profiles!chats_requester_id_fkey(id, display_name, avatar_url),
           walker:profiles!chats_walker_id_fkey(id, display_name, avatar_url),
-          walk_request:walk_requests!chats_walk_request_id_fkey(message, created_at)
+          walk_request:walk_requests!chats_walk_request_id_fkey(message, created_at, walk_id)
         `
         )
         .eq('id', chatId)
@@ -123,6 +138,17 @@ export default function ChatScreen() {
 
       if (chatError) throw chatError;
       if (chatData) {
+        if (chatData.walk_request?.walk_id) {
+          const { data: walkData } = await supabase
+            .from('walks')
+            .select('id, title, description, start_time, duration, latitude, longitude, user_id')
+            .eq('id', chatData.walk_request.walk_id)
+            .maybeSingle();
+
+          if (walkData) {
+            chatData.walk_request.walk = walkData;
+          }
+        }
         setChat(chatData as unknown as Chat);
       }
 
@@ -592,7 +618,13 @@ export default function ChatScreen() {
 
           <TouchableOpacity
             style={styles.userInfoContainer}
-            onPress={() => router.push(`/user/${otherUser.id}`)}
+            onPress={() => {
+              if (chat.walk_request?.walk) {
+                setShowEventDetails(true);
+              } else {
+                router.push(`/user/${otherUser.id}`);
+              }
+            }}
           >
             {otherUser.avatar_url ? (
               <Image
@@ -607,7 +639,9 @@ export default function ChatScreen() {
               </View>
             )}
 
-            <Text style={styles.headerName}>{otherUser.display_name}</Text>
+            <Text style={styles.headerName}>
+              {chat.walk_request?.walk?.title || otherUser.display_name}
+            </Text>
           </TouchableOpacity>
         </View>
 
@@ -734,6 +768,40 @@ export default function ChatScreen() {
           </View>
         </View>
       </Modal>
+
+      {chat?.walk_request?.walk && otherUser && (
+        <EventDetailsBottomSheet
+          visible={showEventDetails}
+          onClose={() => setShowEventDetails(false)}
+          user={{
+            id: otherUser.id,
+            username: otherUser.display_name,
+            display_name: otherUser.display_name,
+            bio: null,
+            avatar_url: otherUser.avatar_url,
+            status: null,
+            distance: 0,
+            location: null,
+            walk: {
+              id: chat.walk_request.walk.id,
+              user_id: chat.walk_request.walk.user_id,
+              title: chat.walk_request.walk.title,
+              start_time: chat.walk_request.walk.start_time || '',
+              duration: chat.walk_request.walk.duration,
+              description: chat.walk_request.walk.description,
+              latitude: chat.walk_request.walk.latitude,
+              longitude: chat.walk_request.walk.longitude,
+              is_active: true,
+              deleted: false,
+              created_at: '',
+              updated_at: '',
+            },
+            interests: [],
+            isActive: true,
+          }}
+          isOwnEvent={false}
+        />
+      )}
     </KeyboardAvoidingView>
   );
 }
