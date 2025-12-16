@@ -123,43 +123,49 @@ export default function UserProfileScreen() {
             <Text style={styles.bio}>{profile.bio}</Text>
           )}
 
-          <View style={styles.statsContainer}>
+          <View style={styles.statsGrid}>
             {profile.age && (
-              <View style={styles.statItem}>
+              <View style={styles.statCard}>
                 <View style={styles.statIconContainer}>
                   <Calendar size={18} color={ACCENT_ORANGE} />
                 </View>
-                <View style={styles.statTextContainer}>
-                  <Text style={styles.statLabel}>Вік</Text>
-                  <Text style={styles.statValue}>{profile.age} років</Text>
-                </View>
+                <Text style={styles.statLabel}>Вік</Text>
+                <Text style={styles.statValue}>{profile.age}</Text>
               </View>
             )}
 
             {profile.gender && (
-              <View style={styles.statItem}>
+              <View style={styles.statCard}>
                 <View style={styles.statIconContainer}>
                   <User size={18} color={ACCENT_ORANGE} />
                 </View>
-                <View style={styles.statTextContainer}>
-                  <Text style={styles.statLabel}>Стать</Text>
-                  <Text style={styles.statValue} numberOfLines={1} adjustsFontSizeToFit>
-                    {profile.gender}
-                  </Text>
+                <Text style={styles.statLabel}>Стать</Text>
+                <Text style={styles.statValue} numberOfLines={1} adjustsFontSizeToFit>
+                  {profile.gender}
+                </Text>
+              </View>
+            )}
+
+            {profile.languages && profile.languages.length > 0 && (
+              <View style={styles.statCard}>
+                <View style={styles.statIconContainer}>
+                  <Languages size={18} color={ACCENT_ORANGE} />
                 </View>
+                <Text style={styles.statLabel}>Мов</Text>
+                <Text style={styles.statValue}>{profile.languages.length}</Text>
+              </View>
+            )}
+
+            {profile.interests && profile.interests.length > 0 && (
+              <View style={styles.statCard}>
+                <View style={styles.statIconContainer}>
+                  <Heart size={18} color={ACCENT_ORANGE} />
+                </View>
+                <Text style={styles.statLabel}>Інтересів</Text>
+                <Text style={styles.statValue}>{profile.interests.length}</Text>
               </View>
             )}
           </View>
-
-          {profile.languages && profile.languages.length > 0 && (
-            <View style={styles.languagesPreview}>
-              <Languages size={16} color={TEXT_LIGHT} />
-              <Text style={styles.languagesPreviewText} numberOfLines={1}>
-                {profile.languages.slice(0, 3).join(', ')}
-                {profile.languages.length > 3 && ` +${profile.languages.length - 3}`}
-              </Text>
-            </View>
-          )}
         </View>
 
         {profile.languages && profile.languages.length > 0 && (
@@ -365,59 +371,46 @@ const styles = StyleSheet.create({
     marginTop: 4,
     marginBottom: 20,
   },
-  statsContainer: {
-    width: '100%',
-    gap: 12,
-    marginTop: 16,
-  },
-  statItem: {
+  statsGrid: {
     flexDirection: 'row',
-    alignItems: 'center',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+    gap: 12,
+    width: '100%',
+    marginTop: 20,
+  },
+  statCard: {
     backgroundColor: '#FFF9F0',
     borderRadius: 16,
     padding: 16,
+    alignItems: 'center',
+    minWidth: 80,
+    flex: 1,
+    maxWidth: 100,
     borderWidth: 1,
     borderColor: '#FFE8CC',
   },
   statIconContainer: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     backgroundColor: '#FFFFFF',
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 12,
-  },
-  statTextContainer: {
-    flex: 1,
+    marginBottom: 8,
   },
   statLabel: {
     fontSize: 12,
     color: TEXT_LIGHT,
-    marginBottom: 2,
+    marginBottom: 4,
     fontWeight: '500',
+    textAlign: 'center',
   },
   statValue: {
     fontSize: 16,
     fontWeight: '700',
     color: TEXT_DARK,
-  },
-  languagesPreview: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#F8F8F8',
-    borderRadius: 12,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    marginTop: 12,
-    gap: 8,
-    width: '100%',
-  },
-  languagesPreviewText: {
-    fontSize: 13,
-    color: TEXT_DARK,
-    fontWeight: '500',
-    flex: 1,
+    textAlign: 'center',
   },
   section: {
     backgroundColor: INPUT_BG,
