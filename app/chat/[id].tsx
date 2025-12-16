@@ -91,6 +91,7 @@ export default function ChatScreen() {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showOptionsMenu, setShowOptionsMenu] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const [showEventDetails, setShowEventDetails] = useState(false);
@@ -648,7 +649,7 @@ export default function ChatScreen() {
         <View style={styles.headerRight}>
           <TouchableOpacity
             style={styles.iconButton}
-            onPress={() => setShowDeleteModal(true)}
+            onPress={() => setShowOptionsMenu(true)}
           >
             <MoreVertical size={24} color={TEXT_DARK} />
           </TouchableOpacity>
@@ -727,6 +728,45 @@ export default function ChatScreen() {
           </>
         )}
       </View>
+
+      <Modal
+        visible={showOptionsMenu}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowOptionsMenu(false)}
+      >
+        <TouchableOpacity
+          style={styles.modalOverlay}
+          activeOpacity={1}
+          onPress={() => setShowOptionsMenu(false)}
+        >
+          <View style={styles.optionsMenu}>
+            <TouchableOpacity
+              style={styles.optionButton}
+              onPress={() => {
+                setShowOptionsMenu(false);
+                router.push(`/user/${otherUser.id}`);
+              }}
+            >
+              <Text style={styles.optionButtonText}>Показати профіль</Text>
+            </TouchableOpacity>
+
+            <View style={styles.optionDivider} />
+
+            <TouchableOpacity
+              style={styles.optionButton}
+              onPress={() => {
+                setShowOptionsMenu(false);
+                setShowDeleteModal(true);
+              }}
+            >
+              <Text style={[styles.optionButtonText, styles.optionButtonTextDelete]}>
+                Видалити чат
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </TouchableOpacity>
+      </Modal>
 
       <Modal
         visible={showDeleteModal}
@@ -1042,5 +1082,35 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     color: '#FFFFFF',
+  },
+  optionsMenu: {
+    backgroundColor: BACKGROUND,
+    borderRadius: 12,
+    marginHorizontal: 20,
+    marginTop: 'auto',
+    marginBottom: 'auto',
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 8,
+    elevation: 5,
+  },
+  optionButton: {
+    paddingVertical: 16,
+    paddingHorizontal: 20,
+    alignItems: 'center',
+  },
+  optionButtonText: {
+    fontSize: 16,
+    fontWeight: '500',
+    color: TEXT_DARK,
+  },
+  optionButtonTextDelete: {
+    color: '#FF3B30',
+  },
+  optionDivider: {
+    height: 1,
+    backgroundColor: '#E5E5EA',
   },
 });
