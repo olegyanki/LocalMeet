@@ -10,6 +10,7 @@ import {
   Dimensions,
   Platform,
   ActivityIndicator,
+  PanResponder,
 } from 'react-native';
 import { BlurView } from 'expo-blur';
 import { Clock, MapPin, MessageCircle, X, Trash2, Clock as ClockIcon, Check } from 'lucide-react-native';
@@ -74,13 +75,61 @@ export default function EventDetailsBottomSheet({
   onConnectPress,
 }: EventDetailsBottomSheetProps) {
   const slideAnim = React.useRef(new Animated.Value(Dimensions.get('window').height)).current;
+  const panY = React.useRef(new Animated.Value(0)).current;
   const [isDeleting, setIsDeleting] = React.useState(false);
   const [existingRequest, setExistingRequest] = React.useState<WalkRequest | null>(null);
   const [isLoadingRequest, setIsLoadingRequest] = React.useState(false);
   const { user: currentUser } = useAuth();
 
+  const panResponder = React.useRef(
+    PanResponder.create({
+      onStartShouldSetPanResponder: () => true,
+      onMoveShouldSetPanResponder: (_, gestureState) => {
+        return Math.abs(gestureState.dy) > 5;
+      },
+      onPanResponderMove: (_, gestureState) => {
+        if (gestureState.dy > 0) {
+          panY.setValue(gestureState.dy);
+        }
+      },
+      onPanResponderRelease: (_, gestureState) => {
+        const threshold = 100;
+        const velocity = gestureState.vy;
+
+        if (gestureState.dy > threshold || velocity > 0.5) {
+          handleClose();
+        } else {
+          Animated.spring(panY, {
+            toValue: 0,
+            useNativeDriver: true,
+            tension: 65,
+            friction: 11,
+          }).start();
+        }
+      },
+    })
+  ).current;
+
+  const handleClose = () => {
+    Animated.parallel([
+      Animated.timing(slideAnim, {
+        toValue: Dimensions.get('window').height,
+        duration: 250,
+        useNativeDriver: true,
+      }),
+      Animated.timing(panY, {
+        toValue: 0,
+        duration: 250,
+        useNativeDriver: true,
+      }),
+    ]).start(() => {
+      onClose();
+    });
+  };
+
   React.useEffect(() => {
     if (visible) {
+      panY.setValue(0);
       Animated.spring(slideAnim, {
         toValue: 0,
         useNativeDriver: true,
@@ -210,7 +259,7 @@ export default function EventDetailsBottomSheet({
       setIsDeleting(true);
       await deleteWalk(user.walk.id);
       setIsDeleting(false);
-      onClose();
+      handleClose();
       setTimeout(() => {
         if (onDelete) {
           onDelete();
@@ -225,9 +274,9 @@ export default function EventDetailsBottomSheet({
   if (!user) return null;
 
   return (
-    <Modal visible={visible} transparent animationType="none" onRequestClose={onClose}>
+    <Modal visible={visible} transparent animationType="none" onRequestClose={handleClose}>
       <View style={styles.modalContainer}>
-        <TouchableOpacity style={styles.backdrop} activeOpacity={1} onPress={onClose}>
+        <TouchableOpacity style={styles.backdrop} activeOpacity={1} onPress={handleClose}>
           {Platform.OS === 'ios' ? (
             <BlurView intensity={20} style={StyleSheet.absoluteFill} tint="dark" />
           ) : (
@@ -239,13 +288,17 @@ export default function EventDetailsBottomSheet({
           style={[
             styles.bottomSheet,
             {
-              transform: [{ translateY: slideAnim }],
+              transform: [
+                { translateY: Animated.add(slideAnim, panY) }
+              ],
             },
           ]}
         >
-          <View style={styles.handle} />
+          <View style={styles.handleContainer} {...panResponder.panHandlers}>
+            <View style={styles.handle} />
+          </View>
 
-          <TouchableOpacity style={styles.closeButton} onPress={onClose}>
+          <TouchableOpacity style={styles.closeButton} onPress={handleClose}>
             <X size={24} color={TEXT_DARK} />
           </TouchableOpacity>
 
@@ -361,17 +414,19 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     paddingHorizontal: 24,
-    paddingTop: 12,
     paddingBottom: 40,
     maxHeight: '85%',
+  },
+  handleContainer: {
+    width: '100%',
+    alignItems: 'center',
+    paddingVertical: 12,
   },
   handle: {
     width: 40,
     height: 4,
     backgroundColor: '#E8E8E8',
     borderRadius: 2,
-    alignSelf: 'center',
-    marginBottom: 20,
   },
   closeButton: {
     position: 'absolute',
