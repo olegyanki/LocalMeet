@@ -37,7 +37,7 @@ interface ChatWithLastMessage {
 }
 
 export default function ChatsScreen() {
-  const [activeTab, setActiveTab] = useState<TabType>('requests');
+  const [activeTab, setActiveTab] = useState<TabType>('chats');
   const [requests, setRequests] = useState<WalkRequestWithProfile[]>([]);
   const [chats, setChats] = useState<ChatWithLastMessage[]>([]);
   const [loading, setLoading] = useState(true);
@@ -283,23 +283,6 @@ export default function ChatsScreen() {
           <TouchableOpacity
             style={[
               styles.switchButton,
-              activeTab === 'requests' && styles.switchButtonActive,
-            ]}
-            onPress={() => setActiveTab('requests')}
-          >
-            <Text
-              style={[
-                styles.switchText,
-                activeTab === 'requests' && styles.switchTextActive,
-              ]}
-            >
-              Requests
-            </Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={[
-              styles.switchButton,
               activeTab === 'chats' && styles.switchButtonActive,
             ]}
             onPress={() => setActiveTab('chats')}
@@ -311,6 +294,23 @@ export default function ChatsScreen() {
               ]}
             >
               Chats
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[
+              styles.switchButton,
+              activeTab === 'requests' && styles.switchButtonActive,
+            ]}
+            onPress={() => setActiveTab('requests')}
+          >
+            <Text
+              style={[
+                styles.switchText,
+                activeTab === 'requests' && styles.switchTextActive,
+              ]}
+            >
+              Requests
             </Text>
           </TouchableOpacity>
         </View>
