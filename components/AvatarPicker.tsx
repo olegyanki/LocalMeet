@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Image, Alert, ActivityIndicator } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Alert, ActivityIndicator } from 'react-native';
+import { Image } from 'expo-image';
 import { Camera } from 'lucide-react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { supabase } from '../lib/supabase';
@@ -23,6 +24,7 @@ export default function AvatarPicker({
   userId,
 }: AvatarPickerProps) {
   const [uploading, setUploading] = useState(false);
+  const [previewUri, setPreviewUri] = useState<string | null>(null);
 
   const handleAvatarPress = async () => {
     if (!isEditing) return;
@@ -42,7 +44,11 @@ export default function AvatarPicker({
     });
 
     if (!result.canceled && result.assets[0]) {
-      await uploadAvatar(result.assets[0].uri);
+      const localUri = result.assets[0].uri;
+      console.log('Selected image URI:', localUri);
+      console.log('Image dimensions:', result.assets[0].width, 'x', result.assets[0].height);
+      setPreviewUri(localUri);
+      await uploadAvatar(localUri);
     }
   };
 
@@ -86,15 +92,17 @@ export default function AvatarPicker({
       await updateProfile(userId, { avatar_url: publicUrl } as any);
 
       onAvatarChange(`${publicUrl}?t=${Date.now()}`);
+      setPreviewUri(null);
     } catch (error) {
       console.error('Error uploading avatar:', error);
       Alert.alert('Помилка', 'Не вдалося завантажити фото');
+      setPreviewUri(null);
     } finally {
       setUploading(false);
     }
   };
 
-  const avatarUri = currentAvatar || `${AVATAR_PLACEHOLDER}${encodeURIComponent(displayName)}`;
+  const avatarUri = previewUri || currentAvatar || `${AVATAR_PLACEHOLDER}${encodeURIComponent(displayName)}`;
 
   return (
     <View style={styles.container}>
@@ -104,9 +112,15 @@ export default function AvatarPicker({
         style={styles.avatarContainer}
       >
         <Image
-          source={{ uri: avatarUri }}
+          source={avatarUri}
           style={styles.avatar}
           key={avatarUri}
+          contentFit="cover"
+          transition={200}
+          onError={(e) => {
+            console.log('Image load error:', e);
+            console.log('URI:', avatarUri);
+          }}
         />
         {isEditing && (
           <View style={styles.editBadge}>
