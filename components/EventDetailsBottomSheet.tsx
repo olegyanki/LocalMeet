@@ -96,21 +96,28 @@ export default function EventDetailsBottomSheet({
     }
   }, [visible]);
 
-  const loadExistingRequest = async () => {
-    if (!currentUser || !user?.walk) return;
+  React.useEffect(() => {
+    const loadExistingRequest = async () => {
+      if (!currentUser || !user?.walk) return;
 
-    try {
-      setIsLoadingRequest(true);
-      const request = await getMyRequestForWalk(user.walk.id, currentUser.id);
-      setExistingRequest(request);
-    } catch (error) {
-      console.error('Failed to load request:', error);
-    } finally {
+      try {
+        setIsLoadingRequest(true);
+        const request = await getMyRequestForWalk(user.walk.id, currentUser.id);
+        setExistingRequest(request);
+      } catch (error) {
+        console.error('Failed to load request:', error);
+      } finally {
+        setIsLoadingRequest(false);
+      }
+    };
+
+    if (visible && currentUser && user?.walk && !isOwnEvent) {
+      loadExistingRequest();
+    } else if (!visible) {
+      setExistingRequest(null);
       setIsLoadingRequest(false);
     }
-  };
-
-  if (!user) return null;
+  }, [visible, currentUser, user?.walk?.id, isOwnEvent]);
 
   const getTimeText = (walkStartTime: string | null) => {
     if (!walkStartTime) return 'Час не вказано';
@@ -148,12 +155,6 @@ export default function EventDetailsBottomSheet({
       onConnectPress(user.walk.id, user.display_name);
     }
   };
-
-  React.useEffect(() => {
-    if (visible && currentUser && user?.walk && !isOwnEvent) {
-      loadExistingRequest();
-    }
-  }, [visible, currentUser, user?.walk, isOwnEvent]);
 
   const getConnectButtonConfig = () => {
     if (isLoadingRequest) {
@@ -220,6 +221,8 @@ export default function EventDetailsBottomSheet({
       setIsDeleting(false);
     }
   };
+
+  if (!user) return null;
 
   return (
     <Modal visible={visible} transparent animationType="none" onRequestClose={onClose}>
