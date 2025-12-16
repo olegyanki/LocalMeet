@@ -44,6 +44,7 @@ export default function CreateEventBottomSheet({
 }: CreateEventBottomSheetProps) {
   const { user } = useAuth();
   const insets = useSafeAreaInsets();
+  const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [time, setTime] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -145,6 +146,7 @@ export default function CreateEventBottomSheet({
   };
 
   const resetState = () => {
+    setTitle('');
     setDescription('');
     setTime('');
     setError('');
@@ -168,6 +170,11 @@ export default function CreateEventBottomSheet({
   };
 
   const handleSubmit = async () => {
+    if (!title.trim()) {
+      setError('Назва івенту обов\'язкова');
+      return;
+    }
+
     if (!time.trim()) {
       setError('Час початку обов\'язковий');
       return;
@@ -194,6 +201,7 @@ export default function CreateEventBottomSheet({
 
       await updateWalkStatus(user.id, {
         isWalking: true,
+        walkTitle: title,
         walkStartTime: time,
         walkDuration: `${selectedDuration} год`,
         walkDescription: description,
@@ -299,6 +307,15 @@ export default function CreateEventBottomSheet({
                 <Text style={styles.subtitle}>
                   Розкажіть іншим коли і куди ви йдете гуляти
                 </Text>
+
+                <Text style={styles.label}>Назва івенту</Text>
+                <TextInput
+                  style={styles.input}
+                  placeholder="Наприклад: Прогулянка центром міста"
+                  placeholderTextColor={TEXT_LIGHT}
+                  value={title}
+                  onChangeText={setTitle}
+                />
 
                 <Text style={styles.label}>Коли починаєте?</Text>
                 <Pressable style={styles.timeButton} onPress={openTimePicker}>

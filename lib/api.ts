@@ -19,6 +19,7 @@ export interface UserProfile {
 export interface Walk {
   id: string;
   user_id: string;
+  title: string;
   start_time: string;
   duration: string;
   description: string | null;
@@ -293,6 +294,7 @@ function toRad(deg: number): number {
 
 export async function createWalk(data: {
   userId: string;
+  title: string;
   startTime: string;
   duration: string;
   description?: string;
@@ -303,6 +305,7 @@ export async function createWalk(data: {
     .from('walks')
     .insert({
       user_id: data.userId,
+      title: data.title,
       start_time: data.startTime,
       duration: data.duration,
       description: data.description || null,
@@ -365,6 +368,7 @@ export async function getActiveWalkByUserId(userId: string): Promise<Walk | null
 
 export async function updateWalkStatus(userId: string, data: {
   isWalking: boolean;
+  walkTitle?: string;
   walkStartTime?: string;
   walkDuration?: string;
   walkDescription?: string;
@@ -382,6 +386,7 @@ export async function updateWalkStatus(userId: string, data: {
     // Створюємо нову прогулянку
     await createWalk({
       userId,
+      title: data.walkTitle!,
       startTime: data.walkStartTime!,
       duration: data.walkDuration!,
       description: data.walkDescription,
