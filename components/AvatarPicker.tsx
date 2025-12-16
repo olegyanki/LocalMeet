@@ -63,11 +63,10 @@ export default function AvatarPicker({
 
       const response = await fetch(uri);
       const blob = await response.blob();
-      const arrayBuffer = await blob.arrayBuffer();
 
       const { data, error } = await supabase.storage
         .from('avatars')
-        .upload(fileName, arrayBuffer, {
+        .upload(fileName, blob, {
           contentType,
           upsert: true,
         });
