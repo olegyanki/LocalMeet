@@ -95,6 +95,14 @@ export default function ChatScreen() {
     subscribeToMessages();
   }, [chatId]);
 
+  useEffect(() => {
+    if (!loading && messages.length > 0) {
+      setTimeout(() => {
+        flatListRef.current?.scrollToEnd({ animated: false });
+      }, 100);
+    }
+  }, [loading, messages.length]);
+
   const loadChatData = async () => {
     try {
       const { data: chatData, error: chatError } = await supabase
