@@ -1,7 +1,7 @@
 import { View, Text, StyleSheet, TouchableOpacity, FlatList, ActivityIndicator, Image } from 'react-native';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useRouter } from 'expo-router';
+import { useRouter, useFocusEffect } from 'expo-router';
 import { useAuth } from '../../contexts/AuthContext';
 import { getMyWalkRequests, updateWalkRequestStatus, WalkRequestWithProfile } from '../../lib/api';
 import { supabase } from '../../lib/supabase';
@@ -18,6 +18,7 @@ interface ChatWithLastMessage {
   requester_id: string;
   walker_id: string;
   updated_at: string;
+  walk_title?: string;
   requester: {
     id: string;
     display_name: string;
@@ -73,6 +74,7 @@ export default function ChatsScreen() {
           id,
           requester_id,
           walker_id,
+          walk_request_id,
           updated_at,
           requester:profiles!chats_requester_id_fkey(id, display_name, avatar_url),
           walker:profiles!chats_walker_id_fkey(id, display_name, avatar_url)
@@ -93,8 +95,28 @@ export default function ChatsScreen() {
             .limit(1)
             .maybeSingle();
 
+          let walkTitle: string | undefined;
+          if (chat.walk_request_id) {
+            const { data: walkRequest } = await supabase
+              .from('walk_requests')
+              .select('walk_id')
+              .eq('id', chat.walk_request_id)
+              .maybeSingle();
+
+            if (walkRequest?.walk_id) {
+              const { data: walk } = await supabase
+                .from('walks')
+                .select('title')
+                .eq('id', walkRequest.walk_id)
+                .maybeSingle();
+
+              walkTitle = walk?.title;
+            }
+          }
+
           return {
             ...chat,
+            walk_title: walkTitle,
             lastMessage: lastMessage || undefined,
           } as ChatWithLastMessage;
         })
@@ -142,6 +164,18 @@ export default function ChatsScreen() {
       loadChats();
     }
   }, [activeTab, initialLoadDone]);
+
+  useFocusEffect(
+    useCallback(() => {
+      if (!initialLoadDone) return;
+
+      if (activeTab === 'chats') {
+        loadChats();
+      } else {
+        loadRequests();
+      }
+    }, [activeTab, initialLoadDone, user])
+  );
 
   const handleAccept = async (requestId: string) => {
     if (!user) return;
@@ -211,7 +245,8 @@ export default function ChatsScreen() {
 
   const renderChatItem = ({ item }: { item: ChatWithLastMessage }) => {
     const otherUser = item.requester_id === user?.id ? item.walker : item.requester;
-    const lastMessageText = item.lastMessage?.content || 'No messages yet';
+    const displayName = item.walk_title || otherUser.display_name;
+    const lastMessageText = item.lastMessage?.content || otherUser.display_name;
     const isUnread = item.lastMessage && !item.lastMessage.read && item.lastMessage.sender_id !== user?.id;
 
     const timeAgo = item.lastMessage ? (() => {
@@ -249,7 +284,7 @@ export default function ChatsScreen() {
         )}
         <View style={styles.chatInfo}>
           <View style={styles.chatHeader}>
-            <Text style={styles.chatName}>{otherUser.display_name}</Text>
+            <Text style={styles.chatName}>{displayName}</Text>
             {timeAgo && <Text style={styles.chatTime}>{timeAgo}</Text>}
           </View>
           <Text

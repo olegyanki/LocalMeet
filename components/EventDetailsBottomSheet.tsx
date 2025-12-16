@@ -33,6 +33,7 @@ interface UserLocation {
 interface Walk {
   id: string;
   user_id: string;
+  title: string;
   start_time: string;
   duration: string;
   description: string | null;
@@ -336,6 +337,13 @@ export default function EventDetailsBottomSheet({
             </View>
           </TouchableOpacity>
 
+          {user.walk?.title && (
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>Назва івенту</Text>
+              <Text style={styles.eventTitle}>{user.walk.title}</Text>
+            </View>
+          )}
+
           {user.walk?.description && (
             <View style={styles.section}>
               <Text style={styles.sectionTitle}>Опис прогулянки</Text>
@@ -503,6 +511,12 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: TEXT_DARK,
     marginBottom: 12,
+  },
+  eventTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    lineHeight: 24,
+    color: TEXT_DARK,
   },
   description: {
     fontSize: 15,

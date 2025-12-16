@@ -42,6 +42,7 @@ interface UserLocation {
 interface Walk {
   id: string;
   user_id: string;
+  title: string;
   start_time: string;
   duration: string;
   description: string | null;
@@ -517,8 +518,14 @@ export default function SearchScreen() {
                       </View>
                     </View>
 
+                    {item.walk?.title && (
+                      <Text style={styles.walkTitle} numberOfLines={1}>
+                        {item.walk.title}
+                      </Text>
+                    )}
+
                     {item.walk?.description && (
-                      <Text style={styles.walkDescription} numberOfLines={3}>
+                      <Text style={styles.walkDescription} numberOfLines={2}>
                         {item.walk.description}
                       </Text>
                     )}
@@ -698,6 +705,13 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: TEXT_DARK,
     marginBottom: 6,
+  },
+  walkTitle: {
+    fontSize: 16,
+    color: TEXT_DARK,
+    fontWeight: '700',
+    lineHeight: 22,
+    marginBottom: 4,
   },
   timeInfo: {
     flexDirection: 'row',
