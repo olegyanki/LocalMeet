@@ -42,6 +42,7 @@ export default function ChatsScreen() {
   const [chats, setChats] = useState<ChatWithLastMessage[]>([]);
   const [loading, setLoading] = useState(true);
   const [scrollEnabled, setScrollEnabled] = useState(true);
+  const [initialLoadDone, setInitialLoadDone] = useState(false);
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { user } = useAuth();
@@ -108,12 +109,39 @@ export default function ChatsScreen() {
   };
 
   useEffect(() => {
+    const checkRequestsAndLoad = async () => {
+      if (!user) return;
+
+      try {
+        setLoading(true);
+        const data = await getMyWalkRequests(user.id);
+        setRequests(data);
+
+        if (data.length > 0) {
+          setActiveTab('requests');
+        } else {
+          await loadChats();
+        }
+      } catch (error) {
+        console.error('Error loading requests:', error);
+      } finally {
+        setLoading(false);
+        setInitialLoadDone(true);
+      }
+    };
+
+    checkRequestsAndLoad();
+  }, [user]);
+
+  useEffect(() => {
+    if (!initialLoadDone) return;
+
     if (activeTab === 'requests') {
       loadRequests();
     } else {
       loadChats();
     }
-  }, [user, activeTab]);
+  }, [activeTab, initialLoadDone]);
 
   const handleAccept = async (requestId: string) => {
     if (!user) return;
@@ -146,7 +174,13 @@ export default function ChatsScreen() {
       }
 
       await updateWalkRequestStatus(requestId, 'accepted');
-      setRequests(prev => prev.filter(r => r.id !== requestId));
+      setRequests(prev => {
+        const updated = prev.filter(r => r.id !== requestId);
+        if (updated.length === 0) {
+          setActiveTab('chats');
+        }
+        return updated;
+      });
 
       router.push(`/chat/${chatId}`);
     } catch (error) {
@@ -157,7 +191,13 @@ export default function ChatsScreen() {
   const handleReject = async (requestId: string) => {
     try {
       await updateWalkRequestStatus(requestId, 'rejected');
-      setRequests(prev => prev.filter(r => r.id !== requestId));
+      setRequests(prev => {
+        const updated = prev.filter(r => r.id !== requestId);
+        if (updated.length === 0) {
+          setActiveTab('chats');
+        }
+        return updated;
+      });
     } catch (error) {
       console.error('Error rejecting request:', error);
     }
