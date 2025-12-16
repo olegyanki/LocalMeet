@@ -293,8 +293,9 @@ export default function EventDetailsBottomSheet({
               ],
             },
           ]}
+          {...panResponder.panHandlers}
         >
-          <View style={styles.handleContainer} {...panResponder.panHandlers}>
+          <View style={styles.handleContainer}>
             <View style={styles.handle} />
           </View>
 
