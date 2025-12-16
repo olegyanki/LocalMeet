@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Image, Alert, ActivityIndicator } from 'react-native';
 import { Camera } from 'lucide-react-native';
 import * as ImagePicker from 'expo-image-picker';
+import * as FileSystem from 'expo-file-system';
 import { supabase } from '../lib/supabase';
 
 const AVATAR_PLACEHOLDER = 'https://api.dicebear.com/7.x/initials/svg?seed=';
@@ -49,9 +50,7 @@ export default function AvatarPicker({
     try {
       setUploading(true);
 
-      const response = await fetch(uri);
-      const blob = await response.blob();
-      const fileExt = uri.split('.').pop()?.toLowerCase() || 'jpg';
+      const fileExt = uri.split('.').pop()?.split('?')[0]?.toLowerCase() || 'jpg';
       const fileName = `${userId}/${Date.now()}.${fileExt}`;
 
       const contentTypeMap: Record<string, string> = {
@@ -63,9 +62,15 @@ export default function AvatarPicker({
       };
       const contentType = contentTypeMap[fileExt] || 'image/jpeg';
 
+      const base64 = await FileSystem.readAsStringAsync(uri, {
+        encoding: FileSystem.EncodingType.Base64,
+      });
+
+      const arrayBuffer = Uint8Array.from(atob(base64), c => c.charCodeAt(0));
+
       const { data, error } = await supabase.storage
         .from('avatars')
-        .upload(fileName, blob, {
+        .upload(fileName, arrayBuffer, {
           contentType,
           upsert: true,
         });
@@ -98,7 +103,11 @@ export default function AvatarPicker({
         disabled={!isEditing || uploading}
         style={styles.avatarContainer}
       >
-        <Image source={{ uri: avatarUri }} style={styles.avatar} />
+        <Image
+          source={{ uri: avatarUri }}
+          style={styles.avatar}
+          key={avatarUri}
+        />
         {isEditing && (
           <View style={styles.editBadge}>
             {uploading ? (
