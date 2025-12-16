@@ -18,7 +18,6 @@ import {
   User,
   Calendar,
   Languages,
-  Heart,
   MessageCircle
 } from 'lucide-react-native';
 
@@ -49,13 +48,6 @@ export default function UserProfileScreen() {
       setIsLoading(true);
       const data = await getProfile(userId);
       if (data) {
-        console.log('Profile data:', {
-          interests: data.interests,
-          languages: data.languages,
-          hasInterests: !!data.interests,
-          interestsLength: data.interests?.length,
-          interestsType: typeof data.interests,
-        });
         setProfile(data);
       }
     } catch (err) {
@@ -175,34 +167,6 @@ export default function UserProfileScreen() {
                 <View key={lang} style={styles.languageItem}>
                   <View style={styles.languageIconDot} />
                   <Text style={styles.languageText}>{lang}</Text>
-                </View>
-              ))}
-            </View>
-          </View>
-        )}
-
-        {profile.interests && profile.interests.length > 0 && (
-          <View style={styles.section}>
-            <View style={styles.sectionHeader}>
-              <View style={styles.sectionIconContainer}>
-                <Heart size={18} color={ACCENT_ORANGE} />
-              </View>
-              <View style={styles.sectionTitleContainer}>
-                <Text style={styles.sectionTitle}>Інтереси</Text>
-                <View style={styles.countBadge}>
-                  <Text style={styles.countBadgeText}>{profile.interests.length}</Text>
-                </View>
-              </View>
-            </View>
-            <View style={styles.chipsContainer}>
-              {profile.interests.map((interest: string, index: number) => (
-                <View key={interest} style={[
-                  styles.interestChip,
-                  index % 3 === 0 && styles.interestChipVariant1,
-                  index % 3 === 1 && styles.interestChipVariant2,
-                  index % 3 === 2 && styles.interestChipVariant3,
-                ]}>
-                  <Text style={styles.chipText}>{interest}</Text>
                 </View>
               ))}
             </View>
@@ -451,11 +415,6 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#FFFFFF',
   },
-  chipsContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-  },
   languagesList: {
     gap: 12,
   },
@@ -479,32 +438,6 @@ const styles = StyleSheet.create({
   languageText: {
     fontSize: 15,
     color: TEXT_DARK,
-    fontWeight: '600',
-  },
-  languageChip: {
-    backgroundColor: ACCENT_ORANGE,
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderRadius: 20,
-  },
-  interestChip: {
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderRadius: 20,
-    backgroundColor: ACCENT_ORANGE,
-  },
-  interestChipVariant1: {
-    backgroundColor: ACCENT_ORANGE,
-  },
-  interestChipVariant2: {
-    backgroundColor: '#FFA726',
-  },
-  interestChipVariant3: {
-    backgroundColor: '#FFB74D',
-  },
-  chipText: {
-    fontSize: 14,
-    color: '#FFFFFF',
     fontWeight: '600',
   },
   lookingForCard: {
