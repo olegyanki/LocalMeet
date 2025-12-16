@@ -440,13 +440,33 @@ export default function ChatScreen() {
 
   if (loading || !chat || !otherUser) {
     return (
-      <View style={[styles.container, { paddingTop: insets.top }]}>
-        <View style={styles.header}>
-          <TouchableOpacity onPress={() => router.back()}>
-            <ChevronLeft size={28} color={TEXT_DARK} />
-          </TouchableOpacity>
+      <KeyboardAvoidingView
+        style={styles.container}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        keyboardVerticalOffset={0}
+      >
+        <View style={[styles.header, { paddingTop: insets.top + 8 }]}>
+          <View style={styles.headerLeft}>
+            <TouchableOpacity
+              onPress={() => router.back()}
+              style={styles.backButton}
+            >
+              <ChevronLeft size={28} color={TEXT_DARK} />
+            </TouchableOpacity>
+            <View style={[styles.avatar, styles.avatarPlaceholder]}>
+              <ActivityIndicator size="small" color="#FFFFFF" />
+            </View>
+            <View style={{ flex: 1 }}>
+              <ActivityIndicator size="small" color={ACCENT_ORANGE} />
+            </View>
+          </View>
+          <View style={styles.headerRight}>
+            <View style={styles.iconButton}>
+              <MoreVertical size={24} color="transparent" />
+            </View>
+          </View>
         </View>
-      </View>
+      </KeyboardAvoidingView>
     );
   }
 
