@@ -33,22 +33,28 @@ export default function AvatarPicker({
       const fileExt = file.name.split('.').pop()?.toLowerCase() || 'jpg';
       const fileName = `${userId}/${Date.now()}.${fileExt}`;
 
+      console.log('Uploading file:', fileName, 'Type:', file.type);
+
       const { data, error } = await supabase.storage
         .from('avatars')
         .upload(fileName, file, {
-          contentType: file.type,
+          contentType: file.type || 'image/jpeg',
           upsert: true,
         });
 
       if (error) {
+        console.error('Upload error:', error);
         throw error;
       }
 
-      const { data: { publicUrl } } = supabase.storage
+      console.log('Upload successful:', data);
+
+      const { data: urlData } = supabase.storage
         .from('avatars')
         .getPublicUrl(fileName);
 
-      onAvatarChange(publicUrl);
+      console.log('Public URL:', urlData.publicUrl);
+      onAvatarChange(urlData.publicUrl);
     } catch (error) {
       console.error('Error uploading avatar:', error);
       alert('Не вдалося завантажити фото');

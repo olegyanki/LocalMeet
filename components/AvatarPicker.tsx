@@ -54,22 +54,33 @@ export default function AvatarPicker({
       const fileExt = uri.split('.').pop()?.toLowerCase() || 'jpg';
       const fileName = `${userId}/${Date.now()}.${fileExt}`;
 
+      const contentTypeMap: Record<string, string> = {
+        'jpg': 'image/jpeg',
+        'jpeg': 'image/jpeg',
+        'png': 'image/png',
+        'gif': 'image/gif',
+        'webp': 'image/webp',
+      };
+      const contentType = contentTypeMap[fileExt] || 'image/jpeg';
+
       const { data, error } = await supabase.storage
         .from('avatars')
         .upload(fileName, blob, {
-          contentType: `image/${fileExt}`,
+          contentType,
           upsert: true,
         });
 
       if (error) {
+        console.error('Upload error:', error);
         throw error;
       }
 
-      const { data: { publicUrl } } = supabase.storage
+      const { data: urlData } = supabase.storage
         .from('avatars')
         .getPublicUrl(fileName);
 
-      onAvatarChange(publicUrl);
+      console.log('Public URL:', urlData.publicUrl);
+      onAvatarChange(urlData.publicUrl);
     } catch (error) {
       console.error('Error uploading avatar:', error);
       Alert.alert('Помилка', 'Не вдалося завантажити фото');
