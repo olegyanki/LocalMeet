@@ -15,15 +15,11 @@ import { useState, useEffect, useRef } from 'react';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as ImagePicker from 'expo-image-picker';
-import {
-  ChevronLeft,
-  MoreVertical,
-  Mic,
-  ImageIcon,
-  Trash2,
-} from 'lucide-react-native';
+import { ChevronLeft, MoreVertical, Mic, Image as ImageIcon, Trash2 } from 'lucide-react-native';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
+import AudioRecorder from '@/components/AudioRecorder';
+import AudioPlayer from '@/components/AudioPlayer';
 
 const BACKGROUND = '#FFFFFF';
 const TEXT_DARK = '#1C1C1E';
@@ -38,6 +34,8 @@ interface Message {
   sender_id: string;
   content: string;
   image_url?: string | null;
+  audio_url?: string | null;
+  audio_duration?: number | null;
   created_at: string;
   read: boolean;
 }
@@ -80,6 +78,7 @@ export default function ChatScreen() {
   const [uploading, setUploading] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [isRecording, setIsRecording] = useState(false);
 
   const preloadedUserName = Array.isArray(otherUserName) ? otherUserName[0] : otherUserName;
   const preloadedUserAvatar = Array.isArray(otherUserAvatar) ? otherUserAvatar[0] : otherUserAvatar;
@@ -95,6 +94,14 @@ export default function ChatScreen() {
     loadChatData();
     subscribeToMessages();
   }, [chatId]);
+
+  useEffect(() => {
+    if (!loading && messages.length > 0) {
+      setTimeout(() => {
+        flatListRef.current?.scrollToEnd({ animated: false });
+      }, 100);
+    }
+  }, [loading, messages.length]);
 
   const loadChatData = async () => {
     try {
@@ -342,6 +349,74 @@ export default function ChatScreen() {
     }
   };
 
+  const uploadAudio = async (audioUri: string): Promise<string | null> => {
+    try {
+      if (!user) return null;
+
+      const response = await fetch(audioUri);
+      const arrayBuffer = await response.arrayBuffer();
+      const uint8Array = new Uint8Array(arrayBuffer);
+
+      const fileName = `${user.id}/${chatId}/${Date.now()}.m4a`;
+
+      const { data, error } = await supabase.storage
+        .from('audio-messages')
+        .upload(fileName, uint8Array, {
+          contentType: 'audio/m4a',
+          upsert: false,
+        });
+
+      if (error) {
+        console.error('Supabase audio upload error:', error);
+        throw error;
+      }
+
+      const { data: urlData } = supabase.storage
+        .from('audio-messages')
+        .getPublicUrl(fileName);
+
+      return urlData.publicUrl;
+    } catch (error: any) {
+      console.error('Error uploading audio:', error);
+      setError(error?.message || 'Failed to upload audio');
+      return null;
+    }
+  };
+
+  const sendAudioMessage = async (audioUri: string, duration: number) => {
+    if (!user) return;
+
+    setError(null);
+    setIsRecording(false);
+
+    try {
+      setUploading(true);
+      const audioUrl = await uploadAudio(audioUri);
+
+      if (!audioUrl) {
+        throw new Error('Failed to upload audio');
+      }
+
+      const { error } = await supabase.from('messages').insert({
+        chat_id: chatId,
+        sender_id: user.id,
+        content: '',
+        audio_url: audioUrl,
+        audio_duration: duration,
+      });
+
+      if (error) {
+        console.error('Error sending audio message:', error);
+        throw error;
+      }
+    } catch (error: any) {
+      console.error('Error sending audio:', error);
+      setError(error?.message || 'Failed to send audio');
+    } finally {
+      setUploading(false);
+    }
+  };
+
   const deleteChat = async () => {
     if (!chatId || deleting) return;
 
@@ -415,6 +490,7 @@ export default function ChatScreen() {
           style={[
             styles.messageBubble,
             isOwnMessage ? styles.ownBubble : styles.otherBubble,
+            message.audio_url && styles.audioBubble,
           ]}
         >
           {message.image_url && (
@@ -424,6 +500,13 @@ export default function ChatScreen() {
               resizeMode="cover"
             />
           )}
+          {message.audio_url && message.audio_duration ? (
+            <AudioPlayer
+              audioUrl={message.audio_url}
+              duration={message.audio_duration}
+              isOwnMessage={isOwnMessage}
+            />
+          ) : null}
           {message.content ? (
             <Text style={styles.messageText}>{message.content}</Text>
           ) : null}
@@ -554,42 +637,55 @@ export default function ChatScreen() {
       />
 
       <View style={[styles.inputContainer, { paddingBottom: insets.bottom }]}>
-        <TouchableOpacity
-          style={styles.inputIconButton}
-          onPress={pickImage}
-          disabled={uploading}
-        >
-          {uploading ? (
-            <ActivityIndicator size="small" color={ACCENT_ORANGE} />
-          ) : (
-            <ImageIcon size={24} color={TEXT_LIGHT} />
-          )}
-        </TouchableOpacity>
-
-        <View style={styles.inputWrapper}>
-          <TextInput
-            style={styles.input}
-            placeholder="Aa"
-            value={newMessage}
-            onChangeText={setNewMessage}
-            multiline
-            maxLength={1000}
-            editable={!uploading}
+        {isRecording ? (
+          <AudioRecorder
+            onSend={sendAudioMessage}
+            onCancel={() => setIsRecording(false)}
           />
-        </View>
-
-        {newMessage.trim() ? (
-          <TouchableOpacity
-            style={styles.sendButton}
-            onPress={sendMessage}
-            disabled={uploading}
-          >
-            <Text style={styles.sendButtonText}>Send</Text>
-          </TouchableOpacity>
         ) : (
-          <TouchableOpacity style={styles.inputIconButton}>
-            <Mic size={24} color={TEXT_LIGHT} />
-          </TouchableOpacity>
+          <>
+            <TouchableOpacity
+              style={styles.inputIconButton}
+              onPress={pickImage}
+              disabled={uploading}
+            >
+              {uploading ? (
+                <ActivityIndicator size="small" color={ACCENT_ORANGE} />
+              ) : (
+                <ImageIcon size={24} color={TEXT_LIGHT} />
+              )}
+            </TouchableOpacity>
+
+            <View style={styles.inputWrapper}>
+              <TextInput
+                style={styles.input}
+                placeholder="Aa"
+                value={newMessage}
+                onChangeText={setNewMessage}
+                multiline
+                maxLength={1000}
+                editable={!uploading}
+              />
+            </View>
+
+            {newMessage.trim() ? (
+              <TouchableOpacity
+                style={styles.sendButton}
+                onPress={sendMessage}
+                disabled={uploading}
+              >
+                <Text style={styles.sendButtonText}>Send</Text>
+              </TouchableOpacity>
+            ) : (
+              <TouchableOpacity
+                style={styles.inputIconButton}
+                onPress={() => setIsRecording(true)}
+                disabled={uploading}
+              >
+                <Mic size={24} color={TEXT_LIGHT} />
+              </TouchableOpacity>
+            )}
+          </>
         )}
       </View>
 
@@ -740,6 +836,10 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     borderRadius: 20,
     overflow: 'hidden',
+  },
+  audioBubble: {
+    paddingHorizontal: 12,
+    paddingVertical: 8,
   },
   ownBubble: {
     backgroundColor: MESSAGE_OUTGOING,
