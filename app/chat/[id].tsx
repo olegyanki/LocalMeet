@@ -15,13 +15,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as ImagePicker from 'expo-image-picker';
-import {
-  ChevronLeft,
-  MoreVertical,
-  Mic,
-  ImageIcon,
-  Trash2,
-} from 'lucide-react-native';
+import { ChevronLeft, MoveVertical as MoreVertical, Mic, Image as ImageIcon, Trash2 } from 'lucide-react-native';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
 
