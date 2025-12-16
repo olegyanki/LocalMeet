@@ -99,6 +99,21 @@ export default function ProfileScreen() {
     }
   };
 
+  const handleCancel = () => {
+    if (profile) {
+      setDisplayName(profile.display_name || '');
+      setBio(profile.bio || '');
+      setAvatarUrl(profile.avatar_url || '');
+      setAge(profile.age?.toString() || '');
+      setGender(profile.gender || '');
+      setLanguages(profile.languages || []);
+      setInstagram(profile.social_instagram || '');
+      setTelegram(profile.social_telegram || '');
+      setLookingFor(profile.looking_for || '');
+    }
+    setIsEditing(false);
+  };
+
   const handleSave = async () => {
     if (!user) return;
 
@@ -168,7 +183,7 @@ export default function ProfileScreen() {
       >
       <View style={styles.header}>
         <Text style={styles.title}>Мій профіль</Text>
-        <TouchableOpacity onPress={() => setIsEditing(!isEditing)}>
+        <TouchableOpacity onPress={() => isEditing ? handleCancel() : setIsEditing(true)}>
           <Text style={styles.editButton}>{isEditing ? 'Скасувати' : 'Редагувати'}</Text>
         </TouchableOpacity>
       </View>
