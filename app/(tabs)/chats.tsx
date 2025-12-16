@@ -182,7 +182,13 @@ export default function ChatsScreen() {
         return updated;
       });
 
-      router.push(`/chat/${chatId}`);
+      router.push({
+        pathname: `/chat/${chatId}`,
+        params: {
+          otherUserName: request.requester.display_name,
+          otherUserAvatar: request.requester.avatar_url || '',
+        },
+      });
     } catch (error) {
       console.error('Error accepting request:', error);
     }
@@ -224,7 +230,13 @@ export default function ChatsScreen() {
     return (
       <TouchableOpacity
         style={styles.chatItem}
-        onPress={() => router.push(`/chat/${item.id}`)}
+        onPress={() => router.push({
+          pathname: `/chat/${item.id}`,
+          params: {
+            otherUserName: otherUser.display_name,
+            otherUserAvatar: otherUser.avatar_url || '',
+          },
+        })}
       >
         {otherUser.avatar_url ? (
           <Image source={{ uri: otherUser.avatar_url }} style={styles.chatAvatar} />

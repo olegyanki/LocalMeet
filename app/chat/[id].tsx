@@ -64,7 +64,7 @@ interface Chat {
 }
 
 export default function ChatScreen() {
-  const { id } = useLocalSearchParams();
+  const { id, otherUserName, otherUserAvatar } = useLocalSearchParams();
   const chatId = Array.isArray(id) ? id[0] : id;
   const router = useRouter();
   const insets = useSafeAreaInsets();
@@ -80,6 +80,9 @@ export default function ChatScreen() {
   const [uploading, setUploading] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleting, setDeleting] = useState(false);
+
+  const preloadedUserName = Array.isArray(otherUserName) ? otherUserName[0] : otherUserName;
+  const preloadedUserAvatar = Array.isArray(otherUserAvatar) ? otherUserAvatar[0] : otherUserAvatar;
 
   const otherUser =
     chat && user
@@ -453,12 +456,31 @@ export default function ChatScreen() {
             >
               <ChevronLeft size={28} color={TEXT_DARK} />
             </TouchableOpacity>
-            <View style={[styles.avatar, styles.avatarPlaceholder]}>
-              <ActivityIndicator size="small" color="#FFFFFF" />
-            </View>
-            <View style={{ flex: 1 }}>
-              <ActivityIndicator size="small" color={ACCENT_ORANGE} />
-            </View>
+
+            {preloadedUserAvatar ? (
+              <Image
+                source={{ uri: preloadedUserAvatar }}
+                style={styles.avatar}
+              />
+            ) : preloadedUserName ? (
+              <View style={[styles.avatar, styles.avatarPlaceholder]}>
+                <Text style={styles.avatarText}>
+                  {preloadedUserName.charAt(0).toUpperCase()}
+                </Text>
+              </View>
+            ) : (
+              <View style={[styles.avatar, styles.avatarPlaceholder]}>
+                <ActivityIndicator size="small" color="#FFFFFF" />
+              </View>
+            )}
+
+            {preloadedUserName ? (
+              <Text style={styles.headerName}>{preloadedUserName}</Text>
+            ) : (
+              <View style={{ flex: 1, marginLeft: 12 }}>
+                <ActivityIndicator size="small" color={ACCENT_ORANGE} />
+              </View>
+            )}
           </View>
           <View style={styles.headerRight}>
             <View style={styles.iconButton}>
