@@ -355,19 +355,6 @@ export default function EventDetailsBottomSheet({
             </View>
           )}
 
-          {user.interests && user.interests.length > 0 && (
-            <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Інтереси</Text>
-              <View style={styles.interestsContainer}>
-                {user.interests.map((interest, index) => (
-                  <View key={index} style={styles.interestBadge}>
-                    <Text style={styles.interestText}>{interest}</Text>
-                  </View>
-                ))}
-              </View>
-            </View>
-          )}
-
           {!isOwnEvent && (() => {
             const buttonConfig = getConnectButtonConfig();
             return (
@@ -530,21 +517,6 @@ const styles = StyleSheet.create({
   timeText: {
     fontSize: 15,
     fontWeight: '500',
-  },
-  interestsContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-  },
-  interestBadge: {
-    backgroundColor: '#F5F5F5',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
-  },
-  interestText: {
-    fontSize: 14,
-    color: TEXT_DARK,
   },
   connectButton: {
     backgroundColor: ACCENT_ORANGE,

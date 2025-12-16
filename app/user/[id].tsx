@@ -123,49 +123,31 @@ export default function UserProfileScreen() {
             <Text style={styles.bio}>{profile.bio}</Text>
           )}
 
-          <View style={styles.statsGrid}>
-            {profile.age && (
-              <View style={styles.statCard}>
-                <View style={styles.statIconContainer}>
-                  <Calendar size={18} color={ACCENT_ORANGE} />
+          {(profile.age || profile.gender) && (
+            <View style={styles.statsGrid}>
+              {profile.age && (
+                <View style={styles.statCard}>
+                  <View style={styles.statIconContainer}>
+                    <Calendar size={18} color={ACCENT_ORANGE} />
+                  </View>
+                  <Text style={styles.statLabel}>Вік</Text>
+                  <Text style={styles.statValue}>{profile.age}</Text>
                 </View>
-                <Text style={styles.statLabel}>Вік</Text>
-                <Text style={styles.statValue}>{profile.age}</Text>
-              </View>
-            )}
+              )}
 
-            {profile.gender && (
-              <View style={styles.statCard}>
-                <View style={styles.statIconContainer}>
-                  <User size={18} color={ACCENT_ORANGE} />
+              {profile.gender && (
+                <View style={styles.statCard}>
+                  <View style={styles.statIconContainer}>
+                    <User size={18} color={ACCENT_ORANGE} />
+                  </View>
+                  <Text style={styles.statLabel}>Стать</Text>
+                  <Text style={styles.statValue} numberOfLines={1} adjustsFontSizeToFit>
+                    {profile.gender}
+                  </Text>
                 </View>
-                <Text style={styles.statLabel}>Стать</Text>
-                <Text style={styles.statValue} numberOfLines={1} adjustsFontSizeToFit>
-                  {profile.gender}
-                </Text>
-              </View>
-            )}
-
-            {profile.languages && profile.languages.length > 0 && (
-              <View style={styles.statCard}>
-                <View style={styles.statIconContainer}>
-                  <Languages size={18} color={ACCENT_ORANGE} />
-                </View>
-                <Text style={styles.statLabel}>Мов</Text>
-                <Text style={styles.statValue}>{profile.languages.length}</Text>
-              </View>
-            )}
-
-            {profile.interests && profile.interests.length > 0 && (
-              <View style={styles.statCard}>
-                <View style={styles.statIconContainer}>
-                  <Heart size={18} color={ACCENT_ORANGE} />
-                </View>
-                <Text style={styles.statLabel}>Інтересів</Text>
-                <Text style={styles.statValue}>{profile.interests.length}</Text>
-              </View>
-            )}
-          </View>
+              )}
+            </View>
+          )}
         </View>
 
         {profile.languages && profile.languages.length > 0 && (
@@ -491,12 +473,6 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: TEXT_DARK,
     fontWeight: '600',
-  },
-  languageChip: {
-    backgroundColor: ACCENT_ORANGE,
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderRadius: 20,
   },
   interestChip: {
     paddingHorizontal: 16,
