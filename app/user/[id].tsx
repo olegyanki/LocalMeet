@@ -123,47 +123,43 @@ export default function UserProfileScreen() {
             <Text style={styles.bio}>{profile.bio}</Text>
           )}
 
-          <View style={styles.quickInfoGrid}>
+          <View style={styles.statsContainer}>
             {profile.age && (
-              <View style={styles.quickInfoCard}>
-                <View style={styles.quickInfoIconContainer}>
-                  <Calendar size={20} color={ACCENT_ORANGE} />
+              <View style={styles.statItem}>
+                <View style={styles.statIconContainer}>
+                  <Calendar size={18} color={ACCENT_ORANGE} />
                 </View>
-                <Text style={styles.quickInfoLabel}>Вік</Text>
-                <Text style={styles.quickInfoValue}>{profile.age}</Text>
+                <View style={styles.statTextContainer}>
+                  <Text style={styles.statLabel}>Вік</Text>
+                  <Text style={styles.statValue}>{profile.age} років</Text>
+                </View>
               </View>
             )}
 
             {profile.gender && (
-              <View style={styles.quickInfoCard}>
-                <View style={styles.quickInfoIconContainer}>
-                  <User size={20} color={ACCENT_ORANGE} />
+              <View style={styles.statItem}>
+                <View style={styles.statIconContainer}>
+                  <User size={18} color={ACCENT_ORANGE} />
                 </View>
-                <Text style={styles.quickInfoLabel}>Стать</Text>
-                <Text style={styles.quickInfoValue}>{profile.gender}</Text>
-              </View>
-            )}
-
-            {profile.languages && profile.languages.length > 0 && (
-              <View style={styles.quickInfoCard}>
-                <View style={styles.quickInfoIconContainer}>
-                  <Languages size={20} color={ACCENT_ORANGE} />
+                <View style={styles.statTextContainer}>
+                  <Text style={styles.statLabel}>Стать</Text>
+                  <Text style={styles.statValue} numberOfLines={1} adjustsFontSizeToFit>
+                    {profile.gender}
+                  </Text>
                 </View>
-                <Text style={styles.quickInfoLabel}>Мов</Text>
-                <Text style={styles.quickInfoValue}>{profile.languages.length}</Text>
-              </View>
-            )}
-
-            {profile.interests && profile.interests.length > 0 && (
-              <View style={styles.quickInfoCard}>
-                <View style={styles.quickInfoIconContainer}>
-                  <Heart size={20} color={ACCENT_ORANGE} />
-                </View>
-                <Text style={styles.quickInfoLabel}>Інтересів</Text>
-                <Text style={styles.quickInfoValue}>{profile.interests.length}</Text>
               </View>
             )}
           </View>
+
+          {profile.languages && profile.languages.length > 0 && (
+            <View style={styles.languagesPreview}>
+              <Languages size={16} color={TEXT_LIGHT} />
+              <Text style={styles.languagesPreviewText} numberOfLines={1}>
+                {profile.languages.slice(0, 3).join(', ')}
+                {profile.languages.length > 3 && ` +${profile.languages.length - 3}`}
+              </Text>
+            </View>
+          )}
         </View>
 
         {profile.languages && profile.languages.length > 0 && (
@@ -172,12 +168,18 @@ export default function UserProfileScreen() {
               <View style={styles.sectionIconContainer}>
                 <Languages size={18} color={ACCENT_ORANGE} />
               </View>
-              <Text style={styles.sectionTitle}>Мови</Text>
+              <View style={styles.sectionTitleContainer}>
+                <Text style={styles.sectionTitle}>Мови</Text>
+                <View style={styles.countBadge}>
+                  <Text style={styles.countBadgeText}>{profile.languages.length}</Text>
+                </View>
+              </View>
             </View>
-            <View style={styles.chipsContainer}>
+            <View style={styles.languagesList}>
               {profile.languages.map((lang: string) => (
-                <View key={lang} style={styles.languageChip}>
-                  <Text style={styles.chipText}>{lang}</Text>
+                <View key={lang} style={styles.languageItem}>
+                  <View style={styles.languageIconDot} />
+                  <Text style={styles.languageText}>{lang}</Text>
                 </View>
               ))}
             </View>
@@ -190,11 +192,21 @@ export default function UserProfileScreen() {
               <View style={styles.sectionIconContainer}>
                 <Heart size={18} color={ACCENT_ORANGE} />
               </View>
-              <Text style={styles.sectionTitle}>Інтереси</Text>
+              <View style={styles.sectionTitleContainer}>
+                <Text style={styles.sectionTitle}>Інтереси</Text>
+                <View style={styles.countBadge}>
+                  <Text style={styles.countBadgeText}>{profile.interests.length}</Text>
+                </View>
+              </View>
             </View>
             <View style={styles.chipsContainer}>
-              {profile.interests.map((interest: string) => (
-                <View key={interest} style={styles.interestChip}>
+              {profile.interests.map((interest: string, index: number) => (
+                <View key={interest} style={[
+                  styles.interestChip,
+                  index % 3 === 0 && styles.interestChipVariant1,
+                  index % 3 === 1 && styles.interestChipVariant2,
+                  index % 3 === 2 && styles.interestChipVariant3,
+                ]}>
                   <Text style={styles.chipText}>{interest}</Text>
                 </View>
               ))}
@@ -210,7 +222,12 @@ export default function UserProfileScreen() {
               </View>
               <Text style={styles.sectionTitle}>Що шукає</Text>
             </View>
-            <Text style={styles.lookingForText}>{profile.looking_for}</Text>
+            <View style={styles.lookingForCard}>
+              <View style={styles.quoteIcon}>
+                <Text style={styles.quoteText}>"</Text>
+              </View>
+              <Text style={styles.lookingForText}>{profile.looking_for}</Text>
+            </View>
           </View>
         )}
 
@@ -224,9 +241,12 @@ export default function UserProfileScreen() {
             </View>
             <View style={styles.socialLinksContainer}>
               {profile.social_instagram && (
-                <TouchableOpacity style={styles.socialLinkCard}>
-                  <View style={styles.socialIconContainer}>
-                    <Instagram size={24} color="#E4405F" />
+                <TouchableOpacity
+                  style={styles.socialLinkCard}
+                  activeOpacity={0.7}
+                >
+                  <View style={[styles.socialIconContainer, styles.instagramIcon]}>
+                    <Instagram size={24} color="#FFFFFF" />
                   </View>
                   <View style={styles.socialLinkInfo}>
                     <Text style={styles.socialLinkLabel}>Instagram</Text>
@@ -235,9 +255,12 @@ export default function UserProfileScreen() {
                 </TouchableOpacity>
               )}
               {profile.social_telegram && (
-                <TouchableOpacity style={styles.socialLinkCard}>
-                  <View style={styles.socialIconContainer}>
-                    <Send size={24} color="#0088cc" />
+                <TouchableOpacity
+                  style={styles.socialLinkCard}
+                  activeOpacity={0.7}
+                >
+                  <View style={[styles.socialIconContainer, styles.telegramIcon]}>
+                    <Send size={24} color="#FFFFFF" />
                   </View>
                   <View style={styles.socialLinkInfo}>
                     <Text style={styles.socialLinkLabel}>Telegram</Text>
@@ -342,43 +365,59 @@ const styles = StyleSheet.create({
     marginTop: 4,
     marginBottom: 20,
   },
-  quickInfoGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'center',
-    gap: 12,
+  statsContainer: {
     width: '100%',
+    gap: 12,
+    marginTop: 16,
   },
-  quickInfoCard: {
+  statItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
     backgroundColor: '#FFF9F0',
     borderRadius: 16,
     padding: 16,
-    alignItems: 'center',
-    minWidth: 80,
-    flex: 1,
-    maxWidth: 100,
     borderWidth: 1,
     borderColor: '#FFE8CC',
   },
-  quickInfoIconContainer: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+  statIconContainer: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
     backgroundColor: '#FFFFFF',
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 8,
+    marginRight: 12,
   },
-  quickInfoLabel: {
+  statTextContainer: {
+    flex: 1,
+  },
+  statLabel: {
     fontSize: 12,
     color: TEXT_LIGHT,
-    marginBottom: 4,
+    marginBottom: 2,
     fontWeight: '500',
   },
-  quickInfoValue: {
-    fontSize: 18,
+  statValue: {
+    fontSize: 16,
     fontWeight: '700',
     color: TEXT_DARK,
+  },
+  languagesPreview: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F8F8F8',
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    marginTop: 12,
+    gap: 8,
+    width: '100%',
+  },
+  languagesPreviewText: {
+    fontSize: 13,
+    color: TEXT_DARK,
+    fontWeight: '500',
+    flex: 1,
   },
   section: {
     backgroundColor: INPUT_BG,
@@ -405,15 +444,60 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginRight: 12,
   },
+  sectionTitleContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+  },
   sectionTitle: {
     fontSize: 18,
     fontWeight: '700',
     color: TEXT_DARK,
   },
+  countBadge: {
+    backgroundColor: ACCENT_ORANGE,
+    borderRadius: 12,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    marginLeft: 8,
+    minWidth: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  countBadgeText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#FFFFFF',
+  },
   chipsContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 8,
+  },
+  languagesList: {
+    gap: 12,
+  },
+  languageItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFF9F0',
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderWidth: 1,
+    borderColor: '#FFE8CC',
+  },
+  languageIconDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: ACCENT_ORANGE,
+    marginRight: 12,
+  },
+  languageText: {
+    fontSize: 15,
+    color: TEXT_DARK,
+    fontWeight: '600',
   },
   languageChip: {
     backgroundColor: ACCENT_ORANGE,
@@ -422,20 +506,50 @@ const styles = StyleSheet.create({
     borderRadius: 20,
   },
   interestChip: {
-    backgroundColor: ACCENT_ORANGE,
     paddingHorizontal: 16,
     paddingVertical: 10,
     borderRadius: 20,
+    backgroundColor: ACCENT_ORANGE,
+  },
+  interestChipVariant1: {
+    backgroundColor: ACCENT_ORANGE,
+  },
+  interestChipVariant2: {
+    backgroundColor: '#FFA726',
+  },
+  interestChipVariant3: {
+    backgroundColor: '#FFB74D',
   },
   chipText: {
     fontSize: 14,
     color: '#FFFFFF',
     fontWeight: '600',
   },
+  lookingForCard: {
+    backgroundColor: '#FFF9F0',
+    borderRadius: 16,
+    padding: 16,
+    borderLeftWidth: 4,
+    borderLeftColor: ACCENT_ORANGE,
+    position: 'relative',
+  },
+  quoteIcon: {
+    position: 'absolute',
+    top: 8,
+    right: 12,
+    opacity: 0.1,
+  },
+  quoteText: {
+    fontSize: 72,
+    fontWeight: '900',
+    color: ACCENT_ORANGE,
+    lineHeight: 72,
+  },
   lookingForText: {
     fontSize: 15,
     color: TEXT_DARK,
     lineHeight: 24,
+    fontWeight: '500',
   },
   socialLinksContainer: {
     gap: 12,
@@ -453,15 +567,20 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 24,
-    backgroundColor: '#FFFFFF',
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 16,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 1,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 6,
+    elevation: 3,
+  },
+  instagramIcon: {
+    backgroundColor: '#E4405F',
+  },
+  telegramIcon: {
+    backgroundColor: '#0088cc',
   },
   socialLinkInfo: {
     flex: 1,
