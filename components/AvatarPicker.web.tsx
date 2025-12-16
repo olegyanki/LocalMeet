@@ -1,6 +1,7 @@
-import React, { useRef } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Image } from 'react-native';
+import React, { useRef, useState } from 'react';
+import { View, Text, TouchableOpacity, StyleSheet, Image, ActivityIndicator } from 'react-native';
 import { Camera } from 'lucide-react-native';
+import { supabase } from '../lib/supabase';
 
 const AVATAR_PLACEHOLDER = 'https://api.dicebear.com/7.x/initials/svg?seed=';
 
@@ -9,6 +10,7 @@ interface AvatarPickerProps {
   displayName: string;
   onAvatarChange: (uri: string) => void;
   isEditing: boolean;
+  userId: string;
 }
 
 export default function AvatarPicker({
@@ -16,24 +18,47 @@ export default function AvatarPicker({
   displayName,
   onAvatarChange,
   isEditing,
+  userId,
 }: AvatarPickerProps) {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const [uploading, setUploading] = useState(false);
 
-  const handleFileChange = (event: any) => {
+  const handleFileChange = async (event: any) => {
     const file = event.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        if (e.target?.result) {
-          onAvatarChange(e.target.result as string);
-        }
-      };
-      reader.readAsDataURL(file);
+    if (!file) return;
+
+    try {
+      setUploading(true);
+
+      const fileExt = file.name.split('.').pop()?.toLowerCase() || 'jpg';
+      const fileName = `${userId}/${Date.now()}.${fileExt}`;
+
+      const { data, error } = await supabase.storage
+        .from('avatars')
+        .upload(fileName, file, {
+          contentType: file.type,
+          upsert: true,
+        });
+
+      if (error) {
+        throw error;
+      }
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('avatars')
+        .getPublicUrl(fileName);
+
+      onAvatarChange(publicUrl);
+    } catch (error) {
+      console.error('Error uploading avatar:', error);
+      alert('Не вдалося завантажити фото');
+    } finally {
+      setUploading(false);
     }
   };
 
   const handleAvatarPress = () => {
-    if (!isEditing) return;
+    if (!isEditing || uploading) return;
     if (fileInputRef.current) {
       fileInputRef.current.click();
     }
@@ -52,18 +77,24 @@ export default function AvatarPicker({
       />
       <TouchableOpacity
         onPress={handleAvatarPress}
-        disabled={!isEditing}
+        disabled={!isEditing || uploading}
         style={styles.avatarContainer}
       >
         <Image source={{ uri: avatarUri }} style={styles.avatar} />
         {isEditing && (
           <View style={styles.editBadge}>
-            <Camera size={16} color="#FFFFFF" />
+            {uploading ? (
+              <ActivityIndicator size="small" color="#FFFFFF" />
+            ) : (
+              <Camera size={16} color="#FFFFFF" />
+            )}
           </View>
         )}
       </TouchableOpacity>
       {isEditing && (
-        <Text style={styles.hint}>Натисніть, щоб змінити</Text>
+        <Text style={styles.hint}>
+          {uploading ? 'Завантаження...' : 'Натисніть, щоб змінити'}
+        </Text>
       )}
     </View>
   );

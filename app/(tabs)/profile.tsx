@@ -195,6 +195,7 @@ export default function ProfileScreen() {
         displayName={displayName || 'User'}
         onAvatarChange={setAvatarUrl}
         isEditing={isEditing}
+        userId={user?.id || ''}
       />
 
       <View style={styles.section}>
