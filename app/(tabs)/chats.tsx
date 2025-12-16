@@ -1,7 +1,7 @@
 import { View, Text, StyleSheet, TouchableOpacity, FlatList, ActivityIndicator, Image } from 'react-native';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useRouter } from 'expo-router';
+import { useRouter, useFocusEffect } from 'expo-router';
 import { useAuth } from '../../contexts/AuthContext';
 import { getMyWalkRequests, updateWalkRequestStatus, WalkRequestWithProfile } from '../../lib/api';
 import { supabase } from '../../lib/supabase';
@@ -164,6 +164,18 @@ export default function ChatsScreen() {
       loadChats();
     }
   }, [activeTab, initialLoadDone]);
+
+  useFocusEffect(
+    useCallback(() => {
+      if (!initialLoadDone) return;
+
+      if (activeTab === 'chats') {
+        loadChats();
+      } else {
+        loadRequests();
+      }
+    }, [activeTab, initialLoadDone, user])
+  );
 
   const handleAccept = async (requestId: string) => {
     if (!user) return;
