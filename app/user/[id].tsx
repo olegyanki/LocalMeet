@@ -7,6 +7,8 @@ import {
   ScrollView,
   ActivityIndicator,
   Image,
+  Modal,
+  Dimensions,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -19,8 +21,11 @@ import {
   Calendar,
   Languages,
   Heart,
-  MessageCircle
+  MessageCircle,
+  X
 } from 'lucide-react-native';
+
+const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 const BG_COLOR = '#F5F5F5';
 const ACCENT_ORANGE = '#FF9500';
@@ -37,6 +42,7 @@ export default function UserProfileScreen() {
   const [profile, setProfile] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
+  const [isImageModalVisible, setIsImageModalVisible] = useState(false);
 
   useEffect(() => {
     if (userId) {
@@ -102,7 +108,12 @@ export default function UserProfileScreen() {
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.profileHeader}>
-          <View style={styles.avatarContainer}>
+          <TouchableOpacity
+            style={styles.avatarContainer}
+            onPress={() => profile.avatar_url && setIsImageModalVisible(true)}
+            activeOpacity={profile.avatar_url ? 0.7 : 1}
+            disabled={!profile.avatar_url}
+          >
             {profile.avatar_url ? (
               <Image
                 source={{ uri: profile.avatar_url }}
@@ -115,7 +126,7 @@ export default function UserProfileScreen() {
                 </Text>
               </View>
             )}
-          </View>
+          </TouchableOpacity>
 
           <Text style={styles.displayName}>{profile.display_name}</Text>
 
@@ -260,6 +271,38 @@ export default function UserProfileScreen() {
           </View>
         )}
       </ScrollView>
+
+      <Modal
+        visible={isImageModalVisible}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setIsImageModalVisible(false)}
+      >
+        <View style={styles.modalContainer}>
+          <TouchableOpacity
+            style={styles.modalCloseButton}
+            onPress={() => setIsImageModalVisible(false)}
+          >
+            <View style={styles.closeButtonCircle}>
+              <X size={28} color="#FFFFFF" strokeWidth={2.5} />
+            </View>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.modalImageContainer}
+            activeOpacity={1}
+            onPress={() => setIsImageModalVisible(false)}
+          >
+            {profile?.avatar_url && (
+              <Image
+                source={{ uri: profile.avatar_url }}
+                style={styles.fullScreenImage}
+                resizeMode="contain"
+              />
+            )}
+          </TouchableOpacity>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -581,5 +624,40 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 16,
     fontWeight: '600',
+  },
+  modalContainer: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.95)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalCloseButton: {
+    position: 'absolute',
+    top: 50,
+    right: 20,
+    zIndex: 10,
+  },
+  closeButtonCircle: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  modalImageContainer: {
+    width: SCREEN_WIDTH,
+    height: SCREEN_HEIGHT,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  fullScreenImage: {
+    width: SCREEN_WIDTH,
+    height: SCREEN_HEIGHT,
   },
 });
