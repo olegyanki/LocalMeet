@@ -63,7 +63,7 @@ export default function AvatarPicker({
       const contentType = contentTypeMap[fileExt] || 'image/jpeg';
 
       const base64 = await FileSystem.readAsStringAsync(uri, {
-        encoding: FileSystem.EncodingType.Base64,
+        encoding: 'base64',
       });
 
       const arrayBuffer = Uint8Array.from(atob(base64), c => c.charCodeAt(0));
