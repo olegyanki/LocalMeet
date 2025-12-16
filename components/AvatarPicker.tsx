@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Image, Alert, ActivityIndicator } from 'react-native';
 import { Camera } from 'lucide-react-native';
 import * as ImagePicker from 'expo-image-picker';
-import * as FileSystem from 'expo-file-system';
 import { supabase } from '../lib/supabase';
 
 const AVATAR_PLACEHOLDER = 'https://api.dicebear.com/7.x/initials/svg?seed=';
@@ -62,11 +61,9 @@ export default function AvatarPicker({
       };
       const contentType = contentTypeMap[fileExt] || 'image/jpeg';
 
-      const base64 = await FileSystem.readAsStringAsync(uri, {
-        encoding: 'base64',
-      });
-
-      const arrayBuffer = Uint8Array.from(atob(base64), c => c.charCodeAt(0));
+      const response = await fetch(uri);
+      const blob = await response.blob();
+      const arrayBuffer = await blob.arrayBuffer();
 
       const { data, error } = await supabase.storage
         .from('avatars')
