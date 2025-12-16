@@ -590,20 +590,25 @@ export default function ChatScreen() {
             <ChevronLeft size={28} color={TEXT_DARK} />
           </TouchableOpacity>
 
-          {otherUser.avatar_url ? (
-            <Image
-              source={{ uri: otherUser.avatar_url }}
-              style={styles.avatar}
-            />
-          ) : (
-            <View style={[styles.avatar, styles.avatarPlaceholder]}>
-              <Text style={styles.avatarText}>
-                {otherUser.display_name.charAt(0).toUpperCase()}
-              </Text>
-            </View>
-          )}
+          <TouchableOpacity
+            style={styles.userInfoContainer}
+            onPress={() => router.push(`/user/${otherUser.id}`)}
+          >
+            {otherUser.avatar_url ? (
+              <Image
+                source={{ uri: otherUser.avatar_url }}
+                style={styles.avatar}
+              />
+            ) : (
+              <View style={[styles.avatar, styles.avatarPlaceholder]}>
+                <Text style={styles.avatarText}>
+                  {otherUser.display_name.charAt(0).toUpperCase()}
+                </Text>
+              </View>
+            )}
 
-          <Text style={styles.headerName}>{otherUser.display_name}</Text>
+            <Text style={styles.headerName}>{otherUser.display_name}</Text>
+          </TouchableOpacity>
         </View>
 
         <View style={styles.headerRight}>
@@ -755,6 +760,11 @@ const styles = StyleSheet.create({
   },
   backButton: {
     marginRight: 8,
+  },
+  userInfoContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
   },
   avatar: {
     width: 40,
