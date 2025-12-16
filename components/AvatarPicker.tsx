@@ -1,10 +1,6 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Alert, ActivityIndicator } from 'react-native';
-import { Image } from 'expo-image';
-import { Camera } from 'lucide-react-native';
-import * as ImagePicker from 'expo-image-picker';
-import { supabase } from '../lib/supabase';
-import { updateProfile } from '../lib/api';
+import { View, Text, TouchableOpacity, StyleSheet, Image, Alert, TextInput, Modal } from 'react-native';
+import { Camera, Link } from 'lucide-react-native';
 
 const AVATAR_PLACEHOLDER = 'https://api.dicebear.com/7.x/initials/svg?seed=';
 
@@ -13,7 +9,6 @@ interface AvatarPickerProps {
   displayName: string;
   onAvatarChange: (uri: string) => void;
   isEditing: boolean;
-  userId: string;
 }
 
 export default function AvatarPicker({
@@ -21,122 +16,84 @@ export default function AvatarPicker({
   displayName,
   onAvatarChange,
   isEditing,
-  userId,
 }: AvatarPickerProps) {
-  const [uploading, setUploading] = useState(false);
-  const [previewUri, setPreviewUri] = useState<string | null>(null);
+  const [showUrlInput, setShowUrlInput] = useState(false);
+  const [urlInput, setUrlInput] = useState('');
 
-  const handleAvatarPress = async () => {
+  const handleAvatarPress = () => {
     if (!isEditing) return;
-
-    const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
-
-    if (permissionResult.granted === false) {
-      Alert.alert('Доступ заборонено', 'Потрібен доступ до галереї для вибору фото');
-      return;
-    }
-
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      aspect: [1, 1],
-      quality: 0.8,
-    });
-
-    if (!result.canceled && result.assets[0]) {
-      const localUri = result.assets[0].uri;
-      console.log('Selected image URI:', localUri);
-      console.log('Image dimensions:', result.assets[0].width, 'x', result.assets[0].height);
-      setPreviewUri(localUri);
-      await uploadAvatar(localUri);
-    }
+    setShowUrlInput(true);
   };
 
-  const uploadAvatar = async (uri: string) => {
-    try {
-      setUploading(true);
-
-      const fileExt = uri.split('.').pop()?.split('?')[0]?.toLowerCase() || 'jpg';
-      const fileName = `${userId}/${Date.now()}.${fileExt}`;
-
-      const contentTypeMap: Record<string, string> = {
-        'jpg': 'image/jpeg',
-        'jpeg': 'image/jpeg',
-        'png': 'image/png',
-        'gif': 'image/gif',
-        'webp': 'image/webp',
-      };
-      const contentType = contentTypeMap[fileExt] || 'image/jpeg';
-
-      const response = await fetch(uri);
-      const fileData = await response.blob();
-
-      const { data, error } = await supabase.storage
-        .from('avatars')
-        .upload(fileName, fileData, {
-          contentType,
-          upsert: true,
-        });
-
-      if (error) {
-        console.error('Upload error:', error);
-        throw error;
-      }
-
-      const { data: urlData } = supabase.storage
-        .from('avatars')
-        .getPublicUrl(fileName);
-
-      const publicUrl = urlData.publicUrl;
-
-      await updateProfile(userId, { avatar_url: publicUrl } as any);
-
-      onAvatarChange(`${publicUrl}?t=${Date.now()}`);
-      setPreviewUri(null);
-    } catch (error) {
-      console.error('Error uploading avatar:', error);
-      Alert.alert('Помилка', 'Не вдалося завантажити фото');
-      setPreviewUri(null);
-    } finally {
-      setUploading(false);
+  const handleSaveUrl = () => {
+    if (urlInput.trim()) {
+      onAvatarChange(urlInput.trim());
     }
+    setShowUrlInput(false);
+    setUrlInput('');
   };
 
-  const avatarUri = previewUri || currentAvatar || `${AVATAR_PLACEHOLDER}${encodeURIComponent(displayName)}`;
+  const avatarUri = currentAvatar || `${AVATAR_PLACEHOLDER}${encodeURIComponent(displayName)}`;
 
   return (
     <View style={styles.container}>
       <TouchableOpacity
         onPress={handleAvatarPress}
-        disabled={!isEditing || uploading}
+        disabled={!isEditing}
         style={styles.avatarContainer}
       >
-        <Image
-          source={avatarUri}
-          style={styles.avatar}
-          key={avatarUri}
-          contentFit="cover"
-          transition={200}
-          onError={(e) => {
-            console.log('Image load error:', e);
-            console.log('URI:', avatarUri);
-          }}
-        />
+        <Image source={{ uri: avatarUri }} style={styles.avatar} />
         {isEditing && (
           <View style={styles.editBadge}>
-            {uploading ? (
-              <ActivityIndicator size="small" color="#FFFFFF" />
-            ) : (
-              <Camera size={16} color="#FFFFFF" />
-            )}
+            <Camera size={16} color="#FFFFFF" />
           </View>
         )}
       </TouchableOpacity>
       {isEditing && (
-        <Text style={styles.hint}>
-          {uploading ? 'Завантаження...' : 'Натисніть, щоб змінити'}
-        </Text>
+        <Text style={styles.hint}>Натисніть, щоб змінити</Text>
       )}
+
+      <Modal visible={showUrlInput} transparent animationType="slide">
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>URL аватарки</Text>
+            </View>
+            <View style={styles.modalBody}>
+              <View style={styles.inputContainer}>
+                <Link size={20} color="#999999" style={styles.inputIcon} />
+                <TextInput
+                  style={styles.input}
+                  placeholder="https://example.com/avatar.jpg"
+                  placeholderTextColor="#AAAAAA"
+                  value={urlInput}
+                  onChangeText={setUrlInput}
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                  keyboardType="url"
+                />
+              </View>
+              <View style={styles.buttonRow}>
+                <TouchableOpacity
+                  style={[styles.button, styles.cancelButton]}
+                  onPress={() => {
+                    setShowUrlInput(false);
+                    setUrlInput('');
+                  }}
+                >
+                  <Text style={styles.cancelButtonText}>Скасувати</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[styles.button, styles.saveButton]}
+                  onPress={handleSaveUrl}
+                >
+                  <Text style={styles.saveButtonText}>Зберегти</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -174,5 +131,76 @@ const styles = StyleSheet.create({
     marginTop: 8,
     fontSize: 12,
     color: '#999999',
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  modalContent: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 24,
+    width: '100%',
+    maxWidth: 400,
+  },
+  modalHeader: {
+    paddingHorizontal: 20,
+    paddingTop: 20,
+    paddingBottom: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E8E8E8',
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#333333',
+  },
+  modalBody: {
+    padding: 20,
+  },
+  inputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F5F5F5',
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    marginBottom: 16,
+  },
+  inputIcon: {
+    marginRight: 8,
+  },
+  input: {
+    flex: 1,
+    paddingVertical: 12,
+    fontSize: 14,
+    color: '#333333',
+  },
+  buttonRow: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  button: {
+    flex: 1,
+    paddingVertical: 14,
+    borderRadius: 12,
+    alignItems: 'center',
+  },
+  cancelButton: {
+    backgroundColor: '#F5F5F5',
+  },
+  cancelButtonText: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#666666',
+  },
+  saveButton: {
+    backgroundColor: '#FF9500',
+  },
+  saveButtonText: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#FFFFFF',
   },
 });
