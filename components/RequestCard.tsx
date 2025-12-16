@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, Image, Dimensions, Animated, PanResponder } from 'react-native';
+import { View, Text, StyleSheet, Image, Dimensions, Animated, PanResponder, TouchableOpacity } from 'react-native';
 import { WalkRequestWithProfile } from '../lib/api';
 import { useRef } from 'react';
 import { Check, X } from 'lucide-react-native';
@@ -16,9 +16,10 @@ interface RequestCardProps {
   onAccept: (requestId: string) => void;
   onSwipeStart?: () => void;
   onSwipeEnd?: () => void;
+  onCardPress?: (userId: string) => void;
 }
 
-export default function RequestCard({ request, onReject, onAccept, onSwipeStart, onSwipeEnd }: RequestCardProps) {
+export default function RequestCard({ request, onReject, onAccept, onSwipeStart, onSwipeEnd, onCardPress }: RequestCardProps) {
   const { requester } = request;
   const translateX = useRef(new Animated.Value(0)).current;
   const opacity = useRef(new Animated.Value(1)).current;
@@ -139,7 +140,11 @@ export default function RequestCard({ request, onReject, onAccept, onSwipeStart,
           },
         ]}
       >
-          <View style={styles.header}>
+          <TouchableOpacity
+            style={styles.header}
+            onPress={() => onCardPress?.(requester.id)}
+            activeOpacity={0.7}
+          >
           <View style={styles.avatarContainer}>
             {requester.avatar_url ? (
               <Image source={{ uri: requester.avatar_url }} style={styles.avatar} />
@@ -185,7 +190,7 @@ export default function RequestCard({ request, onReject, onAccept, onSwipeStart,
           </View>
 
           <Text style={styles.time}>{formatTimeAgo(request.created_at)}</Text>
-        </View>
+        </TouchableOpacity>
 
           {request.message && (
             <Text style={styles.message} numberOfLines={2}>

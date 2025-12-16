@@ -292,6 +292,7 @@ export default function ChatsScreen() {
             onAccept={handleAccept}
             onSwipeStart={() => setScrollEnabled(false)}
             onSwipeEnd={() => setScrollEnabled(true)}
+            onCardPress={(userId) => router.push(`/user/${userId}`)}
           />
         )}
         scrollEnabled={scrollEnabled}
