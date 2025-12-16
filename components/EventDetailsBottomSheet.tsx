@@ -14,7 +14,6 @@ import {
 import { BlurView } from 'expo-blur';
 import { Clock, MapPin, MessageCircle, X, Trash2, Clock as ClockIcon, Check } from 'lucide-react-native';
 import { deleteWalk, getMyRequestForWalk, WalkRequest } from '../lib/api';
-import ContactRequestBottomSheet from './ContactRequestBottomSheet';
 import { useAuth } from '../contexts/AuthContext';
 
 const ACCENT_ORANGE = '#FF9500';
@@ -63,6 +62,7 @@ interface EventDetailsBottomSheetProps {
   user: UserProfile | null;
   isOwnEvent: boolean;
   onDelete?: () => void;
+  onConnectPress?: (walkId: string, walkOwnerName: string) => void;
 }
 
 export default function EventDetailsBottomSheet({
@@ -71,10 +71,10 @@ export default function EventDetailsBottomSheet({
   user,
   isOwnEvent,
   onDelete,
+  onConnectPress,
 }: EventDetailsBottomSheetProps) {
   const slideAnim = React.useRef(new Animated.Value(Dimensions.get('window').height)).current;
   const [isDeleting, setIsDeleting] = React.useState(false);
-  const [showContactRequest, setShowContactRequest] = React.useState(false);
   const [existingRequest, setExistingRequest] = React.useState<WalkRequest | null>(null);
   const [isLoadingRequest, setIsLoadingRequest] = React.useState(false);
   const { user: currentUser } = useAuth();
@@ -87,10 +87,6 @@ export default function EventDetailsBottomSheet({
         tension: 65,
         friction: 11,
       }).start();
-
-      if (currentUser && user?.walk && !isOwnEvent) {
-        loadExistingRequest();
-      }
     } else {
       Animated.timing(slideAnim, {
         toValue: Dimensions.get('window').height,
@@ -148,14 +144,16 @@ export default function EventDetailsBottomSheet({
   };
 
   const handleConnect = () => {
-    if (!existingRequest) {
-      setShowContactRequest(true);
+    if (!existingRequest && user?.walk && onConnectPress) {
+      onConnectPress(user.walk.id, user.display_name);
     }
   };
 
-  const handleRequestSent = () => {
-    loadExistingRequest();
-  };
+  React.useEffect(() => {
+    if (visible && currentUser && user?.walk && !isOwnEvent) {
+      loadExistingRequest();
+    }
+  }, [visible, currentUser, user?.walk, isOwnEvent]);
 
   const getConnectButtonConfig = () => {
     if (isLoadingRequest) {
@@ -224,16 +222,15 @@ export default function EventDetailsBottomSheet({
   };
 
   return (
-    <>
-      <Modal visible={visible} transparent animationType="none" onRequestClose={onClose}>
-        <View style={styles.modalContainer}>
-          <TouchableOpacity style={styles.backdrop} activeOpacity={1} onPress={onClose}>
-            {Platform.OS === 'ios' ? (
-              <BlurView intensity={20} style={StyleSheet.absoluteFill} tint="dark" />
-            ) : (
-              <View style={styles.androidBackdrop} />
-            )}
-          </TouchableOpacity>
+    <Modal visible={visible} transparent animationType="none" onRequestClose={onClose}>
+      <View style={styles.modalContainer}>
+        <TouchableOpacity style={styles.backdrop} activeOpacity={1} onPress={onClose}>
+          {Platform.OS === 'ios' ? (
+            <BlurView intensity={20} style={StyleSheet.absoluteFill} tint="dark" />
+          ) : (
+            <View style={styles.androidBackdrop} />
+          )}
+        </TouchableOpacity>
 
         <Animated.View
           style={[
@@ -341,18 +338,6 @@ export default function EventDetailsBottomSheet({
         </Animated.View>
       </View>
     </Modal>
-
-      {currentUser && user?.walk && (
-        <ContactRequestBottomSheet
-          visible={showContactRequest}
-          onClose={() => setShowContactRequest(false)}
-          walkId={user.walk.id}
-          requesterId={currentUser.id}
-          walkOwnerName={user.display_name}
-          onRequestSent={handleRequestSent}
-        />
-      )}
-    </>
   );
 }
 
