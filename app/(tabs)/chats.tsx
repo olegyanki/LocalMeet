@@ -234,7 +234,7 @@ export default function ChatsScreen() {
   const renderChatItem = ({ item }: { item: ChatWithLastMessage }) => {
     const otherUser = item.requester_id === user?.id ? item.walker : item.requester;
     const displayName = item.walk_title || otherUser.display_name;
-    const lastMessageText = item.lastMessage?.content || 'No messages yet';
+    const lastMessageText = item.lastMessage?.content || otherUser.display_name;
     const isUnread = item.lastMessage && !item.lastMessage.read && item.lastMessage.sender_id !== user?.id;
 
     const timeAgo = item.lastMessage ? (() => {
