@@ -16,6 +16,7 @@ import { BlurView } from 'expo-blur';
 import { Clock, MapPin, MessageCircle, X, Trash2, Clock as ClockIcon, Check } from 'lucide-react-native';
 import { deleteWalk, getMyRequestForWalk, WalkRequest } from '../lib/api';
 import { useAuth } from '../contexts/AuthContext';
+import { router } from 'expo-router';
 
 const ACCENT_ORANGE = '#FF9500';
 const TEXT_DARK = '#333333';
@@ -303,7 +304,16 @@ export default function EventDetailsBottomSheet({
             <X size={24} color={TEXT_DARK} />
           </TouchableOpacity>
 
-          <View style={styles.header}>
+          <TouchableOpacity
+            style={styles.header}
+            onPress={() => {
+              handleClose();
+              setTimeout(() => {
+                router.push(`/user/${user.id}`);
+              }, 300);
+            }}
+            activeOpacity={0.7}
+          >
             <View style={styles.avatarSection}>
               {user.avatar_url ? (
                 <Image source={{ uri: user.avatar_url }} style={styles.avatar} />
@@ -324,7 +334,7 @@ export default function EventDetailsBottomSheet({
                 </View>
               )}
             </View>
-          </View>
+          </TouchableOpacity>
 
           {user.walk?.description && (
             <View style={styles.section}>

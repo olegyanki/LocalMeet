@@ -23,6 +23,7 @@ import NativeMap from '../../components/NativeMap';
 import EventDetailsBottomSheet from '../../components/EventDetailsBottomSheet';
 import ContactRequestBottomSheet from '../../components/ContactRequestBottomSheet';
 import { useFocusEffect } from '@react-navigation/native';
+import { router } from 'expo-router';
 
 const ACCENT_ORANGE = '#FF9500';
 const TEXT_DARK = '#333333';
@@ -491,7 +492,13 @@ export default function SearchScreen() {
                 >
                   <View style={styles.cardContent}>
                     <View style={styles.cardHeader}>
-                      <View style={styles.avatarContainer}>
+                      <Pressable
+                        style={styles.avatarContainer}
+                        onPress={(e) => {
+                          e.stopPropagation();
+                          router.push(`/user/${item.id}`);
+                        }}
+                      >
                         {item.avatar_url ? (
                           <Image source={{ uri: item.avatar_url }} style={styles.avatar} />
                         ) : (
@@ -501,7 +508,7 @@ export default function SearchScreen() {
                             </Text>
                           </View>
                         )}
-                      </View>
+                      </Pressable>
 
                       <View style={styles.cardHeaderInfo}>
                         <Text style={styles.userName} numberOfLines={1}>
