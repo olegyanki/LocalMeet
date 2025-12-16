@@ -11,7 +11,16 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { getProfile } from '../../lib/api';
-import { ChevronLeft, Instagram, Send } from 'lucide-react-native';
+import {
+  ChevronLeft,
+  Instagram,
+  Send,
+  User,
+  Calendar,
+  Languages,
+  Heart,
+  MessageCircle
+} from 'lucide-react-native';
 
 const BG_COLOR = '#F5F5F5';
 const ACCENT_ORANGE = '#FF9500';
@@ -72,14 +81,8 @@ export default function UserProfileScreen() {
   }
 
   return (
-    <ScrollView
-      style={styles.container}
-      contentContainerStyle={[
-        styles.content,
-        { paddingTop: insets.top + 8, paddingBottom: 100 + insets.bottom },
-      ]}
-    >
-      <View style={styles.header}>
+    <View style={styles.container}>
+      <View style={[styles.header, { paddingTop: insets.top + 8 }]}>
         <TouchableOpacity
           onPress={() => router.back()}
           style={styles.headerBackButton}
@@ -90,98 +93,163 @@ export default function UserProfileScreen() {
         <View style={{ width: 28 }} />
       </View>
 
-      <View style={styles.avatarContainer}>
-        {profile.avatar_url ? (
-          <Image
-            source={{ uri: profile.avatar_url }}
-            style={styles.avatar}
-          />
-        ) : (
-          <View style={[styles.avatar, styles.avatarPlaceholder]}>
-            <Text style={styles.avatarText}>
-              {profile.display_name?.charAt(0).toUpperCase() || '?'}
-            </Text>
-          </View>
-        )}
-      </View>
-
-      <Text style={styles.displayName}>{profile.display_name}</Text>
-
-      {profile.bio && (
-        <View style={styles.section}>
-          <Text style={styles.bio}>{profile.bio}</Text>
-        </View>
-      )}
-
-      <View style={styles.infoSection}>
-        {profile.age && (
-          <View style={styles.infoItem}>
-            <Text style={styles.infoLabel}>Вік</Text>
-            <Text style={styles.infoValue}>{profile.age}</Text>
-          </View>
-        )}
-
-        {profile.gender && (
-          <View style={styles.infoItem}>
-            <Text style={styles.infoLabel}>Стать</Text>
-            <Text style={styles.infoValue}>{profile.gender}</Text>
-          </View>
-        )}
-      </View>
-
-      {profile.languages && profile.languages.length > 0 && (
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Мови</Text>
-          <View style={styles.chipsContainer}>
-            {profile.languages.map((lang: string) => (
-              <View key={lang} style={styles.chip}>
-                <Text style={styles.chipText}>{lang}</Text>
-              </View>
-            ))}
-          </View>
-        </View>
-      )}
-
-      {profile.interests && profile.interests.length > 0 && (
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Інтереси</Text>
-          <View style={styles.chipsContainer}>
-            {profile.interests.map((interest: string) => (
-              <View key={interest} style={styles.interestChip}>
-                <Text style={styles.chipText}>{interest}</Text>
-              </View>
-            ))}
-          </View>
-        </View>
-      )}
-
-      {profile.looking_for && (
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Що шукає</Text>
-          <Text style={styles.lookingForText}>{profile.looking_for}</Text>
-        </View>
-      )}
-
-      {(profile.social_instagram || profile.social_telegram) && (
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Соціальні мережі</Text>
-          <View style={styles.chipsContainer}>
-            {profile.social_instagram && (
-              <View style={styles.socialChip}>
-                <Instagram size={16} color="#E4405F" />
-                <Text style={styles.socialChipText}>{profile.social_instagram}</Text>
+      <ScrollView
+        style={styles.scrollView}
+        contentContainerStyle={[
+          styles.content,
+          { paddingBottom: 40 + insets.bottom },
+        ]}
+        showsVerticalScrollIndicator={false}
+      >
+        <View style={styles.profileHeader}>
+          <View style={styles.avatarContainer}>
+            {profile.avatar_url ? (
+              <Image
+                source={{ uri: profile.avatar_url }}
+                style={styles.avatar}
+              />
+            ) : (
+              <View style={[styles.avatar, styles.avatarPlaceholder]}>
+                <Text style={styles.avatarText}>
+                  {profile.display_name?.charAt(0).toUpperCase() || '?'}
+                </Text>
               </View>
             )}
-            {profile.social_telegram && (
-              <View style={styles.socialChip}>
-                <Send size={16} color="#0088cc" />
-                <Text style={styles.socialChipText}>{profile.social_telegram}</Text>
+          </View>
+
+          <Text style={styles.displayName}>{profile.display_name}</Text>
+
+          {profile.bio && (
+            <Text style={styles.bio}>{profile.bio}</Text>
+          )}
+
+          <View style={styles.quickInfoGrid}>
+            {profile.age && (
+              <View style={styles.quickInfoCard}>
+                <View style={styles.quickInfoIconContainer}>
+                  <Calendar size={20} color={ACCENT_ORANGE} />
+                </View>
+                <Text style={styles.quickInfoLabel}>Вік</Text>
+                <Text style={styles.quickInfoValue}>{profile.age}</Text>
+              </View>
+            )}
+
+            {profile.gender && (
+              <View style={styles.quickInfoCard}>
+                <View style={styles.quickInfoIconContainer}>
+                  <User size={20} color={ACCENT_ORANGE} />
+                </View>
+                <Text style={styles.quickInfoLabel}>Стать</Text>
+                <Text style={styles.quickInfoValue}>{profile.gender}</Text>
+              </View>
+            )}
+
+            {profile.languages && profile.languages.length > 0 && (
+              <View style={styles.quickInfoCard}>
+                <View style={styles.quickInfoIconContainer}>
+                  <Languages size={20} color={ACCENT_ORANGE} />
+                </View>
+                <Text style={styles.quickInfoLabel}>Мов</Text>
+                <Text style={styles.quickInfoValue}>{profile.languages.length}</Text>
+              </View>
+            )}
+
+            {profile.interests && profile.interests.length > 0 && (
+              <View style={styles.quickInfoCard}>
+                <View style={styles.quickInfoIconContainer}>
+                  <Heart size={20} color={ACCENT_ORANGE} />
+                </View>
+                <Text style={styles.quickInfoLabel}>Інтересів</Text>
+                <Text style={styles.quickInfoValue}>{profile.interests.length}</Text>
               </View>
             )}
           </View>
         </View>
-      )}
-    </ScrollView>
+
+        {profile.languages && profile.languages.length > 0 && (
+          <View style={styles.section}>
+            <View style={styles.sectionHeader}>
+              <View style={styles.sectionIconContainer}>
+                <Languages size={18} color={ACCENT_ORANGE} />
+              </View>
+              <Text style={styles.sectionTitle}>Мови</Text>
+            </View>
+            <View style={styles.chipsContainer}>
+              {profile.languages.map((lang: string) => (
+                <View key={lang} style={styles.languageChip}>
+                  <Text style={styles.chipText}>{lang}</Text>
+                </View>
+              ))}
+            </View>
+          </View>
+        )}
+
+        {profile.interests && profile.interests.length > 0 && (
+          <View style={styles.section}>
+            <View style={styles.sectionHeader}>
+              <View style={styles.sectionIconContainer}>
+                <Heart size={18} color={ACCENT_ORANGE} />
+              </View>
+              <Text style={styles.sectionTitle}>Інтереси</Text>
+            </View>
+            <View style={styles.chipsContainer}>
+              {profile.interests.map((interest: string) => (
+                <View key={interest} style={styles.interestChip}>
+                  <Text style={styles.chipText}>{interest}</Text>
+                </View>
+              ))}
+            </View>
+          </View>
+        )}
+
+        {profile.looking_for && (
+          <View style={styles.section}>
+            <View style={styles.sectionHeader}>
+              <View style={styles.sectionIconContainer}>
+                <MessageCircle size={18} color={ACCENT_ORANGE} />
+              </View>
+              <Text style={styles.sectionTitle}>Що шукає</Text>
+            </View>
+            <Text style={styles.lookingForText}>{profile.looking_for}</Text>
+          </View>
+        )}
+
+        {(profile.social_instagram || profile.social_telegram) && (
+          <View style={styles.section}>
+            <View style={styles.sectionHeader}>
+              <View style={styles.sectionIconContainer}>
+                <Send size={18} color={ACCENT_ORANGE} />
+              </View>
+              <Text style={styles.sectionTitle}>Соціальні мережі</Text>
+            </View>
+            <View style={styles.socialLinksContainer}>
+              {profile.social_instagram && (
+                <TouchableOpacity style={styles.socialLinkCard}>
+                  <View style={styles.socialIconContainer}>
+                    <Instagram size={24} color="#E4405F" />
+                  </View>
+                  <View style={styles.socialLinkInfo}>
+                    <Text style={styles.socialLinkLabel}>Instagram</Text>
+                    <Text style={styles.socialLinkValue}>@{profile.social_instagram}</Text>
+                  </View>
+                </TouchableOpacity>
+              )}
+              {profile.social_telegram && (
+                <TouchableOpacity style={styles.socialLinkCard}>
+                  <View style={styles.socialIconContainer}>
+                    <Send size={24} color="#0088cc" />
+                  </View>
+                  <View style={styles.socialLinkInfo}>
+                    <Text style={styles.socialLinkLabel}>Telegram</Text>
+                    <Text style={styles.socialLinkValue}>{profile.social_telegram}</Text>
+                  </View>
+                </TouchableOpacity>
+              )}
+            </View>
+          </View>
+        )}
+      </ScrollView>
+    </View>
   );
 }
 
@@ -190,38 +258,64 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: BG_COLOR,
   },
+  scrollView: {
+    flex: 1,
+  },
   content: {
-    padding: 24,
+    paddingHorizontal: 20,
   },
   centerContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: BG_COLOR,
+    padding: 20,
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 24,
+    paddingHorizontal: 16,
+    paddingBottom: 12,
+    backgroundColor: INPUT_BG,
+    borderBottomWidth: 1,
+    borderBottomColor: BORDER_COLOR,
   },
   headerBackButton: {
     padding: 8,
-    marginLeft: -8,
   },
   headerTitle: {
     fontSize: 18,
-    fontWeight: '600',
+    fontWeight: '700',
     color: TEXT_DARK,
   },
-  avatarContainer: {
+  profileHeader: {
+    backgroundColor: INPUT_BG,
+    borderRadius: 24,
+    padding: 24,
+    marginTop: 16,
+    marginBottom: 20,
     alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  avatarContainer: {
     marginBottom: 16,
+    shadowColor: ACCENT_ORANGE,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 12,
+    elevation: 4,
   },
   avatar: {
     width: 120,
     height: 120,
     borderRadius: 60,
+    borderWidth: 4,
+    borderColor: '#FFFFFF',
   },
   avatarPlaceholder: {
     backgroundColor: ACCENT_ORANGE,
@@ -231,7 +325,7 @@ const styles = StyleSheet.create({
   avatarText: {
     color: '#FFFFFF',
     fontSize: 48,
-    fontWeight: '600',
+    fontWeight: '700',
   },
   displayName: {
     fontSize: 28,
@@ -241,84 +335,147 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   bio: {
-    fontSize: 16,
-    color: TEXT_DARK,
-    lineHeight: 24,
+    fontSize: 15,
+    color: TEXT_LIGHT,
+    lineHeight: 22,
     textAlign: 'center',
+    marginTop: 4,
+    marginBottom: 20,
   },
-  infoSection: {
+  quickInfoGrid: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     justifyContent: 'center',
-    gap: 32,
-    marginVertical: 24,
+    gap: 12,
+    width: '100%',
   },
-  infoItem: {
+  quickInfoCard: {
+    backgroundColor: '#FFF9F0',
+    borderRadius: 16,
+    padding: 16,
     alignItems: 'center',
+    minWidth: 80,
+    flex: 1,
+    maxWidth: 100,
+    borderWidth: 1,
+    borderColor: '#FFE8CC',
   },
-  infoLabel: {
-    fontSize: 14,
+  quickInfoIconContainer: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#FFFFFF',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  quickInfoLabel: {
+    fontSize: 12,
     color: TEXT_LIGHT,
     marginBottom: 4,
+    fontWeight: '500',
   },
-  infoValue: {
+  quickInfoValue: {
     fontSize: 18,
-    fontWeight: '600',
+    fontWeight: '700',
     color: TEXT_DARK,
   },
   section: {
-    marginBottom: 24,
     backgroundColor: INPUT_BG,
-    padding: 16,
+    borderRadius: 20,
+    padding: 20,
+    marginBottom: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  sectionIconContainer: {
+    width: 32,
+    height: 32,
     borderRadius: 16,
-    borderWidth: 1,
-    borderColor: BORDER_COLOR,
+    backgroundColor: '#FFF9F0',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
   },
   sectionTitle: {
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: '700',
     color: TEXT_DARK,
-    marginBottom: 12,
   },
   chipsContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 8,
   },
-  chip: {
+  languageChip: {
     backgroundColor: ACCENT_ORANGE,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
     borderRadius: 20,
   },
   interestChip: {
     backgroundColor: ACCENT_ORANGE,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
     borderRadius: 20,
   },
   chipText: {
-    fontSize: 13,
+    fontSize: 14,
     color: '#FFFFFF',
-    fontWeight: '500',
-  },
-  socialChip: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    backgroundColor: '#F0F0F0',
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 20,
-  },
-  socialChipText: {
-    fontSize: 13,
-    color: TEXT_DARK,
-    fontWeight: '500',
+    fontWeight: '600',
   },
   lookingForText: {
     fontSize: 15,
     color: TEXT_DARK,
-    lineHeight: 22,
+    lineHeight: 24,
+  },
+  socialLinksContainer: {
+    gap: 12,
+  },
+  socialLinkCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F8F8F8',
+    borderRadius: 16,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: BORDER_COLOR,
+  },
+  socialIconContainer: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: '#FFFFFF',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 1,
+  },
+  socialLinkInfo: {
+    flex: 1,
+  },
+  socialLinkLabel: {
+    fontSize: 12,
+    color: TEXT_LIGHT,
+    marginBottom: 4,
+    fontWeight: '500',
+  },
+  socialLinkValue: {
+    fontSize: 16,
+    color: TEXT_DARK,
+    fontWeight: '600',
   },
   errorText: {
     color: '#E74C3C',
