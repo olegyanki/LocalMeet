@@ -4,9 +4,10 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useRouter } from 'expo-router';
 import { useEffect } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Colors } from '../../constants/Colors';
 
-const ACCENT_ORANGE = '#FF9500';
-const TEXT_LIGHT = '#999999';
+const ACCENT_ORANGE = Colors.accent;
+const TEXT_LIGHT = Colors.textLight;
 
 export default function TabLayout() {
   const { user, isLoading } = useAuth();

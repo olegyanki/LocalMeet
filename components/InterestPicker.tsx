@@ -8,6 +8,7 @@ import {
   Modal,
 } from 'react-native';
 import { Plus, X } from 'lucide-react-native';
+import { Colors } from '../constants/Colors';
 
 const SUGGESTED_INTERESTS = [
   '⚽ Спорт',
@@ -82,7 +83,7 @@ export default function InterestPicker({
       {isEditing && (
         <>
           <TouchableOpacity style={styles.addButton} onPress={() => setShowModal(true)}>
-            <Plus size={16} color="#FF9500" />
+            <Plus size={16} color={Colors.accent} />
             <Text style={styles.addButtonText}>Додати інтерес</Text>
           </TouchableOpacity>
 
@@ -92,7 +93,7 @@ export default function InterestPicker({
                 <View style={styles.modalHeader}>
                   <Text style={styles.modalTitle}>Виберіть інтереси</Text>
                   <TouchableOpacity onPress={() => setShowModal(false)}>
-                    <X size={24} color="#333333" />
+                    <X size={24} color={Colors.textDark} />
                   </TouchableOpacity>
                 </View>
 
@@ -142,7 +143,7 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 15,
     fontWeight: '600',
-    color: '#333333',
+    color: Colors.textDark,
     marginBottom: 12,
   },
   selectedContainer: {
@@ -154,7 +155,7 @@ const styles = StyleSheet.create({
   selectedTag: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FF9500',
+    backgroundColor: Colors.accent,
     paddingHorizontal: 12,
     paddingVertical: 8,
     borderRadius: 20,
@@ -174,12 +175,12 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     gap: 8,
     borderWidth: 1,
-    borderColor: '#FF9500',
+    borderColor: Colors.accent,
     borderStyle: 'dashed',
   },
   addButtonText: {
     fontSize: 14,
-    color: '#FF9500',
+    color: Colors.accent,
     fontWeight: '500',
   },
   modalOverlay: {
@@ -201,12 +202,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingBottom: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#E8E8E8',
+    borderBottomColor: Colors.borderColor,
   },
   modalTitle: {
     fontSize: 20,
     fontWeight: '700',
-    color: '#333333',
+    color: Colors.textDark,
   },
   modalScroll: {
     padding: 20,
@@ -223,11 +224,11 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     backgroundColor: '#F5F5F5',
     borderWidth: 1,
-    borderColor: '#E8E8E8',
+    borderColor: Colors.borderColor,
   },
   tagSelected: {
-    backgroundColor: '#FF9500',
-    borderColor: '#FF9500',
+    backgroundColor: Colors.accent,
+    borderColor: Colors.accent,
   },
   tagText: {
     fontSize: 13,
@@ -239,7 +240,7 @@ const styles = StyleSheet.create({
   },
   doneButton: {
     margin: 20,
-    backgroundColor: '#FF9500',
+    backgroundColor: Colors.accent,
     paddingVertical: 16,
     borderRadius: 16,
     alignItems: 'center',

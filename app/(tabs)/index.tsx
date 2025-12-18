@@ -24,12 +24,13 @@ import EventDetailsBottomSheet from '../../components/EventDetailsBottomSheet';
 import ContactRequestBottomSheet from '../../components/ContactRequestBottomSheet';
 import { useFocusEffect } from '@react-navigation/native';
 import { router } from 'expo-router';
+import { Colors } from '../../constants/Colors';
 
-const ACCENT_ORANGE = '#FF9500';
-const TEXT_DARK = '#333333';
-const TEXT_LIGHT = '#999999';
-const CARD_BG = '#FFFFFF';
-const BORDER_COLOR = '#E8E8E8';
+const ACCENT_ORANGE = Colors.accent;
+const TEXT_DARK = Colors.textDark;
+const TEXT_LIGHT = Colors.textLight;
+const CARD_BG = Colors.cardBg;
+const BORDER_COLOR = Colors.borderColor;
 
 interface UserLocation {
   id: string;

@@ -11,14 +11,15 @@ import {
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { signIn } from '../../lib/auth';
+import { Colors } from '../../constants/Colors';
 
 const LOGIN_GRADIENT = '#F5F5F5';
 const PRIMARY_BLUE = '#4A90E2';
-const ACCENT_ORANGE = '#FF9500';
-const TEXT_DARK = '#333333';
-const TEXT_LIGHT = '#999999';
-const INPUT_BG = '#FFFFFF';
-const BORDER_COLOR = '#E8E8E8';
+const ACCENT_ORANGE = Colors.accent;
+const TEXT_DARK = Colors.textDark;
+const TEXT_LIGHT = Colors.textLight;
+const INPUT_BG = Colors.inputBg;
+const BORDER_COLOR = Colors.borderColor;
 
 export default function LoginScreen() {
   const [email, setEmail] = useState('');

@@ -17,10 +17,11 @@ import { Clock, MapPin, MessageCircle, X, Trash2, Clock as ClockIcon, Check } fr
 import { deleteWalk, getMyRequestForWalk, WalkRequest } from '../lib/api';
 import { useAuth } from '../contexts/AuthContext';
 import { router } from 'expo-router';
+import { Colors } from '../constants/Colors';
 
-const ACCENT_ORANGE = '#FF9500';
-const TEXT_DARK = '#333333';
-const TEXT_LIGHT = '#999999';
+const ACCENT_ORANGE = Colors.accent;
+const TEXT_DARK = Colors.textDark;
+const TEXT_LIGHT = Colors.textLight;
 
 interface UserLocation {
   id: string;

@@ -21,13 +21,14 @@ import { useAuth } from '@/contexts/AuthContext';
 import AudioRecorder from '@/components/AudioRecorder';
 import AudioPlayer from '@/components/AudioPlayer';
 import EventDetailsBottomSheet from '@/components/EventDetailsBottomSheet';
+import { Colors } from '@/constants/Colors';
 
 const BACKGROUND = '#FFFFFF';
 const TEXT_DARK = '#1C1C1E';
-const TEXT_LIGHT = '#999999';
+const TEXT_LIGHT = Colors.textLight;
 const MESSAGE_INCOMING = '#F0F0F0';
 const MESSAGE_OUTGOING = '#FFE066';
-const ACCENT_ORANGE = '#FF9500';
+const ACCENT_ORANGE = Colors.accent;
 
 interface Message {
   id: string;

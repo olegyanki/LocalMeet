@@ -6,10 +6,11 @@ import { useAuth } from '../../contexts/AuthContext';
 import { getMyWalkRequests, updateWalkRequestStatus, WalkRequestWithProfile } from '../../lib/api';
 import { supabase } from '../../lib/supabase';
 import RequestCard from '../../components/RequestCard';
+import { Colors } from '../../constants/Colors';
 
-const ACCENT_ORANGE = '#FF9500';
-const TEXT_LIGHT = '#999999';
-const TEXT_DARK = '#1C1C1E';
+const ACCENT_ORANGE = Colors.accent;
+const TEXT_LIGHT = Colors.textLight;
+const TEXT_DARK = Colors.textDark;
 
 type TabType = 'requests' | 'chats';
 

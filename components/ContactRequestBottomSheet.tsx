@@ -15,10 +15,11 @@ import {
 import { BlurView } from 'expo-blur';
 import { X, Send } from 'lucide-react-native';
 import { createWalkRequest } from '../lib/api';
+import { Colors } from '../constants/Colors';
 
-const ACCENT_ORANGE = '#FF9500';
-const TEXT_DARK = '#333333';
-const TEXT_LIGHT = '#999999';
+const ACCENT_ORANGE = Colors.accent;
+const TEXT_DARK = Colors.textDark;
+const TEXT_LIGHT = Colors.textLight;
 
 interface ContactRequestBottomSheetProps {
   visible: boolean;

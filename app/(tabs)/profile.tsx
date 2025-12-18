@@ -20,13 +20,14 @@ import { signOut } from '../../lib/auth';
 import { LogOut, Instagram, Send, Plus, X, ChevronDown } from 'lucide-react-native';
 import AvatarPicker from '../../components/AvatarPicker';
 import InterestPicker from '../../components/InterestPicker';
+import { Colors } from '../../constants/Colors';
 
 const BG_COLOR = '#F5F5F5';
-const ACCENT_ORANGE = '#FF9500';
-const TEXT_DARK = '#333333';
-const TEXT_LIGHT = '#999999';
-const INPUT_BG = '#FFFFFF';
-const BORDER_COLOR = '#E8E8E8';
+const ACCENT_ORANGE = Colors.accent;
+const TEXT_DARK = Colors.textDark;
+const TEXT_LIGHT = Colors.textLight;
+const INPUT_BG = Colors.inputBg;
+const BORDER_COLOR = Colors.borderColor;
 
 const AGE_OPTIONS = Array.from({ length: 63 }, (_, i) => (i + 18).toString());
 const GENDER_OPTIONS = ['Чоловік', 'Жінка', 'Інше', 'Не вказано'];

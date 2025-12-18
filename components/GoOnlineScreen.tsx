@@ -21,13 +21,14 @@ import { Check, X, Clock, MapPin } from 'lucide-react-native';
 import WebMap from './WebMap';
 import NativeMap from './NativeMap';
 import { router } from 'expo-router';
+import { Colors } from '../constants/Colors';
 
 const BG_COLOR = '#F5F5F5';
-const ACCENT_ORANGE = '#FF9500';
-const TEXT_DARK = '#333333';
-const TEXT_LIGHT = '#999999';
-const INPUT_BG = '#FFFFFF';
-const BORDER_COLOR = '#E8E8E8';
+const ACCENT_ORANGE = Colors.accent;
+const TEXT_DARK = Colors.textDark;
+const TEXT_LIGHT = Colors.textLight;
+const INPUT_BG = Colors.inputBg;
+const BORDER_COLOR = Colors.borderColor;
 const SUCCESS_GREEN = '#4CAF50';
 
 export default function GoOnlineScreen() {

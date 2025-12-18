@@ -1,6 +1,7 @@
 import React, { useRef } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Image } from 'react-native';
 import { Camera } from 'lucide-react-native';
+import { Colors } from '../constants/Colors';
 
 const AVATAR_PLACEHOLDER = 'https://api.dicebear.com/7.x/initials/svg?seed=';
 
@@ -81,7 +82,7 @@ const styles = StyleSheet.create({
     width: 120,
     height: 120,
     borderRadius: 60,
-    backgroundColor: '#E8E8E8',
+    backgroundColor: Colors.borderColor,
     borderWidth: 4,
     borderColor: '#FFFFFF',
   },
@@ -92,7 +93,7 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: '#FF9500',
+    backgroundColor: Colors.accent,
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 3,
@@ -101,6 +102,6 @@ const styles = StyleSheet.create({
   hint: {
     marginTop: 8,
     fontSize: 12,
-    color: '#999999',
+    color: Colors.textLight,
   },
 });

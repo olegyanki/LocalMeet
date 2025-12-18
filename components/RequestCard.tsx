@@ -2,12 +2,13 @@ import { View, Text, StyleSheet, Image, Dimensions, Animated, PanResponder, Touc
 import { WalkRequestWithProfile } from '../lib/api';
 import { useRef } from 'react';
 import { Check, X } from 'lucide-react-native';
+import { Colors } from '../constants/Colors';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const SWIPE_THRESHOLD = SCREEN_WIDTH * 0.3;
 
-const ACCENT_ORANGE = '#FF9500';
-const TEXT_LIGHT = '#999999';
+const ACCENT_ORANGE = Colors.accent;
+const TEXT_LIGHT = Colors.textLight;
 const TEXT_DARK = '#1C1C1E';
 
 interface RequestCardProps {
