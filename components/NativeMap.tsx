@@ -101,10 +101,15 @@ export default function NativeMap({
             attributionControl: false
           }).setView([${latitude}, ${longitude}], 14);
 
-          L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+          const tileLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
             maxZoom: 19,
             attribution: '© OpenStreetMap, © CartoDB'
           }).addTo(map);
+
+          const mapElement = document.getElementById('map');
+          if (mapElement) {
+            mapElement.style.filter = 'hue-rotate(10deg) saturate(0.7) brightness(1.05)';
+          }
 
           const userIcon = L.divIcon({
             className: 'user-marker',

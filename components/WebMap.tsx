@@ -57,10 +57,15 @@ export default function WebMap({
     }).setView([latitude, longitude], 14);
     mapRef.current = map;
 
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
       attribution: '© OpenStreetMap, © CartoDB',
       maxZoom: 19,
     }).addTo(map);
+
+    const mapElement = document.getElementById('map-container');
+    if (mapElement) {
+      mapElement.style.filter = 'hue-rotate(10deg) saturate(0.7) brightness(1.05)';
+    }
 
     const userIcon = L.divIcon({
       className: 'custom-marker user-location-marker',
