@@ -76,6 +76,14 @@ export default function NativeMap({
           #map {
             height: 100%;
             width: 100%;
+            background-color: #F3F8FF;
+          }
+          .leaflet-tile-pane {
+            filter: saturate(0.3) brightness(1.1);
+            opacity: 0.85;
+          }
+          .leaflet-tile {
+            filter: hue-rotate(-10deg);
           }
           @keyframes pulse {
             0% {
@@ -101,15 +109,10 @@ export default function NativeMap({
             attributionControl: false
           }).setView([${latitude}, ${longitude}], 14);
 
-          const tileLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+          L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
             maxZoom: 19,
             attribution: '© OpenStreetMap, © CartoDB'
           }).addTo(map);
-
-          const mapElement = document.getElementById('map');
-          if (mapElement) {
-            mapElement.style.filter = 'hue-rotate(10deg) saturate(0.7) brightness(1.05)';
-          }
 
           const userIcon = L.divIcon({
             className: 'user-marker',

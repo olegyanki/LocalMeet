@@ -62,10 +62,20 @@ export default function WebMap({
       maxZoom: 19,
     }).addTo(map);
 
-    const mapElement = document.getElementById('map-container');
-    if (mapElement) {
-      mapElement.style.filter = 'hue-rotate(10deg) saturate(0.7) brightness(1.05)';
-    }
+    const style = document.createElement('style');
+    style.textContent = `
+      #map-container {
+        background-color: #F3F8FF;
+      }
+      .leaflet-tile-pane {
+        filter: saturate(0.3) brightness(1.1);
+        opacity: 0.85;
+      }
+      .leaflet-tile {
+        filter: hue-rotate(-10deg);
+      }
+    `;
+    document.head.appendChild(style);
 
     const userIcon = L.divIcon({
       className: 'custom-marker user-location-marker',
