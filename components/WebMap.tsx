@@ -57,9 +57,10 @@ export default function WebMap({
     }).setView([latitude, longitude], 14);
     mapRef.current = map;
 
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-      attribution: '© OpenStreetMap, © CartoDB',
-      maxZoom: 19,
+    const accessToken = 'pk.eyJ1Ijoib2xlaC15YW5raXZza3lpIiwiYSI6ImNtamJ4cmUxdDAxaTEzZHF0M2s1Zmk4MWMifQ.hC6Ff88M5zCdMEO5mIY2Iw';
+    L.tileLayer('https://api.mapbox.com/styles/v1/oleh-yankivskyi/cmjby103d000701s15oy6drxv/tiles/256/{z}/{x}/{y}@2x?access_token=' + accessToken, {
+      attribution: '© Mapbox © OpenStreetMap',
+      maxZoom: 19
     }).addTo(map);
 
     const userIcon = L.divIcon({
