@@ -57,7 +57,7 @@ export default function WebMap({
     }).setView([latitude, longitude], 14);
     mapRef.current = map;
 
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
       attribution: '© OpenStreetMap, © CartoDB',
       maxZoom: 19,
     }).addTo(map);
