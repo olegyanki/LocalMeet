@@ -405,7 +405,6 @@ export default function SearchScreen() {
       </View>
 
       <View style={[styles.cardsContainer, { bottom: 90 + insets.bottom }]}>
-        <View style={styles.cardsHandle} />
         <ScrollView
           ref={scrollViewRef}
           horizontal
