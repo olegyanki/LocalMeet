@@ -16,6 +16,7 @@ interface Marker {
 interface NativeMapProps {
   latitude: number;
   longitude: number;
+  paddingBottom?: number;
   markers: Marker[];
   selectedMarkerId?: string | null;
   onMarkerPress?: (id: string) => void;
@@ -31,6 +32,7 @@ interface NativeMapProps {
 export default function NativeMap({
   latitude,
   longitude,
+  paddingBottom,
   markers,
   selectedMarkerId,
   onMarkerPress,
@@ -96,10 +98,21 @@ export default function NativeMap({
       <body>
         <div id="map"></div>
         <script>
+          const initialPadding = ${paddingBottom || 0};
           const map = L.map('map', {
             zoomControl: false,
             attributionControl: false
-          }).setView([${latitude}, ${longitude}], 14);
+          });
+          
+          if (initialPadding) {
+            const zoom = 14;
+            const point = map.project([${latitude}, ${longitude}], zoom);
+            point.y += initialPadding;
+            const newCenter = map.unproject(point, zoom);
+            map.setView(newCenter, zoom);
+          } else {
+            map.setView([${latitude}, ${longitude}], 14);
+          }
 
           const accessToken = 'pk.eyJ1Ijoib2xlaC15YW5raXZza3lpIiwiYSI6ImNtamJ4cmUxdDAxaTEzZHF0M2s1Zmk4MWMifQ.hC6Ff88M5zCdMEO5mIY2Iw';
           L.tileLayer('https://api.mapbox.com/styles/v1/oleh-yankivskyi/cmjby103d000701s15oy6drxv/tiles/256/{z}/{x}/{y}@2x?access_token=' + accessToken, {
@@ -250,10 +263,24 @@ export default function NativeMap({
             } else if (selectedId && selectedId !== 'null') {
               const selectedMarker = markers.find(m => m.id === selectedId);
               if (selectedMarker) {
-                map.setView([selectedMarker.latitude, selectedMarker.longitude], 15, {
-                  animate: true,
-                  duration: 0.5
-                });
+                const paddingBottom = ${paddingBottom || 0};
+                
+                if (paddingBottom) {
+                  const zoom = 15;
+                  const point = map.project([selectedMarker.latitude, selectedMarker.longitude], zoom);
+                  point.y += paddingBottom;
+                  const newCenter = map.unproject(point, zoom);
+                  
+                  map.setView(newCenter, zoom, {
+                    animate: true,
+                    duration: 0.5
+                  });
+                } else {
+                  map.setView([selectedMarker.latitude, selectedMarker.longitude], 15, {
+                    animate: true,
+                    duration: 0.5
+                  });
+                }
               }
             }
           }

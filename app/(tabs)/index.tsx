@@ -79,7 +79,7 @@ export default function SearchScreen() {
   const [isLoadingUsers, setIsLoadingUsers] = useState(false);
   const [selectedMarkerId, setSelectedMarkerId] = useState<string | null>(null);
   const [currentCardIndex, setCurrentCardIndex] = useState(0);
-  const [mapCenter, setMapCenter] = useState<{latitude: number; longitude: number} | null>(null);
+  const [mapCenter, setMapCenter] = useState<{latitude: number; longitude: number; paddingBottom?: number} | null>(null);
   const [mapBounds, setMapBounds] = useState<{markers: Array<{latitude: number; longitude: number}>} | null>(null);
   const previousMarkerIdRef = useRef<string | null>(null);
   const [detailsVisible, setDetailsVisible] = useState(false);
@@ -121,6 +121,7 @@ export default function SearchScreen() {
         setMapCenter({
           latitude: myEvent.location.latitude,
           longitude: myEvent.location.longitude,
+          paddingBottom: 150
         });
         setMapBounds(null);
         const myIndex = nearbyUsers.findIndex(u => u.id === user.id);
@@ -235,14 +236,6 @@ export default function SearchScreen() {
       setIsLoadingUsers(true);
       const users = await getNearbyUsers(location.coords.latitude, location.coords.longitude);
 
-      console.log('loadNearbyUsers: received users:', users.map(u => ({
-        id: u.id,
-        username: u.username,
-        walk: u.walk,
-        has_walk: !!u.walk,
-        walk_deleted: u.walk?.deleted
-      })));
-
       // Перевіряємо і завершуємо власну прогулянку, якщо вона закінчилася
       const ownProfile = users.find((u) => u.id === user.id);
       if (ownProfile && ownProfile.walk) {
@@ -307,30 +300,15 @@ export default function SearchScreen() {
   };
 
   const formatTime = (walkStartTime: string | null): string => {
-    if (!walkStartTime) {
-      console.log('formatTime: walkStartTime is null/empty');
-      return '';
-    }
+    if (!walkStartTime) return '';
 
     const now = new Date();
     const startTime = new Date(walkStartTime);
 
-    console.log('formatTime:', {
-      walkStartTime,
-      now: now.toISOString(),
-      startTime: startTime.toISOString(),
-      isValidDate: !isNaN(startTime.getTime())
-    });
-
-    if (isNaN(startTime.getTime())) {
-      console.log('formatTime: Invalid date');
-      return '';
-    }
+    if (isNaN(startTime.getTime())) return '';
 
     const diffMs = startTime.getTime() - now.getTime();
     const diffMins = Math.floor(diffMs / 60000);
-
-    console.log('formatTime: diffMins =', diffMins);
 
     if (diffMins < 0) {
       return 'Вже почалась';
@@ -406,6 +384,7 @@ export default function SearchScreen() {
           <NativeMap
             latitude={mapCenter?.latitude || location.coords.latitude}
             longitude={mapCenter?.longitude || location.coords.longitude}
+            paddingBottom={150}
             markers={mapMarkers}
             bounds={mapBounds}
             selectedMarkerId={selectedMarkerId}
@@ -447,17 +426,12 @@ export default function SearchScreen() {
               setCurrentCardIndex(index);
               const item = nearbyUsers[index];
 
-              const allMarkers = nearbyUsers
-                .filter(u => u.location)
-                .map(u => ({ latitude: u.location!.latitude, longitude: u.location!.longitude }));
-
-              if (allMarkers.length > 1) {
-                setMapBounds({ markers: allMarkers });
-                setMapCenter(null);
-              } else if (item.location) {
+              if (item.location) {
+                const padding = 150;
                 setMapCenter({
                   latitude: item.location.latitude,
-                  longitude: item.location.longitude
+                  longitude: item.location.longitude,
+                  paddingBottom: padding
                 });
                 setMapBounds(null);
               }

@@ -121,13 +121,6 @@ export async function getNearbyUsers(latitude: number, longitude: number, radius
     .eq('is_active', true)
     .or('deleted.is.null,deleted.eq.false');
 
-  console.log('getNearbyUsers: raw walks from DB:', walks?.map(w => ({
-    id: w.id,
-    user_id: w.user_id,
-    start_time: w.start_time,
-    duration: w.duration
-  })));
-
   if (walksError) {
     throw walksError;
   }
