@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, TouchableOpacity, FlatList, ActivityIndicator, Image } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, FlatList, ActivityIndicator, Image, RefreshControl } from 'react-native';
 import { useState, useEffect, useCallback } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter, useFocusEffect } from 'expo-router';
@@ -43,10 +43,96 @@ export default function ChatsScreen() {
   const [chats, setChats] = useState<ChatWithLastMessage[]>([]);
   const [loading, setLoading] = useState(true);
   const [scrollEnabled, setScrollEnabled] = useState(true);
-  const [initialLoadDone, setInitialLoadDone] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { user } = useAuth();
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    if (activeTab === 'requests') {
+      await loadRequestsWithoutLoader();
+    } else {
+      await loadChatsWithoutLoader();
+    }
+    setRefreshing(false);
+  };
+
+  const loadRequestsWithoutLoader = async () => {
+    if (!user) return;
+
+    try {
+      const data = await getMyWalkRequests(user.id);
+      setRequests(data);
+    } catch (error) {
+      console.error('Error loading requests:', error);
+    }
+  };
+
+  const loadChatsWithoutLoader = async () => {
+    if (!user) return;
+
+    try {
+      const { data: chatsData, error } = await supabase
+        .from('chats')
+        .select(
+          `
+          id,
+          requester_id,
+          walker_id,
+          walk_request_id,
+          updated_at,
+          requester:profiles!chats_requester_id_fkey(id, display_name, avatar_url),
+          walker:profiles!chats_walker_id_fkey(id, display_name, avatar_url)
+        `
+        )
+        .or(`requester_id.eq.${user.id},walker_id.eq.${user.id}`)
+        .order('updated_at', { ascending: false });
+
+      if (error) throw error;
+
+      const chatsWithMessages = await Promise.all(
+        (chatsData || []).map(async (chat) => {
+          const { data: lastMessage } = await supabase
+            .from('messages')
+            .select('content, created_at, sender_id, read')
+            .eq('chat_id', chat.id)
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .maybeSingle();
+
+          let walkTitle: string | undefined;
+          if (chat.walk_request_id) {
+            const { data: walkRequest } = await supabase
+              .from('walk_requests')
+              .select('walk_id')
+              .eq('id', chat.walk_request_id)
+              .maybeSingle();
+
+            if (walkRequest?.walk_id) {
+              const { data: walk } = await supabase
+                .from('walks')
+                .select('title')
+                .eq('id', walkRequest.walk_id)
+                .maybeSingle();
+
+              walkTitle = walk?.title;
+            }
+          }
+
+          return {
+            ...chat,
+            walk_title: walkTitle,
+            lastMessage: lastMessage || undefined,
+          } as ChatWithLastMessage;
+        })
+      );
+
+      setChats(chatsWithMessages);
+    } catch (error) {
+      console.error('Error loading chats:', error);
+    }
+  };
 
   const loadRequests = async () => {
     if (!user) return;
@@ -148,22 +234,11 @@ export default function ChatsScreen() {
         console.error('Error loading requests:', error);
       } finally {
         setLoading(false);
-        setInitialLoadDone(true);
       }
     };
 
     checkRequestsAndLoad();
   }, [user]);
-
-  useEffect(() => {
-    if (!initialLoadDone) return;
-
-    if (activeTab === 'requests') {
-      loadRequests();
-    } else {
-      loadChats();
-    }
-  }, [activeTab, initialLoadDone]);
 
   const handleAccept = async (requestId: string) => {
     if (!user) return;
@@ -320,6 +395,9 @@ export default function ChatsScreen() {
         )}
         scrollEnabled={scrollEnabled}
         contentContainerStyle={{ paddingBottom: insets.bottom + 80 }}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={ACCENT_ORANGE} />
+        }
       />
     );
   };
@@ -347,6 +425,9 @@ export default function ChatsScreen() {
         keyExtractor={(item) => item.id}
         renderItem={renderChatItem}
         contentContainerStyle={{ paddingBottom: insets.bottom + 80 }}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={ACCENT_ORANGE} />
+        }
       />
     );
   };
