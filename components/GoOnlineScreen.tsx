@@ -273,7 +273,10 @@ export default function GoOnlineScreen() {
         setDescription('');
         setCurrentTime();
         setError('');
-        router.push('/(tabs)');
+        router.push({
+          pathname: '/(tabs)',
+          params: { reloadEvents: 'true' }
+        });
       }, 1500);
     } catch (err) {
       console.error('Failed to go online:', err);

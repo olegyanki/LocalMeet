@@ -23,7 +23,7 @@ import NativeMap from '../../components/NativeMap';
 import EventDetailsBottomSheet from '../../components/EventDetailsBottomSheet';
 import ContactRequestBottomSheet from '../../components/ContactRequestBottomSheet';
 import { useFocusEffect } from '@react-navigation/native';
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 
 const ACCENT_ORANGE = '#FF9500';
 const TEXT_DARK = '#333333';
@@ -70,6 +70,7 @@ interface UserProfile {
 
 export default function SearchScreen() {
   const { user } = useAuth();
+  const params = useLocalSearchParams();
   const insets = useSafeAreaInsets();
   const scrollViewRef = useRef<ScrollView>(null);
   const isScrollingProgrammatically = useRef(false);
@@ -90,6 +91,12 @@ export default function SearchScreen() {
   const screenWidth = Dimensions.get('window').width;
   const cardWidth = screenWidth - 48;
   const cardGap = 16;
+
+  useEffect(() => {
+    if (params.reloadEvents === 'true' && location && user) {
+      loadNearbyUsers();
+    }
+  }, [params.reloadEvents]);
 
   useEffect(() => {
     if (user) {
