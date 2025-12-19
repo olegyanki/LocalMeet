@@ -165,18 +165,6 @@ export default function ChatsScreen() {
     }
   }, [activeTab, initialLoadDone]);
 
-  useFocusEffect(
-    useCallback(() => {
-      if (!initialLoadDone) return;
-
-      if (activeTab === 'chats') {
-        loadChats();
-      } else {
-        loadRequests();
-      }
-    }, [activeTab, initialLoadDone, user])
-  );
-
   const handleAccept = async (requestId: string) => {
     if (!user) return;
 
