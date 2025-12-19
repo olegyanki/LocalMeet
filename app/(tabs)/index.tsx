@@ -103,17 +103,6 @@ export default function SearchScreen() {
     }
   }, [location, user]);
 
-  useFocusEffect(
-    React.useCallback(() => {
-      const loadAndFocus = async () => {
-        if (location && user) {
-          await loadNearbyUsers();
-        }
-      };
-      loadAndFocus();
-    }, [location, user])
-  );
-
   useEffect(() => {
     if (nearbyUsers.length > 0 && user) {
       const myEvent = nearbyUsers.find(u => u.id === user.id);
