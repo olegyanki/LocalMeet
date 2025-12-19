@@ -12,6 +12,9 @@ import {
   Platform,
   PanResponder,
   Animated,
+  KeyboardAvoidingView,
+  Keyboard,
+  Dimensions,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Location from 'expo-location';
@@ -53,6 +56,8 @@ export default function GoOnlineScreen() {
   const [isLoadingLocation, setIsLoadingLocation] = useState(false);
   const translateY = useRef(new Animated.Value(0)).current;
   const translateYTime = useRef(new Animated.Value(0)).current;
+  const scrollViewRef = useRef<ScrollView>(null);
+  const descriptionInputRef = useRef<TextInput>(null);
 
 
   const panResponder = useRef(
@@ -316,13 +321,18 @@ export default function GoOnlineScreen() {
   };
 
   return (
-    <View style={styles.container}>
+    <KeyboardAvoidingView 
+      style={styles.container}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+    >
       <ScrollView
+        ref={scrollViewRef}
         style={styles.scrollContent}
         contentContainerStyle={[
           styles.content,
           { paddingTop: 40 + insets.top, paddingBottom: 100 + insets.bottom },
         ]}
+        keyboardShouldPersistTaps="handled"
       >
         <View style={styles.header}>
           <Text style={styles.headerTitle}>Іду гуляти</Text>
@@ -361,6 +371,7 @@ export default function GoOnlineScreen() {
 
         <Text style={styles.label}>Опис прогулянки</Text>
         <TextInput
+          ref={descriptionInputRef}
           style={[styles.input, styles.descriptionInput]}
           placeholder="Розкажіть, куди йдете і чим плануєте займатися..."
           placeholderTextColor={TEXT_LIGHT}
@@ -368,6 +379,20 @@ export default function GoOnlineScreen() {
           onChangeText={setDescription}
           multiline
           numberOfLines={6}
+          onFocus={() => {
+            setTimeout(() => {
+              descriptionInputRef.current?.measure((x, y, width, height, pageX, pageY) => {
+                const keyboardHeight = Keyboard.metrics()?.height || 300;
+                const screenHeight = Dimensions.get('window').height;
+                const inputBottom = pageY + height;
+                const visibleHeight = screenHeight - keyboardHeight;
+                
+                if (inputBottom > visibleHeight) {
+                  scrollViewRef.current?.scrollTo({ y: pageY - 50, animated: true });
+                }
+              });
+            }, 300);
+          }}
         />
 
         {error ? <Text style={styles.errorText}>{error}</Text> : null}
@@ -581,7 +606,7 @@ export default function GoOnlineScreen() {
           </View>
         </View>
       </Modal>
-    </View>
+    </KeyboardAvoidingView>
   );
 }
 
