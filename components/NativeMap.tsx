@@ -88,12 +88,8 @@ export default function NativeMap({
               transform: scale(1);
               opacity: 0.3;
             }
-            50% {
-              transform: scale(1.4);
-              opacity: 0;
-            }
             100% {
-              transform: scale(1);
+              transform: scale(1.5);
               opacity: 0;
             }
           }
@@ -129,7 +125,7 @@ export default function NativeMap({
             html: \`
               <div class="user-location-pulse">
                 <div style="position: relative; width: 20px; height: 20px;">
-                  <div style="position: absolute; width: 20px; height: 20px; left: 0; top: 0; background: #FF9500; opacity: 0.3; border-radius: 50%; animation: pulse 2s infinite;"></div>
+                  <div style="position: absolute; width: 20px; height: 20px; left: 0; top: 0; background: #FF9500; border-radius: 50%; animation: pulse 2s ease-out infinite;"></div>
                   <div style="position: absolute; width: 14px; height: 14px; left: 3px; top: 3px; background: #FF9500; border-radius: 50%; border: 2px solid white; box-shadow: 0 2px 8px rgba(0,0,0,0.3);"></div>
                 </div>
               </div>
@@ -189,8 +185,7 @@ export default function NativeMap({
                 if (isSelected) {
                   markerHtml = \`
                     <div style="position: relative; width: 36.3px; height: 36.3px;">
-                      <div style="position: absolute; width: 36.3px; height: 36.3px; left: 0; top: 0; background: \${color}; opacity: 0.18; border-radius: 82.5081px;"></div>
-                      <div style="position: absolute; width: 33.28px; height: 33.28px; left: 1.51px; top: 1.51px; background: \${color}; opacity: 0.23; border-radius: 82.5081px;"></div>
+                      <div style="position: absolute; width: 36.3px; height: 36.3px; left: 0; top: 0; background: \${color}; border-radius: 50%; animation: pulse 2s ease-out infinite;"></div>
                       <div style="position: absolute; width: 27.23px; height: 27.23px; left: 4.54px; top: 4.54px; background: \${color}; opacity: 0.33; border-radius: 82.5081px;"></div>
                       <div style="position: absolute; width: 21.18px; height: 21.18px; left: 7.56px; top: 7.56px; background: \${color}; opacity: 0.53; border-radius: 82.5081px;"></div>
                       <div style="position: absolute; width: 15.13px; height: 15.13px; left: 10.59px; top: 10.59px; background: \${color}; border-radius: 8.25081px;"></div>
@@ -215,8 +210,7 @@ export default function NativeMap({
                 if (isSelected) {
                   markerHtml = \`
                     <div style="position: relative; width: 36.3px; height: 36.3px;">
-                      <div style="position: absolute; width: 36.3px; height: 36.3px; left: 0; top: 0; background: \${userColor}; opacity: 0.18; border-radius: 82.5081px;"></div>
-                      <div style="position: absolute; width: 33.28px; height: 33.28px; left: 1.51px; top: 1.51px; background: \${userColor}; opacity: 0.23; border-radius: 82.5081px;"></div>
+                      <div style="position: absolute; width: 36.3px; height: 36.3px; left: 0; top: 0; background: \${userColor}; border-radius: 50%; animation: pulse 2s ease-out infinite;"></div>
                       <div style="position: absolute; width: 27.23px; height: 27.23px; left: 4.54px; top: 4.54px; background: \${userColor}; opacity: 0.33; border-radius: 82.5081px;"></div>
                       <div style="position: absolute; width: 21.18px; height: 21.18px; left: 7.56px; top: 7.56px; background: \${userColor}; opacity: 0.53; border-radius: 82.5081px;"></div>
                       <div style="position: absolute; width: 15.13px; height: 15.13px; left: 10.59px; top: 10.59px; background: \${userColor}; border-radius: 8.25081px;"></div>
