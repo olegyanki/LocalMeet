@@ -24,6 +24,8 @@ interface NativeMapProps {
   radiusKm?: number;
   centerLat?: number;
   centerLng?: number;
+  userLatitude?: number;
+  userLongitude?: number;
   bounds?: {
     markers: Array<{latitude: number; longitude: number}>;
   } | null;
@@ -40,6 +42,8 @@ export default function NativeMap({
   radiusKm,
   centerLat,
   centerLng,
+  userLatitude,
+  userLongitude,
   bounds,
 }: NativeMapProps) {
   const webViewRef = useRef<WebView>(null);
@@ -134,8 +138,6 @@ export default function NativeMap({
             iconAnchor: [10, 10]
           });
 
-          L.marker([${latitude}, ${longitude}], { icon: userIcon }).addTo(map);
-
           ${radiusKm && centerLat && centerLng ? `
           L.circle([${centerLat}, ${centerLng}], {
             color: '#FF9500',
@@ -160,6 +162,9 @@ export default function NativeMap({
           function updateMarkers(markers, selectedId, boundsMarkers) {
             Object.values(markerObjects).forEach(marker => map.removeLayer(marker));
             markerObjects = {};
+            
+            // Завжди додаємо маркер локації
+            L.marker([${userLatitude || latitude}, ${userLongitude || longitude}], { icon: userIcon }).addTo(map);
 
             markers.forEach(marker => {
               const isSelected = selectedId === marker.id;

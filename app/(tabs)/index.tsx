@@ -388,6 +388,8 @@ export default function SearchScreen() {
             markers={mapMarkers}
             bounds={mapBounds}
             selectedMarkerId={selectedMarkerId}
+            userLatitude={location.coords.latitude}
+            userLongitude={location.coords.longitude}
             onMarkerPress={(id) => {
               setSelectedMarkerId(id);
               const index = nearbyUsers.findIndex((item) => item.id === id);
