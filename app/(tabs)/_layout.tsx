@@ -51,7 +51,7 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="create"
+        name="create-event"
         options={{
           title: 'GO ONLINE',
           tabBarIcon: ({ size, color }) => <Plus size={20} color={color} />,
