@@ -21,6 +21,7 @@ interface NativeMapProps {
   selectedMarkerId?: string | null;
   onMarkerPress?: (id: string) => void;
   onMapPress?: (lat: number, lng: number) => void;
+  onMapMove?: (lat: number, lng: number) => void;
   radiusKm?: number;
   centerLat?: number;
   centerLng?: number;
@@ -39,6 +40,7 @@ export default function NativeMap({
   selectedMarkerId,
   onMarkerPress,
   onMapPress,
+  onMapMove,
   radiusKm,
   centerLat,
   centerLng,
@@ -149,6 +151,17 @@ export default function NativeMap({
               type: 'mapClick',
               lat: e.latlng.lat,
               lng: e.latlng.lng
+            }));
+          });
+          ` : ''}
+
+          ${onMapMove ? `
+          map.on('moveend', function() {
+            const center = map.getCenter();
+            window.ReactNativeWebView.postMessage(JSON.stringify({
+              type: 'mapMove',
+              lat: center.lat,
+              lng: center.lng
             }));
           });
           ` : ''}
@@ -297,6 +310,8 @@ export default function NativeMap({
         onMarkerPress(data.id);
       } else if (data.type === 'mapClick' && onMapPress) {
         onMapPress(data.lat, data.lng);
+      } else if (data.type === 'mapMove' && onMapMove) {
+        onMapMove(data.lat, data.lng);
       }
     } catch (e) {
       console.error('Error parsing message:', e);

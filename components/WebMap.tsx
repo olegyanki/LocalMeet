@@ -16,9 +16,12 @@ interface WebMapProps {
   selectedMarkerId?: string | null;
   onMarkerPress?: (id: string) => void;
   onMapClick?: (lat: number, lng: number) => void;
+  onMapMove?: (lat: number, lng: number) => void;
   radiusKm?: number;
   centerLat?: number;
   centerLng?: number;
+  userLatitude?: number;
+  userLongitude?: number;
   bounds?: {
     markers: Array<{latitude: number; longitude: number}>;
   } | null;
@@ -31,9 +34,12 @@ export default function WebMap({
   selectedMarkerId,
   onMarkerPress,
   onMapClick,
+  onMapMove,
   radiusKm,
   centerLat,
   centerLng,
+  userLatitude,
+  userLongitude,
   bounds,
 }: WebMapProps) {
   const mapRef = useRef<any>(null);
@@ -95,6 +101,10 @@ export default function WebMap({
 
     L.marker([latitude, longitude], { icon: userIcon }).addTo(map);
 
+    if (userLatitude && userLongitude && (userLatitude !== latitude || userLongitude !== longitude)) {
+      L.marker([userLatitude, userLongitude], { icon: userIcon }).addTo(map);
+    }
+
     if (radiusKm && centerLat && centerLng) {
       L.circle([centerLat, centerLng], {
         color: '#FF9500',
@@ -107,6 +117,13 @@ export default function WebMap({
     if (onMapClick) {
       map.on('click', (e: any) => {
         onMapClick(e.latlng.lat, e.latlng.lng);
+      });
+    }
+
+    if (onMapMove) {
+      map.on('moveend', () => {
+        const center = map.getCenter();
+        onMapMove(center.lat, center.lng);
       });
     }
 

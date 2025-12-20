@@ -55,6 +55,8 @@ export default function GoOnlineScreen() {
   } | null>(null);
   const [showLocationPicker, setShowLocationPicker] = useState(false);
   const [isLoadingLocation, setIsLoadingLocation] = useState(false);
+  const [tempLocation, setTempLocation] = useState<{latitude: number; longitude: number} | null>(null);
+  const [initialMapCenter, setInitialMapCenter] = useState<{latitude: number; longitude: number} | null>(null);
   const translateY = useRef(new Animated.Value(0)).current;
   const translateYTime = useRef(new Animated.Value(0)).current;
   const scrollViewRef = useRef<ScrollView>(null);
@@ -132,6 +134,10 @@ export default function GoOnlineScreen() {
 
   useEffect(() => {
     if (showLocationPicker) {
+      setInitialMapCenter(selectedLocation || {
+        latitude: location?.coords.latitude || 39.4699,
+        longitude: location?.coords.longitude || -0.3763
+      });
       translateY.setValue(500);
       Animated.spring(translateY, {
         toValue: 0,
@@ -142,6 +148,7 @@ export default function GoOnlineScreen() {
     } else {
       setTimeout(() => {
         translateY.setValue(500);
+        setInitialMapCenter(null);
       }, 250);
     }
   }, [showLocationPicker]);
@@ -307,12 +314,16 @@ export default function GoOnlineScreen() {
   };
 
   const closeLocationPicker = () => {
+    if (tempLocation) {
+      setSelectedLocation(tempLocation);
+    }
     Animated.timing(translateY, {
       toValue: 1000,
       duration: 250,
       useNativeDriver: true,
     }).start(() => {
       setShowLocationPicker(false);
+      setTempLocation(null);
     });
   };
 
@@ -574,16 +585,16 @@ export default function GoOnlineScreen() {
               <Text style={styles.pickerTitle}>Оберіть локацію прогулянки</Text>
             </Animated.View>
 
-            {location ? (
+            {location && initialMapCenter ? (
               <View style={styles.mapWrapper}>
                 {Platform.OS === 'web' ? (
                   <WebMap
-                    latitude={selectedLocation?.latitude || location.coords.latitude}
-                    longitude={selectedLocation?.longitude || location.coords.longitude}
+                    latitude={initialMapCenter.latitude}
+                    longitude={initialMapCenter.longitude}
                     markers={[]}
                     selectedMarkerId={null}
                     onMarkerPress={() => {}}
-                    onMapClick={(lat, lng) => {
+                    onMapMove={(lat, lng) => {
                       const distance = calculateDistance(
                         location.coords.latitude,
                         location.coords.longitude,
@@ -591,21 +602,23 @@ export default function GoOnlineScreen() {
                         lng
                       );
                       if (distance <= 15) {
-                        setSelectedLocation({ latitude: lat, longitude: lng });
+                        setTempLocation({ latitude: lat, longitude: lng });
                       }
                     }}
                     radiusKm={15}
                     centerLat={location.coords.latitude}
                     centerLng={location.coords.longitude}
+                    userLatitude={location.coords.latitude}
+                    userLongitude={location.coords.longitude}
                   />
                 ) : (
                   <NativeMap
-                    latitude={selectedLocation?.latitude || location.coords.latitude}
-                    longitude={selectedLocation?.longitude || location.coords.longitude}
+                    latitude={initialMapCenter.latitude}
+                    longitude={initialMapCenter.longitude}
                     markers={[]}
                     selectedMarkerId={null}
                     onMarkerPress={() => {}}
-                    onMapPress={(lat, lng) => {
+                    onMapMove={(lat, lng) => {
                       const distance = calculateDistance(
                         location.coords.latitude,
                         location.coords.longitude,
@@ -613,9 +626,14 @@ export default function GoOnlineScreen() {
                         lng
                       );
                       if (distance <= 15) {
-                        setSelectedLocation({ latitude: lat, longitude: lng });
+                        setTempLocation({ latitude: lat, longitude: lng });
                       }
                     }}
+                    radiusKm={15}
+                    centerLat={location.coords.latitude}
+                    centerLng={location.coords.longitude}
+                    userLatitude={location.coords.latitude}
+                    userLongitude={location.coords.longitude}
                   />
                 )}
                 <View style={styles.centerMarker}>
@@ -856,6 +874,7 @@ const styles = StyleSheet.create({
     zIndex: 1000,
     width: 21.18,
     height: 21.18,
+    pointerEvents: 'none',
   },
   markerOuter: {
     position: 'absolute',
