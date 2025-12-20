@@ -335,7 +335,7 @@ export default function GoOnlineScreen() {
         keyboardShouldPersistTaps="handled"
       >
         <View style={styles.header}>
-          <Text style={styles.headerTitle}>Іду гуляти</Text>
+          <Text style={styles.headerTitle}>Створити активність</Text>
         </View>
 
         <Text style={styles.subtitle}>Розкажіть іншим коли і куди ви йдете гуляти</Text>
@@ -349,7 +349,7 @@ export default function GoOnlineScreen() {
           onChangeText={setTitle}
         />
 
-        <Text style={styles.label}>Коли починаєте?</Text>
+        <Text style={styles.label}>Коли починається ваша активність?</Text>
         <Pressable style={styles.timeButton} onPress={() => setShowTimePicker(true)}>
           <Clock size={20} color={ACCENT_ORANGE} />
           <Text style={styles.timeButtonText}>
@@ -430,7 +430,7 @@ export default function GoOnlineScreen() {
               <View style={styles.handle} />
             </Animated.View>
             <Animated.View {...panResponderTime.panHandlers} style={styles.pickerHeader}>
-              <Text style={styles.pickerTitle}>Коли ви починаєте гуляти?</Text>
+              <Text style={styles.pickerTitle}>Коли починається ваша активність?</Text>
             </Animated.View>
 
             <Animated.View {...panResponderTime.panHandlers} style={styles.pickerContent}>
