@@ -75,8 +75,8 @@ export default function GoOnlineScreen() {
       onPanResponderRelease: (_, gestureState) => {
         if (gestureState.dy > 100 || gestureState.vy > 0.5) {
           Animated.timing(translateY, {
-            toValue: 500,
-            duration: 200,
+            toValue: 1000,
+            duration: 250,
             useNativeDriver: true,
           }).start(() => {
             setShowLocationPicker(false);
@@ -107,8 +107,8 @@ export default function GoOnlineScreen() {
       onPanResponderRelease: (_, gestureState) => {
         if (gestureState.dy > 100 || gestureState.vy > 0.5) {
           Animated.timing(translateYTime, {
-            toValue: 500,
-            duration: 200,
+            toValue: 1000,
+            duration: 250,
             useNativeDriver: true,
           }).start(() => {
             setShowTimePicker(false);
@@ -292,10 +292,30 @@ export default function GoOnlineScreen() {
     }
   };
 
+  const closeTimePicker = () => {
+    Animated.timing(translateYTime, {
+      toValue: 1000,
+      duration: 250,
+      useNativeDriver: true,
+    }).start(() => {
+      setShowTimePicker(false);
+    });
+  };
+
+  const closeLocationPicker = () => {
+    Animated.timing(translateY, {
+      toValue: 1000,
+      duration: 250,
+      useNativeDriver: true,
+    }).start(() => {
+      setShowLocationPicker(false);
+    });
+  };
+
   const confirmTime = () => {
     const timeString = `${selectedHour}:${selectedMinute}`;
     setTime(timeString);
-    setShowTimePicker(false);
+    closeTimePicker();
   };
 
   const calculateDistance = (
@@ -415,13 +435,13 @@ export default function GoOnlineScreen() {
         visible={showTimePicker}
         transparent
         animationType="none"
-        onRequestClose={() => setShowTimePicker(false)}
+        onRequestClose={closeTimePicker}
       >
         <View style={styles.backdrop}>
           <TouchableOpacity
             style={StyleSheet.absoluteFill}
             activeOpacity={1}
-            onPress={() => setShowTimePicker(false)}
+            onPress={closeTimePicker}
           />
           <Animated.View
             style={[
@@ -547,13 +567,13 @@ export default function GoOnlineScreen() {
         visible={showLocationPicker}
         transparent
         animationType="none"
-        onRequestClose={() => setShowLocationPicker(false)}
+        onRequestClose={closeLocationPicker}
       >
         <View style={styles.backdrop}>
           <TouchableOpacity
             style={StyleSheet.absoluteFill}
             activeOpacity={1}
-            onPress={() => setShowLocationPicker(false)}
+            onPress={closeLocationPicker}
           />
           <Animated.View
             style={[
@@ -628,7 +648,7 @@ export default function GoOnlineScreen() {
               </Text>
               <Pressable
                 style={styles.confirmButton}
-                onPress={() => setShowLocationPicker(false)}
+                onPress={closeLocationPicker}
               >
                 <Check size={20} color="#FFFFFF" />
                 <Text style={styles.confirmButtonText}>Підтвердити</Text>
