@@ -359,6 +359,36 @@ export async function getActiveWalkByUserId(userId: string): Promise<Walk | null
   return data;
 }
 
+export async function getActiveWalksByUserId(userId: string): Promise<Walk[]> {
+  const { data, error } = await supabase
+    .from('walks')
+    .select('*')
+    .eq('user_id', userId)
+    .eq('is_active', true)
+    .or('deleted.is.null,deleted.eq.false')
+    .order('start_time', { ascending: true });
+
+  if (error) {
+    throw error;
+  }
+
+  return data || [];
+}
+
+function doTimesOverlap(
+  start1: string,
+  duration1: string,
+  start2: string,
+  duration2: string
+): boolean {
+  const s1 = new Date(start1);
+  const s2 = new Date(start2);
+  const e1 = new Date(s1.getTime() + parseDuration(duration1) * 60000);
+  const e2 = new Date(s2.getTime() + parseDuration(duration2) * 60000);
+
+  return s1 < e2 && s2 < e1;
+}
+
 export async function updateWalkStatus(userId: string, data: {
   isWalking: boolean;
   walkTitle?: string;
@@ -369,12 +399,19 @@ export async function updateWalkStatus(userId: string, data: {
   walkLongitude?: number;
 }) {
   if (data.isWalking) {
-    // Деактивуємо всі попередні прогулянки користувача
-    await supabase
-      .from('walks')
-      .update({ is_active: false })
-      .eq('user_id', userId)
-      .eq('is_active', true);
+    // Перевіряємо перетин часу з існуючими івентами
+    const existingWalks = await getActiveWalksByUserId(userId);
+    
+    for (const walk of existingWalks) {
+      if (doTimesOverlap(
+        walk.start_time,
+        walk.duration,
+        data.walkStartTime!,
+        data.walkDuration!
+      )) {
+        throw new Error('TIME_OVERLAP');
+      }
+    }
 
     // Створюємо нову прогулянку
     await createWalk({

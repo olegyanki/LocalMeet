@@ -227,6 +227,8 @@ export default function GoOnlineScreen() {
   };
 
   const handleSubmit = async () => {
+    Keyboard.dismiss();
+    
     if (!title.trim()) {
       setError("Назва івенту обов'язкова");
       return;
@@ -283,9 +285,12 @@ export default function GoOnlineScreen() {
           params: { reloadEvents: 'true' }
         });
       }, 1500);
-    } catch (err) {
-      console.error('Failed to go online:', err);
-      setError('Не вдалося опублікувати статус');
+    } catch (err: any) {
+      if (err.message === 'TIME_OVERLAP') {
+        setError('Цей час перетинається з іншим вашим івентом');
+      } else {
+        setError('Не вдалося опублікувати статус');
+      }
     } finally {
       setIsSubmitting(false);
     }
