@@ -556,3 +556,5 @@ export async function getMyWalkRequests(userId: string): Promise<WalkRequestWith
 
   return requestsWithProfiles;
 }
+
+export const getNearbyUsers = getNearbyWalks;

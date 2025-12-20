@@ -13,9 +13,9 @@ import {
 } from 'react-native';
 import * as Location from 'expo-location';
 import { Check } from 'lucide-react-native';
-import WebMap from '../maps/WebMap';
-import NativeMap from '../maps/NativeMap';
-import { calculateDistance } from '../../utils/location';
+import WebMap from '@features/search/maps/WebMap';
+import NativeMap from '@features/search/maps/NativeMap';
+import { calculateDistance } from '@shared/utils/location';
 
 const ACCENT_ORANGE = '#FF9500';
 const TEXT_LIGHT = '#999999';

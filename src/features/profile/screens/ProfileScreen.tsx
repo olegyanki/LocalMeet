@@ -18,8 +18,8 @@ import { useRouter } from 'expo-router';
 import { getProfile, updateProfile } from '@shared/lib/api';
 import { signOut } from '@shared/lib/auth';
 import { LogOut, Instagram, Send, Plus, X, ChevronDown } from 'lucide-react-native';
-import AvatarPicker from '../../components/AvatarPicker';
-import InterestPicker from '../../components/InterestPicker';
+import AvatarPicker from '@shared/components/AvatarPicker';
+import InterestPicker from '@shared/components/InterestPicker';
 
 const BG_COLOR = '#F5F5F5';
 const ACCENT_ORANGE = '#FF9500';

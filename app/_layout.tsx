@@ -1,9 +1,9 @@
 import { useEffect } from 'react';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { useFrameworkReady } from '../hooks/useFrameworkReady';
-import { AuthProvider } from '../contexts/AuthContext';
-import { CreateEventProvider } from '../contexts/CreateEventContext';
+import { useFrameworkReady } from '@shared/hooks/useFrameworkReady';
+import { AuthProvider } from '@shared/contexts/AuthContext';
+import { CreateEventProvider } from '@shared/contexts/CreateEventContext';
 
 export default function RootLayout() {
   useFrameworkReady();

@@ -16,12 +16,12 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Location from 'expo-location';
 import { useAuth } from '@shared/contexts/AuthContext';
-import { getNearbyWalks, updateLocation, updateWalkStatus } from '@shared/lib/api';
+import { getNearbyUsers, updateLocation, updateWalkStatus } from '@shared/lib/api';
 import { Clock } from 'lucide-react-native';
-import WebMap from '../../components/maps/WebMap';
-import NativeMap from '../../components/maps/NativeMap';
-import EventDetailsBottomSheet from '../../components/modals/EventDetailsBottomSheet';
-import ContactRequestBottomSheet from '../../components/modals/ContactRequestBottomSheet';
+import WebMap from '@features/search/maps/WebMap';
+import NativeMap from '@features/search/maps/NativeMap';
+import EventDetailsBottomSheet from '@features/events/modals/EventDetailsBottomSheet';
+import ContactRequestBottomSheet from '@features/events/modals/ContactRequestBottomSheet';
 import { useFocusEffect } from '@react-navigation/native';
 import { router, useLocalSearchParams } from 'expo-router';
 
@@ -214,7 +214,7 @@ export default function SearchScreen() {
     try {
       setIsLoadingWalks(true);
       initialBoundsSet.current = false;
-      const walks = await getNearbyWalks(location.coords.latitude, location.coords.longitude);
+      const walks = await getNearbyUsers(location.coords.latitude, location.coords.longitude);
 
       const ownWalk = walks.find((w) => w.id === user.id);
       if (ownWalk && ownWalk.walk) {
@@ -228,7 +228,7 @@ export default function SearchScreen() {
           const endTime = new Date(startTime.getTime() + durationMinutes * 60000);
 
           if (now >= endTime) {
-            const updatedWalks = await getNearbyWalks(location.coords.latitude, location.coords.longitude);
+            const updatedWalks = await getNearbyUsers(location.coords.latitude, location.coords.longitude);
             const updatedOwnWalks = updatedWalks.filter((w) => w.id === user.id);
             const updatedOtherWalks = updatedWalks.filter((w) => w.id !== user.id);
             const updatedSortedWalks = [...updatedOwnWalks, ...updatedOtherWalks];

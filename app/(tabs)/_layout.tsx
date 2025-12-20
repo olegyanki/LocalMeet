@@ -1,6 +1,6 @@
 import { Tabs } from 'expo-router';
 import { Search, Plus, User, MessageCircle } from 'lucide-react-native';
-import { useAuth } from '../../contexts/AuthContext';
+import { useAuth } from '@shared/contexts/AuthContext';
 import { useRouter } from 'expo-router';
 import { useEffect } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';

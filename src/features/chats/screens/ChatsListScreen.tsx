@@ -5,7 +5,7 @@ import { useRouter, useFocusEffect } from 'expo-router';
 import { useAuth } from '@shared/contexts/AuthContext';
 import { getMyWalkRequests, updateWalkRequestStatus, WalkRequestWithProfile } from '@shared/lib/api';
 import { supabase } from '@shared/lib/supabase';
-import RequestCard from '../../components/RequestCard';
+import RequestCard from '@features/chats/components/RequestCard';
 
 const ACCENT_ORANGE = '#FF9500';
 const TEXT_LIGHT = '#999999';
