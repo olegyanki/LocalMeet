@@ -15,6 +15,7 @@ import {
   KeyboardAvoidingView,
   Keyboard,
   Dimensions,
+  TouchableWithoutFeedback,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Location from 'expo-location';
@@ -434,6 +435,8 @@ export default function GoOnlineScreen() {
             </Animated.View>
 
             <Animated.View {...panResponderTime.panHandlers} style={styles.pickerContent}>
+              <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+                <View>
               <View style={styles.pickerSection}>
                 <Text style={styles.pickerLabel}>Час початку</Text>
                 <View style={styles.timeInputRow}>
@@ -519,6 +522,8 @@ export default function GoOnlineScreen() {
                   ))}
                 </View>
               </View>
+                </View>
+              </TouchableWithoutFeedback>
             </Animated.View>
 
             <Animated.View {...panResponderTime.panHandlers} style={styles.pickerFooter}>
