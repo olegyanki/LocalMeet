@@ -418,6 +418,11 @@ export default function GoOnlineScreen() {
         onRequestClose={() => setShowTimePicker(false)}
       >
         <View style={styles.backdrop}>
+          <TouchableOpacity
+            style={StyleSheet.absoluteFill}
+            activeOpacity={1}
+            onPress={() => setShowTimePicker(false)}
+          />
           <Animated.View
             style={[
               styles.bottomSheetModal,
@@ -543,6 +548,11 @@ export default function GoOnlineScreen() {
         onRequestClose={() => setShowLocationPicker(false)}
       >
         <View style={styles.backdrop}>
+          <TouchableOpacity
+            style={StyleSheet.absoluteFill}
+            activeOpacity={1}
+            onPress={() => setShowLocationPicker(false)}
+          />
           <Animated.View
             style={[
               styles.bottomSheetModal,
