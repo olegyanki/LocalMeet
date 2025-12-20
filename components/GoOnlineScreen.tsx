@@ -25,6 +25,7 @@ import { Check, X, Clock, MapPin } from 'lucide-react-native';
 import WebMap from './WebMap';
 import NativeMap from './NativeMap';
 import { router } from 'expo-router';
+import DateTimePicker from '@react-native-community/datetimepicker';
 
 const BG_COLOR = '#F5F5F5';
 const ACCENT_ORANGE = '#FF9500';
@@ -44,8 +45,7 @@ export default function GoOnlineScreen() {
   const [showSuccess, setShowSuccess] = useState(false);
   const [error, setError] = useState('');
   const [showTimePicker, setShowTimePicker] = useState(false);
-  const [selectedHour, setSelectedHour] = useState('18');
-  const [selectedMinute, setSelectedMinute] = useState('00');
+  const [selectedTime, setSelectedTime] = useState(new Date());
   const [selectedDuration, setSelectedDuration] = useState('2');
   const [location, setLocation] = useState<Location.LocationObject | null>(null);
   const [selectedLocation, setSelectedLocation] = useState<{
@@ -164,10 +164,9 @@ export default function GoOnlineScreen() {
 
   const setCurrentTime = () => {
     const now = new Date();
+    setSelectedTime(now);
     const hours = now.getHours().toString().padStart(2, '0');
     const minutes = now.getMinutes().toString().padStart(2, '0');
-    setSelectedHour(hours);
-    setSelectedMinute(minutes);
     setTime(`${hours}:${minutes}`);
   };
 
@@ -313,9 +312,38 @@ export default function GoOnlineScreen() {
   };
 
   const confirmTime = () => {
-    const timeString = `${selectedHour}:${selectedMinute}`;
+    const hours = selectedTime.getHours().toString().padStart(2, '0');
+    const minutes = selectedTime.getMinutes().toString().padStart(2, '0');
+    const timeString = `${hours}:${minutes}`;
     setTime(timeString);
     closeTimePicker();
+  };
+
+  const onTimeChange = (event: any, date?: Date) => {
+    if (date) {
+      const now = new Date();
+      const selectedDateTime = new Date(
+        now.getFullYear(),
+        now.getMonth(),
+        now.getDate(),
+        date.getHours(),
+        date.getMinutes()
+      );
+      
+      if (selectedDateTime < now) {
+        setSelectedTime(now);
+      } else {
+        setSelectedTime(date);
+      }
+      
+      if (Platform.OS === 'android') {
+        setShowTimePicker(false);
+        const finalTime = selectedDateTime < now ? now : date;
+        const hours = finalTime.getHours().toString().padStart(2, '0');
+        const minutes = finalTime.getMinutes().toString().padStart(2, '0');
+        setTime(`${hours}:${minutes}`);
+      }
+    }
   };
 
   const calculateDistance = (
@@ -462,66 +490,18 @@ export default function GoOnlineScreen() {
             </TouchableWithoutFeedback>
 
             <Animated.View {...panResponderTime.panHandlers} style={styles.pickerContent}>
-              <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-                <View>
               <View style={styles.pickerSection}>
                 <Text style={styles.pickerLabel}>Час початку</Text>
-                <View style={styles.timeInputRow}>
-                  <View style={styles.timeInputWrapper}>
-                    <Text style={styles.timeInputLabel}>Година</Text>
-                    <TextInput
-                      style={styles.timeInput}
-                      value={selectedHour}
-                      onChangeText={(text) => {
-                        if (text === '') {
-                          setSelectedHour('');
-                          return;
-                        }
-                        const num = parseInt(text);
-                        if (!isNaN(num) && num >= 0 && num < 24) {
-                          setSelectedHour(text);
-                        }
-                      }}
-                      onBlur={() => {
-                        if (selectedHour === '') {
-                          setSelectedHour('00');
-                        } else {
-                          const num = parseInt(selectedHour);
-                          setSelectedHour(num.toString().padStart(2, '0'));
-                        }
-                      }}
-                      keyboardType="number-pad"
-                      maxLength={2}
-                    />
-                  </View>
-                  <Text style={styles.timeSeparator}>:</Text>
-                  <View style={styles.timeInputWrapper}>
-                    <Text style={styles.timeInputLabel}>Хвилини</Text>
-                    <TextInput
-                      style={styles.timeInput}
-                      value={selectedMinute}
-                      onChangeText={(text) => {
-                        if (text === '') {
-                          setSelectedMinute('');
-                          return;
-                        }
-                        const num = parseInt(text);
-                        if (!isNaN(num) && num >= 0 && num < 60) {
-                          setSelectedMinute(text);
-                        }
-                      }}
-                      onBlur={() => {
-                        if (selectedMinute === '') {
-                          setSelectedMinute('00');
-                        } else {
-                          const num = parseInt(selectedMinute);
-                          setSelectedMinute(num.toString().padStart(2, '0'));
-                        }
-                      }}
-                      keyboardType="number-pad"
-                      maxLength={2}
-                    />
-                  </View>
+                <View style={styles.timePickerWrapper}>
+                  <DateTimePicker
+                    value={selectedTime}
+                    mode="time"
+                    is24Hour={true}
+                    display="spinner"
+                    onChange={onTimeChange}
+                    textColor={TEXT_DARK}
+                    locale="uk-UA"
+                  />
                 </View>
               </View>
 
@@ -549,8 +529,6 @@ export default function GoOnlineScreen() {
                   ))}
                 </View>
               </View>
-                </View>
-              </TouchableWithoutFeedback>
             </Animated.View>
 
             <Animated.View {...panResponderTime.panHandlers} style={styles.pickerFooter}>
@@ -906,37 +884,10 @@ const styles = StyleSheet.create({
     color: TEXT_DARK,
     marginBottom: 16,
   },
-  timeInputRow: {
-    flexDirection: 'row',
+  timePickerWrapper: {
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 12,
-  },
-  timeInputWrapper: {
-    alignItems: 'center',
-  },
-  timeInputLabel: {
-    fontSize: 13,
-    color: TEXT_LIGHT,
-    marginBottom: 8,
-  },
-  timeInput: {
-    backgroundColor: INPUT_BG,
-    borderWidth: 2,
-    borderColor: ACCENT_ORANGE,
-    borderRadius: 12,
-    width: 80,
-    paddingVertical: 16,
-    fontSize: 32,
-    fontWeight: '700',
-    color: TEXT_DARK,
-    textAlign: 'center',
-  },
-  timeSeparator: {
-    fontSize: 32,
-    fontWeight: '700',
-    color: TEXT_DARK,
-    marginTop: 24,
+    paddingVertical: 20,
   },
   durationOptions: {
     flexDirection: 'row',
