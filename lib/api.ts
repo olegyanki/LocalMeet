@@ -39,7 +39,7 @@ export interface UserLocation {
   updated_at: string;
 }
 
-export interface NearbyUser extends UserProfile {
+export interface NearbyWalk extends UserProfile {
   distance: number;
   location: UserLocation | null;
   walk: Walk | null;
@@ -113,7 +113,7 @@ function isWalkStillActive(walkStartTime: string | null, walkDuration: string | 
   return now < endTime;
 }
 
-export async function getNearbyUsers(latitude: number, longitude: number, radiusKm: number = 5) {
+export async function getNearbyWalks(latitude: number, longitude: number, radiusKm: number = 5): Promise<NearbyWalk[]> {
   // Отримуємо всі активні прогулянки
   const { data: walks, error: walksError } = await supabase
     .from('walks')
@@ -160,7 +160,7 @@ export async function getNearbyUsers(latitude: number, longitude: number, radius
     throw error;
   }
 
-  const profilesWithDistance = profiles
+  const walksWithDistance = profiles
     ?.map((profile) => {
       const walk = activeWalks.find(w => w.user_id === profile.id);
       if (!walk) return null;
@@ -190,11 +190,11 @@ export async function getNearbyUsers(latitude: number, longitude: number, radius
         walk,
       };
     })
-    .filter((profile): profile is NonNullable<typeof profile> =>
-      profile !== null && profile.distance <= radiusKm
+    .filter((walk): walk is NonNullable<typeof walk> =>
+      walk !== null && walk.distance <= radiusKm
     );
 
-  return profilesWithDistance?.sort((a, b) => a.distance - b.distance) || [];
+  return walksWithDistance?.sort((a, b) => a.distance - b.distance) || [];
 }
 
 export async function getProfile(userId: string): Promise<UserProfile | null> {

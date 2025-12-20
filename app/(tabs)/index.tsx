@@ -16,7 +16,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Location from 'expo-location';
 import { useAuth } from '../../contexts/AuthContext';
-import { getNearbyUsers, updateLocation, updateWalkStatus } from '../../lib/api';
+import { getNearbyWalks, updateLocation, updateWalkStatus } from '../../lib/api';
 import { Clock } from 'lucide-react-native';
 import WebMap from '../../components/WebMap';
 import NativeMap from '../../components/NativeMap';
@@ -76,13 +76,14 @@ export default function SearchScreen() {
   const isScrollingProgrammatically = useRef(false);
   const [location, setLocation] = useState<Location.LocationObject | null>(null);
   const [isLoadingLocation, setIsLoadingLocation] = useState(true);
-  const [nearbyUsers, setNearbyUsers] = useState<UserProfile[]>([]);
-  const [isLoadingUsers, setIsLoadingUsers] = useState(false);
+  const [nearbyWalks, setNearbyWalks] = useState<UserProfile[]>([]);
+  const [isLoadingWalks, setIsLoadingWalks] = useState(false);
   const [selectedMarkerId, setSelectedMarkerId] = useState<string | null>(null);
   const [currentCardIndex, setCurrentCardIndex] = useState(0);
   const [mapCenter, setMapCenter] = useState<{latitude: number; longitude: number; paddingBottom?: number} | null>(null);
   const [mapBounds, setMapBounds] = useState<{markers: Array<{latitude: number; longitude: number}>} | null>(null);
   const previousMarkerIdRef = useRef<string | null>(null);
+  const initialBoundsSet = useRef(false);
   const [detailsVisible, setDetailsVisible] = useState(false);
   const [selectedUser, setSelectedUser] = useState<UserProfile | null>(null);
   const [contactRequestVisible, setContactRequestVisible] = useState(false);
@@ -94,7 +95,7 @@ export default function SearchScreen() {
 
   useEffect(() => {
     if (params.reloadEvents === 'true' && location && user) {
-      loadNearbyUsers();
+      loadNearbyWalks();
     }
   }, [params.reloadEvents]);
 
@@ -106,24 +107,33 @@ export default function SearchScreen() {
 
   useEffect(() => {
     if (location && user) {
-      loadNearbyUsers();
+      loadNearbyWalks();
     }
   }, [location, user]);
 
   useEffect(() => {
-    if (nearbyUsers.length > 0 && user) {
-      const myEvent = nearbyUsers.find(u => u.id === user.id);
-      if (myEvent && myEvent.location) {
-        setMapCenter({
-          latitude: myEvent.location.latitude,
-          longitude: myEvent.location.longitude,
-          paddingBottom: 150
-        });
-        setMapBounds(null);
-        const myIndex = nearbyUsers.findIndex(u => u.id === user.id);
+    if (nearbyWalks.length > 0 && user && location && !initialBoundsSet.current) {
+      const myWalk = nearbyWalks.find(w => w.id === user.id);
+      
+      const allMarkers = [
+        { latitude: location.coords.latitude, longitude: location.coords.longitude },
+        ...nearbyWalks.filter(w => w.location).map(w => ({
+          latitude: w.location!.latitude,
+          longitude: w.location!.longitude
+        }))
+      ];
+      
+      if (allMarkers.length > 1) {
+        setMapBounds({ markers: allMarkers });
+        setMapCenter(null);
+        initialBoundsSet.current = true;
+      }
+      
+      if (myWalk) {
+        const myIndex = nearbyWalks.findIndex(w => w.id === user.id);
         if (myIndex !== -1) {
-          previousMarkerIdRef.current = myEvent.id;
-          setSelectedMarkerId(myEvent.id);
+          previousMarkerIdRef.current = myWalk.id;
+          setSelectedMarkerId(myWalk.id);
           setCurrentCardIndex(myIndex);
           if (scrollViewRef.current) {
             isScrollingProgrammatically.current = true;
@@ -138,7 +148,7 @@ export default function SearchScreen() {
         }
       }
     }
-  }, [nearbyUsers, user]);
+  }, [nearbyWalks, user, location]);
 
   const loadLocation = async () => {
     try {
@@ -225,47 +235,44 @@ export default function SearchScreen() {
     return totalMinutes;
   };
 
-  const loadNearbyUsers = async () => {
+  const loadNearbyWalks = async () => {
     if (!location || !user) return;
 
     try {
-      setIsLoadingUsers(true);
-      const users = await getNearbyUsers(location.coords.latitude, location.coords.longitude);
+      setIsLoadingWalks(true);
+      initialBoundsSet.current = false;
+      const walks = await getNearbyWalks(location.coords.latitude, location.coords.longitude);
 
-      // Перевіряємо і завершуємо власну прогулянку, якщо вона закінчилася
-      const ownProfile = users.find((u) => u.id === user.id);
-      if (ownProfile && ownProfile.walk) {
-        const hadWalk = !!ownProfile.walk;
-        await checkAndEndWalk(ownProfile);
+      const ownWalk = walks.find((w) => w.id === user.id);
+      if (ownWalk && ownWalk.walk) {
+        const hadWalk = !!ownWalk.walk;
+        await checkAndEndWalk(ownWalk);
 
         if (hadWalk) {
           const now = new Date();
-          const startTime = new Date(ownProfile.walk.start_time);
-          const durationMinutes = parseDuration(ownProfile.walk.duration);
+          const startTime = new Date(ownWalk.walk.start_time);
+          const durationMinutes = parseDuration(ownWalk.walk.duration);
           const endTime = new Date(startTime.getTime() + durationMinutes * 60000);
 
           if (now >= endTime) {
-            const updatedUsers = await getNearbyUsers(location.coords.latitude, location.coords.longitude);
-            const updatedOwnProfile = updatedUsers.find((u) => u.id === user.id);
-            const updatedOtherUsers = updatedUsers.filter((u) => u.id !== user.id);
-            const updatedSortedUsers = updatedOwnProfile ? [updatedOwnProfile, ...updatedOtherUsers] : updatedOtherUsers;
-            setNearbyUsers(updatedSortedUsers);
+            const updatedWalks = await getNearbyWalks(location.coords.latitude, location.coords.longitude);
+            const updatedOwnWalk = updatedWalks.find((w) => w.id === user.id);
+            const updatedOtherWalks = updatedWalks.filter((w) => w.id !== user.id);
+            const updatedSortedWalks = updatedOwnWalk ? [updatedOwnWalk, ...updatedOtherWalks] : updatedOtherWalks;
+            setNearbyWalks(updatedSortedWalks);
             return;
           }
         }
       }
 
-      // Відокремлюємо власні івенти від інших користувачів
-      const otherUsers = users.filter((u) => u.id !== user.id);
+      const otherWalks = walks.filter((w) => w.id !== user.id);
+      const sortedWalks = ownWalk ? [ownWalk, ...otherWalks] : otherWalks;
 
-      // Якщо є власний івент, додаємо його першим
-      const sortedUsers = ownProfile ? [ownProfile, ...otherUsers] : otherUsers;
-
-      setNearbyUsers(sortedUsers);
+      setNearbyWalks(sortedWalks);
     } catch (err) {
-      console.error('Failed to load nearby users:', err);
+      console.error('Failed to load nearby walks:', err);
     } finally {
-      setIsLoadingUsers(false);
+      setIsLoadingWalks(false);
     }
   };
 
@@ -287,11 +294,11 @@ export default function SearchScreen() {
     const diffMins = Math.floor(diffMs / 60000);
 
     if (diffMins < 0) {
-      return '#8FD89C'; // зелений - прогулянка вже почалась
+      return '#8FD89C';
     } else if (diffMins <= 15) {
-      return ACCENT_ORANGE; // помаранчевий - починається скоро (<=15 хв)
+      return ACCENT_ORANGE;
     } else {
-      return '#12B7DB'; // голубий - починається пізніше
+      return '#12B7DB';
     }
   };
 
@@ -322,17 +329,17 @@ export default function SearchScreen() {
     }
   };
 
-  const mapMarkers = nearbyUsers
-    .filter((u) => u.location)
-    .map((u) => ({
-      id: u.id,
-      latitude: u.location!.latitude,
-      longitude: u.location!.longitude,
-      title: u.display_name,
+  const mapMarkers = nearbyWalks
+    .filter((w) => w.location)
+    .map((w) => ({
+      id: w.id,
+      latitude: w.location!.latitude,
+      longitude: w.location!.longitude,
+      title: w.display_name,
       type: 'user' as const,
-      isActive: isWalkActive(u.walk?.start_time || null),
-      isOwner: u.id === user?.id,
-      avatarUrl: u.avatar_url,
+      isActive: isWalkActive(w.walk?.start_time || null),
+      isOwner: w.id === user?.id,
+      avatarUrl: w.avatar_url,
     }));
 
   if (isLoadingLocation) {
@@ -363,7 +370,7 @@ export default function SearchScreen() {
             bounds={mapBounds}
             onMarkerPress={(id) => {
               setSelectedMarkerId(id);
-              const index = nearbyUsers.findIndex((item) => item.id === id);
+              const index = nearbyWalks.findIndex((item) => item.id === id);
               if (index !== -1 && scrollViewRef.current) {
                 isScrollingProgrammatically.current = true;
                 scrollViewRef.current.scrollTo({
@@ -388,7 +395,7 @@ export default function SearchScreen() {
             userLongitude={location.coords.longitude}
             onMarkerPress={(id) => {
               setSelectedMarkerId(id);
-              const index = nearbyUsers.findIndex((item) => item.id === id);
+              const index = nearbyWalks.findIndex((item) => item.id === id);
               if (index !== -1 && scrollViewRef.current) {
                 isScrollingProgrammatically.current = true;
                 scrollViewRef.current.scrollTo({
@@ -419,9 +426,9 @@ export default function SearchScreen() {
 
             const offsetX = e.nativeEvent.contentOffset.x;
             const index = Math.round(offsetX / (cardWidth + cardGap));
-            if (index !== currentCardIndex && index < nearbyUsers.length) {
+            if (index !== currentCardIndex && index < nearbyWalks.length) {
               setCurrentCardIndex(index);
-              const item = nearbyUsers[index];
+              const item = nearbyWalks[index];
 
               if (item.location) {
                 const padding = 150;
@@ -439,17 +446,17 @@ export default function SearchScreen() {
           }}
           scrollEventThrottle={16}
         >
-          {isLoadingUsers ? (
+          {isLoadingWalks ? (
             <View style={[styles.loadingCard, { width: cardWidth }]}>
               <ActivityIndicator size="small" color={ACCENT_ORANGE} />
             </View>
-          ) : nearbyUsers.length === 0 ? (
+          ) : nearbyWalks.length === 0 ? (
             <View style={[styles.emptyCard, { width: cardWidth }]}>
               <Text style={styles.emptyText}>Немає людей які гуляють поблизу</Text>
             </View>
           ) : (
             <>
-              {nearbyUsers.map((item) => (
+              {nearbyWalks.map((item) => (
                 <Pressable
                   key={`user-${item.id}`}
                   style={[
@@ -530,7 +537,7 @@ export default function SearchScreen() {
         user={selectedUser}
         isOwnEvent={selectedUser?.id === user?.id}
         onDelete={() => {
-          loadNearbyUsers();
+          loadNearbyWalks();
         }}
         onConnectPress={(walkId, walkOwnerName) => {
           setContactRequestData({ walkId, walkOwnerName });
@@ -552,7 +559,7 @@ export default function SearchScreen() {
           requesterId={user.id}
           walkOwnerName={contactRequestData.walkOwnerName}
           onRequestSent={() => {
-            loadNearbyUsers();
+            loadNearbyWalks();
           }}
         />
       )}
