@@ -1,4 +1,6 @@
 import { supabase } from './supabase';
+import * as ImagePicker from 'expo-image-picker';
+import { Platform } from 'react-native';
 
 export interface UserProfile {
   id: string;
@@ -555,6 +557,78 @@ export async function getMyWalkRequests(userId: string): Promise<WalkRequestWith
   }).filter(r => r.requester && r.walk);
 
   return requestsWithProfiles;
+}
+
+export async function uploadAvatar(userId: string, imageUri: string): Promise<string> {
+  try {
+    let fileData: Blob | ArrayBuffer;
+    
+    if (Platform.OS === 'web') {
+      const response = await fetch(imageUri);
+      fileData = await response.blob();
+    } else {
+      const response = await fetch(imageUri);
+      const blob = await response.blob();
+      const reader = new FileReader();
+      
+      fileData = await new Promise((resolve, reject) => {
+        reader.onloadend = () => {
+          if (reader.result instanceof ArrayBuffer) {
+            resolve(reader.result);
+          } else {
+            reject(new Error('Failed to read file'));
+          }
+        };
+        reader.onerror = reject;
+        reader.readAsArrayBuffer(blob);
+      });
+    }
+
+    const ext = imageUri.split('.').pop()?.split('?')[0] || 'jpg';
+    const fileName = `${userId}/${Date.now()}.${ext}`;
+
+    const { data, error } = await supabase.storage
+      .from('avatars')
+      .upload(fileName, fileData, {
+        contentType: `image/${ext}`,
+        upsert: false,
+      });
+
+    if (error) throw error;
+
+    const { data: urlData } = supabase.storage
+      .from('avatars')
+      .getPublicUrl(fileName);
+
+    return urlData.publicUrl;
+  } catch (error) {
+    console.error('Error uploading avatar:', error);
+    throw error;
+  }
+}
+
+export async function pickAndUploadAvatar(userId: string): Promise<string | null> {
+  const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+  
+  if (status !== 'granted') {
+    throw new Error('Permission denied');
+  }
+
+  const result = await ImagePicker.launchImageLibraryAsync({
+    mediaTypes: ImagePicker.MediaTypeOptions.Images,
+    allowsEditing: true,
+    aspect: [1, 1],
+    quality: 0.8,
+  });
+
+  if (result.canceled) {
+    return null;
+  }
+
+  const avatarUrl = await uploadAvatar(userId, result.assets[0].uri);
+  await updateProfile(userId, { avatar_url: avatarUrl });
+  
+  return avatarUrl;
 }
 
 export const getNearbyUsers = getNearbyWalks;

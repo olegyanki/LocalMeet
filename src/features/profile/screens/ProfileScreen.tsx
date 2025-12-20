@@ -193,6 +193,7 @@ export default function ProfileScreen() {
       <AvatarPicker
         currentAvatar={avatarUrl}
         displayName={displayName || 'User'}
+        userId={user?.id || ''}
         onAvatarChange={setAvatarUrl}
         isEditing={isEditing}
       />
