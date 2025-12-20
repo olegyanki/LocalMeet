@@ -140,7 +140,7 @@ export default function NativeMap({
           L.circle([${centerLat}, ${centerLng}], {
             color: '#FF9500',
             fillColor: '#FF9500',
-            fillOpacity: 0.1,
+            fillOpacity: 0,
             radius: ${radiusKm * 1000}
           }).addTo(map);
           ` : ''}
