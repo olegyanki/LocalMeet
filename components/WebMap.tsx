@@ -170,8 +170,8 @@ export default function WebMap({
           iconAnchor = [10.59, 10.59];
         }
       } else {
-        // User marker - green if active (walk started), blue if future walk
-        const color = marker.isActive ? '#8FD89C' : '#12B7DB';
+        // User marker - orange if owner, green if active (walk started), blue if future walk
+        const color = marker.isOwner ? '#FF9500' : (marker.isActive ? '#8FD89C' : '#12B7DB');
 
         if (isSelected) {
           markerHtml = `
