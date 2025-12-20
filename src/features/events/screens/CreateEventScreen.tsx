@@ -11,24 +11,25 @@ import {
   KeyboardAvoidingView,
   Keyboard,
   Dimensions,
+  Animated,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Location from 'expo-location';
 import { useAuth } from '@shared/contexts/AuthContext';
 import { updateWalkStatus } from '@shared/lib/api';
-import { Clock, MapPin } from 'lucide-react-native';
+import { Clock, MapPin, Sparkles } from 'lucide-react-native';
 import { router } from 'expo-router';
 import TimePickerModal from '@features/events/modals/TimePickerModal';
 import LocationPickerModal from '@features/events/modals/LocationPickerModal';
 import SuccessModal from '@features/events/modals/SuccessModal';
 import { calculateDistance } from '@shared/utils/location';
 
-const BG_COLOR = '#F5F5F5';
+const BG_COLOR = '#F2F2F7';
 const ACCENT_ORANGE = '#FF9500';
-const TEXT_DARK = '#333333';
-const TEXT_LIGHT = '#999999';
+const TEXT_DARK = '#1C1C1E';
+const TEXT_LIGHT = '#8E8E93';
 const INPUT_BG = '#FFFFFF';
-const BORDER_COLOR = '#E8E8E8';
+const CARD_BG = '#FFFFFF';
 
 export default function GoOnlineScreen() {
   const { user } = useAuth();
@@ -52,6 +53,15 @@ export default function GoOnlineScreen() {
   const [initialMapCenter, setInitialMapCenter] = useState<{latitude: number; longitude: number} | null>(null);
   const scrollViewRef = useRef<ScrollView>(null);
   const descriptionInputRef = useRef<TextInput>(null);
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    Animated.timing(fadeAnim, {
+      toValue: 1,
+      duration: 600,
+      useNativeDriver: true,
+    }).start();
+  }, []);
 
   useEffect(() => {
     loadCurrentLocation();
@@ -237,84 +247,109 @@ export default function GoOnlineScreen() {
         style={styles.scrollContent}
         contentContainerStyle={[
           styles.content,
-          { paddingTop: 40 + insets.top, paddingBottom: 100 + insets.bottom },
+          { paddingTop: 20 + insets.top, paddingBottom: 100 + insets.bottom },
         ]}
         keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
       >
-        <View style={styles.header}>
-          <Text style={styles.headerTitle}>Створити активність</Text>
-        </View>
+        <Animated.View style={{ opacity: fadeAnim }}>
+          <View style={styles.header}>
+            <View style={styles.iconBadge}>
+              <Sparkles size={24} color={ACCENT_ORANGE} />
+            </View>
+            <Text style={styles.headerTitle}>Створити подію</Text>
+            <Text style={styles.headerSubtitle}>Розкажіть, що плануєте робити</Text>
+          </View>
 
-        <Text style={styles.subtitle}>Розкажіть іншим коли і куди ви йдете гуляти</Text>
+          <View style={styles.card}>
+            <View style={styles.inputGroup}>
+              <Text style={styles.label}>Назва події</Text>
+              <TextInput
+                style={styles.input}
+                placeholder="Прогулянка парком, кава, волейбол..."
+                placeholderTextColor={TEXT_LIGHT}
+                value={title}
+                onChangeText={setTitle}
+              />
+            </View>
 
-        <Text style={styles.label}>Назва івенту</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="Наприклад: Прогулянка центром міста"
-          placeholderTextColor={TEXT_LIGHT}
-          value={title}
-          onChangeText={setTitle}
-        />
+            <View style={styles.inputGroup}>
+              <Text style={styles.label}>Час початку</Text>
+              <Pressable style={styles.selectButton} onPress={() => setShowTimePicker(true)}>
+                <View style={styles.selectIcon}>
+                  <Clock size={20} color={ACCENT_ORANGE} />
+                </View>
+                <Text style={[styles.selectText, time && styles.selectTextFilled]}>
+                  {time ? `${time} (${selectedDuration}г)` : 'Оберіть час'}
+                </Text>
+              </Pressable>
+            </View>
 
-        <Text style={styles.label}>Коли починається ваша активність?</Text>
-        <Pressable style={styles.timeButton} onPress={() => setShowTimePicker(true)}>
-          <Clock size={20} color={ACCENT_ORANGE} />
-          <Text style={styles.timeButtonText}>
-            {time || 'Оберіть час початку'}
-            {time && selectedDuration && ` (${selectedDuration}г)`}
-          </Text>
-        </Pressable>
+            <View style={styles.inputGroup}>
+              <Text style={styles.label}>Локація</Text>
+              <Pressable
+                style={styles.selectButton}
+                onPress={() => setShowLocationPicker(true)}
+              >
+                <View style={styles.selectIcon}>
+                  <MapPin size={20} color={ACCENT_ORANGE} />
+                </View>
+                <Text style={[styles.selectText, selectedLocation && styles.selectTextFilled]}>
+                  {selectedLocation ? 'Локація обрана ✓' : 'Оберіть на карті'}
+                </Text>
+              </Pressable>
+            </View>
 
-        <Text style={styles.label}>Локація прогулянки</Text>
-        <Pressable
-          style={styles.locationButton}
-          onPress={() => setShowLocationPicker(true)}
-        >
-          <MapPin size={20} color={ACCENT_ORANGE} />
-          <Text style={styles.locationButtonText}>
-            {selectedLocation ? 'Локація обрана' : 'Оберіть локацію'}
-          </Text>
-        </Pressable>
+            <View style={styles.inputGroup}>
+              <Text style={styles.label}>Опис</Text>
+              <TextInput
+                ref={descriptionInputRef}
+                style={[styles.input, styles.textArea]}
+                placeholder="Що будете робити? Хто може приєднатися?"
+                placeholderTextColor={TEXT_LIGHT}
+                value={description}
+                onChangeText={setDescription}
+                multiline
+                numberOfLines={5}
+                onFocus={() => {
+                  setTimeout(() => {
+                    descriptionInputRef.current?.measure((x, y, width, height, pageX, pageY) => {
+                      const keyboardHeight = Keyboard.metrics()?.height || 300;
+                      const screenHeight = Dimensions.get('window').height;
+                      const inputBottom = pageY + height;
+                      const visibleHeight = screenHeight - keyboardHeight;
+                      
+                      if (inputBottom > visibleHeight) {
+                        scrollViewRef.current?.scrollTo({ y: pageY - 50, animated: true });
+                      }
+                    });
+                  }, 300);
+                }}
+              />
+            </View>
+          </View>
 
-        <Text style={styles.label}>Опис прогулянки</Text>
-        <TextInput
-          ref={descriptionInputRef}
-          style={[styles.input, styles.descriptionInput]}
-          placeholder="Розкажіть, куди йдете і чим плануєте займатися..."
-          placeholderTextColor={TEXT_LIGHT}
-          value={description}
-          onChangeText={setDescription}
-          multiline
-          numberOfLines={6}
-          onFocus={() => {
-            setTimeout(() => {
-              descriptionInputRef.current?.measure((x, y, width, height, pageX, pageY) => {
-                const keyboardHeight = Keyboard.metrics()?.height || 300;
-                const screenHeight = Dimensions.get('window').height;
-                const inputBottom = pageY + height;
-                const visibleHeight = screenHeight - keyboardHeight;
-                
-                if (inputBottom > visibleHeight) {
-                  scrollViewRef.current?.scrollTo({ y: pageY - 50, animated: true });
-                }
-              });
-            }, 300);
-          }}
-        />
+          {error ? (
+            <View style={styles.errorContainer}>
+              <Text style={styles.errorText}>{error}</Text>
+            </View>
+          ) : null}
 
-        {error ? <Text style={styles.errorText}>{error}</Text> : null}
-
-        <Pressable
-          style={[styles.button, isSubmitting && styles.buttonDisabled]}
-          onPress={handleSubmit}
-          disabled={isSubmitting}
-        >
-          {isSubmitting ? (
-            <ActivityIndicator color="#FFFFFF" />
-          ) : (
-            <Text style={styles.buttonText}>Опублікувати</Text>
-          )}
-        </Pressable>
+          <Pressable
+            style={[styles.publishButton, isSubmitting && styles.publishButtonDisabled]}
+            onPress={handleSubmit}
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? (
+              <ActivityIndicator color="#FFFFFF" />
+            ) : (
+              <>
+                <Sparkles size={20} color="#FFF" />
+                <Text style={styles.publishButtonText}>Опублікувати подію</Text>
+              </>
+            )}
+          </Pressable>
+        </Animated.View>
       </ScrollView>
 
       <TimePickerModal
@@ -354,104 +389,130 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   content: {
-    padding: 24,
+    padding: 20,
   },
   header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 24,
+    marginBottom: 32,
+  },
+  iconBadge: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    backgroundColor: CARD_BG,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
+    elevation: 3,
   },
   headerTitle: {
-    fontSize: 32,
+    fontSize: 28,
     fontWeight: '700',
     color: TEXT_DARK,
+    marginBottom: 8,
   },
-  subtitle: {
+  headerSubtitle: {
     fontSize: 15,
     color: TEXT_LIGHT,
-    marginBottom: 24,
-    lineHeight: 20,
+    textAlign: 'center',
+  },
+  card: {
+    backgroundColor: CARD_BG,
+    borderRadius: 20,
+    padding: 20,
+    marginBottom: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 12,
+    elevation: 2,
+  },
+  inputGroup: {
+    marginBottom: 20,
   },
   label: {
-    fontSize: 15,
+    fontSize: 14,
     fontWeight: '600',
     color: TEXT_DARK,
     marginBottom: 10,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
   },
   input: {
-    backgroundColor: INPUT_BG,
-    borderWidth: 1,
-    borderColor: BORDER_COLOR,
-    borderRadius: 16,
+    backgroundColor: BG_COLOR,
+    borderRadius: 12,
     paddingHorizontal: 16,
     paddingVertical: 14,
-    fontSize: 15,
+    fontSize: 16,
     color: TEXT_DARK,
-    marginBottom: 24,
   },
-  descriptionInput: {
-    minHeight: 150,
+  textArea: {
+    minHeight: 120,
     textAlignVertical: 'top',
+    paddingTop: 14,
+  },
+  selectButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: BG_COLOR,
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    gap: 12,
+  },
+  selectIcon: {
+    width: 36,
+    height: 36,
+    borderRadius: 10,
+    backgroundColor: CARD_BG,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  selectText: {
+    fontSize: 16,
+    color: TEXT_LIGHT,
+    flex: 1,
+  },
+  selectTextFilled: {
+    color: TEXT_DARK,
+    fontWeight: '500',
+  },
+  errorContainer: {
+    backgroundColor: '#FFEBEE',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 20,
   },
   errorText: {
-    color: '#F44336',
-    fontSize: 13,
-    marginBottom: 16,
+    color: '#C62828',
+    fontSize: 14,
+    fontWeight: '500',
     textAlign: 'center',
   },
-  button: {
+  publishButton: {
+    flexDirection: 'row',
     backgroundColor: ACCENT_ORANGE,
-    paddingVertical: 16,
+    paddingVertical: 18,
     borderRadius: 16,
     alignItems: 'center',
-    marginTop: 8,
+    justifyContent: 'center',
+    gap: 8,
     shadowColor: ACCENT_ORANGE,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
-    shadowRadius: 8,
+    shadowRadius: 12,
     elevation: 4,
   },
-  buttonDisabled: {
+  publishButtonDisabled: {
     opacity: 0.6,
   },
-  buttonText: {
+  publishButtonText: {
     color: '#FFFFFF',
     fontSize: 17,
-    fontWeight: '600',
-  },
-  timeButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: INPUT_BG,
-    borderWidth: 1,
-    borderColor: BORDER_COLOR,
-    borderRadius: 16,
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    marginBottom: 24,
-    gap: 10,
-  },
-  timeButtonText: {
-    fontSize: 15,
-    color: TEXT_DARK,
-    fontWeight: '500',
-  },
-  locationButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: INPUT_BG,
-    borderWidth: 1,
-    borderColor: BORDER_COLOR,
-    borderRadius: 16,
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    marginBottom: 24,
-    gap: 10,
-  },
-  locationButtonText: {
-    fontSize: 15,
-    color: TEXT_DARK,
-    fontWeight: '500',
+    fontWeight: '700',
   },
 });
