@@ -443,9 +443,22 @@ export default function GoOnlineScreen() {
                       style={styles.timeInput}
                       value={selectedHour}
                       onChangeText={(text) => {
-                        const num = parseInt(text) || 0;
-                        if (num >= 0 && num < 24)
+                        if (text === '') {
+                          setSelectedHour('');
+                          return;
+                        }
+                        const num = parseInt(text);
+                        if (!isNaN(num) && num >= 0 && num < 24) {
+                          setSelectedHour(text);
+                        }
+                      }}
+                      onBlur={() => {
+                        if (selectedHour === '') {
+                          setSelectedHour('00');
+                        } else {
+                          const num = parseInt(selectedHour);
                           setSelectedHour(num.toString().padStart(2, '0'));
+                        }
                       }}
                       keyboardType="number-pad"
                       maxLength={2}
@@ -458,9 +471,22 @@ export default function GoOnlineScreen() {
                       style={styles.timeInput}
                       value={selectedMinute}
                       onChangeText={(text) => {
-                        const num = parseInt(text) || 0;
-                        if (num >= 0 && num < 60)
+                        if (text === '') {
+                          setSelectedMinute('');
+                          return;
+                        }
+                        const num = parseInt(text);
+                        if (!isNaN(num) && num >= 0 && num < 60) {
+                          setSelectedMinute(text);
+                        }
+                      }}
+                      onBlur={() => {
+                        if (selectedMinute === '') {
+                          setSelectedMinute('00');
+                        } else {
+                          const num = parseInt(selectedMinute);
                           setSelectedMinute(num.toString().padStart(2, '0'));
+                        }
                       }}
                       keyboardType="number-pad"
                       maxLength={2}
