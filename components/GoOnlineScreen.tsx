@@ -433,11 +433,7 @@ export default function GoOnlineScreen() {
             onStartShouldSetResponder={() => true}
           >
             <Animated.View {...panResponderTime.panHandlers} style={styles.handleContainer}>
-              <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-                <View style={styles.handleContainer}>
-                  <View style={styles.handle} />
-                </View>
-              </TouchableWithoutFeedback>
+              <View style={styles.handle} />
             </Animated.View>
             <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
               <Animated.View {...panResponderTime.panHandlers} style={styles.pickerHeader}>
