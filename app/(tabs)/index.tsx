@@ -117,9 +117,9 @@ export default function SearchScreen() {
       
       const allMarkers = [
         { latitude: location.coords.latitude, longitude: location.coords.longitude },
-        ...nearbyWalks.filter(w => w.location).map(w => ({
-          latitude: w.location!.latitude,
-          longitude: w.location!.longitude
+        ...nearbyWalks.filter(w => w.walk).map(w => ({
+          latitude: w.walk!.latitude,
+          longitude: w.walk!.longitude
         }))
       ];
       
@@ -129,22 +129,20 @@ export default function SearchScreen() {
         initialBoundsSet.current = true;
       }
       
-      if (myWalk) {
-        const myIndex = nearbyWalks.findIndex(w => w.id === user.id);
-        if (myIndex !== -1) {
-          previousMarkerIdRef.current = myWalk.id;
-          setSelectedMarkerId(myWalk.id);
-          setCurrentCardIndex(myIndex);
-          if (scrollViewRef.current) {
-            isScrollingProgrammatically.current = true;
-            scrollViewRef.current.scrollTo({
-              x: myIndex * (cardWidth + cardGap),
-              animated: true,
-            });
-            setTimeout(() => {
-              isScrollingProgrammatically.current = false;
-            }, 500);
-          }
+      if (myWalk && myWalk.walk) {
+        const myIndex = 0;
+        previousMarkerIdRef.current = myWalk.walk.id;
+        setSelectedMarkerId(myWalk.walk.id);
+        setCurrentCardIndex(myIndex);
+        if (scrollViewRef.current) {
+          isScrollingProgrammatically.current = true;
+          scrollViewRef.current.scrollTo({
+            x: myIndex * (cardWidth + cardGap),
+            animated: true,
+          });
+          setTimeout(() => {
+            isScrollingProgrammatically.current = false;
+          }, 500);
         }
       }
     }
@@ -231,9 +229,9 @@ export default function SearchScreen() {
 
           if (now >= endTime) {
             const updatedWalks = await getNearbyWalks(location.coords.latitude, location.coords.longitude);
-            const updatedOwnWalk = updatedWalks.find((w) => w.id === user.id);
+            const updatedOwnWalks = updatedWalks.filter((w) => w.id === user.id);
             const updatedOtherWalks = updatedWalks.filter((w) => w.id !== user.id);
-            const updatedSortedWalks = updatedOwnWalk ? [updatedOwnWalk, ...updatedOtherWalks] : updatedOtherWalks;
+            const updatedSortedWalks = [...updatedOwnWalks, ...updatedOtherWalks];
             setNearbyWalks(updatedSortedWalks);
             return;
           }
@@ -241,7 +239,8 @@ export default function SearchScreen() {
       }
 
       const otherWalks = walks.filter((w) => w.id !== user.id);
-      const sortedWalks = ownWalk ? [ownWalk, ...otherWalks] : otherWalks;
+      const ownWalks = walks.filter((w) => w.id === user.id);
+      const sortedWalks = [...ownWalks, ...otherWalks];
 
       setNearbyWalks(sortedWalks);
     } catch (err) {
@@ -305,13 +304,13 @@ export default function SearchScreen() {
   };
 
   const mapMarkers = nearbyWalks
-    .filter((w) => w.location)
+    .filter((w) => w.walk)
     .map((w) => ({
-      id: w.id,
-      latitude: w.location!.latitude,
-      longitude: w.location!.longitude,
+      id: w.walk!.id,
+      latitude: w.walk!.latitude,
+      longitude: w.walk!.longitude,
       title: w.display_name,
-      type: 'user' as const,
+      type: 'event' as const,
       isActive: isWalkActive(w.walk?.start_time || null),
       isOwner: w.id === user?.id,
       avatarUrl: w.avatar_url,
@@ -345,7 +344,7 @@ export default function SearchScreen() {
             bounds={mapBounds}
             onMarkerPress={(id) => {
               setSelectedMarkerId(id);
-              const index = nearbyWalks.findIndex((item) => item.id === id);
+              const index = nearbyWalks.findIndex((item) => item.walk?.id === id);
               if (index !== -1 && scrollViewRef.current) {
                 isScrollingProgrammatically.current = true;
                 scrollViewRef.current.scrollTo({
@@ -370,7 +369,7 @@ export default function SearchScreen() {
             userLongitude={location.coords.longitude}
             onMarkerPress={(id) => {
               setSelectedMarkerId(id);
-              const index = nearbyWalks.findIndex((item) => item.id === id);
+              const index = nearbyWalks.findIndex((item) => item.walk?.id === id);
               if (index !== -1 && scrollViewRef.current) {
                 isScrollingProgrammatically.current = true;
                 scrollViewRef.current.scrollTo({
@@ -415,8 +414,8 @@ export default function SearchScreen() {
                 setMapBounds(null);
               }
 
-              previousMarkerIdRef.current = item.id;
-              setSelectedMarkerId(item.id);
+              previousMarkerIdRef.current = item.walk!.id;
+              setSelectedMarkerId(item.walk!.id);
             }
           }}
           scrollEventThrottle={16}
@@ -433,7 +432,7 @@ export default function SearchScreen() {
             <>
               {nearbyWalks.map((item) => (
                 <Pressable
-                  key={`user-${item.id}`}
+                  key={`walk-${item.walk?.id}`}
                   style={[
                     styles.userCard,
                     { width: cardWidth },

@@ -114,7 +114,6 @@ function isWalkStillActive(walkStartTime: string | null, walkDuration: string | 
 }
 
 export async function getNearbyWalks(latitude: number, longitude: number, radiusKm: number = 5): Promise<NearbyWalk[]> {
-  // Отримуємо всі активні прогулянки
   const { data: walks, error: walksError } = await supabase
     .from('walks')
     .select('*')
@@ -129,7 +128,6 @@ export async function getNearbyWalks(latitude: number, longitude: number, radius
     return [];
   }
 
-  // Фільтруємо тільки активні прогулянки за часом
   const activeWalks = walks.filter(walk =>
     isWalkStillActive(walk.start_time, walk.duration)
   );
@@ -138,8 +136,7 @@ export async function getNearbyWalks(latitude: number, longitude: number, radius
     return [];
   }
 
-  // Отримуємо профілі користувачів, які мають активні прогулянки
-  const userIds = activeWalks.map(w => w.user_id);
+  const userIds = [...new Set(activeWalks.map(w => w.user_id))];
   const { data: profiles, error: profileError } = await supabase
     .from('profiles')
     .select('*')
@@ -153,33 +150,18 @@ export async function getNearbyWalks(latitude: number, longitude: number, radius
     return [];
   }
 
-  // Отримуємо локації користувачів
-  const { data: locations, error } = await supabase.from('user_locations').select('*');
+  const walksWithDistance = activeWalks
+    .map((walk) => {
+      const profile = profiles.find(p => p.id === walk.user_id);
+      if (!profile) return null;
 
-  if (error) {
-    throw error;
-  }
+      const distance = calculateDistance(latitude, longitude, walk.latitude, walk.longitude);
 
-  const walksWithDistance = profiles
-    ?.map((profile) => {
-      const walk = activeWalks.find(w => w.user_id === profile.id);
-      if (!walk) return null;
-
-      const userLocation = locations?.find((loc) => loc.user_id === profile.id);
-
-      // Використовуємо координати з прогулянки
-      const markerLat = walk.latitude;
-      const markerLng = walk.longitude;
-
-      // Відстань рахуємо від локації прогулянки
-      const distance = calculateDistance(latitude, longitude, markerLat, markerLng);
-
-      // Створюємо location об'єкт з координатами прогулянки
       const location = {
-        id: userLocation?.id || '',
+        id: walk.id,
         user_id: profile.id,
-        latitude: markerLat,
-        longitude: markerLng,
+        latitude: walk.latitude,
+        longitude: walk.longitude,
         updated_at: walk.updated_at,
       };
 

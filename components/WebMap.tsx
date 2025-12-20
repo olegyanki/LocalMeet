@@ -150,19 +150,8 @@ export default function WebMap({
       let iconSize = [26, 26];
       let iconAnchor = [13, 13];
 
-      if (isEvent && marker.isOwner && marker.avatarUrl) {
-        // Мій івент - показати аватар
-        const size = isSelected ? 36.3 : 21.18;
-        markerHtml = `
-          <div style="position: relative; width: ${size}px; height: ${size}px;">
-            <img src="${marker.avatarUrl}" style="width: ${size}px; height: ${size}px; border-radius: 50%; border: 2px solid white; box-shadow: 0 2px 8px rgba(0,0,0,0.2);" />
-          </div>
-        `;
-        iconSize = [size, size];
-        iconAnchor = [size / 2, size / 2];
-      } else if (isEvent) {
-        // Івент - визначити колір по активності
-        const color = marker.isActive ? '#8FD89C' : '#12B7DB';
+      if (isEvent) {
+        const color = marker.isOwner ? '#FF9500' : (marker.isActive ? '#8FD89C' : '#12B7DB');
 
         if (isSelected) {
           markerHtml = `
