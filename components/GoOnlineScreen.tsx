@@ -1,31 +1,27 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   Text,
   StyleSheet,
-  TouchableOpacity,
   Pressable,
   TextInput,
   ScrollView,
   ActivityIndicator,
-  Modal,
   Platform,
-  PanResponder,
-  Animated,
   KeyboardAvoidingView,
   Keyboard,
   Dimensions,
-  TouchableWithoutFeedback,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Location from 'expo-location';
 import { useAuth } from '../contexts/AuthContext';
 import { updateWalkStatus } from '../lib/api';
-import { Check, X, Clock, MapPin } from 'lucide-react-native';
-import WebMap from './WebMap';
-import NativeMap from './NativeMap';
+import { Clock, MapPin } from 'lucide-react-native';
 import { router } from 'expo-router';
-import DateTimePicker from '@react-native-community/datetimepicker';
+import TimePickerModal from './TimePickerModal';
+import LocationPickerModal from './LocationPickerModal';
+import SuccessModal from './SuccessModal';
+import { calculateDistance } from '../utils/location';
 
 const BG_COLOR = '#F5F5F5';
 const ACCENT_ORANGE = '#FF9500';
@@ -33,7 +29,6 @@ const TEXT_DARK = '#333333';
 const TEXT_LIGHT = '#999999';
 const INPUT_BG = '#FFFFFF';
 const BORDER_COLOR = '#E8E8E8';
-const SUCCESS_GREEN = '#4CAF50';
 
 export default function GoOnlineScreen() {
   const { user } = useAuth();
@@ -51,81 +46,12 @@ export default function GoOnlineScreen() {
   const [selectedLocation, setSelectedLocation] = useState<{
     latitude: number;
     longitude: number;
-    name?: string;
   } | null>(null);
   const [showLocationPicker, setShowLocationPicker] = useState(false);
-  const [isLoadingLocation, setIsLoadingLocation] = useState(false);
   const [tempLocation, setTempLocation] = useState<{latitude: number; longitude: number} | null>(null);
   const [initialMapCenter, setInitialMapCenter] = useState<{latitude: number; longitude: number} | null>(null);
-  const translateY = useRef(new Animated.Value(0)).current;
-  const translateYTime = useRef(new Animated.Value(0)).current;
   const scrollViewRef = useRef<ScrollView>(null);
   const descriptionInputRef = useRef<TextInput>(null);
-
-
-  const panResponder = useRef(
-    PanResponder.create({
-      onStartShouldSetPanResponder: () => true,
-      onMoveShouldSetPanResponder: (_, gestureState) => {
-        return gestureState.dy > 5 && Math.abs(gestureState.dy) > Math.abs(gestureState.dx);
-      },
-      onPanResponderMove: (_, gestureState) => {
-        if (gestureState.dy >= 0) {
-          translateY.setValue(gestureState.dy);
-        }
-      },
-      onPanResponderRelease: (_, gestureState) => {
-        if (gestureState.dy > 100 || gestureState.vy > 0.5) {
-          Animated.timing(translateY, {
-            toValue: 1000,
-            duration: 250,
-            useNativeDriver: true,
-          }).start(() => {
-            setShowLocationPicker(false);
-          });
-        } else {
-          Animated.spring(translateY, {
-            toValue: 0,
-            useNativeDriver: true,
-            tension: 100,
-            friction: 10,
-          }).start();
-        }
-      },
-    })
-  ).current;
-
-  const panResponderTime = useRef(
-    PanResponder.create({
-      onStartShouldSetPanResponder: () => true,
-      onMoveShouldSetPanResponder: (_, gestureState) => {
-        return gestureState.dy > 5 && Math.abs(gestureState.dy) > Math.abs(gestureState.dx);
-      },
-      onPanResponderMove: (_, gestureState) => {
-        if (gestureState.dy >= 0) {
-          translateYTime.setValue(gestureState.dy);
-        }
-      },
-      onPanResponderRelease: (_, gestureState) => {
-        if (gestureState.dy > 100 || gestureState.vy > 0.5) {
-          Animated.timing(translateYTime, {
-            toValue: 1000,
-            duration: 250,
-            useNativeDriver: true,
-          }).start(() => {
-            setShowTimePicker(false);
-          });
-        } else {
-          Animated.spring(translateYTime, {
-            toValue: 0,
-            useNativeDriver: true,
-            tension: 100,
-            friction: 10,
-          }).start();
-        }
-      },
-    })
-  ).current;
 
   useEffect(() => {
     loadCurrentLocation();
@@ -138,36 +64,10 @@ export default function GoOnlineScreen() {
         latitude: location?.coords.latitude || 39.4699,
         longitude: location?.coords.longitude || -0.3763
       });
-      translateY.setValue(500);
-      Animated.spring(translateY, {
-        toValue: 0,
-        useNativeDriver: true,
-        tension: 80,
-        friction: 10,
-      }).start();
     } else {
-      setTimeout(() => {
-        translateY.setValue(500);
-        setInitialMapCenter(null);
-      }, 250);
+      setInitialMapCenter(null);
     }
   }, [showLocationPicker]);
-
-  useEffect(() => {
-    if (showTimePicker) {
-      translateYTime.setValue(500);
-      Animated.spring(translateYTime, {
-        toValue: 0,
-        useNativeDriver: true,
-        tension: 80,
-        friction: 10,
-      }).start();
-    } else {
-      setTimeout(() => {
-        translateYTime.setValue(500);
-      }, 250);
-    }
-  }, [showTimePicker]);
 
   const setCurrentTime = () => {
     const now = new Date();
@@ -178,12 +78,10 @@ export default function GoOnlineScreen() {
   };
 
   const loadCurrentLocation = async () => {
-    setIsLoadingLocation(true);
     try {
       const { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== 'granted') {
-        console.log('Location permission denied');
-        const defaultValenciaLocation: Location.LocationObject = {
+        const defaultLocation: Location.LocationObject = {
           coords: {
             latitude: 39.4699,
             longitude: -0.3763,
@@ -195,10 +93,10 @@ export default function GoOnlineScreen() {
           },
           timestamp: Date.now(),
         };
-        setLocation(defaultValenciaLocation);
+        setLocation(defaultLocation);
         setSelectedLocation({
-          latitude: defaultValenciaLocation.coords.latitude,
-          longitude: defaultValenciaLocation.coords.longitude,
+          latitude: defaultLocation.coords.latitude,
+          longitude: defaultLocation.coords.longitude,
         });
         return;
       }
@@ -211,25 +109,6 @@ export default function GoOnlineScreen() {
       });
     } catch (error) {
       console.error('Error getting location:', error);
-      const defaultValenciaLocation: Location.LocationObject = {
-        coords: {
-          latitude: 39.4699,
-          longitude: -0.3763,
-          altitude: null,
-          accuracy: null,
-          altitudeAccuracy: null,
-          heading: null,
-          speed: null,
-        },
-        timestamp: Date.now(),
-      };
-      setLocation(defaultValenciaLocation);
-      setSelectedLocation({
-        latitude: defaultValenciaLocation.coords.latitude,
-        longitude: defaultValenciaLocation.coords.longitude,
-      });
-    } finally {
-      setIsLoadingLocation(false);
     }
   };
 
@@ -255,20 +134,9 @@ export default function GoOnlineScreen() {
       setIsSubmitting(true);
       setError('');
 
-      // Створюємо timestamp з обраного часу
       const now = new Date();
       const [hours, minutes] = time.split(':').map(Number);
       const walkStartDateTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), hours, minutes, 0, 0);
-
-      // Не переносимо на завтра - залишаємо обраний час як є
-      // Користувач сам вибирає, коли хоче почати прогулянку
-
-      console.log('Time debug:', {
-        now: now.toLocaleString('uk-UA'),
-        selectedTime: `${hours}:${minutes}`,
-        walkStartDateTime: walkStartDateTime.toLocaleString('uk-UA'),
-        walkStartDateTimeISO: walkStartDateTime.toISOString(),
-      });
 
       await updateWalkStatus(user.id, {
         isWalking: true,
@@ -303,36 +171,11 @@ export default function GoOnlineScreen() {
     }
   };
 
-  const closeTimePicker = () => {
-    Animated.timing(translateYTime, {
-      toValue: 1000,
-      duration: 250,
-      useNativeDriver: true,
-    }).start(() => {
-      setShowTimePicker(false);
-    });
-  };
-
-  const closeLocationPicker = () => {
-    if (tempLocation) {
-      setSelectedLocation(tempLocation);
-    }
-    Animated.timing(translateY, {
-      toValue: 1000,
-      duration: 250,
-      useNativeDriver: true,
-    }).start(() => {
-      setShowLocationPicker(false);
-      setTempLocation(null);
-    });
-  };
-
   const confirmTime = () => {
     const hours = selectedTime.getHours().toString().padStart(2, '0');
     const minutes = selectedTime.getMinutes().toString().padStart(2, '0');
-    const timeString = `${hours}:${minutes}`;
-    setTime(timeString);
-    closeTimePicker();
+    setTime(`${hours}:${minutes}`);
+    setShowTimePicker(false);
   };
 
   const onTimeChange = (event: any, date?: Date) => {
@@ -362,27 +205,26 @@ export default function GoOnlineScreen() {
     }
   };
 
-  const calculateDistance = (
-    lat1: number,
-    lon1: number,
-    lat2: number,
-    lon2: number
-  ): number => {
-    const R = 6371;
-    const dLat = toRad(lat2 - lat1);
-    const dLon = toRad(lon2 - lon1);
-    const a =
-      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-      Math.cos(toRad(lat1)) *
-        Math.cos(toRad(lat2)) *
-        Math.sin(dLon / 2) *
-        Math.sin(dLon / 2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    return R * c;
+  const handleMapMove = (lat: number, lng: number) => {
+    if (location) {
+      const distance = calculateDistance(
+        location.coords.latitude,
+        location.coords.longitude,
+        lat,
+        lng
+      );
+      if (distance <= 15) {
+        setTempLocation({ latitude: lat, longitude: lng });
+      }
+    }
   };
 
-  const toRad = (degrees: number): number => {
-    return degrees * (Math.PI / 180);
+  const confirmLocation = () => {
+    if (tempLocation) {
+      setSelectedLocation(tempLocation);
+    }
+    setShowLocationPicker(false);
+    setTempLocation(null);
   };
 
   return (
@@ -475,205 +317,30 @@ export default function GoOnlineScreen() {
         </Pressable>
       </ScrollView>
 
-      <Modal
+      <TimePickerModal
         visible={showTimePicker}
-        transparent
-        animationType="none"
-        onRequestClose={closeTimePicker}
-      >
-        <View style={styles.backdrop}>
-          <TouchableOpacity
-            style={StyleSheet.absoluteFill}
-            activeOpacity={1}
-            onPress={closeTimePicker}
-          />
-          <Animated.View
-            style={[
-              styles.bottomSheetModal,
-              {
-                transform: [{ translateY: translateYTime }],
-              },
-            ]}
-            onStartShouldSetResponder={() => true}
-          >
-            <Animated.View {...panResponderTime.panHandlers} style={styles.handleContainer}>
-              <View style={styles.handle} />
-            </Animated.View>
-            <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-              <Animated.View {...panResponderTime.panHandlers} style={styles.pickerHeader}>
-                <Text style={styles.pickerTitle}>Коли починається ваша активність?</Text>
-              </Animated.View>
-            </TouchableWithoutFeedback>
+        selectedTime={selectedTime}
+        selectedDuration={selectedDuration}
+        onTimeChange={onTimeChange}
+        onDurationChange={setSelectedDuration}
+        onConfirm={confirmTime}
+        onClose={() => setShowTimePicker(false)}
+      />
 
-            <Animated.View {...panResponderTime.panHandlers} style={styles.pickerContent}>
-              <View style={styles.pickerSection}>
-                <Text style={styles.pickerLabel}>Час початку</Text>
-                <View style={styles.timePickerWrapper}>
-                  <DateTimePicker
-                    value={selectedTime}
-                    mode="time"
-                    is24Hour={true}
-                    display="spinner"
-                    onChange={onTimeChange}
-                    textColor={TEXT_DARK}
-                    locale="uk-UA"
-                  />
-                </View>
-              </View>
-
-              <View style={styles.pickerSection}>
-                <Text style={styles.pickerLabel}>Скільки будете гуляти?</Text>
-                <View style={styles.durationOptions}>
-                  {['1', '2', '3', '4', '5', '6'].map((duration) => (
-                    <Pressable
-                      key={duration}
-                      style={[
-                        styles.durationOption,
-                        selectedDuration === duration && styles.durationOptionSelected,
-                      ]}
-                      onPress={() => setSelectedDuration(duration)}
-                    >
-                      <Text
-                        style={[
-                          styles.durationOptionText,
-                          selectedDuration === duration && styles.durationOptionTextSelected,
-                        ]}
-                      >
-                        {duration}г
-                      </Text>
-                    </Pressable>
-                  ))}
-                </View>
-              </View>
-            </Animated.View>
-
-            <Animated.View {...panResponderTime.panHandlers} style={styles.pickerFooter}>
-              <Pressable style={styles.confirmButton} onPress={confirmTime}>
-                <Check size={20} color="#FFFFFF" />
-                <Text style={styles.confirmButtonText}>Підтвердити</Text>
-              </Pressable>
-            </Animated.View>
-          </Animated.View>
-        </View>
-      </Modal>
-
-      <Modal
+      <LocationPickerModal
         visible={showLocationPicker}
-        transparent
-        animationType="none"
-        onRequestClose={closeLocationPicker}
-      >
-        <View style={styles.backdrop}>
-          <TouchableOpacity
-            style={StyleSheet.absoluteFill}
-            activeOpacity={1}
-            onPress={closeLocationPicker}
-          />
-          <Animated.View
-            style={[
-              styles.bottomSheetModal,
-              {
-                transform: [{ translateY }],
-              },
-            ]}
-            onStartShouldSetResponder={() => true}
-          >
-            <Animated.View {...panResponder.panHandlers} style={styles.handleContainer}>
-              <View style={styles.handle} />
-            </Animated.View>
-            <Animated.View {...panResponder.panHandlers} style={styles.locationPickerHeader}>
-              <Text style={styles.pickerTitle}>Оберіть локацію прогулянки</Text>
-            </Animated.View>
+        location={location}
+        initialMapCenter={initialMapCenter}
+        tempLocation={tempLocation}
+        onMapMove={handleMapMove}
+        onConfirm={confirmLocation}
+        onClose={() => {
+          setShowLocationPicker(false);
+          setTempLocation(null);
+        }}
+      />
 
-            {location && initialMapCenter ? (
-              <View style={styles.mapWrapper}>
-                {Platform.OS === 'web' ? (
-                  <WebMap
-                    latitude={initialMapCenter.latitude}
-                    longitude={initialMapCenter.longitude}
-                    markers={[]}
-                    selectedMarkerId={null}
-                    onMarkerPress={() => {}}
-                    onMapMove={(lat, lng) => {
-                      const distance = calculateDistance(
-                        location.coords.latitude,
-                        location.coords.longitude,
-                        lat,
-                        lng
-                      );
-                      if (distance <= 15) {
-                        setTempLocation({ latitude: lat, longitude: lng });
-                      }
-                    }}
-                    radiusKm={15}
-                    centerLat={location.coords.latitude}
-                    centerLng={location.coords.longitude}
-                    userLatitude={location.coords.latitude}
-                    userLongitude={location.coords.longitude}
-                  />
-                ) : (
-                  <NativeMap
-                    latitude={initialMapCenter.latitude}
-                    longitude={initialMapCenter.longitude}
-                    markers={[]}
-                    selectedMarkerId={null}
-                    onMarkerPress={() => {}}
-                    onMapMove={(lat, lng) => {
-                      const distance = calculateDistance(
-                        location.coords.latitude,
-                        location.coords.longitude,
-                        lat,
-                        lng
-                      );
-                      if (distance <= 15) {
-                        setTempLocation({ latitude: lat, longitude: lng });
-                      }
-                    }}
-                    radiusKm={15}
-                    centerLat={location.coords.latitude}
-                    centerLng={location.coords.longitude}
-                    userLatitude={location.coords.latitude}
-                    userLongitude={location.coords.longitude}
-                  />
-                )}
-                <View style={styles.centerMarker}>
-                  <View style={styles.markerOuter} />
-                  <View style={styles.markerInner} />
-                </View>
-              </View>
-            ) : (
-              <View style={styles.loadingContainer}>
-                <ActivityIndicator size="large" color={ACCENT_ORANGE} />
-              </View>
-            )}
-
-            <Animated.View {...panResponder.panHandlers} style={styles.locationPickerFooter}>
-              <Text style={styles.locationHint}>
-                Натисніть на карту щоб обрати локацію (до 15 км від вас)
-              </Text>
-              <Pressable
-                style={styles.confirmButton}
-                onPress={closeLocationPicker}
-              >
-                <Check size={20} color="#FFFFFF" />
-                <Text style={styles.confirmButtonText}>Підтвердити</Text>
-              </Pressable>
-            </Animated.View>
-          </Animated.View>
-        </View>
-      </Modal>
-
-      <Modal visible={showSuccess} transparent animationType="fade">
-        <View style={styles.successOverlay}>
-          <View style={styles.successCard}>
-            <View style={styles.successIcon}>
-              <Check size={40} color="#FFFFFF" strokeWidth={3} />
-            </View>
-            <Text style={styles.successTitle}>Успішно!</Text>
-            <Text style={styles.successMessage}>Ваш статус оновлено</Text>
-          </View>
-        </View>
-      </Modal>
+      <SuccessModal visible={showSuccess} />
     </KeyboardAvoidingView>
   );
 }
@@ -699,9 +366,6 @@ const styles = StyleSheet.create({
     fontSize: 32,
     fontWeight: '700',
     color: TEXT_DARK,
-  },
-  closeButton: {
-    padding: 8,
   },
   subtitle: {
     fontSize: 15,
@@ -756,41 +420,6 @@ const styles = StyleSheet.create({
     fontSize: 17,
     fontWeight: '600',
   },
-  successOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.6)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 24,
-  },
-  successCard: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 24,
-    padding: 32,
-    alignItems: 'center',
-    maxWidth: 320,
-    width: '100%',
-  },
-  successIcon: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    backgroundColor: SUCCESS_GREEN,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 20,
-  },
-  successTitle: {
-    fontSize: 24,
-    fontWeight: '700',
-    color: TEXT_DARK,
-    marginBottom: 8,
-  },
-  successMessage: {
-    fontSize: 15,
-    color: TEXT_LIGHT,
-    textAlign: 'center',
-  },
   timeButton: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -824,180 +453,5 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: TEXT_DARK,
     fontWeight: '500',
-  },
-  bottomSheetModal: {
-    backgroundColor: '#FFFFFF',
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-    maxHeight: '90%',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: -4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 12,
-    elevation: 8,
-  },
-  handleContainer: {
-    alignItems: 'center',
-    paddingVertical: 16,
-    paddingHorizontal: 20,
-    backgroundColor: '#FFFFFF',
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-    width: '100%',
-  },
-  handle: {
-    width: 48,
-    height: 5,
-    backgroundColor: '#D1D1D1',
-    borderRadius: 3,
-  },
-  locationPickerHeader: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingTop: 8,
-    paddingBottom: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: BORDER_COLOR,
-  },
-  mapWrapper: {
-    height: 400,
-    position: 'relative',
-  },
-  centerMarker: {
-    position: 'absolute',
-    top: '50%',
-    left: '50%',
-    marginLeft: -10.59,
-    marginTop: -10.59,
-    zIndex: 1000,
-    width: 21.18,
-    height: 21.18,
-    pointerEvents: 'none',
-  },
-  markerOuter: {
-    position: 'absolute',
-    width: 21.18,
-    height: 21.18,
-    left: 0,
-    top: 0,
-    backgroundColor: ACCENT_ORANGE,
-    opacity: 0.53,
-    borderRadius: 82.5081,
-  },
-  markerInner: {
-    position: 'absolute',
-    width: 15.13,
-    height: 15.13,
-    left: 3.03,
-    top: 3.03,
-    backgroundColor: ACCENT_ORANGE,
-    borderRadius: 8.25081,
-  },
-  loadingContainer: {
-    height: 400,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  locationPickerFooter: {
-    padding: 20,
-    paddingBottom: 30,
-    borderTopWidth: 1,
-    borderTopColor: BORDER_COLOR,
-    backgroundColor: '#FFFFFF',
-  },
-  locationHint: {
-    fontSize: 13,
-    color: TEXT_LIGHT,
-    textAlign: 'center',
-    marginBottom: 16,
-    lineHeight: 18,
-  },
-  pickerHeader: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingTop: 8,
-    paddingBottom: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: BORDER_COLOR,
-  },
-  pickerTitle: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: TEXT_DARK,
-  },
-  pickerContent: {
-    padding: 24,
-    maxHeight: 500,
-  },
-  pickerSection: {
-    marginBottom: 32,
-  },
-  pickerLabel: {
-    fontSize: 17,
-    fontWeight: '600',
-    color: TEXT_DARK,
-    marginBottom: 16,
-  },
-  timePickerWrapper: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 20,
-  },
-  durationOptions: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 12,
-  },
-  durationOption: {
-    backgroundColor: INPUT_BG,
-    borderWidth: 2,
-    borderColor: BORDER_COLOR,
-    borderRadius: 12,
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-    minWidth: 70,
-    alignItems: 'center',
-  },
-  durationOptionSelected: {
-    backgroundColor: ACCENT_ORANGE,
-    borderColor: ACCENT_ORANGE,
-  },
-  durationOptionText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: TEXT_DARK,
-  },
-  durationOptionTextSelected: {
-    color: '#FFFFFF',
-  },
-  pickerFooter: {
-    padding: 20,
-    paddingBottom: 30,
-    borderTopWidth: 1,
-    borderTopColor: BORDER_COLOR,
-    backgroundColor: '#FFFFFF',
-  },
-  backdrop: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    justifyContent: 'flex-end',
-  },
-  confirmButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: SUCCESS_GREEN,
-    paddingVertical: 16,
-    borderRadius: 16,
-    gap: 8,
-  },
-  confirmButtonText: {
-    color: '#FFFFFF',
-    fontSize: 17,
-    fontWeight: '600',
   },
 });
