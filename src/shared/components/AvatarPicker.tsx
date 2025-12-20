@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Image, ActivityIndicator, Alert } from 'react-native';
-import { Camera } from 'lucide-react-native';
-import { pickAndUploadAvatar } from '@shared/lib';
+import { Camera, ImageIcon } from 'lucide-react-native';
+import { pickAndUploadAvatar, takePhotoAndUploadAvatar } from '@shared/lib';
 
 const AVATAR_PLACEHOLDER = 'https://api.dicebear.com/7.x/initials/svg?seed=';
 
@@ -22,9 +22,44 @@ export default function AvatarPicker({
 }: AvatarPickerProps) {
   const [uploading, setUploading] = useState(false);
 
-  const handleAvatarPress = async () => {
+  const handleChooseSource = () => {
     if (!isEditing || uploading) return;
     
+    Alert.alert(
+      'Виберіть джерело',
+      '',
+      [
+        {
+          text: 'Камера',
+          onPress: handleTakePhoto,
+        },
+        {
+          text: 'Галерея',
+          onPress: handlePickImage,
+        },
+        {
+          text: 'Скасувати',
+          style: 'cancel',
+        },
+      ]
+    );
+  };
+
+  const handleTakePhoto = async () => {
+    try {
+      setUploading(true);
+      const avatarUrl = await takePhotoAndUploadAvatar(userId);
+      if (avatarUrl) {
+        onAvatarChange(avatarUrl);
+      }
+    } catch (error: any) {
+      Alert.alert('Помилка', error.message || 'Не вдалося зробити фото');
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handlePickImage = async () => {
     try {
       setUploading(true);
       const avatarUrl = await pickAndUploadAvatar(userId);
@@ -43,7 +78,7 @@ export default function AvatarPicker({
   return (
     <View style={styles.container}>
       <TouchableOpacity
-        onPress={handleAvatarPress}
+        onPress={handleChooseSource}
         disabled={!isEditing || uploading}
         style={styles.avatarContainer}
       >

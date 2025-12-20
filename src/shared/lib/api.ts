@@ -607,6 +607,29 @@ export async function uploadAvatar(userId: string, imageUri: string): Promise<st
   }
 }
 
+export async function takePhotoAndUploadAvatar(userId: string): Promise<string | null> {
+  const { status } = await ImagePicker.requestCameraPermissionsAsync();
+  
+  if (status !== 'granted') {
+    throw new Error('Permission denied');
+  }
+
+  const result = await ImagePicker.launchCameraAsync({
+    allowsEditing: true,
+    aspect: [1, 1],
+    quality: 0.8,
+  });
+
+  if (result.canceled) {
+    return null;
+  }
+
+  const avatarUrl = await uploadAvatar(userId, result.assets[0].uri);
+  await updateProfile(userId, { avatar_url: avatarUrl });
+  
+  return avatarUrl;
+}
+
 export async function pickAndUploadAvatar(userId: string): Promise<string | null> {
   const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
   
