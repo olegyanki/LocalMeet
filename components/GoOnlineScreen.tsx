@@ -433,11 +433,17 @@ export default function GoOnlineScreen() {
             onStartShouldSetResponder={() => true}
           >
             <Animated.View {...panResponderTime.panHandlers} style={styles.handleContainer}>
-              <View style={styles.handle} />
+              <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+                <View style={styles.handleContainer}>
+                  <View style={styles.handle} />
+                </View>
+              </TouchableWithoutFeedback>
             </Animated.View>
-            <Animated.View {...panResponderTime.panHandlers} style={styles.pickerHeader}>
-              <Text style={styles.pickerTitle}>Коли починається ваша активність?</Text>
-            </Animated.View>
+            <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+              <Animated.View {...panResponderTime.panHandlers} style={styles.pickerHeader}>
+                <Text style={styles.pickerTitle}>Коли починається ваша активність?</Text>
+              </Animated.View>
+            </TouchableWithoutFeedback>
 
             <Animated.View {...panResponderTime.panHandlers} style={styles.pickerContent}>
               <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
