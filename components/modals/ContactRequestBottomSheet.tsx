@@ -14,7 +14,7 @@ import {
 } from 'react-native';
 import { BlurView } from 'expo-blur';
 import { X, Send } from 'lucide-react-native';
-import { createWalkRequest } from '../lib/api';
+import { createWalkRequest } from '../../lib/api';
 
 const ACCENT_ORANGE = '#FF9500';
 const TEXT_DARK = '#333333';

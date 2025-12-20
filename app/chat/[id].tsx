@@ -20,7 +20,7 @@ import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
 import AudioRecorder from '@/components/AudioRecorder';
 import AudioPlayer from '@/components/AudioPlayer';
-import EventDetailsBottomSheet from '@/components/EventDetailsBottomSheet';
+import EventDetailsBottomSheet from '@/components/modals/EventDetailsBottomSheet';
 
 const BACKGROUND = '#FFFFFF';
 const TEXT_DARK = '#1C1C1E';

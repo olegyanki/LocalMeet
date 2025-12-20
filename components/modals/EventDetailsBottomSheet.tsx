@@ -14,8 +14,8 @@ import {
 } from 'react-native';
 import { BlurView } from 'expo-blur';
 import { Clock, MapPin, MessageCircle, X, Trash2, Clock as ClockIcon, Check } from 'lucide-react-native';
-import { deleteWalk, getMyRequestForWalk, WalkRequest } from '../lib/api';
-import { useAuth } from '../contexts/AuthContext';
+import { deleteWalk, getMyRequestForWalk, WalkRequest } from '../../lib/api';
+import { useAuth } from '../../contexts/AuthContext';
 import { router } from 'expo-router';
 
 const ACCENT_ORANGE = '#FF9500';

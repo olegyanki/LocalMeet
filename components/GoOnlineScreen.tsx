@@ -18,9 +18,9 @@ import { useAuth } from '../contexts/AuthContext';
 import { updateWalkStatus } from '../lib/api';
 import { Clock, MapPin } from 'lucide-react-native';
 import { router } from 'expo-router';
-import TimePickerModal from './TimePickerModal';
-import LocationPickerModal from './LocationPickerModal';
-import SuccessModal from './SuccessModal';
+import TimePickerModal from './modals/TimePickerModal';
+import LocationPickerModal from './modals/LocationPickerModal';
+import SuccessModal from './modals/SuccessModal';
 import { calculateDistance } from '../utils/location';
 
 const BG_COLOR = '#F5F5F5';

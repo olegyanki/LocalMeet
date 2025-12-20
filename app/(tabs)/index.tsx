@@ -18,10 +18,10 @@ import * as Location from 'expo-location';
 import { useAuth } from '../../contexts/AuthContext';
 import { getNearbyWalks, updateLocation, updateWalkStatus } from '../../lib/api';
 import { Clock } from 'lucide-react-native';
-import WebMap from '../../components/WebMap';
-import NativeMap from '../../components/NativeMap';
-import EventDetailsBottomSheet from '../../components/EventDetailsBottomSheet';
-import ContactRequestBottomSheet from '../../components/ContactRequestBottomSheet';
+import WebMap from '../../components/maps/WebMap';
+import NativeMap from '../../components/maps/NativeMap';
+import EventDetailsBottomSheet from '../../components/modals/EventDetailsBottomSheet';
+import ContactRequestBottomSheet from '../../components/modals/ContactRequestBottomSheet';
 import { useFocusEffect } from '@react-navigation/native';
 import { router, useLocalSearchParams } from 'expo-router';
 
