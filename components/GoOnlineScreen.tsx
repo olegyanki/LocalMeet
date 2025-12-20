@@ -613,6 +613,10 @@ export default function GoOnlineScreen() {
                     }}
                   />
                 )}
+                <View style={styles.centerMarker}>
+                  <View style={styles.markerOuter} />
+                  <View style={styles.markerInner} />
+                </View>
               </View>
             ) : (
               <View style={styles.loadingContainer}>
@@ -836,6 +840,36 @@ const styles = StyleSheet.create({
   },
   mapWrapper: {
     height: 400,
+    position: 'relative',
+  },
+  centerMarker: {
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
+    marginLeft: -10.59,
+    marginTop: -10.59,
+    zIndex: 1000,
+    width: 21.18,
+    height: 21.18,
+  },
+  markerOuter: {
+    position: 'absolute',
+    width: 21.18,
+    height: 21.18,
+    left: 0,
+    top: 0,
+    backgroundColor: ACCENT_ORANGE,
+    opacity: 0.53,
+    borderRadius: 82.5081,
+  },
+  markerInner: {
+    position: 'absolute',
+    width: 15.13,
+    height: 15.13,
+    left: 3.03,
+    top: 3.03,
+    backgroundColor: ACCENT_ORANGE,
+    borderRadius: 8.25081,
   },
   loadingContainer: {
     height: 400,
