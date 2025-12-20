@@ -155,19 +155,7 @@ export default function SearchScreen() {
       setIsLoadingLocation(true);
       const { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== 'granted') {
-        const defaultValenciaLocation = {
-          coords: {
-            latitude: 39.4699,
-            longitude: -0.3763,
-            altitude: null,
-            accuracy: null,
-            altitudeAccuracy: null,
-            heading: null,
-            speed: null,
-          },
-          timestamp: Date.now(),
-        };
-        setLocation(defaultValenciaLocation);
+        console.log('Location permission not granted')
         setIsLoadingLocation(false);
         return;
       }
@@ -182,19 +170,6 @@ export default function SearchScreen() {
       }
     } catch (err) {
       console.error('Location error:', err);
-      const defaultValenciaLocation = {
-        coords: {
-          latitude: 39.4699,
-          longitude: -0.3763,
-          altitude: null,
-          accuracy: null,
-          altitudeAccuracy: null,
-          heading: null,
-          speed: null,
-        },
-        timestamp: Date.now(),
-      };
-      setLocation(defaultValenciaLocation);
     } finally {
       setIsLoadingLocation(false);
     }
