@@ -36,6 +36,7 @@ LocalMeet допомагає людям знаходити цікавих люд
 - **Expo Router** (6.0.8) - file-based routing
 - **TypeScript** (5.9.2)
 - **Lucide React Native** - іконки
+- **i18n** - підтримка мов (українська, англійська)
 
 ### Backend
 - **Supabase** - BaaS (Backend as a Service)
@@ -80,9 +81,11 @@ LocalMeet/
 │   │   ├── search/              # Пошук людей на карті
 │   │   │   ├── screens/
 │   │   │   │   └── SearchScreen.tsx
-│   │   │   └── maps/
-│   │   │       ├── NativeMap.tsx    # React Native Maps
-│   │   │       └── WebMap.tsx       # Leaflet
+│   │   │   ├── maps/
+│   │   │   │   ├── NativeMap.tsx    # React Native Maps
+│   │   │   │   └── WebMap.tsx       # Leaflet
+│   │   │   └── components/
+│   │   │       └── FilterBottomSheet.tsx  # Фільтри та сортування
 │   │   │
 │   │   ├── events/              # Створення та управління івентами
 │   │   │   ├── screens/
@@ -115,18 +118,32 @@ LocalMeet/
 │       │   ├── AudioPlayer.tsx
 │       │   ├── AudioRecorder.tsx
 │       │   ├── AvatarPicker.tsx
-│       │   └── InterestPicker.tsx
+│       │   ├── InterestPicker.tsx
+│       │   ├── Avatar.tsx           # Reusable avatar
+│       │   └── LocationPin.tsx      # Custom SVG icon
+│       ├── constants/
+│       │   ├── colors.ts            # Centralized colors
+│       │   ├── styles.ts            # Common styles & sizes
+│       │   └── index.ts
 │       ├── contexts/
 │       │   ├── AuthContext.tsx
 │       │   └── CreateEventContext.tsx
 │       ├── hooks/
 │       │   └── useFrameworkReady.ts
+│       ├── i18n/                    # Internationalization
+│       │   ├── locales/
+│       │   │   ├── uk.json          # Ukrainian translations
+│       │   │   └── en.json          # English translations
+│       │   ├── I18nContext.tsx      # Language context
+│       │   ├── translations.ts
+│       │   └── index.ts
 │       ├── lib/
 │       │   ├── api.ts           # API функції
 │       │   ├── auth.ts          # Авторизація
 │       │   └── supabase.ts      # Supabase client
 │       └── utils/
-│           └── location.ts
+│           ├── location.ts
+│           └── time.ts          # Time utilities
 ```
 
 ## 🗄️ База даних (Supabase)
@@ -332,6 +349,8 @@ npm run typecheck    # Перевірка типів
 ```typescript
 import { useAuth } from '@shared/contexts';
 import { supabase } from '@shared/lib';
+import { COLORS, SIZES } from '@shared/constants';
+import { useI18n } from '@shared/i18n';
 import WebMap from '@features/search/maps/WebMap';
 import EventDetailsBottomSheet from '@features/events/modals/EventDetailsBottomSheet';
 ```
@@ -364,6 +383,40 @@ import EventDetailsBottomSheet from '@features/events/modals/EventDetailsBottomS
 
 ## 🎨 Дизайн система
 
+### Константи
+Всі кольори, розміри та стилі централізовані в `src/shared/constants/`:
+
+```typescript
+// colors.ts
+export const COLORS = {
+  ACCENT_ORANGE: '#FF9500',
+  TEXT_DARK: '#333333',
+  TEXT_LIGHT: '#999999',
+  BG_COLOR: '#F5F5F5',
+  CARD_BG: '#FFFFFF',
+  BORDER_COLOR: '#E8E8E8',
+  SUCCESS_GREEN: '#4CAF50',
+};
+
+// styles.ts
+export const SIZES = {
+  AVATAR_SMALL: 32,
+  AVATAR_MEDIUM: 48,
+  AVATAR_LARGE: 80,
+  TAB_BAR_HEIGHT: 78,
+  CARDS_COLLAPSE_DISTANCE: 250,
+};
+
+export const COMMON_STYLES = {
+  shadow: { /* shadow styles */ },
+  avatar: { /* avatar styles */ },
+};
+```
+
+### Reusable компоненти
+- **Avatar** - аватар з placeholder
+- **LocationPin** - custom SVG іконка локації
+
 ### Кольори
 - `ACCENT_ORANGE` - #FF9500 (основний акцент)
 - `TEXT_DARK` - #333333
@@ -376,6 +429,42 @@ import EventDetailsBottomSheet from '@features/events/modals/EventDetailsBottomS
 - Карточки з тінями та rounded corners
 - Smooth анімації (Animated API)
 - Pull-to-refresh в списках
+
+## 🌍 Internationalization (i18n)
+
+### Структура
+```
+src/shared/i18n/
+├── locales/
+│   ├── uk.json          # Українські переклади
+│   └── en.json          # Англійські переклади
+├── I18nContext.tsx      # Context для управління мовою
+├── translations.ts      # Імпорт JSON файлів
+└── index.ts
+```
+
+### Використання
+```typescript
+import { useI18n } from '@shared/i18n';
+
+function MyComponent() {
+  const { t, language, setLanguage } = useI18n();
+  
+  return (
+    <Text>{t('myProfile')}</Text>
+  );
+}
+```
+
+### Додавання нових перекладів
+1. Додати ключ в `uk.json` та `en.json`
+2. Використовувати через `t('keyName')`
+3. Мова зберігається в AsyncStorage
+4. Перемикач мови в ProfileScreen
+
+### Підтримувані мови
+- 🇺🇦 Українська (за замовчуванням)
+- 🇬🇧 English
 
 ## 🐛 Відомі особливості
 
@@ -408,9 +497,14 @@ import EventDetailsBottomSheet from '@features/events/modals/EventDetailsBottomS
 Використовуй TypeScript інтерфейси для типізації
 
 ### Стилі
-Використовуй StyleSheet.create()
-Константи кольорів на початку файлу
-Responsive через Dimensions.get('window')
+- Використовуй константи з `@shared/constants`
+- Використовуй StyleSheet.create()
+- Responsive через Dimensions.get('window')
+
+### Переклади
+- Всі тексти через `t('key')` з useI18n()
+- Додавай нові ключі в `uk.json` та `en.json`
+- Ніколи не хардкодь тексти в компонентах
 
 ---
 
