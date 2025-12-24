@@ -385,11 +385,12 @@ export default function SearchScreen() {
       </View>
 
       <View style={[styles.cardsContainer, { bottom: 90 + insets.bottom }]}>
+        <View style={styles.cardsBackdrop} />
         <LinearGradient
           colors={['rgba(243, 248, 255, 0)', 'rgba(243, 248, 255, 0.5)']}
           style={styles.gradientOverlay}
+          pointerEvents="none"
         />
-        <View style={styles.cardsBackdrop} />
         <View style={styles.cardsHandle} />
         <ScrollView
           ref={scrollViewRef}
@@ -567,23 +568,23 @@ const styles = StyleSheet.create({
     right: 0,
     overflow: 'visible',
   },
-  gradientOverlay: {
-    position: 'absolute',
-    top: -80,
-    left: 0,
-    right: 0,
-    height: 80,
-  },
   cardsBackdrop: {
     position: 'absolute',
     top: 0,
     left: 0,
     right: 0,
-    bottom: 0,
+    bottom: -100,
     backgroundColor: 'rgba(243, 248, 255, 0.5)',
     ...(Platform.OS === 'ios' && {
       backdropFilter: 'blur(10px)',
     }),
+  },
+  gradientOverlay: {
+    position: 'absolute',
+    top: -30,
+    left: 0,
+    right: 0,
+    height: 30,
   },
   cardsHandle: {
     width: 60,
