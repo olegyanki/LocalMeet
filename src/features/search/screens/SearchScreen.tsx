@@ -384,7 +384,7 @@ export default function SearchScreen() {
         )}
       </View>
 
-      <View style={[styles.cardsContainer, { bottom: 90 + insets.bottom }]}>
+      <View style={[styles.cardsContainer, { bottom: 78 + insets.bottom }]}>
         <View style={styles.cardsBackdrop} />
         <LinearGradient
           colors={['rgba(243, 248, 255, 0)', 'rgba(243, 248, 255, 0.5)']}
