@@ -260,7 +260,7 @@ export default function SearchScreen() {
   };
 
   const getTimeColor = (walkStartTime: string | null): string => {
-    if (!walkStartTime) return ACCENT_ORANGE;
+    if (!walkStartTime) return '#12B7DB';
 
     const now = new Date();
     const startTime = new Date(walkStartTime);
@@ -269,8 +269,6 @@ export default function SearchScreen() {
 
     if (diffMins < 0) {
       return '#8FD89C';
-    } else if (diffMins <= 15) {
-      return ACCENT_ORANGE;
     } else {
       return '#12B7DB';
     }
