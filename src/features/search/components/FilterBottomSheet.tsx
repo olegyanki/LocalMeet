@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 
 import { COLORS } from '@shared/constants';
+import { useI18n } from '@shared/i18n';
 
 export type TimeFilter = 'all' | 'started' | 'today' | 'tomorrow';
 export type SortBy = 'distance' | 'date';
@@ -24,10 +25,10 @@ interface FilterBottomSheetProps {
 }
 
 const FILTERS = [
-  { id: 'all' as TimeFilter, label: 'Всі' },
-  { id: 'started' as TimeFilter, label: 'Вже почались' },
-  { id: 'today' as TimeFilter, label: 'Сьогодні' },
-  { id: 'tomorrow' as TimeFilter, label: 'Завтра' },
+  { id: 'all' as TimeFilter, label: 'all' },
+  { id: 'started' as TimeFilter, label: 'started' },
+  { id: 'today' as TimeFilter, label: 'today' },
+  { id: 'tomorrow' as TimeFilter, label: 'tomorrow' },
 ];
 
 export default function FilterBottomSheet({
@@ -39,6 +40,7 @@ export default function FilterBottomSheet({
   onClose,
 }: FilterBottomSheetProps) {
   const translateY = useRef(new Animated.Value(300)).current;
+  const { t } = useI18n();
 
   const panResponder = useRef(
     PanResponder.create({
@@ -99,7 +101,7 @@ export default function FilterBottomSheet({
           </View>
 
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Час</Text>
+            <Text style={styles.sectionTitle}>{t('time')}</Text>
             <View style={styles.filtersContainer}>
               {FILTERS.map((filter) => (
                 <Pressable
@@ -119,7 +121,7 @@ export default function FilterBottomSheet({
                       selectedFilter === filter.id && styles.filterChipTextActive,
                     ]}
                   >
-                    {filter.label}
+                    {t(filter.label as any)}
                   </Text>
                 </Pressable>
               ))}
@@ -127,7 +129,7 @@ export default function FilterBottomSheet({
           </View>
 
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Сортування</Text>
+            <Text style={styles.sectionTitle}>{t('sorting')}</Text>
             <View style={styles.sortContainer}>
               <Pressable
                 style={[
@@ -142,7 +144,7 @@ export default function FilterBottomSheet({
                     sortBy === 'distance' && styles.sortOptionTextActive,
                   ]}
                 >
-                  По відстані
+                  {t('byDistance')}
                 </Text>
               </Pressable>
               <Pressable
@@ -158,7 +160,7 @@ export default function FilterBottomSheet({
                     sortBy === 'date' && styles.sortOptionTextActive,
                   ]}
                 >
-                  По даті
+                  {t('byDate')}
                 </Text>
               </Pressable>
             </View>

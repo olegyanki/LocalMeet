@@ -19,6 +19,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Location from 'expo-location';
 import { useAuth } from '@shared/contexts/AuthContext';
+import { useI18n } from '@shared/i18n';
 import { getNearbyUsers, updateLocation, updateWalkStatus } from '@shared/lib/api';
 import { Clock } from 'lucide-react-native';
 import Svg, { Rect, Defs, Filter, FeFlood, FeColorMatrix, FeOffset, FeGaussianBlur, FeBlend, G } from 'react-native-svg';
@@ -75,6 +76,7 @@ interface UserProfile {
 
 export default function SearchScreen() {
   const { user } = useAuth();
+  const { t } = useI18n();
   const params = useLocalSearchParams();
   const insets = useSafeAreaInsets();
   const scrollViewRef = useRef<ScrollView>(null);
@@ -532,7 +534,7 @@ export default function SearchScreen() {
             </View>
           ) : sortedWalks.length === 0 ? (
             <View style={[styles.emptyCard, { width: cardWidth }]}>
-              <Text style={styles.emptyText}>Немає людей які гуляють поблизу</Text>
+              <Text style={styles.emptyText}>{t('noEventsNearby')}</Text>
             </View>
           ) : (
             <>
@@ -582,7 +584,7 @@ export default function SearchScreen() {
 
                   <View style={styles.cardFooter}>
                     <Text style={[styles.distance, item.id === user?.id && styles.ownEventText]}>
-                      {item.id === user?.id ? 'Ваш івент' : `${item.distance.toFixed(1)} км від вас`}
+                      {item.id === user?.id ? t('yourEvent') : `${item.distance.toFixed(1)} ${t('kmFromYou')}`}
                     </Text>
                     {item.walk?.start_time && (
                       <View style={styles.timeInfo}>

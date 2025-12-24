@@ -4,6 +4,7 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
+  Pressable,
   TextInput,
   ScrollView,
   ActivityIndicator,
@@ -14,6 +15,7 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '@shared/contexts/AuthContext';
+import { useI18n } from '@shared/i18n';
 import { useRouter } from 'expo-router';
 import { getProfile, updateProfile } from '@shared/lib/api';
 import { signOut } from '@shared/lib/auth';
@@ -43,6 +45,7 @@ const LANGUAGE_OPTIONS = [
 
 export default function ProfileScreen() {
   const { user } = useAuth();
+  const { t, language, setLanguage } = useI18n();
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const [profile, setProfile] = useState<any>(null);
@@ -182,13 +185,35 @@ export default function ProfileScreen() {
         keyboardShouldPersistTaps="handled"
       >
       <View style={styles.header}>
-        <Text style={styles.title}>Мій профіль</Text>
+        <Text style={styles.title}>{t('myProfile')}</Text>
         <TouchableOpacity onPress={() => isEditing ? handleCancel() : setIsEditing(true)}>
-          <Text style={styles.editButton}>{isEditing ? 'Скасувати' : 'Редагувати'}</Text>
+          <Text style={styles.editButton}>{isEditing ? t('cancel') : t('edit')}</Text>
         </TouchableOpacity>
       </View>
 
       {error ? <Text style={styles.errorText}>{error}</Text> : null}
+
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>{t('languages')}</Text>
+        <View style={styles.languageSwitcher}>
+          <Pressable
+            style={[styles.langButton, language === 'uk' && styles.langButtonActive]}
+            onPress={() => setLanguage('uk')}
+          >
+            <Text style={[styles.langButtonText, language === 'uk' && styles.langButtonTextActive]}>
+              🇺🇦 Українська
+            </Text>
+          </Pressable>
+          <Pressable
+            style={[styles.langButton, language === 'en' && styles.langButtonActive]}
+            onPress={() => setLanguage('en')}
+          >
+            <Text style={[styles.langButtonText, language === 'en' && styles.langButtonTextActive]}>
+              🇬🇧 English
+            </Text>
+          </Pressable>
+        </View>
+      </View>
 
       <AvatarPicker
         currentAvatar={avatarUrl}
@@ -199,22 +224,22 @@ export default function ProfileScreen() {
       />
 
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Основна інформація</Text>
+        <Text style={styles.sectionTitle}>{t('basicInfo')}</Text>
 
-        <Text style={styles.label}>Ім'я</Text>
+        <Text style={styles.label}>{t('name')}</Text>
         <TextInput
           style={styles.input}
-          placeholder="Ваше ім'я"
+          placeholder={t('enterName')}
           placeholderTextColor="#AAAAAA"
           value={displayName}
           onChangeText={setDisplayName}
           editable={isEditing}
         />
 
-        <Text style={styles.label}>Про себе</Text>
+        <Text style={styles.label}>{t('aboutMe')}</Text>
         <TextInput
           style={[styles.input, styles.textArea]}
-          placeholder="Розкажіть про себе..."
+          placeholder={t('enterBio')}
           placeholderTextColor="#AAAAAA"
           value={bio}
           onChangeText={setBio}
@@ -225,28 +250,28 @@ export default function ProfileScreen() {
 
         <View style={styles.row}>
           <View style={styles.halfInput}>
-            <Text style={styles.label}>Вік</Text>
+            <Text style={styles.label}>{t('age')}</Text>
             <TouchableOpacity
               style={styles.pickerButton}
               onPress={() => isEditing && setShowAgePicker(true)}
               disabled={!isEditing}
             >
               <Text style={[styles.pickerText, !age && styles.placeholderText]}>
-                {age || 'Виберіть вік'}
+                {age || t('selectAge')}
               </Text>
               {isEditing && <ChevronDown size={16} color={TEXT_LIGHT} />}
             </TouchableOpacity>
           </View>
 
           <View style={styles.halfInput}>
-            <Text style={styles.label}>Стать</Text>
+            <Text style={styles.label}>{t('gender')}</Text>
             <TouchableOpacity
               style={styles.pickerButton}
               onPress={() => isEditing && setShowGenderPicker(true)}
               disabled={!isEditing}
             >
               <Text style={[styles.pickerText, !gender && styles.placeholderText]}>
-                {gender || 'Виберіть стать'}
+                {gender || t('selectGender')}
               </Text>
               {isEditing && <ChevronDown size={16} color={TEXT_LIGHT} />}
             </TouchableOpacity>
@@ -256,7 +281,7 @@ export default function ProfileScreen() {
       </View>
 
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Мови</Text>
+        <Text style={styles.sectionTitle}>{t('languages')}</Text>
         <View style={styles.chipsContainer}>
           {languages.map((lang) => (
             <View key={lang} style={styles.chip}>
@@ -274,7 +299,7 @@ export default function ProfileScreen() {
               onPress={() => setShowLanguagePicker(true)}
             >
               <Plus size={16} color={ACCENT_ORANGE} />
-              <Text style={styles.addChipText}>Додати</Text>
+              <Text style={styles.addChipText}>{t('addLanguage')}</Text>
             </TouchableOpacity>
           )}
         </View>
@@ -289,10 +314,10 @@ export default function ProfileScreen() {
       </View>
 
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Що шукаю</Text>
+        <Text style={styles.sectionTitle}>{t('lookingFor')}</Text>
         <TextInput
           style={[styles.input, styles.textArea]}
-          placeholder="Наприклад: Друзів для спорту, подорожей..."
+          placeholder={t('enterLookingFor')}
           placeholderTextColor="#AAAAAA"
           value={lookingFor}
           onChangeText={setLookingFor}
@@ -303,7 +328,7 @@ export default function ProfileScreen() {
       </View>
 
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Соціальні мережі</Text>
+        <Text style={styles.sectionTitle}>{t('socialNetworks')}</Text>
         <View style={styles.chipsContainer}>
           {instagram && (
             <View style={styles.socialChip}>
@@ -357,21 +382,21 @@ export default function ProfileScreen() {
           {isSaving ? (
             <ActivityIndicator color="#FFFFFF" />
           ) : (
-            <Text style={styles.saveButtonText}>Зберегти зміни</Text>
+            <Text style={styles.saveButtonText}>{t('saveChanges')}</Text>
           )}
         </TouchableOpacity>
       )}
 
       <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
         <LogOut size={18} color="#FF3B30" strokeWidth={2.5} />
-        <Text style={styles.logoutText}>Вийти з акаунту</Text>
+        <Text style={styles.logoutText}>{t('logout')}</Text>
       </TouchableOpacity>
 
       <Modal visible={showAgePicker} transparent animationType="slide">
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
             <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Виберіть вік</Text>
+              <Text style={styles.modalTitle}>{t('selectAge')}</Text>
               <TouchableOpacity onPress={() => setShowAgePicker(false)}>
                 <X size={24} color={TEXT_DARK} />
               </TouchableOpacity>
@@ -402,7 +427,7 @@ export default function ProfileScreen() {
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
             <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Виберіть стать</Text>
+              <Text style={styles.modalTitle}>{t('selectGender')}</Text>
               <TouchableOpacity onPress={() => setShowGenderPicker(false)}>
                 <X size={24} color={TEXT_DARK} />
               </TouchableOpacity>
@@ -433,7 +458,7 @@ export default function ProfileScreen() {
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
             <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Виберіть мови</Text>
+              <Text style={styles.modalTitle}>{t('selectLanguages')}</Text>
               <TouchableOpacity onPress={() => setShowLanguagePicker(false)}>
                 <X size={24} color={TEXT_DARK} />
               </TouchableOpacity>
@@ -463,7 +488,7 @@ export default function ProfileScreen() {
               style={styles.doneButton}
               onPress={() => setShowLanguagePicker(false)}
             >
-              <Text style={styles.doneButtonText}>Готово</Text>
+              <Text style={styles.doneButtonText}>{t('done')}</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -491,7 +516,7 @@ export default function ProfileScreen() {
                 style={styles.doneButton}
                 onPress={() => setShowInstagramInput(false)}
               >
-                <Text style={styles.doneButtonText}>Зберегти</Text>
+                <Text style={styles.doneButtonText}>{t('save')}</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -520,7 +545,7 @@ export default function ProfileScreen() {
                 style={styles.doneButton}
                 onPress={() => setShowTelegramInput(false)}
               >
-                <Text style={styles.doneButtonText}>Зберегти</Text>
+                <Text style={styles.doneButtonText}>{t('save')}</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -814,6 +839,28 @@ const styles = StyleSheet.create({
   doneButtonText: {
     fontSize: 17,
     fontWeight: '600',
+    color: '#FFFFFF',
+  },
+  languageSwitcher: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  langButton: {
+    flex: 1,
+    paddingVertical: 14,
+    borderRadius: 16,
+    backgroundColor: '#F8F8F8',
+    alignItems: 'center',
+  },
+  langButtonActive: {
+    backgroundColor: ACCENT_ORANGE,
+  },
+  langButtonText: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#666666',
+  },
+  langButtonTextActive: {
     color: '#FFFFFF',
   },
 });
