@@ -13,6 +13,7 @@ import {
 } from 'react-native';
 import * as Location from 'expo-location';
 import { Check } from 'lucide-react-native';
+import LocationPin from '@shared/components/LocationPin';
 import WebMap from '@features/search/maps/WebMap';
 import NativeMap from '@features/search/maps/NativeMap';
 import { calculateDistance } from '@shared/utils/location';
@@ -153,8 +154,7 @@ export default function LocationPickerModal({
                 />
               )}
               <View style={styles.centerMarker}>
-                <View style={styles.markerOuter} />
-                <View style={styles.markerInner} />
+                <LocationPin size={32} />
               </View>
             </View>
           ) : (
@@ -237,31 +237,10 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: '50%',
     left: '50%',
-    marginLeft: -10.59,
-    marginTop: -10.59,
+    marginLeft: -16,
+    marginTop: -32,
     zIndex: 1000,
-    width: 21.18,
-    height: 21.18,
     pointerEvents: 'none',
-  },
-  markerOuter: {
-    position: 'absolute',
-    width: 21.18,
-    height: 21.18,
-    left: 0,
-    top: 0,
-    backgroundColor: ACCENT_ORANGE,
-    opacity: 0.53,
-    borderRadius: 82.5081,
-  },
-  markerInner: {
-    position: 'absolute',
-    width: 15.13,
-    height: 15.13,
-    left: 3.03,
-    top: 3.03,
-    backgroundColor: ACCENT_ORANGE,
-    borderRadius: 8.25081,
   },
   loadingContainer: {
     height: 400,

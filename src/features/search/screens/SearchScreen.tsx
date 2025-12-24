@@ -20,10 +20,12 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Location from 'expo-location';
 import { useAuth } from '@shared/contexts/AuthContext';
 import { getNearbyUsers, updateLocation, updateWalkStatus } from '@shared/lib/api';
-import { Clock, Navigation } from 'lucide-react-native';
+import { Clock } from 'lucide-react-native';
+import Svg, { Rect, Defs, Filter, FeFlood, FeColorMatrix, FeOffset, FeGaussianBlur, FeBlend, G } from 'react-native-svg';
 import { COLORS, SIZES } from '@shared/constants';
 import { parseDuration, isWalkActive, getTimeColor, formatTime } from '@shared/utils/time';
 import Avatar from '@shared/components/Avatar';
+import LocationPin from '@shared/components/LocationPin';
 import WebMap from '@features/search/maps/WebMap';
 import NativeMap from '@features/search/maps/NativeMap';
 import EventDetailsBottomSheet from '@features/events/modals/EventDetailsBottomSheet';
@@ -370,6 +372,31 @@ export default function SearchScreen() {
         )}
       </View>
 
+      <View style={[styles.mapButtons, { top: insets.top + 16 }]}>
+        <Pressable style={styles.filterButton}>
+          <Svg width="32" height="32" viewBox="11 11 32 32" fill="none">
+            <G filter="url(#filter0_d_3223_2156)">
+              <Rect x="11" y="11" width="32" height="32" rx="16" fill="white"/>
+            </G>
+            <Rect x="18" y="22" width="9" height="3" rx="1" fill="#E0E0E0"/>
+            <Rect x="27" y="30" width="9" height="3" rx="1" fill="#E0E0E0"/>
+            <Rect x="30" y="20" width="6" height="6" rx="3" fill="#F2994A"/>
+            <Rect x="18" y="28" width="6" height="6" rx="3" fill="#F2994A"/>
+            <Defs>
+              <Filter id="filter0_d_3223_2156" x="0" y="0" width="54" height="54" filterUnits="userSpaceOnUse" colorInterpolationFilters="sRGB">
+                <FeFlood floodOpacity="0" result="BackgroundImageFix"/>
+                <FeColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+                <FeOffset/>
+                <FeGaussianBlur stdDeviation="5.5"/>
+                <FeColorMatrix type="matrix" values="0 0 0 0 0.2125 0 0 0 0 0.191728 0 0 0 0 0.167344 0 0 0 0.1 0"/>
+                <FeBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_3223_2156"/>
+                <FeBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_3223_2156" result="shape"/>
+              </Filter>
+            </Defs>
+          </Svg>
+        </Pressable>
+      </View>
+
       <Animated.View
         style={[
           styles.myLocationButton,
@@ -391,7 +418,7 @@ export default function SearchScreen() {
           }}
           style={styles.locationButtonInner}
         >
-          <Navigation size={20} color="#F27D11" fill="#F27D11" />
+          <LocationPin size={24} />
         </Pressable>
       </Animated.View>
 
@@ -715,6 +742,17 @@ const styles = StyleSheet.create({
   ownEventText: {
     color: COLORS.ACCENT_ORANGE,
     fontWeight: '600',
+  },
+  mapButtons: {
+    position: 'absolute',
+    right: 16,
+    zIndex: 10,
+  },
+  filterButton: {
+    width: 32,
+    height: 32,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   myLocationButton: {
     position: 'absolute',
