@@ -13,6 +13,7 @@ import {
   NativeSyntheticEvent,
   AppState,
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Location from 'expo-location';
 import { useAuth } from '@shared/contexts/AuthContext';
@@ -384,6 +385,11 @@ export default function SearchScreen() {
       </View>
 
       <View style={[styles.cardsContainer, { bottom: 90 + insets.bottom }]}>
+        <LinearGradient
+          colors={['rgba(243, 248, 255, 0)', 'rgba(243, 248, 255, 0.5)']}
+          style={styles.gradientOverlay}
+        />
+        <View style={styles.cardsBackdrop} />
         <View style={styles.cardsHandle} />
         <ScrollView
           ref={scrollViewRef}
@@ -488,7 +494,7 @@ export default function SearchScreen() {
                     {item.walk?.start_time && (
                       <View style={styles.timeInfo}>
                         <Clock size={14} color={getTimeColor(item.walk.start_time)} />
-                        <Text style={[styles.timeText, { color: getTimeColor(item.walk.start_time) }]}>
+                        <Text style={styles.timeText}>
                           {formatTime(item.walk.start_time)}
                         </Text>
                       </View>
@@ -559,6 +565,25 @@ const styles = StyleSheet.create({
     position: 'absolute',
     left: 0,
     right: 0,
+    overflow: 'visible',
+  },
+  gradientOverlay: {
+    position: 'absolute',
+    top: -80,
+    left: 0,
+    right: 0,
+    height: 80,
+  },
+  cardsBackdrop: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(243, 248, 255, 0.5)',
+    ...(Platform.OS === 'ios' && {
+      backdropFilter: 'blur(10px)',
+    }),
   },
   cardsHandle: {
     width: 60,
@@ -666,8 +691,8 @@ const styles = StyleSheet.create({
   },
   timeText: {
     fontSize: 13,
-    color: ACCENT_ORANGE,
-    fontWeight: '600',
+    color: 'rgba(60, 60, 67, 0.6)',
+    fontWeight: '500',
   },
   walkDescription: {
     fontSize: 14,
