@@ -121,5 +121,12 @@
   "requestAccepted": "Запит прийнято",
   "eventTitleLabel": "Назва івенту",
   "walkDescription": "Опис прогулянки",
-  "startTimeLabel": "Час початку"
+  "startTimeLabel": "Час початку",
+  "pleaseWriteMessage": "Будь ласка, напишіть повідомлення",
+  "failedToSendRequest": "Не вдалося відправити запит. Спробуйте ще раз.",
+  "joinRequest": "Запит на приєднання",
+  "sendRequestTo": "Відправити запит до",
+  "yourMessageLabel": "Ваше повідомлення",
+  "messagePlaceholder": "Привіт! Хочу приєднатися до твоєї прогулянки...",
+  "sendRequestButton": "Відправити запит"
 }

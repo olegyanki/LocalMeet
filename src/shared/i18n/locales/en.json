@@ -121,5 +121,12 @@
   "requestAccepted": "Request accepted",
   "eventTitleLabel": "Event Title",
   "walkDescription": "Walk Description",
-  "startTimeLabel": "Start Time"
+  "startTimeLabel": "Start Time",
+  "pleaseWriteMessage": "Please write a message",
+  "failedToSendRequest": "Failed to send request. Please try again.",
+  "joinRequest": "Join Request",
+  "sendRequestTo": "Send request to",
+  "yourMessageLabel": "Your Message",
+  "messagePlaceholder": "Hi! I'd like to join your walk...",
+  "sendRequestButton": "Send Request"
 }

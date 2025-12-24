@@ -15,6 +15,7 @@ import {
 import { BlurView } from 'expo-blur';
 import { X, Send } from 'lucide-react-native';
 import { createWalkRequest } from '@shared/lib/api';
+import { useI18n } from '@shared/i18n';
 
 const ACCENT_ORANGE = '#FF9500';
 const TEXT_DARK = '#333333';
@@ -41,6 +42,7 @@ export default function ContactRequestBottomSheet({
   const [message, setMessage] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { t } = useI18n();
 
   React.useEffect(() => {
     if (visible) {
@@ -63,7 +65,7 @@ export default function ContactRequestBottomSheet({
 
   const handleSubmit = async () => {
     if (!message.trim()) {
-      setError('Будь ласка, напишіть повідомлення');
+      setError(t('pleaseWriteMessage'));
       return;
     }
 
@@ -87,7 +89,7 @@ export default function ContactRequestBottomSheet({
       onClose();
     } catch (err) {
       console.error('Failed to send request:', err);
-      setError('Не вдалося відправити запит. Спробуйте ще раз.');
+      setError(t('failedToSendRequest'));
       setIsSubmitting(false);
     }
   };
@@ -121,16 +123,16 @@ export default function ContactRequestBottomSheet({
           </TouchableOpacity>
 
           <View style={styles.content}>
-            <Text style={styles.title}>Запит на приєднання</Text>
+            <Text style={styles.title}>{t('joinRequest')}</Text>
             <Text style={styles.subtitle}>
-              Відправити запит до <Text style={styles.userName}>{walkOwnerName}</Text>
+              {t('sendRequestTo')} <Text style={styles.userName}>{walkOwnerName}</Text>
             </Text>
 
             <View style={styles.inputContainer}>
-              <Text style={styles.label}>Ваше повідомлення</Text>
+              <Text style={styles.label}>{t('yourMessageLabel')}</Text>
               <TextInput
                 style={styles.textInput}
-                placeholder="Привіт! Хочу приєднатися до твоєї прогулянки..."
+                placeholder={t('messagePlaceholder')}
                 placeholderTextColor={TEXT_LIGHT}
                 value={message}
                 onChangeText={setMessage}
@@ -158,7 +160,7 @@ export default function ContactRequestBottomSheet({
               ) : (
                 <>
                   <Send size={20} color="#FFFFFF" />
-                  <Text style={styles.submitButtonText}>Відправити запит</Text>
+                  <Text style={styles.submitButtonText}>{t('sendRequestButton')}</Text>
                 </>
               )}
             </TouchableOpacity>
