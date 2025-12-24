@@ -109,5 +109,17 @@
   "displayName": "Name",
   "registerButton": "Sign Up",
   "haveAccount": "Already have an account?",
-  "loginLink": "Sign In"
+  "loginLink": "Sign In",
+  "timeNotSpecified": "Time not specified",
+  "alreadyStarted": "Already started",
+  "startingNow": "Starting now",
+  "startsInMinutes": "Starts in {{minutes}} min",
+  "startsInHours": "Starts in {{hours}} h",
+  "startsInHoursMinutes": "Starts in {{hours}} h {{minutes}} min",
+  "connecting": "Connect",
+  "requestSentStatus": "Request sent",
+  "requestAccepted": "Request accepted",
+  "eventTitleLabel": "Event Title",
+  "walkDescription": "Walk Description",
+  "startTimeLabel": "Start Time"
 }

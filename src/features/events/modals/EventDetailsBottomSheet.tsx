@@ -16,6 +16,7 @@ import { BlurView } from 'expo-blur';
 import { Clock, MapPin, MessageCircle, X, Trash2, Clock as ClockIcon, Check } from 'lucide-react-native';
 import { deleteWalk, getMyRequestForWalk, WalkRequest } from '@shared/lib/api';
 import { useAuth } from '@shared/contexts/AuthContext';
+import { useI18n } from '@shared/i18n';
 import { router } from 'expo-router';
 
 const ACCENT_ORANGE = '#FF9500';
@@ -82,6 +83,7 @@ export default function EventDetailsBottomSheet({
   const [existingRequest, setExistingRequest] = React.useState<WalkRequest | null>(null);
   const [isLoadingRequest, setIsLoadingRequest] = React.useState(false);
   const { user: currentUser } = useAuth();
+  const { t } = useI18n();
 
   const panResponder = React.useRef(
     PanResponder.create({
@@ -171,21 +173,21 @@ export default function EventDetailsBottomSheet({
   }, [visible, currentUser, user?.walk?.id, isOwnEvent]);
 
   const getTimeText = (walkStartTime: string | null) => {
-    if (!walkStartTime) return 'Час не вказано';
+    if (!walkStartTime) return t('timeNotSpecified');
 
     const now = new Date();
     const startTime = new Date(walkStartTime);
     const diffMs = startTime.getTime() - now.getTime();
     const diffMins = Math.floor(diffMs / 60000);
 
-    if (diffMins < 0) return 'Вже почалась';
-    if (diffMins === 0) return 'Починається зараз';
-    if (diffMins < 60) return `Починається через ${diffMins} хв`;
+    if (diffMins < 0) return t('alreadyStarted');
+    if (diffMins === 0) return t('startingNow');
+    if (diffMins < 60) return t('startsInMinutes').replace('{{minutes}}', diffMins.toString());
 
     const hours = Math.floor(diffMins / 60);
     const mins = diffMins % 60;
-    if (mins === 0) return `Починається через ${hours} год`;
-    return `Починається через ${hours} год ${mins} хв`;
+    if (mins === 0) return t('startsInHours').replace('{{hours}}', hours.toString());
+    return t('startsInHoursMinutes').replace('{{hours}}', hours.toString()).replace('{{minutes}}', mins.toString());
   };
 
   const getTimeColor = (walkStartTime: string | null) => {
@@ -210,7 +212,7 @@ export default function EventDetailsBottomSheet({
   const getConnectButtonConfig = () => {
     if (isLoadingRequest) {
       return {
-        text: 'Завантаження...',
+        text: t('loading'),
         icon: null,
         color: '#CCCCCC',
         disabled: true,
@@ -219,7 +221,7 @@ export default function EventDetailsBottomSheet({
 
     if (!existingRequest) {
       return {
-        text: "Зв'язатися",
+        text: t('connecting'),
         icon: <MessageCircle size={20} color="#FFFFFF" />,
         color: ACCENT_ORANGE,
         disabled: false,
@@ -230,21 +232,21 @@ export default function EventDetailsBottomSheet({
       case 'pending':
       case 'rejected':
         return {
-          text: 'Запит відправлено',
+          text: t('requestSentStatus'),
           icon: <ClockIcon size={20} color="#FFFFFF" />,
           color: '#999999',
           disabled: true,
         };
       case 'accepted':
         return {
-          text: 'Запит прийнято',
+          text: t('requestAccepted'),
           icon: <Check size={20} color="#FFFFFF" />,
           color: '#8FD89C',
           disabled: true,
         };
       default:
         return {
-          text: "Зв'язатися",
+          text: t('connecting'),
           icon: <MessageCircle size={20} color="#FFFFFF" />,
           color: ACCENT_ORANGE,
           disabled: false,
@@ -331,7 +333,7 @@ export default function EventDetailsBottomSheet({
               {!isOwnEvent && (
                 <View style={styles.distanceContainer}>
                   <MapPin size={16} color={TEXT_LIGHT} />
-                  <Text style={styles.distanceText}>{user.distance.toFixed(1)} км від вас</Text>
+                  <Text style={styles.distanceText}>{user.distance.toFixed(1)} {t('kmFromYou')}</Text>
                 </View>
               )}
             </View>
@@ -339,21 +341,21 @@ export default function EventDetailsBottomSheet({
 
           {user.walk?.title && (
             <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Назва івенту</Text>
+              <Text style={styles.sectionTitle}>{t('eventTitleLabel')}</Text>
               <Text style={styles.eventTitle}>{user.walk.title}</Text>
             </View>
           )}
 
           {user.walk?.description && (
             <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Опис прогулянки</Text>
+              <Text style={styles.sectionTitle}>{t('walkDescription')}</Text>
               <Text style={styles.description}>{user.walk.description}</Text>
             </View>
           )}
 
           {user.walk?.start_time && (
             <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Час початку</Text>
+              <Text style={styles.sectionTitle}>{t('startTimeLabel')}</Text>
               <View style={styles.timeContainer}>
                 <Clock size={20} color={getTimeColor(user.walk.start_time)} />
                 <Text style={[styles.timeText, { color: getTimeColor(user.walk.start_time) }]}>
@@ -392,7 +394,7 @@ export default function EventDetailsBottomSheet({
               ) : (
                 <>
                   <Trash2 size={20} color="#FFFFFF" />
-                  <Text style={styles.deleteButtonText}>Видалити івент</Text>
+                  <Text style={styles.deleteButtonText}>{t('deleteEvent')}</Text>
                 </>
               )}
             </TouchableOpacity>
