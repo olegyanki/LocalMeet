@@ -384,6 +384,7 @@ export default function SearchScreen() {
       </View>
 
       <View style={[styles.cardsContainer, { bottom: 90 + insets.bottom }]}>
+        <View style={styles.cardsHandle} />
         <ScrollView
           ref={scrollViewRef}
           horizontal
@@ -560,10 +561,10 @@ const styles = StyleSheet.create({
     right: 0,
   },
   cardsHandle: {
-    width: 40,
+    width: 60,
     height: 4,
     borderRadius: 2,
-    backgroundColor: BORDER_COLOR,
+    backgroundColor: ACCENT_ORANGE,
     alignSelf: 'center',
     marginBottom: 12,
   },
