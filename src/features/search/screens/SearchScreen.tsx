@@ -21,6 +21,9 @@ import * as Location from 'expo-location';
 import { useAuth } from '@shared/contexts/AuthContext';
 import { getNearbyUsers, updateLocation, updateWalkStatus } from '@shared/lib/api';
 import { Clock, Navigation } from 'lucide-react-native';
+import { COLORS, SIZES } from '@shared/constants';
+import { parseDuration, isWalkActive, getTimeColor, formatTime } from '@shared/utils/time';
+import Avatar from '@shared/components/Avatar';
 import WebMap from '@features/search/maps/WebMap';
 import NativeMap from '@features/search/maps/NativeMap';
 import EventDetailsBottomSheet from '@features/events/modals/EventDetailsBottomSheet';
@@ -28,11 +31,7 @@ import ContactRequestBottomSheet from '@features/events/modals/ContactRequestBot
 import { useFocusEffect } from '@react-navigation/native';
 import { router, useLocalSearchParams } from 'expo-router';
 
-const ACCENT_ORANGE = '#FF9500';
-const TEXT_DARK = '#333333';
-const TEXT_LIGHT = '#999999';
-const CARD_BG = '#FFFFFF';
-const BORDER_COLOR = '#E8E8E8';
+
 
 interface UserLocation {
   id: string;
@@ -247,26 +246,6 @@ export default function SearchScreen() {
     }
   };
 
-  const parseDuration = (duration: string | null): number => {
-    if (!duration) return 0;
-
-    const parts = duration.toLowerCase().split(' ');
-    let totalMinutes = 0;
-
-    for (let i = 0; i < parts.length; i += 2) {
-      const value = parseInt(parts[i]);
-      const unit = parts[i + 1];
-
-      if (unit?.includes('hour') || unit?.includes('год')) {
-        totalMinutes += value * 60;
-      } else if (unit?.includes('minute') || unit?.includes('хв')) {
-        totalMinutes += value;
-      }
-    }
-
-    return totalMinutes;
-  };
-
   const loadNearbyWalks = async () => {
     if (!location || !user) return;
 
@@ -309,57 +288,6 @@ export default function SearchScreen() {
     }
   };
 
-  const isWalkActive = (walkStartTime: string | null): boolean => {
-    if (!walkStartTime) return false;
-
-    const now = new Date();
-    const startTime = new Date(walkStartTime);
-
-    return now >= startTime;
-  };
-
-  const getTimeColor = (walkStartTime: string | null): string => {
-    if (!walkStartTime) return '#12B7DB';
-
-    const now = new Date();
-    const startTime = new Date(walkStartTime);
-    const diffMs = startTime.getTime() - now.getTime();
-    const diffMins = Math.floor(diffMs / 60000);
-
-    if (diffMins < 0) {
-      return '#8FD89C';
-    } else {
-      return '#12B7DB';
-    }
-  };
-
-  const formatTime = (walkStartTime: string | null): string => {
-    if (!walkStartTime) return '';
-
-    const now = new Date();
-    const startTime = new Date(walkStartTime);
-
-    if (isNaN(startTime.getTime())) return '';
-
-    const diffMs = startTime.getTime() - now.getTime();
-    const diffMins = Math.floor(diffMs / 60000);
-
-    if (diffMins < 0) {
-      return 'Вже почалась';
-    } else if (diffMins === 0) {
-      return 'Починається зараз';
-    } else if (diffMins < 60) {
-      return `Через ${diffMins} хв`;
-    } else {
-      const hours = Math.floor(diffMins / 60);
-      const mins = diffMins % 60;
-      if (mins === 0) {
-        return `Через ${hours} год`;
-      }
-      return `Через ${hours} год ${mins} хв`;
-    }
-  };
-
   const mapMarkers = nearbyWalks
     .filter((w) => w.walk)
     .map((w) => ({
@@ -376,7 +304,7 @@ export default function SearchScreen() {
   if (isLoadingLocation) {
     return (
       <View style={styles.centerContainer}>
-        <ActivityIndicator size="large" color={ACCENT_ORANGE} />
+        <ActivityIndicator size="large" color={COLORS.ACCENT_ORANGE} />
       </View>
     );
   }
@@ -446,7 +374,7 @@ export default function SearchScreen() {
         style={[
           styles.myLocationButton,
           {
-            bottom: 78 + insets.bottom + 270,
+            bottom: SIZES.TAB_BAR_HEIGHT + insets.bottom + 270,
             transform: [{ translateY: containerTranslateY }]
           }
         ]}
@@ -471,7 +399,7 @@ export default function SearchScreen() {
         style={[
           styles.cardsContainer, 
           { 
-            bottom: 78 + insets.bottom,
+            bottom: SIZES.TAB_BAR_HEIGHT + insets.bottom,
             transform: [{ translateY: containerTranslateY }]
           }
         ]}
@@ -524,7 +452,7 @@ export default function SearchScreen() {
         >
           {isLoadingWalks ? (
             <View style={[styles.loadingCard, { width: cardWidth }]}>
-              <ActivityIndicator size="small" color={ACCENT_ORANGE} />
+              <ActivityIndicator size="small" color={COLORS.ACCENT_ORANGE} />
             </View>
           ) : nearbyWalks.length === 0 ? (
             <View style={[styles.emptyCard, { width: cardWidth }]}>
@@ -553,15 +481,7 @@ export default function SearchScreen() {
                           router.push(`/user/${item.id}`);
                         }}
                       >
-                        {item.avatar_url ? (
-                          <Image source={{ uri: item.avatar_url }} style={styles.avatar} />
-                        ) : (
-                          <View style={styles.avatarPlaceholder}>
-                            <Text style={styles.avatarText}>
-                              {item.display_name[0].toUpperCase()}
-                            </Text>
-                          </View>
-                        )}
+                        <Avatar uri={item.avatar_url} name={item.display_name} size={SIZES.AVATAR_MEDIUM} />
                       </Pressable>
 
                       <View style={styles.cardHeaderInfo}>
@@ -655,7 +575,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   errorText: {
-    color: TEXT_LIGHT,
+    color: COLORS.TEXT_LIGHT,
     fontSize: 14,
   },
   cardsContainer: {
@@ -689,7 +609,7 @@ const styles = StyleSheet.create({
     width: 60,
     height: 4,
     borderRadius: 2,
-    backgroundColor: ACCENT_ORANGE,
+    backgroundColor: COLORS.ACCENT_ORANGE,
   },
   cardsScrollContent: {
     paddingHorizontal: 20,
@@ -697,7 +617,7 @@ const styles = StyleSheet.create({
   },
   loadingCard: {
     height: 180,
-    backgroundColor: CARD_BG,
+    backgroundColor: COLORS.CARD_BG,
     borderRadius: 20,
     justifyContent: 'center',
     alignItems: 'center',
@@ -709,7 +629,7 @@ const styles = StyleSheet.create({
   },
   emptyCard: {
     height: 180,
-    backgroundColor: CARD_BG,
+    backgroundColor: COLORS.CARD_BG,
     borderRadius: 20,
     justifyContent: 'center',
     alignItems: 'center',
@@ -722,7 +642,7 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     fontSize: 14,
-    color: TEXT_LIGHT,
+    color: COLORS.TEXT_LIGHT,
     textAlign: 'center',
   },
   userCard: {
@@ -747,25 +667,6 @@ const styles = StyleSheet.create({
   avatarContainer: {
     position: 'relative',
   },
-  avatar: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    backgroundColor: '#E8E8E8',
-  },
-  avatarPlaceholder: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    backgroundColor: ACCENT_ORANGE,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  avatarText: {
-    fontSize: 24,
-    fontWeight: '700',
-    color: '#FFFFFF',
-  },
   cardHeaderInfo: {
     flex: 1,
     justifyContent: 'center',
@@ -773,12 +674,12 @@ const styles = StyleSheet.create({
   userName: {
     fontSize: 18,
     fontWeight: '700',
-    color: TEXT_DARK,
+    color: COLORS.TEXT_DARK,
     marginBottom: 6,
   },
   walkTitle: {
     fontSize: 16,
-    color: TEXT_DARK,
+    color: COLORS.TEXT_DARK,
     fontWeight: '700',
     lineHeight: 22,
     marginBottom: 4,
@@ -805,14 +706,14 @@ const styles = StyleSheet.create({
     marginTop: 16,
     paddingTop: 16,
     borderTopWidth: 1,
-    borderTopColor: BORDER_COLOR,
+    borderTopColor: COLORS.BORDER_COLOR,
   },
   distance: {
     fontSize: 12,
     color: 'rgba(60, 60, 67, 0.6)',
   },
   ownEventText: {
-    color: ACCENT_ORANGE,
+    color: COLORS.ACCENT_ORANGE,
     fontWeight: '600',
   },
   myLocationButton: {
