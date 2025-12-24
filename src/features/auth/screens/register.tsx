@@ -11,6 +11,7 @@ import {
   ScrollView,
 } from 'react-native';
 import { useRouter } from 'expo-router';
+import { useI18n } from '@shared/i18n';
 import { signUp } from '@shared/lib/auth';
 
 const LOGIN_GRADIENT = '#F5F5F5';
@@ -28,6 +29,7 @@ export default function RegisterScreen() {
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
+  const { t } = useI18n();
 
   const handleRegister = async () => {
     setError('');
@@ -59,14 +61,14 @@ export default function RegisterScreen() {
     >
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.content}>
-          <Text style={styles.title}>Новий акаунт</Text>
-          <Text style={styles.subtitle}>Приєднайтесь до нас</Text>
+          <Text style={styles.title}>{t('newAccount')}</Text>
+          <Text style={styles.subtitle}>{t('registerSubtitle')}</Text>
 
           {error ? <Text style={styles.errorText}>{error}</Text> : null}
 
           <TextInput
             style={styles.input}
-            placeholder="Ім'я"
+            placeholder={t('displayName')}
             placeholderTextColor={TEXT_LIGHT}
             value={displayName}
             onChangeText={setDisplayName}
@@ -75,7 +77,7 @@ export default function RegisterScreen() {
 
           <TextInput
             style={styles.input}
-            placeholder="Ім'я користувача"
+            placeholder={t('username')}
             placeholderTextColor={TEXT_LIGHT}
             value={username}
             onChangeText={setUsername}
@@ -85,7 +87,7 @@ export default function RegisterScreen() {
 
           <TextInput
             style={styles.input}
-            placeholder="Email"
+            placeholder={t('email')}
             placeholderTextColor={TEXT_LIGHT}
             value={email}
             onChangeText={setEmail}
@@ -96,7 +98,7 @@ export default function RegisterScreen() {
 
           <TextInput
             style={styles.input}
-            placeholder="Пароль"
+            placeholder={t('password')}
             placeholderTextColor={TEXT_LIGHT}
             value={password}
             onChangeText={setPassword}
@@ -112,14 +114,14 @@ export default function RegisterScreen() {
             {isLoading ? (
               <ActivityIndicator color="#FFFFFF" />
             ) : (
-              <Text style={styles.registerButtonText}>Зареєструватися</Text>
+              <Text style={styles.registerButtonText}>{t('registerButton')}</Text>
             )}
           </TouchableOpacity>
 
           <View style={styles.loginSection}>
-            <Text style={styles.loginText}>Вже є акаунт?</Text>
+            <Text style={styles.loginText}>{t('haveAccount')}</Text>
             <TouchableOpacity onPress={() => router.push('/auth/login')} disabled={isLoading}>
-              <Text style={styles.loginLink}>Увійти</Text>
+              <Text style={styles.loginLink}>{t('loginLink')}</Text>
             </TouchableOpacity>
           </View>
         </View>

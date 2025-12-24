@@ -10,6 +10,7 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { useRouter } from 'expo-router';
+import { useI18n } from '@shared/i18n';
 import { signIn } from '@shared/lib/auth';
 
 const LOGIN_GRADIENT = '#F5F5F5';
@@ -26,6 +27,7 @@ export default function LoginScreen() {
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
+  const { t } = useI18n();
 
   const handleLogin = async () => {
     setError('');
@@ -51,14 +53,14 @@ export default function LoginScreen() {
       style={styles.container}
     >
       <View style={styles.content}>
-        <Text style={styles.title}>Привіт!</Text>
-        <Text style={styles.subtitle}>Входьте до вашого акаунту</Text>
+        <Text style={styles.title}>{t('hello')}</Text>
+        <Text style={styles.subtitle}>{t('loginSubtitle')}</Text>
 
         {error ? <Text style={styles.errorText}>{error}</Text> : null}
 
         <TextInput
           style={styles.input}
-          placeholder="Email"
+          placeholder={t('email')}
           placeholderTextColor={TEXT_LIGHT}
           value={email}
           onChangeText={setEmail}
@@ -69,7 +71,7 @@ export default function LoginScreen() {
 
         <TextInput
           style={styles.input}
-          placeholder="Пароль"
+          placeholder={t('password')}
           placeholderTextColor={TEXT_LIGHT}
           value={password}
           onChangeText={setPassword}
@@ -85,14 +87,14 @@ export default function LoginScreen() {
           {isLoading ? (
             <ActivityIndicator color="#FFFFFF" />
           ) : (
-            <Text style={styles.loginButtonText}>Увійти</Text>
+            <Text style={styles.loginButtonText}>{t('loginButton')}</Text>
           )}
         </TouchableOpacity>
 
         <View style={styles.registerSection}>
-          <Text style={styles.registerText}>У вас немає акаунту?</Text>
+          <Text style={styles.registerText}>{t('noAccount')}</Text>
           <TouchableOpacity onPress={() => router.push('/auth/register')} disabled={isLoading}>
-            <Text style={styles.registerLink}>Зареєструватися</Text>
+            <Text style={styles.registerLink}>{t('registerLink')}</Text>
           </TouchableOpacity>
         </View>
       </View>

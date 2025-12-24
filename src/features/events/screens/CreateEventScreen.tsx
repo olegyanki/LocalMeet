@@ -16,6 +16,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Location from 'expo-location';
 import { useAuth } from '@shared/contexts/AuthContext';
+import { useI18n } from '@shared/i18n';
 import { updateWalkStatus } from '@shared/lib/api';
 import { Clock, MapPin, Sparkles } from 'lucide-react-native';
 import { router } from 'expo-router';
@@ -33,6 +34,7 @@ const CARD_BG = '#FFFFFF';
 
 export default function GoOnlineScreen() {
   const { user } = useAuth();
+  const { t } = useI18n();
   const insets = useSafeAreaInsets();
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -126,17 +128,17 @@ export default function GoOnlineScreen() {
     Keyboard.dismiss();
     
     if (!title.trim()) {
-      setError("Назва івенту обов'язкова");
+      setError(t('eventTitleRequired'));
       return;
     }
 
     if (!time.trim()) {
-      setError("Час початку обов'язковий");
+      setError(t('startTimeRequired'));
       return;
     }
 
     if (!description.trim()) {
-      setError("Опис прогулянки обов'язковий");
+      setError(t('descriptionRequired'));
       return;
     }
 
@@ -172,9 +174,9 @@ export default function GoOnlineScreen() {
       }, 1500);
     } catch (err: any) {
       if (err.message === 'TIME_OVERLAP') {
-        setError('Цей час перетинається з іншим вашим івентом');
+        setError(t('timeOverlap'));
       } else {
-        setError('Не вдалося опублікувати статус');
+        setError(t('publishError'));
       }
     } finally {
       setIsSubmitting(false);
@@ -257,16 +259,16 @@ export default function GoOnlineScreen() {
             <View style={styles.iconBadge}>
               <Sparkles size={24} color={ACCENT_ORANGE} />
             </View>
-            <Text style={styles.headerTitle}>Створити подію</Text>
-            <Text style={styles.headerSubtitle}>Розкажіть, що плануєте робити</Text>
+            <Text style={styles.headerTitle}>{t('createEventTitle')}</Text>
+            <Text style={styles.headerSubtitle}>{t('createEventSubtitle')}</Text>
           </View>
 
           <View style={styles.card}>
             <View style={styles.inputGroup}>
-              <Text style={styles.label}>Назва події</Text>
+              <Text style={styles.label}>{t('eventName')}</Text>
               <TextInput
                 style={styles.input}
-                placeholder="Прогулянка парком, кава, волейбол..."
+                placeholder={t('eventPlaceholder')}
                 placeholderTextColor={TEXT_LIGHT}
                 value={title}
                 onChangeText={setTitle}
@@ -274,19 +276,19 @@ export default function GoOnlineScreen() {
             </View>
 
             <View style={styles.inputGroup}>
-              <Text style={styles.label}>Час початку</Text>
+              <Text style={styles.label}>{t('startTime')}</Text>
               <Pressable style={styles.selectButton} onPress={() => setShowTimePicker(true)}>
                 <View style={styles.selectIcon}>
                   <Clock size={20} color={ACCENT_ORANGE} />
                 </View>
                 <Text style={[styles.selectText, time && styles.selectTextFilled]}>
-                  {time ? `${time} (${selectedDuration}г)` : 'Оберіть час'}
+                  {time ? `${time} (${selectedDuration}${t('hours')})` : t('selectTimeButton')}
                 </Text>
               </Pressable>
             </View>
 
             <View style={styles.inputGroup}>
-              <Text style={styles.label}>Локація</Text>
+              <Text style={styles.label}>{t('location')}</Text>
               <Pressable
                 style={styles.selectButton}
                 onPress={() => setShowLocationPicker(true)}
@@ -295,17 +297,17 @@ export default function GoOnlineScreen() {
                   <MapPin size={20} color={ACCENT_ORANGE} />
                 </View>
                 <Text style={[styles.selectText, selectedLocation && styles.selectTextFilled]}>
-                  {selectedLocation ? 'Локація обрана ✓' : 'Оберіть на карті'}
+                  {selectedLocation ? t('locationSelected') : t('selectOnMap')}
                 </Text>
               </Pressable>
             </View>
 
             <View style={styles.inputGroup}>
-              <Text style={styles.label}>Опис</Text>
+              <Text style={styles.label}>{t('description')}</Text>
               <TextInput
                 ref={descriptionInputRef}
                 style={[styles.input, styles.textArea]}
-                placeholder="Що будете робити? Хто може приєднатися?"
+                placeholder={t('descriptionPlaceholder')}
                 placeholderTextColor={TEXT_LIGHT}
                 value={description}
                 onChangeText={setDescription}
@@ -345,7 +347,7 @@ export default function GoOnlineScreen() {
             ) : (
               <>
                 <Sparkles size={20} color="#FFF" />
-                <Text style={styles.publishButtonText}>Опублікувати подію</Text>
+                <Text style={styles.publishButtonText}>{t('publishEvent')}</Text>
               </>
             )}
           </Pressable>
