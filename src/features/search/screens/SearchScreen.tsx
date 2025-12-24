@@ -478,7 +478,7 @@ export default function SearchScreen() {
       >
         <View style={styles.cardsBackdrop} />
         <LinearGradient
-          colors={['rgba(243, 248, 255, 0)', 'rgba(243, 248, 255, 0.5)']}
+          colors={['rgba(243, 248, 255, 0)', 'rgba(243, 248, 255, 0.7)']}
           style={styles.gradientOverlay}
           pointerEvents="none"
         />
@@ -662,7 +662,6 @@ const styles = StyleSheet.create({
     position: 'absolute',
     left: 0,
     right: 0,
-    overflow: 'hidden',
   },
   cardsBackdrop: {
     position: 'absolute',
@@ -670,17 +669,17 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: -100,
-    backgroundColor: 'rgba(243, 248, 255, 0.5)',
+    backgroundColor: 'rgba(243, 248, 255, 0.7)',
     ...(Platform.OS === 'ios' && {
       backdropFilter: 'blur(10px)',
     }),
   },
   gradientOverlay: {
     position: 'absolute',
-    top: -30,
+    top: -20,
     left: 0,
     right: 0,
-    height: 30,
+    height: 20,
   },
   handleWrapper: {
     paddingVertical: 12,
