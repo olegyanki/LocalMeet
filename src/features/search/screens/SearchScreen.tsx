@@ -26,6 +26,7 @@ import { COLORS, SIZES } from '@shared/constants';
 import { parseDuration, isWalkActive, getTimeColor, formatTime } from '@shared/utils/time';
 import Avatar from '@shared/components/Avatar';
 import LocationPin from '@shared/components/LocationPin';
+import FilterBottomSheet, { TimeFilter } from '@features/search/components/FilterBottomSheet';
 import WebMap from '@features/search/maps/WebMap';
 import NativeMap from '@features/search/maps/NativeMap';
 import EventDetailsBottomSheet from '@features/events/modals/EventDetailsBottomSheet';
@@ -93,6 +94,8 @@ export default function SearchScreen() {
   const [contactRequestVisible, setContactRequestVisible] = useState(false);
   const [contactRequestData, setContactRequestData] = useState<{walkId: string; walkOwnerName: string} | null>(null);
   const [isCardsCollapsed, setIsCardsCollapsed] = useState(false);
+  const [showFilterSheet, setShowFilterSheet] = useState(false);
+  const [timeFilter, setTimeFilter] = useState<TimeFilter>('all');
   const cardsTranslateY = useRef(new Animated.Value(0)).current;
 
   const screenWidth = Dimensions.get('window').width;
@@ -373,7 +376,7 @@ export default function SearchScreen() {
       </View>
 
       <View style={[styles.mapButtons, { top: insets.top + 16 }]}>
-        <Pressable style={styles.filterButton}>
+        <Pressable style={styles.filterButton} onPress={() => setShowFilterSheet(true)}>
           <Svg width="32" height="32" viewBox="11 11 32 32" fill="none">
             <G filter="url(#filter0_d_3223_2156)">
               <Rect x="11" y="11" width="32" height="32" rx="16" fill="white"/>
@@ -396,6 +399,13 @@ export default function SearchScreen() {
           </Svg>
         </Pressable>
       </View>
+
+      <FilterBottomSheet
+        visible={showFilterSheet}
+        selectedFilter={timeFilter}
+        onFilterChange={setTimeFilter}
+        onClose={() => setShowFilterSheet(false)}
+      />
 
       <Animated.View
         style={[
