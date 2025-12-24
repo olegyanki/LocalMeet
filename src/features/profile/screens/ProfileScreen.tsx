@@ -363,8 +363,8 @@ export default function ProfileScreen() {
       )}
 
       <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-        <LogOut size={20} color="#E74C3C" />
-        <Text style={styles.logoutText}>Вийти</Text>
+        <LogOut size={18} color="#FF3B30" strokeWidth={2.5} />
+        <Text style={styles.logoutText}>Вийти з акаунту</Text>
       </TouchableOpacity>
 
       <Modal visible={showAgePicker} transparent animationType="slide">
@@ -736,17 +736,23 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 8,
-    paddingVertical: 16,
-    borderRadius: 16,
-    backgroundColor: '#FFEBEE',
+    gap: 10,
+    paddingVertical: 18,
+    borderRadius: 20,
+    backgroundColor: '#FFFFFF',
     borderWidth: 1,
-    borderColor: '#FFCDD2',
+    borderColor: '#E8E8E8',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 2,
   },
   logoutText: {
-    color: '#E74C3C',
-    fontSize: 15,
+    color: '#FF3B30',
+    fontSize: 16,
     fontWeight: '600',
+    letterSpacing: -0.3,
   },
   modalOverlay: {
     flex: 1,
