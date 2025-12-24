@@ -20,7 +20,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Location from 'expo-location';
 import { useAuth } from '@shared/contexts/AuthContext';
 import { getNearbyUsers, updateLocation, updateWalkStatus } from '@shared/lib/api';
-import { Clock } from 'lucide-react-native';
+import { Clock, Navigation } from 'lucide-react-native';
 import WebMap from '@features/search/maps/WebMap';
 import NativeMap from '@features/search/maps/NativeMap';
 import EventDetailsBottomSheet from '@features/events/modals/EventDetailsBottomSheet';
@@ -120,7 +120,7 @@ export default function SearchScreen() {
         if (isCardsCollapsed) {
           if (gestureState.dy < -50) {
             Animated.spring(containerTranslateY, {
-              toValue: 0,
+              toValue: 100,
               useNativeDriver: true,
               tension: 50,
               friction: 8,
@@ -441,6 +441,31 @@ export default function SearchScreen() {
           />
         )}
       </View>
+
+      <Animated.View
+        style={[
+          styles.myLocationButton,
+          {
+            bottom: 78 + insets.bottom + 250,
+            transform: [{ translateY: containerTranslateY }]
+          }
+        ]}
+      >
+        <Pressable
+          onPress={() => {
+            if (location) {
+              setMapCenter({
+                latitude: location.coords.latitude,
+                longitude: location.coords.longitude,
+              });
+              setMapBounds(null);
+            }
+          }}
+          style={styles.locationButtonInner}
+        >
+          <Navigation size={20} color="#F27D11" fill="#F27D11" />
+        </Pressable>
+      </Animated.View>
 
       <Animated.View 
         style={[
@@ -790,5 +815,22 @@ const styles = StyleSheet.create({
   ownEventText: {
     color: ACCENT_ORANGE,
     fontWeight: '600',
+  },
+  myLocationButton: {
+    position: 'absolute',
+    right: 16,
+  },
+  locationButtonInner: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#FFFFFF',
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+    elevation: 3,
   },
 });
