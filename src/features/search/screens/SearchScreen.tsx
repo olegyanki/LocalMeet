@@ -446,7 +446,7 @@ export default function SearchScreen() {
         style={[
           styles.myLocationButton,
           {
-            bottom: 78 + insets.bottom + 250,
+            bottom: 78 + insets.bottom + 270,
             transform: [{ translateY: containerTranslateY }]
           }
         ]}
