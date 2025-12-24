@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, TouchableOpacity, FlatList, ActivityIndicator, Image, RefreshControl } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, FlatList, ActivityIndicator, Image, RefreshControl, ScrollView } from 'react-native';
 import { useState, useEffect, useCallback } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter, useFocusEffect } from 'expo-router';
@@ -365,17 +365,27 @@ export default function ChatsScreen() {
   const renderRequestsContent = () => {
     if (loading) {
       return (
-        <View style={styles.emptyState}>
+        <ScrollView
+          contentContainerStyle={styles.emptyState}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={ACCENT_ORANGE} />
+          }
+        >
           <ActivityIndicator size="large" color={ACCENT_ORANGE} />
-        </View>
+        </ScrollView>
       );
     }
 
     if (requests.length === 0) {
       return (
-        <View style={styles.emptyState}>
+        <ScrollView
+          contentContainerStyle={styles.emptyState}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={ACCENT_ORANGE} />
+          }
+        >
           <Text style={styles.emptyText}>No requests yet</Text>
-        </View>
+        </ScrollView>
       );
     }
 
@@ -405,17 +415,27 @@ export default function ChatsScreen() {
   const renderChatsContent = () => {
     if (loading) {
       return (
-        <View style={styles.emptyState}>
+        <ScrollView
+          contentContainerStyle={styles.emptyState}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={ACCENT_ORANGE} />
+          }
+        >
           <ActivityIndicator size="large" color={ACCENT_ORANGE} />
-        </View>
+        </ScrollView>
       );
     }
 
     if (chats.length === 0) {
       return (
-        <View style={styles.emptyState}>
+        <ScrollView
+          contentContainerStyle={styles.emptyState}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={ACCENT_ORANGE} />
+          }
+        >
           <Text style={styles.emptyText}>No chats yet</Text>
-        </View>
+        </ScrollView>
       );
     }
 
