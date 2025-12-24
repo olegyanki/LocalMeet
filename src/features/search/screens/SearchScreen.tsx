@@ -12,6 +12,8 @@ import {
   NativeScrollEvent,
   NativeSyntheticEvent,
   AppState,
+  Animated,
+  PanResponder,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -89,10 +91,66 @@ export default function SearchScreen() {
   const [selectedUser, setSelectedUser] = useState<UserProfile | null>(null);
   const [contactRequestVisible, setContactRequestVisible] = useState(false);
   const [contactRequestData, setContactRequestData] = useState<{walkId: string; walkOwnerName: string} | null>(null);
+  const [isCardsCollapsed, setIsCardsCollapsed] = useState(false);
+  const cardsTranslateY = useRef(new Animated.Value(0)).current;
 
   const screenWidth = Dimensions.get('window').width;
   const cardWidth = screenWidth - 48;
   const cardGap = 16;
+  const containerTranslateY = useRef(new Animated.Value(0)).current;
+
+  const panResponder = useRef(
+    PanResponder.create({
+      onStartShouldSetPanResponder: () => true,
+      onMoveShouldSetPanResponder: (_, gestureState) => {
+        return Math.abs(gestureState.dy) > 5;
+      },
+      onPanResponderMove: (_, gestureState) => {
+        if (isCardsCollapsed) {
+          if (gestureState.dy < 0) {
+            containerTranslateY.setValue(gestureState.dy);
+          }
+        } else {
+          if (gestureState.dy > 0) {
+            containerTranslateY.setValue(gestureState.dy);
+          }
+        }
+      },
+      onPanResponderRelease: (_, gestureState) => {
+        if (isCardsCollapsed) {
+          if (gestureState.dy < -50) {
+            Animated.spring(containerTranslateY, {
+              toValue: 0,
+              useNativeDriver: true,
+              tension: 50,
+              friction: 8,
+            }).start();
+            setIsCardsCollapsed(false);
+          } else {
+            Animated.spring(containerTranslateY, {
+              toValue: 250,
+              useNativeDriver: true,
+            }).start();
+          }
+        } else {
+          if (gestureState.dy > 50) {
+            Animated.spring(containerTranslateY, {
+              toValue: 250,
+              useNativeDriver: true,
+              tension: 50,
+              friction: 8,
+            }).start();
+            setIsCardsCollapsed(true);
+          } else {
+            Animated.spring(containerTranslateY, {
+              toValue: 0,
+              useNativeDriver: true,
+            }).start();
+          }
+        }
+      },
+    })
+  ).current;
 
   useEffect(() => {
     if (params.reloadEvents === 'true' && location && user) {
@@ -384,14 +442,27 @@ export default function SearchScreen() {
         )}
       </View>
 
-      <View style={[styles.cardsContainer, { bottom: 78 + insets.bottom }]}>
+      <Animated.View 
+        style={[
+          styles.cardsContainer, 
+          { 
+            bottom: 78 + insets.bottom,
+            transform: [{ translateY: containerTranslateY }]
+          }
+        ]}
+      >
         <View style={styles.cardsBackdrop} />
         <LinearGradient
           colors={['rgba(243, 248, 255, 0)', 'rgba(243, 248, 255, 0.5)']}
           style={styles.gradientOverlay}
           pointerEvents="none"
         />
-        <View style={styles.cardsHandle} />
+        <View 
+          style={styles.handleWrapper}
+          {...panResponder.panHandlers}
+        >
+          <View style={styles.cardsHandle} />
+        </View>
         <ScrollView
           ref={scrollViewRef}
           horizontal
@@ -505,8 +576,8 @@ export default function SearchScreen() {
               ))}
             </>
           )}
-        </ScrollView>
-      </View>
+          </ScrollView>
+      </Animated.View>
 
       <EventDetailsBottomSheet
         visible={detailsVisible}
@@ -566,7 +637,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     left: 0,
     right: 0,
-    overflow: 'visible',
+    overflow: 'hidden',
   },
   cardsBackdrop: {
     position: 'absolute',
@@ -586,13 +657,15 @@ const styles = StyleSheet.create({
     right: 0,
     height: 30,
   },
+  handleWrapper: {
+    paddingVertical: 12,
+    alignItems: 'center',
+  },
   cardsHandle: {
     width: 60,
     height: 4,
     borderRadius: 2,
     backgroundColor: ACCENT_ORANGE,
-    alignSelf: 'center',
-    marginBottom: 12,
   },
   cardsScrollContent: {
     paddingHorizontal: 20,
