@@ -433,8 +433,7 @@ export default function SearchScreen() {
                   key={`walk-${item.walk?.id}`}
                   style={[
                     styles.userCard,
-                    { width: cardWidth },
-                    item.id === user?.id && styles.ownCard
+                    { width: cardWidth }
                   ]}
                   onPress={() => {
                     setSelectedUser(item);
@@ -482,7 +481,7 @@ export default function SearchScreen() {
                   </View>
 
                   <View style={styles.cardFooter}>
-                    <Text style={styles.distance}>
+                    <Text style={[styles.distance, item.id === user?.id && styles.ownEventText]}>
                       {item.id === user?.id ? 'Ваш івент' : `${item.distance.toFixed(1)} км від вас`}
                     </Text>
                     {item.walk?.start_time && (
@@ -612,10 +611,6 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 3,
   },
-  ownCard: {
-    borderWidth: 2,
-    borderColor: ACCENT_ORANGE,
-  },
   cardContent: {
     flex: 1,
   },
@@ -690,5 +685,9 @@ const styles = StyleSheet.create({
   distance: {
     fontSize: 12,
     color: 'rgba(60, 60, 67, 0.6)',
+  },
+  ownEventText: {
+    color: ACCENT_ORANGE,
+    fontWeight: '600',
   },
 });
