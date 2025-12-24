@@ -293,7 +293,33 @@ export default function SearchScreen() {
     }
   };
 
-  const mapMarkers = nearbyWalks
+  const filterWalks = (walks: UserProfile[]) => {
+    const now = new Date();
+    const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const todayEnd = new Date(todayStart.getTime() + 24 * 60 * 60 * 1000);
+    const tomorrowEnd = new Date(todayEnd.getTime() + 24 * 60 * 60 * 1000);
+
+    return walks.filter((walk) => {
+      if (!walk.walk?.start_time) return false;
+      const startTime = new Date(walk.walk.start_time);
+
+      switch (timeFilter) {
+        case 'started':
+          return startTime <= now;
+        case 'today':
+          return startTime >= todayStart && startTime < todayEnd;
+        case 'tomorrow':
+          return startTime >= todayEnd && startTime < tomorrowEnd;
+        case 'all':
+        default:
+          return true;
+      }
+    });
+  };
+
+  const filteredWalks = filterWalks(nearbyWalks);
+
+  const mapMarkers = filteredWalks
     .filter((w) => w.walk)
     .map((w) => ({
       id: w.walk!.id,
@@ -334,7 +360,7 @@ export default function SearchScreen() {
             bounds={mapBounds}
             onMarkerPress={(id) => {
               setSelectedMarkerId(id);
-              const index = nearbyWalks.findIndex((item) => item.walk?.id === id);
+              const index = filteredWalks.findIndex((item) => item.walk?.id === id);
               if (index !== -1 && scrollViewRef.current) {
                 isScrollingProgrammatically.current = true;
                 scrollViewRef.current.scrollTo({
@@ -359,7 +385,7 @@ export default function SearchScreen() {
             userLongitude={location.coords.longitude}
             onMarkerPress={(id) => {
               setSelectedMarkerId(id);
-              const index = nearbyWalks.findIndex((item) => item.walk?.id === id);
+              const index = filteredWalks.findIndex((item) => item.walk?.id === id);
               if (index !== -1 && scrollViewRef.current) {
                 isScrollingProgrammatically.current = true;
                 scrollViewRef.current.scrollTo({
@@ -467,9 +493,9 @@ export default function SearchScreen() {
 
             const offsetX = e.nativeEvent.contentOffset.x;
             const index = Math.round(offsetX / (cardWidth + cardGap));
-            if (index !== currentCardIndex && index < nearbyWalks.length) {
+            if (index !== currentCardIndex && index < filteredWalks.length) {
               setCurrentCardIndex(index);
-              const item = nearbyWalks[index];
+              const item = filteredWalks[index];
 
               if (item.location) {
                 const padding = 150;
@@ -491,13 +517,13 @@ export default function SearchScreen() {
             <View style={[styles.loadingCard, { width: cardWidth }]}>
               <ActivityIndicator size="small" color={COLORS.ACCENT_ORANGE} />
             </View>
-          ) : nearbyWalks.length === 0 ? (
+          ) : filteredWalks.length === 0 ? (
             <View style={[styles.emptyCard, { width: cardWidth }]}>
               <Text style={styles.emptyText}>Немає людей які гуляють поблизу</Text>
             </View>
           ) : (
             <>
-              {nearbyWalks.map((item) => (
+              {filteredWalks.map((item) => (
                 <Pressable
                   key={`walk-${item.walk?.id}`}
                   style={[
