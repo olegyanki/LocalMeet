@@ -12,11 +12,14 @@ import {
 import { COLORS } from '@shared/constants';
 
 export type TimeFilter = 'all' | 'started' | 'today' | 'tomorrow';
+export type SortBy = 'distance' | 'date';
 
 interface FilterBottomSheetProps {
   visible: boolean;
   selectedFilter: TimeFilter;
+  sortBy: SortBy;
   onFilterChange: (filter: TimeFilter) => void;
+  onSortChange: (sort: SortBy) => void;
   onClose: () => void;
 }
 
@@ -30,7 +33,9 @@ const FILTERS = [
 export default function FilterBottomSheet({
   visible,
   selectedFilter,
+  sortBy,
   onFilterChange,
+  onSortChange,
   onClose,
 }: FilterBottomSheetProps) {
   const translateY = useRef(new Animated.Value(300)).current;
@@ -93,33 +98,70 @@ export default function FilterBottomSheet({
             <View style={styles.handle} />
           </View>
 
-          <View style={styles.header}>
-            <Text style={styles.title}>Фільтр</Text>
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Час</Text>
+            <View style={styles.filtersContainer}>
+              {FILTERS.map((filter) => (
+                <Pressable
+                  key={filter.id}
+                  style={[
+                    styles.filterChip,
+                    selectedFilter === filter.id && styles.filterChipActive,
+                  ]}
+                  onPress={() => {
+                    onFilterChange(filter.id);
+                    setTimeout(onClose, 150);
+                  }}
+                >
+                  <Text
+                    style={[
+                      styles.filterChipText,
+                      selectedFilter === filter.id && styles.filterChipTextActive,
+                    ]}
+                  >
+                    {filter.label}
+                  </Text>
+                </Pressable>
+              ))}
+            </View>
           </View>
 
-          <View style={styles.filtersContainer}>
-            {FILTERS.map((filter) => (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Сортування</Text>
+            <View style={styles.sortContainer}>
               <Pressable
-                key={filter.id}
                 style={[
-                  styles.filterChip,
-                  selectedFilter === filter.id && styles.filterChipActive,
+                  styles.sortOption,
+                  sortBy === 'distance' && styles.sortOptionActive,
                 ]}
-                onPress={() => {
-                  onFilterChange(filter.id);
-                  setTimeout(onClose, 150);
-                }}
+                onPress={() => onSortChange('distance')}
               >
                 <Text
                   style={[
-                    styles.filterChipText,
-                    selectedFilter === filter.id && styles.filterChipTextActive,
+                    styles.sortOptionText,
+                    sortBy === 'distance' && styles.sortOptionTextActive,
                   ]}
                 >
-                  {filter.label}
+                  По відстані
                 </Text>
               </Pressable>
-            ))}
+              <Pressable
+                style={[
+                  styles.sortOption,
+                  sortBy === 'date' && styles.sortOptionActive,
+                ]}
+                onPress={() => onSortChange('date')}
+              >
+                <Text
+                  style={[
+                    styles.sortOptionText,
+                    sortBy === 'date' && styles.sortOptionTextActive,
+                  ]}
+                >
+                  По даті
+                </Text>
+              </Pressable>
+            </View>
           </View>
         </Animated.View>
       </View>
@@ -147,6 +189,7 @@ const styles = StyleSheet.create({
   handleContainer: {
     alignItems: 'center',
     paddingVertical: 16,
+    paddingBottom: 8,
   },
   handle: {
     width: 36,
@@ -154,22 +197,23 @@ const styles = StyleSheet.create({
     backgroundColor: '#E0E0E0',
     borderRadius: 3,
   },
-  header: {
+  section: {
     paddingHorizontal: 24,
-    paddingBottom: 24,
+    marginBottom: 24,
+    marginTop: 16,
   },
-  title: {
-    fontSize: 24,
-    fontWeight: '700',
-    color: COLORS.TEXT_DARK,
-    letterSpacing: -0.5,
+  sectionTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#666666',
+    marginBottom: 12,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
   },
-
   filtersContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 10,
-    paddingHorizontal: 24,
   },
   filterChip: {
     paddingHorizontal: 24,
@@ -186,6 +230,28 @@ const styles = StyleSheet.create({
     color: '#666666',
   },
   filterChipTextActive: {
+    color: '#FFFFFF',
+  },
+  sortContainer: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  sortOption: {
+    flex: 1,
+    paddingVertical: 16,
+    borderRadius: 16,
+    backgroundColor: '#F8F8F8',
+    alignItems: 'center',
+  },
+  sortOptionActive: {
+    backgroundColor: COLORS.ACCENT_ORANGE,
+  },
+  sortOptionText: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#666666',
+  },
+  sortOptionTextActive: {
     color: '#FFFFFF',
   },
 });

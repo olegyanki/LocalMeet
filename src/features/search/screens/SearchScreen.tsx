@@ -26,7 +26,7 @@ import { COLORS, SIZES } from '@shared/constants';
 import { parseDuration, isWalkActive, getTimeColor, formatTime } from '@shared/utils/time';
 import Avatar from '@shared/components/Avatar';
 import LocationPin from '@shared/components/LocationPin';
-import FilterBottomSheet, { TimeFilter } from '@features/search/components/FilterBottomSheet';
+import FilterBottomSheet, { TimeFilter, SortBy } from '@features/search/components/FilterBottomSheet';
 import WebMap from '@features/search/maps/WebMap';
 import NativeMap from '@features/search/maps/NativeMap';
 import EventDetailsBottomSheet from '@features/events/modals/EventDetailsBottomSheet';
@@ -96,6 +96,7 @@ export default function SearchScreen() {
   const [isCardsCollapsed, setIsCardsCollapsed] = useState(false);
   const [showFilterSheet, setShowFilterSheet] = useState(false);
   const [timeFilter, setTimeFilter] = useState<TimeFilter>('all');
+  const [sortBy, setSortBy] = useState<SortBy>('distance');
   const cardsTranslateY = useRef(new Animated.Value(0)).current;
 
   const screenWidth = Dimensions.get('window').width;
@@ -319,7 +320,17 @@ export default function SearchScreen() {
 
   const filteredWalks = filterWalks(nearbyWalks);
 
-  const mapMarkers = filteredWalks
+  const sortedWalks = [...filteredWalks].sort((a, b) => {
+    if (sortBy === 'distance') {
+      return a.distance - b.distance;
+    } else {
+      const timeA = a.walk?.start_time ? new Date(a.walk.start_time).getTime() : 0;
+      const timeB = b.walk?.start_time ? new Date(b.walk.start_time).getTime() : 0;
+      return timeA - timeB;
+    }
+  });
+
+  const mapMarkers = sortedWalks
     .filter((w) => w.walk)
     .map((w) => ({
       id: w.walk!.id,
@@ -360,7 +371,7 @@ export default function SearchScreen() {
             bounds={mapBounds}
             onMarkerPress={(id) => {
               setSelectedMarkerId(id);
-              const index = filteredWalks.findIndex((item) => item.walk?.id === id);
+              const index = sortedWalks.findIndex((item) => item.walk?.id === id);
               if (index !== -1 && scrollViewRef.current) {
                 isScrollingProgrammatically.current = true;
                 scrollViewRef.current.scrollTo({
@@ -385,7 +396,7 @@ export default function SearchScreen() {
             userLongitude={location.coords.longitude}
             onMarkerPress={(id) => {
               setSelectedMarkerId(id);
-              const index = filteredWalks.findIndex((item) => item.walk?.id === id);
+              const index = sortedWalks.findIndex((item) => item.walk?.id === id);
               if (index !== -1 && scrollViewRef.current) {
                 isScrollingProgrammatically.current = true;
                 scrollViewRef.current.scrollTo({
@@ -429,7 +440,9 @@ export default function SearchScreen() {
       <FilterBottomSheet
         visible={showFilterSheet}
         selectedFilter={timeFilter}
+        sortBy={sortBy}
         onFilterChange={setTimeFilter}
+        onSortChange={setSortBy}
         onClose={() => setShowFilterSheet(false)}
       />
 
@@ -493,9 +506,9 @@ export default function SearchScreen() {
 
             const offsetX = e.nativeEvent.contentOffset.x;
             const index = Math.round(offsetX / (cardWidth + cardGap));
-            if (index !== currentCardIndex && index < filteredWalks.length) {
+            if (index !== currentCardIndex && index < sortedWalks.length) {
               setCurrentCardIndex(index);
-              const item = filteredWalks[index];
+              const item = sortedWalks[index];
 
               if (item.location) {
                 const padding = 150;
@@ -517,13 +530,13 @@ export default function SearchScreen() {
             <View style={[styles.loadingCard, { width: cardWidth }]}>
               <ActivityIndicator size="small" color={COLORS.ACCENT_ORANGE} />
             </View>
-          ) : filteredWalks.length === 0 ? (
+          ) : sortedWalks.length === 0 ? (
             <View style={[styles.emptyCard, { width: cardWidth }]}>
               <Text style={styles.emptyText}>Немає людей які гуляють поблизу</Text>
             </View>
           ) : (
             <>
-              {filteredWalks.map((item) => (
+              {sortedWalks.map((item) => (
                 <Pressable
                   key={`walk-${item.walk?.id}`}
                   style={[
