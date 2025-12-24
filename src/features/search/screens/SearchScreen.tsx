@@ -495,7 +495,7 @@ export default function SearchScreen() {
                     {item.walk?.start_time && (
                       <View style={styles.timeInfo}>
                         <Clock size={14} color={getTimeColor(item.walk.start_time)} />
-                        <Text style={styles.timeText}>
+                        <Text style={[styles.timeText, { color: getTimeColor(item.walk.start_time) }]}>
                           {formatTime(item.walk.start_time)}
                         </Text>
                       </View>
