@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Image, ActivityIndicator, Alert } from 'react-native';
 import { Camera, ImageIcon } from 'lucide-react-native';
 import { pickAndUploadAvatar, takePhotoAndUploadAvatar } from '@shared/lib';
+import { useI18n } from '@shared/i18n';
 
 const AVATAR_PLACEHOLDER = 'https://api.dicebear.com/7.x/initials/svg?seed=';
 
@@ -20,25 +21,26 @@ export default function AvatarPicker({
   onAvatarChange,
   isEditing,
 }: AvatarPickerProps) {
+  const { t } = useI18n();
   const [uploading, setUploading] = useState(false);
 
   const handleChooseSource = () => {
     if (!isEditing || uploading) return;
     
     Alert.alert(
-      'Виберіть джерело',
+      t('selectSource'),
       '',
       [
         {
-          text: 'Камера',
+          text: t('camera'),
           onPress: handleTakePhoto,
         },
         {
-          text: 'Галерея',
+          text: t('gallery'),
           onPress: handlePickImage,
         },
         {
-          text: 'Скасувати',
+          text: t('cancel'),
           style: 'cancel',
         },
       ]
@@ -53,7 +55,7 @@ export default function AvatarPicker({
         onAvatarChange(avatarUrl);
       }
     } catch (error: any) {
-      Alert.alert('Помилка', error.message || 'Не вдалося зробити фото');
+      Alert.alert('Помилка', error.message || t('error'));
     } finally {
       setUploading(false);
     }
@@ -67,7 +69,7 @@ export default function AvatarPicker({
         onAvatarChange(avatarUrl);
       }
     } catch (error: any) {
-      Alert.alert('Помилка', error.message || 'Не вдалося завантажити фото');
+      Alert.alert('Помилка', error.message || t('error'));
     } finally {
       setUploading(false);
     }
@@ -95,7 +97,7 @@ export default function AvatarPicker({
       </TouchableOpacity>
       {isEditing && (
         <Text style={styles.hint}>
-          {uploading ? 'Завантаження...' : 'Натисніть, щоб змінити'}
+          {uploading ? t('uploading') : t('tapToChange')}
         </Text>
       )}
     </View>

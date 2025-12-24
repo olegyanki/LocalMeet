@@ -31,16 +31,21 @@ const INPUT_BG = '#FFFFFF';
 const BORDER_COLOR = '#E8E8E8';
 
 const AGE_OPTIONS = Array.from({ length: 63 }, (_, i) => (i + 18).toString());
-const GENDER_OPTIONS = ['Чоловік', 'Жінка', 'Інше', 'Не вказано'];
+const GENDER_OPTIONS = [
+  'genderMale',
+  'genderFemale',
+  'genderOther',
+  'genderNotSpecified',
+];
 const LANGUAGE_OPTIONS = [
-  '🇺🇦 Українська',
-  '🇬🇧 English',
-  '🇪🇸 Español',
-  '🇫🇷 Français',
-  '🇩🇪 Deutsch',
-  '🇮🇹 Italiano',
-  '🇵🇱 Polski',
-  '🇷🇺 Русский',
+  'langUkrainian',
+  'langEnglish',
+  'langSpanish',
+  'langFrench',
+  'langGerman',
+  'langItalian',
+  'langPolish',
+  'langRussian',
 ];
 
 export default function ProfileScreen() {
@@ -201,7 +206,7 @@ export default function ProfileScreen() {
             onPress={() => setLanguage('uk')}
           >
             <Text style={[styles.langButtonText, language === 'uk' && styles.langButtonTextActive]}>
-              🇺🇦 Українська
+              {t('langUkrainian')}
             </Text>
           </Pressable>
           <Pressable
@@ -209,7 +214,7 @@ export default function ProfileScreen() {
             onPress={() => setLanguage('en')}
           >
             <Text style={[styles.langButtonText, language === 'en' && styles.langButtonTextActive]}>
-              🇬🇧 English
+              {t('langEnglish')}
             </Text>
           </Pressable>
         </View>
@@ -271,7 +276,7 @@ export default function ProfileScreen() {
               disabled={!isEditing}
             >
               <Text style={[styles.pickerText, !gender && styles.placeholderText]}>
-                {gender || t('selectGender')}
+                {gender ? t(gender as any) : t('selectGender')}
               </Text>
               {isEditing && <ChevronDown size={16} color={TEXT_LIGHT} />}
             </TouchableOpacity>
@@ -285,7 +290,7 @@ export default function ProfileScreen() {
         <View style={styles.chipsContainer}>
           {languages.map((lang) => (
             <View key={lang} style={styles.chip}>
-              <Text style={styles.chipText}>{lang}</Text>
+              <Text style={styles.chipText}>{t(lang as any)}</Text>
               {isEditing && (
                 <TouchableOpacity onPress={() => toggleLanguage(lang)}>
                   <X size={14} color="#FFFFFF" />
@@ -445,7 +450,7 @@ export default function ProfileScreen() {
                   <Text
                     style={[styles.optionText, gender === option && styles.optionTextSelected]}
                   >
-                    {option}
+                    {t(option as any)}
                   </Text>
                 </TouchableOpacity>
               ))}
@@ -479,7 +484,7 @@ export default function ProfileScreen() {
                       languages.includes(option) && styles.optionTextSelected,
                     ]}
                   >
-                    {option}
+                    {t(option as any)}
                   </Text>
                 </TouchableOpacity>
               ))}

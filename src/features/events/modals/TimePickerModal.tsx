@@ -14,6 +14,7 @@ import {
 } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Check } from 'lucide-react-native';
+import { useI18n } from '@shared/i18n';
 
 const TEXT_DARK = '#333333';
 const BORDER_COLOR = '#E8E8E8';
@@ -38,6 +39,7 @@ export default function TimePickerModal({
   onConfirm,
   onClose,
 }: TimePickerModalProps) {
+  const { t } = useI18n();
   const translateY = useRef(new Animated.Value(0)).current;
 
   const panResponder = useRef(
@@ -110,13 +112,13 @@ export default function TimePickerModal({
           </Animated.View>
           <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
             <Animated.View {...panResponder.panHandlers} style={styles.pickerHeader}>
-              <Text style={styles.pickerTitle}>Коли починається ваша активність?</Text>
+              <Text style={styles.pickerTitle}>{t('whenStartsActivity')}</Text>
             </Animated.View>
           </TouchableWithoutFeedback>
 
           <Animated.View {...panResponder.panHandlers} style={styles.pickerContent}>
             <View style={styles.pickerSection}>
-              <Text style={styles.pickerLabel}>Час початку</Text>
+              <Text style={styles.pickerLabel}>{t('startTime')}</Text>
               <View style={styles.timePickerWrapper}>
                 <DateTimePicker
                   value={selectedTime}
@@ -131,7 +133,7 @@ export default function TimePickerModal({
             </View>
 
             <View style={styles.pickerSection}>
-              <Text style={styles.pickerLabel}>Скільки будете гуляти?</Text>
+              <Text style={styles.pickerLabel}>{t('howLongWalk')}</Text>
               <View style={styles.durationOptions}>
                 {['1', '2', '3', '4', '5', '6'].map((duration) => (
                   <Pressable
@@ -159,7 +161,7 @@ export default function TimePickerModal({
           <Animated.View {...panResponder.panHandlers} style={styles.pickerFooter}>
             <Pressable style={styles.confirmButton} onPress={onConfirm}>
               <Check size={20} color="#FFFFFF" />
-              <Text style={styles.confirmButtonText}>Підтвердити</Text>
+              <Text style={styles.confirmButtonText}>{t('confirm')}</Text>
             </Pressable>
           </Animated.View>
         </Animated.View>

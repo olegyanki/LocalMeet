@@ -1,6 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, Modal, Animated } from 'react-native';
 import { CheckCircle, Sparkles } from 'lucide-react-native';
+import { useI18n } from '@shared/i18n';
 
 const TEXT_DARK = '#1C1C1E';
 const TEXT_LIGHT = '#8E8E93';
@@ -12,6 +13,7 @@ interface SuccessModalProps {
 }
 
 export default function SuccessModal({ visible }: SuccessModalProps) {
+  const { t } = useI18n();
   const scaleAnim = useRef(new Animated.Value(0)).current;
   const sparkleAnim = useRef(new Animated.Value(0)).current;
 
@@ -93,8 +95,8 @@ export default function SuccessModal({ visible }: SuccessModalProps) {
               <Sparkles size={16} color={ACCENT_ORANGE} fill={ACCENT_ORANGE} />
             </Animated.View>
           </View>
-          <Text style={styles.title}>Подія створена! 🎉</Text>
-          <Text style={styles.message}>Тепер інші можуть побачити вас на карті</Text>
+          <Text style={styles.title}>{t('eventCreated')}</Text>
+          <Text style={styles.message}>{t('eventCreatedMessage')}</Text>
         </Animated.View>
       </View>
     </Modal>

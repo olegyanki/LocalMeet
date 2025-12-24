@@ -18,6 +18,7 @@ import * as ImagePicker from 'expo-image-picker';
 import { ChevronLeft, MoreVertical, Mic, Image as ImageIcon, Trash2 } from 'lucide-react-native';
 import { supabase } from '@shared/lib/supabase';
 import { useAuth } from '@shared/contexts/AuthContext';
+import { useI18n } from '@shared/i18n';
 import AudioRecorder from '@shared/components/AudioRecorder';
 import AudioPlayer from '@shared/components/AudioPlayer';
 import EventDetailsBottomSheet from '@features/events/modals/EventDetailsBottomSheet';
@@ -81,6 +82,7 @@ export default function ChatScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { user } = useAuth();
+  const { t } = useI18n();
   const flatListRef = useRef<FlatList>(null);
 
   const [chat, setChat] = useState<Chat | null>(null);
@@ -748,7 +750,7 @@ export default function ChatScreen() {
                 router.push(`/user/${otherUser.id}`);
               }}
             >
-              <Text style={styles.optionButtonText}>Показати профіль</Text>
+              <Text style={styles.optionButtonText}>{t('showProfile')}</Text>
             </TouchableOpacity>
 
             <View style={styles.optionDivider} />
@@ -761,7 +763,7 @@ export default function ChatScreen() {
               }}
             >
               <Text style={[styles.optionButtonText, styles.optionButtonTextDelete]}>
-                Видалити чат
+                {t('deleteChat')}
               </Text>
             </TouchableOpacity>
           </View>
@@ -779,9 +781,9 @@ export default function ChatScreen() {
             <View style={styles.modalIconContainer}>
               <Trash2 size={32} color="#FF3B30" />
             </View>
-            <Text style={styles.modalTitle}>Видалити чат?</Text>
+            <Text style={styles.modalTitle}>{t('deleteChatConfirm')}</Text>
             <Text style={styles.modalMessage}>
-              Усі повідомлення будуть видалені назавжди
+              {t('deleteChatMessage')}
             </Text>
 
             <View style={styles.modalButtons}>
@@ -790,7 +792,7 @@ export default function ChatScreen() {
                 onPress={() => setShowDeleteModal(false)}
                 disabled={deleting}
               >
-                <Text style={styles.modalButtonTextCancel}>Скасувати</Text>
+                <Text style={styles.modalButtonTextCancel}>{t('cancel')}</Text>
               </TouchableOpacity>
 
               <TouchableOpacity
@@ -801,7 +803,7 @@ export default function ChatScreen() {
                 {deleting ? (
                   <ActivityIndicator size="small" color="#FFFFFF" />
                 ) : (
-                  <Text style={styles.modalButtonTextDelete}>Видалити</Text>
+                  <Text style={styles.modalButtonTextDelete}>{t('delete')}</Text>
                 )}
               </TouchableOpacity>
             </View>

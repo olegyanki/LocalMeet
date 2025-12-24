@@ -154,7 +154,7 @@ export default function GoOnlineScreen() {
         isWalking: true,
         walkTitle: title,
         walkStartTime: walkStartDateTime.toISOString(),
-        walkDuration: `${selectedDuration} год`,
+        walkDuration: `${selectedDuration} ${t("hoursShort")}`,
         walkDescription: description,
         walkLatitude: selectedLocation?.latitude,
         walkLongitude: selectedLocation?.longitude,

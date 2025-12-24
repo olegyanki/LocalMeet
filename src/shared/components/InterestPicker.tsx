@@ -8,32 +8,7 @@ import {
   Modal,
 } from 'react-native';
 import { Plus, X } from 'lucide-react-native';
-
-const SUGGESTED_INTERESTS = [
-  '⚽ Спорт',
-  '🎵 Музика',
-  '🎬 Кіно',
-  '✈️ Подорожі',
-  '🍴 Їжа',
-  '📸 Фотографія',
-  '🎨 Мистецтво',
-  '💻 Технології',
-  '📚 Книги',
-  '🎮 Ігри',
-  '🌳 Природа',
-  '💃 Танці',
-  '🧘 Йога',
-  '🍳 Кулінарія',
-  '👗 Мода',
-  '🏐 Волейбол',
-  '⚽ Футбол',
-  '🏀 Баскетбол',
-  '🏃 Біг',
-  '🚴 Велоспорт',
-  '🏊 Плавання',
-  '💪 Фітнес',
-  '🧘‍♀️ Медитація',
-];
+import { useI18n } from '@shared/i18n';
 
 interface InterestPickerProps {
   selectedInterests: string[];
@@ -46,7 +21,34 @@ export default function InterestPicker({
   onInterestsChange,
   isEditing,
 }: InterestPickerProps) {
+  const { t } = useI18n();
   const [showModal, setShowModal] = useState(false);
+
+  const SUGGESTED_INTERESTS = [
+    t('interestSport'),
+    t('interestMusic'),
+    t('interestMovies'),
+    t('interestTravel'),
+    t('interestFood'),
+    t('interestPhotography'),
+    t('interestArt'),
+    t('interestTech'),
+    t('interestBooks'),
+    t('interestGames'),
+    t('interestNature'),
+    t('interestDance'),
+    t('interestYoga'),
+    t('interestCooking'),
+    t('interestFashion'),
+    t('interestVolleyball'),
+    t('interestFootball'),
+    t('interestBasketball'),
+    t('interestRunning'),
+    t('interestCycling'),
+    t('interestSwimming'),
+    t('interestFitness'),
+    t('interestMeditation'),
+  ];
 
   const toggleInterest = (interest: string) => {
     if (selectedInterests.includes(interest)) {
@@ -62,7 +64,7 @@ export default function InterestPicker({
 
   return (
     <View style={styles.container}>
-      <Text style={styles.label}>Інтереси</Text>
+      <Text style={styles.label}>{t('interestsLabel')}</Text>
 
       {selectedInterests.length > 0 && (
         <View style={styles.selectedContainer}>
@@ -83,14 +85,14 @@ export default function InterestPicker({
         <>
           <TouchableOpacity style={styles.addButton} onPress={() => setShowModal(true)}>
             <Plus size={16} color="#FF9500" />
-            <Text style={styles.addButtonText}>Додати інтерес</Text>
+            <Text style={styles.addButtonText}>{t('addInterest')}</Text>
           </TouchableOpacity>
 
           <Modal visible={showModal} animationType="slide" transparent>
             <View style={styles.modalOverlay}>
               <View style={styles.modalContent}>
                 <View style={styles.modalHeader}>
-                  <Text style={styles.modalTitle}>Виберіть інтереси</Text>
+                  <Text style={styles.modalTitle}>{t('selectInterests')}</Text>
                   <TouchableOpacity onPress={() => setShowModal(false)}>
                     <X size={24} color="#333333" />
                   </TouchableOpacity>
@@ -124,7 +126,7 @@ export default function InterestPicker({
                   style={styles.doneButton}
                   onPress={() => setShowModal(false)}
                 >
-                  <Text style={styles.doneButtonText}>Готово</Text>
+                  <Text style={styles.doneButtonText}>{t('done')}</Text>
                 </TouchableOpacity>
               </View>
             </View>

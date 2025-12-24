@@ -17,6 +17,7 @@ import LocationPin from '@shared/components/LocationPin';
 import WebMap from '@features/search/maps/WebMap';
 import NativeMap from '@features/search/maps/NativeMap';
 import { calculateDistance } from '@shared/utils/location';
+import { useI18n } from '@shared/i18n';
 
 const ACCENT_ORANGE = '#FF9500';
 const TEXT_LIGHT = '#999999';
@@ -42,6 +43,7 @@ export default function LocationPickerModal({
   onConfirm,
   onClose,
 }: LocationPickerModalProps) {
+  const { t } = useI18n();
   const translateY = useRef(new Animated.Value(0)).current;
 
   const panResponder = useRef(
@@ -119,7 +121,7 @@ export default function LocationPickerModal({
             <View style={styles.handle} />
           </Animated.View>
           <Animated.View {...panResponder.panHandlers} style={styles.locationPickerHeader}>
-            <Text style={styles.pickerTitle}>Оберіть локацію прогулянки</Text>
+            <Text style={styles.pickerTitle}>{t('selectWalkLocation')}</Text>
           </Animated.View>
 
           {location && initialMapCenter ? (
@@ -173,7 +175,7 @@ export default function LocationPickerModal({
               disabled={!isLocationValid}
             >
               <Check size={20} color="#FFFFFF" />
-              <Text style={styles.confirmButtonText}>Підтвердити</Text>
+              <Text style={styles.confirmButtonText}>{t('confirm')}</Text>
             </Pressable>
           </Animated.View>
         </Animated.View>

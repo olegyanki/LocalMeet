@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useAuth } from '@shared/contexts/AuthContext';
+import { useI18n } from '@shared/i18n';
 import { updateProfile } from '@shared/lib/api';
 
 const BG_COLOR = '#F5F5F5';
@@ -21,6 +22,7 @@ const BORDER_COLOR = '#E8E8E8';
 
 export default function OnboardingScreen() {
   const { user } = useAuth();
+  const { t } = useI18n();
   const router = useRouter();
   const [bio, setBio] = useState('');
   const [status, setStatus] = useState('Looking for someone');
@@ -47,15 +49,15 @@ export default function OnboardingScreen() {
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      <Text style={styles.title}>Завершіть ваш профіль</Text>
-      <Text style={styles.subtitle}>Розкажіть про себе трохи більше</Text>
+      <Text style={styles.title}>{t('completeProfile')}</Text>
+      <Text style={styles.subtitle}>{t('tellMoreAboutYou')}</Text>
 
       {error ? <Text style={styles.errorText}>{error}</Text> : null}
 
-      <Text style={styles.label}>Статус (те що вам цікаво прямо зараз)</Text>
+      <Text style={styles.label}>{t('statusLabel')}</Text>
       <TextInput
         style={styles.input}
-        placeholder="Наприклад: Гуляю в парку, шукаю компанію"
+        placeholder={t('statusPlaceholder')}
         placeholderTextColor={TEXT_LIGHT}
         value={status}
         onChangeText={setStatus}
@@ -64,10 +66,10 @@ export default function OnboardingScreen() {
         editable={!isLoading}
       />
 
-      <Text style={styles.label}>Про вас</Text>
+      <Text style={styles.label}>{t('aboutYou')}</Text>
       <TextInput
         style={[styles.input, styles.bioInput]}
-        placeholder="Розкажіть про себе, ваші інтереси..."
+        placeholder={t('aboutYouPlaceholder')}
         placeholderTextColor={TEXT_LIGHT}
         value={bio}
         onChangeText={setBio}
@@ -84,7 +86,7 @@ export default function OnboardingScreen() {
         {isLoading ? (
           <ActivityIndicator color="#FFFFFF" />
         ) : (
-          <Text style={styles.buttonText}>Продовжити</Text>
+          <Text style={styles.buttonText}>{t('continue')}</Text>
         )}
       </TouchableOpacity>
     </ScrollView>

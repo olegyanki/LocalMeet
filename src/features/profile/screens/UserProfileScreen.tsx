@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useI18n } from '@shared/i18n';
 import { getProfile } from '@shared/lib/api';
 import {
   ChevronLeft,
@@ -38,6 +39,7 @@ export default function UserProfileScreen() {
   const { id } = useLocalSearchParams();
   const userId = Array.isArray(id) ? id[0] : id;
   const router = useRouter();
+  const { t } = useI18n();
   const insets = useSafeAreaInsets();
   const [profile, setProfile] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -95,7 +97,7 @@ export default function UserProfileScreen() {
         >
           <ChevronLeft size={28} color={TEXT_DARK} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Профіль</Text>
+        <Text style={styles.headerTitle}>{t('profile')}</Text>
         <View style={{ width: 28 }} />
       </View>
 
@@ -141,7 +143,7 @@ export default function UserProfileScreen() {
                   <View style={styles.statIconContainer}>
                     <Calendar size={18} color={ACCENT_ORANGE} />
                   </View>
-                  <Text style={styles.statLabel}>Вік</Text>
+                  <Text style={styles.statLabel}>{t('ageLabel')}</Text>
                   <Text style={styles.statValue}>{profile.age}</Text>
                 </View>
               )}
@@ -151,7 +153,7 @@ export default function UserProfileScreen() {
                   <View style={styles.statIconContainer}>
                     <User size={18} color={ACCENT_ORANGE} />
                   </View>
-                  <Text style={styles.statLabel}>Стать</Text>
+                  <Text style={styles.statLabel}>{t('genderLabel')}</Text>
                   <Text style={styles.statValue} numberOfLines={1} adjustsFontSizeToFit>
                     {profile.gender}
                   </Text>
@@ -168,7 +170,7 @@ export default function UserProfileScreen() {
                 <Languages size={18} color={ACCENT_ORANGE} />
               </View>
               <View style={styles.sectionTitleContainer}>
-                <Text style={styles.sectionTitle}>Мови</Text>
+                <Text style={styles.sectionTitle}>{t('languagesLabel')}</Text>
                 <View style={styles.countBadge}>
                   <Text style={styles.countBadgeText}>{profile.languages.length}</Text>
                 </View>
@@ -192,7 +194,7 @@ export default function UserProfileScreen() {
                 <Heart size={18} color={ACCENT_ORANGE} />
               </View>
               <View style={styles.sectionTitleContainer}>
-                <Text style={styles.sectionTitle}>Інтереси</Text>
+                <Text style={styles.sectionTitle}>{t('interestsLabel')}</Text>
                 <View style={styles.countBadge}>
                   <Text style={styles.countBadgeText}>{profile.interests.length}</Text>
                 </View>
@@ -219,7 +221,7 @@ export default function UserProfileScreen() {
               <View style={styles.sectionIconContainer}>
                 <MessageCircle size={18} color={ACCENT_ORANGE} />
               </View>
-              <Text style={styles.sectionTitle}>Що шукає</Text>
+              <Text style={styles.sectionTitle}>{t('lookingForLabel')}</Text>
             </View>
             <View style={styles.lookingForCard}>
               <View style={styles.quoteIcon}>
@@ -236,7 +238,7 @@ export default function UserProfileScreen() {
               <View style={styles.sectionIconContainer}>
                 <Send size={18} color={ACCENT_ORANGE} />
               </View>
-              <Text style={styles.sectionTitle}>Соціальні мережі</Text>
+              <Text style={styles.sectionTitle}>{t('socialNetworksLabel')}</Text>
             </View>
             <View style={styles.socialLinksContainer}>
               {profile.social_instagram && (

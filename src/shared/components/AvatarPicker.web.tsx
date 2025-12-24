@@ -1,6 +1,7 @@
 import React, { useRef } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Image } from 'react-native';
 import { Camera } from 'lucide-react-native';
+import { useI18n } from '@shared/i18n';
 
 const AVATAR_PLACEHOLDER = 'https://api.dicebear.com/7.x/initials/svg?seed=';
 
@@ -17,6 +18,7 @@ export default function AvatarPicker({
   onAvatarChange,
   isEditing,
 }: AvatarPickerProps) {
+  const { t } = useI18n();
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const handleFileChange = (event: any) => {
@@ -63,7 +65,7 @@ export default function AvatarPicker({
         )}
       </TouchableOpacity>
       {isEditing && (
-        <Text style={styles.hint}>Натисніть, щоб змінити</Text>
+        <Text style={styles.hint}>{t('tapToChange')}</Text>
       )}
     </View>
   );
