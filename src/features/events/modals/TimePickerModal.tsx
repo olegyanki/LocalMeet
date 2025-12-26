@@ -139,7 +139,7 @@ export default function TimePickerModal({
             </Animated.View>
           </TouchableWithoutFeedback>
 
-          <Animated.View {...panResponder.panHandlers} style={styles.pickerContent}>
+          <View style={styles.pickerContent}>
             <View style={styles.pickerSection}>
               <Text style={styles.pickerLabel}>{t('startTime')}</Text>
               <View style={styles.timePickerWrapper}>
@@ -176,7 +176,7 @@ export default function TimePickerModal({
                 </View>
               </View>
             </View>
-          </Animated.View>
+          </View>
 
           <Animated.View {...panResponder.panHandlers} style={styles.pickerFooter}>
             <Pressable style={styles.confirmButton} onPress={onConfirm}>
