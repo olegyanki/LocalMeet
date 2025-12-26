@@ -63,7 +63,7 @@ export default function NativeMap({
     }
   }, [markers, selectedMarkerId, bounds]);
 
-  const htmlContent = `
+  const htmlContent = /* html */ `
     <!DOCTYPE html>
     <html>
       <head>
