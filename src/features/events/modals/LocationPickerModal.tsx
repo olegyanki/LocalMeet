@@ -133,7 +133,7 @@ export default function LocationPickerModal({
                 selectedMarkerId={null}
                 onMarkerPress={() => {}}
                 onMapMove={onMapMove}
-                radiusKm={MAX_DISTANCE_KM}
+                radiusKm={RADIUS_FOR_CREATING_EVENT_KM}
                 centerLat={location.coords.latitude}
                 centerLng={location.coords.longitude}
                 userLatitude={location.coords.latitude}
