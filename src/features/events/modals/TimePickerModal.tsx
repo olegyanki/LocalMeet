@@ -14,7 +14,7 @@ import {
 } from 'react-native';
 import Slider from '@react-native-community/slider';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import { Check } from 'lucide-react-native';
+import { Check, Clock, Timer } from 'lucide-react-native';
 import { useI18n } from '@shared/i18n';
 
 const ACCENT_ORANGE = '#FF9500';
@@ -140,8 +140,11 @@ export default function TimePickerModal({
           </TouchableWithoutFeedback>
 
           <View style={styles.pickerContent}>
-            <View style={styles.pickerSection}>
-              <Text style={styles.pickerLabel}>{t('startTime')}</Text>
+            <View style={styles.card}>
+              <View style={styles.labelRow}>
+                <Clock size={20} color={ACCENT_ORANGE} />
+                <Text style={styles.pickerLabel}>{t('startTime')}</Text>
+              </View>
               <View style={styles.timePickerWrapper}>
                 <DateTimePicker
                   value={selectedTime}
@@ -155,8 +158,11 @@ export default function TimePickerModal({
               </View>
             </View>
 
-            <View style={styles.pickerSection}>
-              <Text style={styles.pickerLabel}>{t('howLongWalk')}</Text>
+            <View style={styles.card}>
+              <View style={styles.labelRow}>
+                <Timer size={20} color={ACCENT_ORANGE} />
+                <Text style={styles.pickerLabel}>{t('howLongWalk')}</Text>
+              </View>
               <View style={styles.sliderContainer}>
                 <Text style={styles.durationValue}>{formatDuration(sliderValue)}</Text>
                 <Slider
@@ -209,7 +215,7 @@ const styles = StyleSheet.create({
   },
   handleContainer: {
     alignItems: 'center',
-    paddingVertical: 16,
+    paddingVertical: 12,
     paddingHorizontal: 20,
     backgroundColor: '#FFFFFF',
     borderTopLeftRadius: 24,
@@ -227,49 +233,68 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: 20,
-    paddingTop: 8,
-    paddingBottom: 16,
+    paddingTop: 4,
+    paddingBottom: 12,
     borderBottomWidth: 1,
     borderBottomColor: BORDER_COLOR,
   },
   pickerTitle: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: '700',
     color: TEXT_DARK,
   },
   pickerContent: {
-    padding: 24,
-    maxHeight: 500,
+    padding: 16,
+    paddingBottom: 12,
+    gap: 12,
   },
-  pickerSection: {
-    marginBottom: 32,
+  card: {
+    backgroundColor: '#F8F8F8',
+    borderRadius: 16,
+    padding: 16,
+  },
+  labelRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 8,
   },
   pickerLabel: {
-    fontSize: 17,
+    fontSize: 16,
     fontWeight: '600',
     color: TEXT_DARK,
-    marginBottom: 16,
   },
   timePickerWrapper: {
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 20,
-  },
-  sliderContainer: {
     paddingVertical: 8,
   },
+  sliderContainer: {
+    paddingVertical: 4,
+  },
   durationValue: {
-    fontSize: 32,
+    fontSize: 28,
     fontWeight: '700',
     color: ACCENT_ORANGE,
     textAlign: 'center',
-    marginBottom: 24,
+    marginBottom: 16,
     fontVariant: ['tabular-nums'],
     minWidth: 200,
   },
   slider: {
     width: '100%',
     height: 40,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.15,
+        shadowRadius: 3,
+      },
+      android: {
+        elevation: 3,
+      },
+    }),
   },
   sliderLabels: {
     flexDirection: 'row',
@@ -282,8 +307,8 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   pickerFooter: {
-    padding: 20,
-    paddingBottom: 30,
+    padding: 16,
+    paddingBottom: 24,
     borderTopWidth: 1,
     borderTopColor: BORDER_COLOR,
     backgroundColor: '#FFFFFF',
@@ -293,7 +318,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: SUCCESS_GREEN,
-    paddingVertical: 16,
+    paddingVertical: 14,
     borderRadius: 16,
     gap: 8,
   },
