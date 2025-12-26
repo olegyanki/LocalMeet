@@ -1,194 +1,203 @@
 {
-  "version": 8,
-  "name": "Locals Light (Expo)",
-  "metadata": {
-    "mapbox:autocomposite": true
-  },
-  "sources": {
-    "mapbox-streets": {
-      "type": "vector",
-      "url": "mapbox://mapbox.mapbox-streets-v8"
-    }
-  },
-  "glyphs": "mapbox://fonts/mapbox/{fontstack}/{range}.pbf",
-  "sprite": "mapbox://sprites/mapbox/streets-v12",
-  "layers": [
-    {
-      "id": "background",
-      "type": "background",
-      "paint": {
-        "background-color": "#F7FAFC"
-      }
+    "version": 8,
+    "name": "Locals Light (Expo)",
+    "metadata": {
+        "mapbox:autocomposite": true,
+        "mapbox:sdk-support": {
+            "js": "3.17.0",
+            "android": "11.17.0",
+            "ios": "11.17.0"
+        },
+        "mapbox:groups": {},
+        "mapbox:thumb": "data:image/webp;base64,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"
     },
-    {
-      "id": "water",
-      "type": "fill",
-      "source": "mapbox-streets",
-      "source-layer": "water",
-      "paint": {
-        "fill-color": "#DDEAF6"
-      }
+    "sources": {
+        "composite": {
+            "url": "mapbox://mapbox.mapbox-streets-v8",
+            "type": "vector"
+        }
     },
-    {
-      "id": "waterway",
-      "type": "line",
-      "source": "mapbox-streets",
-      "source-layer": "waterway",
-      "paint": {
-        "line-color": "#D0E2F2",
-        "line-width": [
-          "interpolate",
-          ["linear"],
-          ["zoom"],
-          8,
-          0.5,
-          14,
-          2
-        ]
-      }
-    },
-    {
-      "id": "landuse",
-      "type": "fill",
-      "source": "mapbox-streets",
-      "source-layer": "landuse",
-      "paint": {
-        "fill-color": "#F2F6F8",
-        "fill-opacity": 0.7
-      }
-    },
-    {
-      "id": "parks",
-      "type": "fill",
-      "source": "mapbox-streets",
-      "source-layer": "landuse",
-      "filter": ["==", ["get", "class"], "park"],
-      "paint": {
-        "fill-color": "#EAF4EA",
-        "fill-opacity": 0.75
-      }
-    },
-    {
-      "id": "road-casing",
-      "type": "line",
-      "source": "mapbox-streets",
-      "source-layer": "road",
-      "paint": {
-        "line-color": "#E8EEF3",
-        "line-width": [
-          "interpolate",
-          ["linear"],
-          ["zoom"],
-          10,
-          1,
-          14,
-          5,
-          18,
-          20
-        ],
-        "line-opacity": 0.9
-      }
-    },
-    {
-      "id": "road-main",
-      "type": "line",
-      "source": "mapbox-streets",
-      "source-layer": "road",
-      "paint": {
-        "line-color": "#FFFFFF",
-        "line-width": [
-          "interpolate",
-          ["linear"],
-          ["zoom"],
-          10,
-          0.6,
-          14,
-          3.2,
-          18,
-          14
-        ],
-        "line-opacity": 0.95
-      }
-    },
-    {
-      "id": "road-minor",
-      "type": "line",
-      "source": "mapbox-streets",
-      "source-layer": "road",
-      "filter": ["in", ["get", "class"], ["literal", ["street", "street_limited", "service", "path"]]],
-      "paint": {
-        "line-color": "#FFFFFF",
-        "line-width": [
-          "interpolate",
-          ["linear"],
-          ["zoom"],
-          12,
-          0.4,
-          16,
-          2.0,
-          18,
-          6
-        ],
-        "line-opacity": 0.7
-      }
-    },
-    {
-      "id": "buildings",
-      "type": "fill",
-      "source": "mapbox-streets",
-      "source-layer": "building",
-      "minzoom": 14,
-      "paint": {
-        "fill-color": "#EEF2F6",
-        "fill-opacity": 0.55
-      }
-    },
-    {
-      "id": "place-labels",
-      "type": "symbol",
-      "source": "mapbox-streets",
-      "source-layer": "place_label",
-      "layout": {
-        "text-field": ["coalesce", ["get", "name_en"], ["get", "name"]],
-        "text-font": ["DIN Pro Medium", "Arial Unicode MS Bold"],
-        "text-size": [
-          "interpolate",
-          ["linear"],
-          ["zoom"],
-          4,
-          10,
-          8,
-          14,
-          12,
-          18
-        ],
-        "text-max-width": 8,
-        "text-allow-overlap": false
-      },
-      "paint": {
-        "text-color": "#9AA7B2",
-        "text-halo-color": "#F7FAFC",
-        "text-halo-width": 1.2
-      }
-    },
-    {
-      "id": "poi-labels",
-      "type": "symbol",
-      "source": "mapbox-streets",
-      "source-layer": "poi_label",
-      "minzoom": 14,
-      "layout": {
-        "text-field": ["coalesce", ["get", "name_en"], ["get", "name"]],
-        "text-font": ["DIN Pro Regular", "Arial Unicode MS Regular"],
-        "text-size": 12,
-        "text-offset": [0, 0.6],
-        "text-anchor": "top"
-      },
-      "paint": {
-        "text-color": "#A7B4BE",
-        "text-halo-color": "#F7FAFC",
-        "text-halo-width": 1.0
-      }
-    }
-  ]
+    "sprite": "mapbox://sprites/oleh-yankivskyi/cmjby103d000701s15oy6drxv/ec1l9bxmet5bi7f8v5eqboqka",
+    "glyphs": "mapbox://fonts/mapbox/{fontstack}/{range}.pbf",
+    "layers": [
+        {
+            "id": "background",
+            "type": "background",
+            "paint": {"background-color": "#f2f7ff"}
+        },
+        {
+            "id": "water",
+            "type": "fill",
+            "source": "composite",
+            "source-layer": "water",
+            "paint": {"fill-color": "#deeff4"}
+        },
+        {
+            "id": "waterway",
+            "type": "line",
+            "source": "composite",
+            "source-layer": "waterway",
+            "paint": {
+                "line-color": "#D0E2F2",
+                "line-width": [
+                    "interpolate",
+                    ["linear"],
+                    ["zoom"],
+                    8,
+                    0.5,
+                    14,
+                    2
+                ]
+            }
+        },
+        {
+            "id": "landuse",
+            "type": "fill",
+            "source": "composite",
+            "source-layer": "landuse",
+            "paint": {"fill-color": "#F2F6F8", "fill-opacity": 0.7}
+        },
+        {
+            "id": "parks",
+            "type": "fill",
+            "source": "composite",
+            "source-layer": "landuse",
+            "filter": ["==", ["get", "class"], "park"],
+            "paint": {"fill-color": "#c8f0c7", "fill-opacity": 0.75}
+        },
+        {
+            "id": "road-casing",
+            "type": "line",
+            "source": "composite",
+            "source-layer": "road",
+            "paint": {
+                "line-color": "#E8EEF3",
+                "line-width": [
+                    "interpolate",
+                    ["linear"],
+                    ["zoom"],
+                    10,
+                    1,
+                    14,
+                    5,
+                    18,
+                    20
+                ],
+                "line-opacity": 0.9
+            }
+        },
+        {
+            "id": "road-main",
+            "type": "line",
+            "source": "composite",
+            "source-layer": "road",
+            "paint": {
+                "line-color": "#FFFFFF",
+                "line-width": [
+                    "interpolate",
+                    ["linear"],
+                    ["zoom"],
+                    10,
+                    0.6,
+                    14,
+                    3.2,
+                    18,
+                    14
+                ],
+                "line-opacity": 0.95
+            }
+        },
+        {
+            "id": "road-minor",
+            "type": "line",
+            "source": "composite",
+            "source-layer": "road",
+            "filter": [
+                "in",
+                ["get", "class"],
+                ["literal", ["street", "street_limited", "service", "path"]]
+            ],
+            "paint": {
+                "line-color": "#FFFFFF",
+                "line-width": [
+                    "interpolate",
+                    ["linear"],
+                    ["zoom"],
+                    12,
+                    0.4,
+                    16,
+                    2,
+                    18,
+                    6
+                ],
+                "line-opacity": 0.7
+            }
+        },
+        {
+            "id": "buildings",
+            "type": "fill",
+            "source": "composite",
+            "source-layer": "building",
+            "minzoom": 14,
+            "paint": {"fill-color": "#EEF2F6", "fill-opacity": 0.55}
+        },
+        {
+            "id": "place-labels",
+            "type": "symbol",
+            "source": "composite",
+            "source-layer": "place_label",
+            "layout": {
+                "text-field": [
+                    "step",
+                    ["zoom"],
+                    ["coalesce", ["get", "name_en"], ["get", "name"]],
+                    22,
+                    ["coalesce", ["get", "name_en"], ["get", "name"]]
+                ],
+                "text-font": ["DIN Pro Medium", "Arial Unicode MS Bold"],
+                "text-size": [
+                    "interpolate",
+                    ["linear"],
+                    ["zoom"],
+                    4,
+                    10,
+                    8,
+                    14
+                ],
+                "text-max-width": 8,
+                "text-size-scale-range": [0.1, 10]
+            },
+            "paint": {
+                "text-color": "#556a80",
+                "text-halo-color": "#F7FAFC",
+                "text-halo-width": 1.2
+            }
+        },
+        {
+            "id": "poi-labels",
+            "type": "symbol",
+            "source": "composite",
+            "source-layer": "poi_label",
+            "minzoom": 14,
+            "layout": {
+                "text-field": ["coalesce", ["get", "name_en"], ["get", "name"]],
+                "text-font": ["DIN Pro Regular", "Arial Unicode MS Regular"],
+                "text-size": 12,
+                "text-offset": [0, 0.6],
+                "text-anchor": "top"
+            },
+            "paint": {
+                "text-color": "#94a7c3",
+                "text-halo-color": "#F7FAFC",
+                "text-halo-width": 1
+            }
+        }
+    ],
+    "created": "2025-12-18T21:19:16.153Z",
+    "modified": "2025-12-26T14:33:40.579Z",
+    "id": "cmjby103d000701s15oy6drxv",
+    "owner": "oleh-yankivskyi",
+    "visibility": "private",
+    "protected": false,
+    "draft": false
 }
