@@ -560,11 +560,6 @@ const styles = StyleSheet.create({
     paddingVertical: 18,
     borderRadius: 20,
     marginTop: 4,
-    shadowColor: COLORS.ACCENT_ORANGE,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 4,
   },
   connectButtonText: {
     fontSize: 17,
@@ -583,11 +578,6 @@ const styles = StyleSheet.create({
     paddingVertical: 18,
     borderRadius: 20,
     marginTop: 4,
-    shadowColor: '#FF3B30',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 4,
   },
   deleteButtonDisabled: {
     opacity: 0.6,

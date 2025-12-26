@@ -13,13 +13,9 @@ import {
   KeyboardAvoidingView,
 } from 'react-native';
 import { BlurView } from 'expo-blur';
-import { X, Send } from 'lucide-react-native';
 import { createWalkRequest } from '@shared/lib/api';
 import { useI18n } from '@shared/i18n';
-
-const ACCENT_ORANGE = '#FF9500';
-const TEXT_DARK = '#333333';
-const TEXT_LIGHT = '#999999';
+import { COLORS } from '@shared/constants';
 
 interface ContactRequestBottomSheetProps {
   visible: boolean;
@@ -118,12 +114,7 @@ export default function ContactRequestBottomSheet({
         >
           <View style={styles.handle} />
 
-          <TouchableOpacity style={styles.closeButton} onPress={onClose}>
-            <X size={24} color={TEXT_DARK} />
-          </TouchableOpacity>
-
           <View style={styles.content}>
-            <Text style={styles.title}>{t('joinRequest')}</Text>
             <Text style={styles.subtitle}>
               {t('sendRequestTo')} <Text style={styles.userName}>{walkOwnerName}</Text>
             </Text>
@@ -133,7 +124,7 @@ export default function ContactRequestBottomSheet({
               <TextInput
                 style={styles.textInput}
                 placeholder={t('messagePlaceholder')}
-                placeholderTextColor={TEXT_LIGHT}
+                placeholderTextColor={COLORS.TEXT_LIGHT}
                 value={message}
                 onChangeText={setMessage}
                 multiline
@@ -181,78 +172,67 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
   bottomSheet: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: COLORS.BG_SECONDARY,
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
-    paddingHorizontal: 24,
+    paddingHorizontal: 20,
     paddingTop: 12,
     paddingBottom: 40,
   },
   handle: {
     width: 40,
     height: 4,
-    backgroundColor: '#E8E8E8',
+    backgroundColor: COLORS.BORDER_COLOR,
     borderRadius: 2,
     alignSelf: 'center',
     marginBottom: 20,
   },
-  closeButton: {
-    position: 'absolute',
-    top: 20,
-    right: 20,
-    zIndex: 1,
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: '#F5F5F5',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
   content: {
-    paddingTop: 8,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: '700',
-    color: TEXT_DARK,
-    marginBottom: 8,
+    gap: 20,
   },
   subtitle: {
-    fontSize: 15,
-    color: TEXT_LIGHT,
-    marginBottom: 24,
+    fontSize: 16,
+    color: COLORS.TEXT_DARK,
+    lineHeight: 22,
   },
   userName: {
-    color: ACCENT_ORANGE,
+    color: COLORS.ACCENT_ORANGE,
     fontWeight: '600',
   },
   inputContainer: {
     marginBottom: 16,
   },
   label: {
-    fontSize: 16,
+    fontSize: 11,
     fontWeight: '600',
-    color: TEXT_DARK,
-    marginBottom: 12,
+    color: COLORS.TEXT_LIGHT,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    marginBottom: 10,
   },
   textInput: {
-    backgroundColor: '#F5F5F5',
-    borderRadius: 12,
+    backgroundColor: COLORS.CARD_BG,
+    borderRadius: 16,
     padding: 16,
     fontSize: 15,
-    color: TEXT_DARK,
+    color: COLORS.TEXT_DARK,
     minHeight: 120,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    elevation: 2,
   },
   charCount: {
     fontSize: 12,
-    color: TEXT_LIGHT,
+    color: COLORS.TEXT_LIGHT,
     textAlign: 'right',
     marginTop: 8,
   },
   errorContainer: {
     backgroundColor: '#FFE5E5',
     padding: 12,
-    borderRadius: 8,
+    borderRadius: 12,
     marginBottom: 16,
   },
   errorText: {
@@ -260,7 +240,7 @@ const styles = StyleSheet.create({
     color: '#FF3B30',
   },
   submitButton: {
-    backgroundColor: ACCENT_ORANGE,
+    backgroundColor: COLORS.ACCENT_ORANGE,
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: 16,
