@@ -139,7 +139,7 @@ export default function InterestPicker({
 
 const styles = StyleSheet.create({
   container: {
-    marginBottom: 24,
+    marginBottom: 0,
   },
   label: {
     fontSize: 15,
