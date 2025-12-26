@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -26,8 +26,8 @@ const RADIUS_FOR_CREATING_EVENT_KM = 15;
 
 interface LocationPickerModalProps {
   visible: boolean;
-  location: Location.LocationObject | null;
-  initialMapCenter: { latitude: number; longitude: number } | null;
+  userLocation: Location.LocationObject | null;
+  selectedLocation: { latitude: number; longitude: number } | null;
   tempLocation: { latitude: number; longitude: number } | null;
   onMapMove: (lat: number, lng: number) => void;
   onConfirm: () => void;
@@ -36,8 +36,8 @@ interface LocationPickerModalProps {
 
 export default function LocationPickerModal({
   visible,
-  location,
-  initialMapCenter,
+  userLocation,
+  selectedLocation,
   tempLocation,
   onMapMove,
   onConfirm,
@@ -45,6 +45,7 @@ export default function LocationPickerModal({
 }: LocationPickerModalProps) {
   const { t } = useI18n();
   const translateY = useRef(new Animated.Value(0)).current;
+  const [initialMapCenter, setInitialMapCenter] = useState<{latitude: number; longitude: number} | null>(null);
 
   const panResponder = useRef(
     PanResponder.create({
@@ -80,6 +81,7 @@ export default function LocationPickerModal({
 
   useEffect(() => {
     if (visible) {
+      setInitialMapCenter(selectedLocation);
       translateY.setValue(500);
       Animated.spring(translateY, {
         toValue: 0,
@@ -88,6 +90,7 @@ export default function LocationPickerModal({
         friction: 10,
       }).start();
     } else {
+      setInitialMapCenter(null);
       setTimeout(() => {
         translateY.setValue(500);
       }, 250);
@@ -124,7 +127,7 @@ export default function LocationPickerModal({
             <Text style={styles.pickerTitle}>{t('selectWalkLocation')}</Text>
           </Animated.View>
 
-          {location && initialMapCenter ? (
+          {userLocation && initialMapCenter ? (
             <View style={styles.mapWrapper}>
               <NativeMap
                 latitude={initialMapCenter.latitude}
@@ -134,10 +137,10 @@ export default function LocationPickerModal({
                 onMarkerPress={() => {}}
                 onMapMove={onMapMove}
                 radiusKm={RADIUS_FOR_CREATING_EVENT_KM}
-                centerLat={location.coords.latitude}
-                centerLng={location.coords.longitude}
-                userLatitude={location.coords.latitude}
-                userLongitude={location.coords.longitude}
+                centerLat={userLocation.coords.latitude}
+                centerLng={userLocation.coords.longitude}
+                userLatitude={userLocation.coords.latitude}
+                userLongitude={userLocation.coords.longitude}
               />
               <View style={styles.centerMarker}>
                 <LocationPin size={32} />

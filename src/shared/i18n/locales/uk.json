@@ -198,5 +198,6 @@
   "interestMeditation": "🧘♀️ Медитація",
   "addInterest": "Додати інтерес",
   "selectInterests": "Виберіть інтереси",
-  "tapMapToSelectLocation": "Натисніть на карту щоб обрати локацію (до 15 км від вас)"
+  "tapMapToSelectLocation": "Натисніть на карту щоб обрати локацію (до 15 км від вас)",
+  "usingCurrentLocation": "Використовується ваша поточна локація"
 }

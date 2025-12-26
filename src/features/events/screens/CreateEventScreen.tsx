@@ -52,7 +52,7 @@ export default function GoOnlineScreen() {
   } | null>(null);
   const [showLocationPicker, setShowLocationPicker] = useState(false);
   const [tempLocation, setTempLocation] = useState<{latitude: number; longitude: number} | null>(null);
-  const [initialMapCenter, setInitialMapCenter] = useState<{latitude: number; longitude: number} | null>(null);
+  const [userLocationWasManuallyChanged, setUserLocationWasManuallyChanged] = useState(false);
   const scrollViewRef = useRef<ScrollView>(null);
   const descriptionInputRef = useRef<TextInput>(null);
   const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -69,14 +69,6 @@ export default function GoOnlineScreen() {
     loadCurrentLocation();
     setCurrentTime();
   }, []);
-
-  useEffect(() => {
-    if (showLocationPicker) {
-      setInitialMapCenter(selectedLocation);
-    } else {
-      setInitialMapCenter(null);
-    }
-  }, [showLocationPicker]);
 
   const setCurrentTime = () => {
     const now = new Date();
@@ -205,6 +197,7 @@ export default function GoOnlineScreen() {
   const confirmLocation = () => {
     if (tempLocation) {
       setSelectedLocation(tempLocation);
+      setUserLocationWasManuallyChanged(true);
     }
     setShowLocationPicker(false);
     setTempLocation(null);
@@ -268,7 +261,7 @@ export default function GoOnlineScreen() {
                   <MapPin size={20} color={ACCENT_ORANGE} />
                 </View>
                 <Text style={[styles.selectText, selectedLocation && styles.selectTextFilled]}>
-                  {selectedLocation ? t('locationSelected') : t('selectOnMap')}
+                  {userLocationWasManuallyChanged ? t('locationSelected') : t('usingCurrentLocation')}
                 </Text>
               </Pressable>
             </View>
@@ -337,8 +330,8 @@ export default function GoOnlineScreen() {
 
       <LocationPickerModal
         visible={showLocationPicker}
-        location={location}
-        initialMapCenter={initialMapCenter}
+        userLocation={location}
+        selectedLocation={selectedLocation}
         tempLocation={tempLocation}
         onMapMove={handleMapMove}
         onConfirm={confirmLocation}
