@@ -2,13 +2,10 @@ import { View, Text, StyleSheet, Image, Dimensions, Animated, PanResponder, Touc
 import { WalkRequestWithProfile } from '../lib/api';
 import { useRef } from 'react';
 import { Check, X } from 'lucide-react-native';
+import { COLORS } from '@shared/constants';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const SWIPE_THRESHOLD = SCREEN_WIDTH * 0.3;
-
-const ACCENT_ORANGE = '#FF9500';
-const TEXT_LIGHT = '#999999';
-const TEXT_DARK = '#1C1C1E';
 
 interface RequestCardProps {
   request: WalkRequestWithProfile;
@@ -204,8 +201,9 @@ export default function RequestCard({ request, onReject, onAccept, onSwipeStart,
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: '#FFFFFF',
-    position: 'relative',
+    marginHorizontal: 20,
+    marginBottom: 8,
+    borderRadius: 16,
     overflow: 'hidden',
   },
   acceptBackground: {
@@ -214,7 +212,7 @@ const styles = StyleSheet.create({
     top: 0,
     bottom: 0,
     right: 0,
-    backgroundColor: '#34C759',
+    backgroundColor: COLORS.SUCCESS_GREEN,
     justifyContent: 'center',
     alignItems: 'flex-start',
     paddingLeft: 30,
@@ -231,11 +229,14 @@ const styles = StyleSheet.create({
     paddingRight: 30,
   },
   card: {
-    backgroundColor: '#FFFFFF',
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#F2F2F7',
+    backgroundColor: COLORS.CARD_BG,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 4,
+    elevation: 2,
   },
   header: {
     flexDirection: 'row',
@@ -250,7 +251,7 @@ const styles = StyleSheet.create({
     borderRadius: 28,
   },
   avatarPlaceholder: {
-    backgroundColor: ACCENT_ORANGE,
+    backgroundColor: COLORS.ACCENT_ORANGE,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -271,12 +272,12 @@ const styles = StyleSheet.create({
   name: {
     fontSize: 17,
     fontWeight: '600',
-    color: TEXT_DARK,
+    color: COLORS.TEXT_DARK,
   },
   age: {
     fontSize: 17,
     fontWeight: '400',
-    color: TEXT_DARK,
+    color: COLORS.TEXT_DARK,
   },
   interestsContainer: {
     flexDirection: 'row',
@@ -285,35 +286,35 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   interestTag: {
-    backgroundColor: '#F2F2F7',
+    backgroundColor: COLORS.INPUT_BG,
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 12,
   },
   interestText: {
     fontSize: 13,
-    color: TEXT_DARK,
+    color: COLORS.TEXT_DARK,
     fontWeight: '500',
   },
   moreInterests: {
     fontSize: 13,
-    color: TEXT_LIGHT,
+    color: COLORS.TEXT_LIGHT,
     fontWeight: '500',
   },
   bio: {
     fontSize: 14,
     lineHeight: 18,
-    color: TEXT_LIGHT,
+    color: COLORS.TEXT_LIGHT,
     marginTop: 6,
   },
   time: {
     fontSize: 13,
-    color: TEXT_LIGHT,
+    color: COLORS.TEXT_LIGHT,
   },
   message: {
     marginTop: 12,
     fontSize: 15,
     lineHeight: 20,
-    color: TEXT_DARK,
+    color: COLORS.TEXT_DARK,
   },
 });
