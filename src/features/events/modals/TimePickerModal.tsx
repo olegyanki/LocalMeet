@@ -168,7 +168,7 @@ export default function TimePickerModal({
                   onValueChange={handleSliderChange}
                   minimumTrackTintColor={ACCENT_ORANGE}
                   maximumTrackTintColor={BORDER_COLOR}
-                  thumbTintColor={ACCENT_ORANGE}
+                  thumbTintColor="#FFFFFF"
                 />
                 <View style={styles.sliderLabels}>
                   <Text style={styles.sliderLabel}>30{t('minutes')}</Text>
