@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -12,11 +12,14 @@ import {
   TouchableWithoutFeedback,
   Keyboard,
 } from 'react-native';
+import Slider from '@react-native-community/slider';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Check } from 'lucide-react-native';
 import { useI18n } from '@shared/i18n';
 
+const ACCENT_ORANGE = '#FF9500';
 const TEXT_DARK = '#333333';
+const TEXT_LIGHT = '#999999';
 const BORDER_COLOR = '#E8E8E8';
 const SUCCESS_GREEN = '#4CAF50';
 
@@ -41,6 +44,11 @@ export default function TimePickerModal({
 }: TimePickerModalProps) {
   const { t } = useI18n();
   const translateY = useRef(new Animated.Value(0)).current;
+  const [sliderValue, setSliderValue] = useState(parseFloat(selectedDuration));
+
+  useEffect(() => {
+    setSliderValue(parseFloat(selectedDuration));
+  }, [selectedDuration]);
 
   const panResponder = useRef(
     PanResponder.create({
@@ -90,6 +98,21 @@ export default function TimePickerModal({
     }
   }, [visible]);
 
+  const formatDuration = (value: number) => {
+    const hours = Math.floor(value);
+    const minutes = Math.round((value - hours) * 60);
+    
+    if (minutes === 0) {
+      return `${hours} ${t('hoursShort')} 00 ${t('minutes')}`;
+    }
+    return `${hours} ${t('hoursShort')} ${minutes} ${t('minutes')}`;
+  };
+
+  const handleSliderChange = (value: number) => {
+    setSliderValue(value);
+    onDurationChange(value.toString());
+  };
+
   return (
     <Modal visible={visible} transparent animationType="none" onRequestClose={onClose}>
       <View style={styles.backdrop}>
@@ -134,26 +157,23 @@ export default function TimePickerModal({
 
             <View style={styles.pickerSection}>
               <Text style={styles.pickerLabel}>{t('howLongWalk')}</Text>
-              <View style={styles.durationOptions}>
-                {['1', '2', '3', '4', '5', '6'].map((duration) => (
-                  <Pressable
-                    key={duration}
-                    style={[
-                      styles.durationOption,
-                      selectedDuration === duration && styles.durationOptionSelected,
-                    ]}
-                    onPress={() => onDurationChange(duration)}
-                  >
-                    <Text
-                      style={[
-                        styles.durationOptionText,
-                        selectedDuration === duration && styles.durationOptionTextSelected,
-                      ]}
-                    >
-                      {duration}г
-                    </Text>
-                  </Pressable>
-                ))}
+              <View style={styles.sliderContainer}>
+                <Text style={styles.durationValue}>{formatDuration(sliderValue)}</Text>
+                <Slider
+                  style={styles.slider}
+                  minimumValue={0.5}
+                  maximumValue={6}
+                  step={0.5}
+                  value={sliderValue}
+                  onValueChange={handleSliderChange}
+                  minimumTrackTintColor={ACCENT_ORANGE}
+                  maximumTrackTintColor={BORDER_COLOR}
+                  thumbTintColor={ACCENT_ORANGE}
+                />
+                <View style={styles.sliderLabels}>
+                  <Text style={styles.sliderLabel}>30{t('minutes')}</Text>
+                  <Text style={styles.sliderLabel}>6{t('hoursShort')}</Text>
+                </View>
               </View>
             </View>
           </Animated.View>
@@ -235,32 +255,31 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingVertical: 20,
   },
-  durationOptions: {
+  sliderContainer: {
+    paddingVertical: 8,
+  },
+  durationValue: {
+    fontSize: 32,
+    fontWeight: '700',
+    color: ACCENT_ORANGE,
+    textAlign: 'center',
+    marginBottom: 24,
+    fontVariant: ['tabular-nums'],
+    minWidth: 200,
+  },
+  slider: {
+    width: '100%',
+    height: 40,
+  },
+  sliderLabels: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 12,
+    justifyContent: 'space-between',
+    marginTop: 8,
   },
-  durationOption: {
-    backgroundColor: '#FFFFFF',
-    borderWidth: 2,
-    borderColor: BORDER_COLOR,
-    borderRadius: 12,
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-    minWidth: 70,
-    alignItems: 'center',
-  },
-  durationOptionSelected: {
-    backgroundColor: '#FF9500',
-    borderColor: '#FF9500',
-  },
-  durationOptionText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: TEXT_DARK,
-  },
-  durationOptionTextSelected: {
-    color: '#FFFFFF',
+  sliderLabel: {
+    fontSize: 12,
+    color: TEXT_LIGHT,
+    fontWeight: '500',
   },
   pickerFooter: {
     padding: 20,
