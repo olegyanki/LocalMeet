@@ -14,7 +14,6 @@ import {
 import * as Location from 'expo-location';
 import { Check } from 'lucide-react-native';
 import LocationPin from '@shared/components/LocationPin';
-import WebMap from '@features/search/maps/WebMap';
 import NativeMap from '@features/search/maps/NativeMap';
 import { calculateDistance } from '@shared/utils/location';
 import { useI18n } from '@shared/i18n';
@@ -126,35 +125,19 @@ export default function LocationPickerModal({
 
           {location && initialMapCenter ? (
             <View style={styles.mapWrapper}>
-              {Platform.OS === 'web' ? (
-                <WebMap
-                  latitude={initialMapCenter.latitude}
-                  longitude={initialMapCenter.longitude}
-                  markers={[]}
-                  selectedMarkerId={null}
-                  onMarkerPress={() => {}}
-                  onMapMove={onMapMove}
-                  radiusKm={15}
-                  centerLat={location.coords.latitude}
-                  centerLng={location.coords.longitude}
-                  userLatitude={location.coords.latitude}
-                  userLongitude={location.coords.longitude}
-                />
-              ) : (
-                <NativeMap
-                  latitude={initialMapCenter.latitude}
-                  longitude={initialMapCenter.longitude}
-                  markers={[]}
-                  selectedMarkerId={null}
-                  onMarkerPress={() => {}}
-                  onMapMove={onMapMove}
-                  radiusKm={15}
-                  centerLat={location.coords.latitude}
-                  centerLng={location.coords.longitude}
-                  userLatitude={location.coords.latitude}
-                  userLongitude={location.coords.longitude}
-                />
-              )}
+              <NativeMap
+                latitude={initialMapCenter.latitude}
+                longitude={initialMapCenter.longitude}
+                markers={[]}
+                selectedMarkerId={null}
+                onMarkerPress={() => {}}
+                onMapMove={onMapMove}
+                radiusKm={15}
+                centerLat={location.coords.latitude}
+                centerLng={location.coords.longitude}
+                userLatitude={location.coords.latitude}
+                userLongitude={location.coords.longitude}
+              />
               <View style={styles.centerMarker}>
                 <LocationPin size={32} />
               </View>

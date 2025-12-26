@@ -28,7 +28,6 @@ import { parseDuration, isWalkActive, getTimeColor, formatTime } from '@shared/u
 import Avatar from '@shared/components/Avatar';
 import LocationPin from '@shared/components/LocationPin';
 import FilterBottomSheet, { TimeFilter, SortBy } from '@features/search/components/FilterBottomSheet';
-import WebMap from '@features/search/maps/WebMap';
 import NativeMap from '@features/search/maps/NativeMap';
 import EventDetailsBottomSheet from '@features/events/modals/EventDetailsBottomSheet';
 import ContactRequestBottomSheet from '@features/events/modals/ContactRequestBottomSheet';
@@ -364,54 +363,30 @@ export default function SearchScreen() {
   return (
     <View style={styles.container}>
       <View style={styles.mapContainer}>
-        {Platform.OS === 'web' ? (
-          <WebMap
-            latitude={mapCenter?.latitude || location.coords.latitude}
-            longitude={mapCenter?.longitude || location.coords.longitude}
-            markers={mapMarkers}
-            selectedMarkerId={selectedMarkerId}
-            bounds={mapBounds}
-            onMarkerPress={(id) => {
-              setSelectedMarkerId(id);
-              const index = sortedWalks.findIndex((item) => item.walk?.id === id);
-              if (index !== -1 && scrollViewRef.current) {
-                isScrollingProgrammatically.current = true;
-                scrollViewRef.current.scrollTo({
-                  x: index * (cardWidth + cardGap),
-                  animated: true,
-                });
-                setTimeout(() => {
-                  isScrollingProgrammatically.current = false;
-                }, 500);
-              }
-            }}
-          />
-        ) : (
-          <NativeMap
-            latitude={mapCenter?.latitude || location.coords.latitude}
-            longitude={mapCenter?.longitude || location.coords.longitude}
-            paddingBottom={150}
-            markers={mapMarkers}
-            bounds={mapBounds}
-            selectedMarkerId={selectedMarkerId}
-            userLatitude={location.coords.latitude}
-            userLongitude={location.coords.longitude}
-            onMarkerPress={(id) => {
-              setSelectedMarkerId(id);
-              const index = sortedWalks.findIndex((item) => item.walk?.id === id);
-              if (index !== -1 && scrollViewRef.current) {
-                isScrollingProgrammatically.current = true;
-                scrollViewRef.current.scrollTo({
-                  x: index * (cardWidth + cardGap),
-                  animated: true,
-                });
-                setTimeout(() => {
-                  isScrollingProgrammatically.current = false;
-                }, 500);
-              }
-            }}
-          />
-        )}
+        <NativeMap
+          latitude={mapCenter?.latitude || location.coords.latitude}
+          longitude={mapCenter?.longitude || location.coords.longitude}
+          paddingBottom={150}
+          markers={mapMarkers}
+          bounds={mapBounds}
+          selectedMarkerId={selectedMarkerId}
+          userLatitude={location.coords.latitude}
+          userLongitude={location.coords.longitude}
+          onMarkerPress={(id) => {
+            setSelectedMarkerId(id);
+            const index = sortedWalks.findIndex((item) => item.walk?.id === id);
+            if (index !== -1 && scrollViewRef.current) {
+              isScrollingProgrammatically.current = true;
+              scrollViewRef.current.scrollTo({
+                x: index * (cardWidth + cardGap),
+                animated: true,
+              });
+              setTimeout(() => {
+                isScrollingProgrammatically.current = false;
+              }, 500);
+            }
+          }}
+        />
       </View>
 
       <View style={[styles.mapButtons, { top: insets.top + 16 }]}>
