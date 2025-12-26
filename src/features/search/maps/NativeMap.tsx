@@ -8,11 +8,9 @@ interface Marker {
   id: string;
   latitude: number;
   longitude: number;
-  title: string;
   type: 'user' | 'event';
   isActive?: boolean;
   isOwner?: boolean;
-  avatarUrl?: string | null;
 }
 
 interface NativeMapProps {
@@ -265,27 +263,6 @@ export default function NativeMap({
                 animate: true,
                 duration: 0.5
               });
-            } else if (selectedId && selectedId !== 'null') {
-              const selectedMarker = markers.find(m => m.id === selectedId);
-              if (selectedMarker) {
-                const paddingBottom = ${paddingBottom || 0};
-                
-                if (paddingBottom) {
-                  const point = map.project([selectedMarker.latitude, selectedMarker.longitude], DEFAULT_ZOOM);
-                  point.y += paddingBottom;
-                  const newCenter = map.unproject(point, DEFAULT_ZOOM);
-                  
-                  map.setView(newCenter, DEFAULT_ZOOM, {
-                    animate: true,
-                    duration: 0.5
-                  });
-                } else {
-                  map.setView([selectedMarker.latitude, selectedMarker.longitude], DEFAULT_ZOOM, {
-                    animate: true,
-                    duration: 0.5
-                  });
-                }
-              }
             }
           }
 

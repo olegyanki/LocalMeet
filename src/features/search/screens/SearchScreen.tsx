@@ -307,11 +307,9 @@ export default function SearchScreen() {
       id: w.walk!.id,
       latitude: w.walk!.latitude,
       longitude: w.walk!.longitude,
-      title: w.display_name,
       type: 'event' as const,
       isActive: isWalkActive(w.walk?.start_time || null),
       isOwner: w.id === user?.id,
-      avatarUrl: w.avatar_url,
     }));
 
   if (isLoadingLocation) {
