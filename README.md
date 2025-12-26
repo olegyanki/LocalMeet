@@ -46,9 +46,9 @@ LocalMeet допомагає людям знаходити цікавих люд
   - Storage для фото/аудіо
 
 ### Карти
-- **React Native Maps** (мобільні платформи)
-- **Leaflet + React Leaflet** (web)
-- Власні компоненти NativeMap/WebMap
+- **Leaflet** (через WebView для всіх платформ)
+- **Mapbox** - custom style для карт
+- Власний компонент NativeMap
 
 ### Додаткові бібліотеки
 - **expo-location** - геолокація
@@ -82,8 +82,7 @@ LocalMeet/
 │   │   │   ├── screens/
 │   │   │   │   └── SearchScreen.tsx
 │   │   │   ├── maps/
-│   │   │   │   ├── NativeMap.tsx    # React Native Maps
-│   │   │   │   └── WebMap.tsx       # Leaflet
+│   │   │   │   └── NativeMap.tsx    # Leaflet через WebView
 │   │   │   └── components/
 │   │   │       └── FilterBottomSheet.tsx  # Фільтри та сортування
 │   │   │
@@ -351,7 +350,7 @@ import { useAuth } from '@shared/contexts';
 import { supabase } from '@shared/lib';
 import { COLORS, SIZES } from '@shared/constants';
 import { useI18n } from '@shared/i18n';
-import WebMap from '@features/search/maps/WebMap';
+import NativeMap from '@features/search/maps/NativeMap';
 import EventDetailsBottomSheet from '@features/events/modals/EventDetailsBottomSheet';
 ```
 
@@ -471,7 +470,7 @@ function MyComponent() {
 - Карта не рухається автоматично при свайпі карточок (за дизайном)
 - Клавіатура автоматично підіймає контент (KeyboardAvoidingView)
 - Real-time оновлення тільки для чатів (не для карти)
-- Web версія використовує Leaflet замість React Native Maps
+- Всі платформи використовують Leaflet через WebView з Mapbox стилем
 
 ## 📝 TODO / Майбутні покращення
 
