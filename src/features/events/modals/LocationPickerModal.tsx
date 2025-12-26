@@ -22,6 +22,7 @@ const ACCENT_ORANGE = '#FF9500';
 const TEXT_LIGHT = '#999999';
 const BORDER_COLOR = '#E8E8E8';
 const SUCCESS_GREEN = '#4CAF50';
+const RADIUS_FOR_CREATING_EVENT_KM = 15;
 
 interface LocationPickerModalProps {
   visible: boolean;
@@ -94,13 +95,13 @@ export default function LocationPickerModal({
   }, [visible]);
 
   const isLocationValid =
-    tempLocation && location
+    tempLocation && userLocation
       ? calculateDistance(
-          location.coords.latitude,
-          location.coords.longitude,
+          userLocation.coords.latitude,
+          userLocation.coords.longitude,
           tempLocation.latitude,
           tempLocation.longitude
-        ) <= 15
+        ) <= RADIUS_FOR_CREATING_EVENT_KM
       : true;
 
   return (
@@ -132,7 +133,7 @@ export default function LocationPickerModal({
                 selectedMarkerId={null}
                 onMarkerPress={() => {}}
                 onMapMove={onMapMove}
-                radiusKm={15}
+                radiusKm={MAX_DISTANCE_KM}
                 centerLat={location.coords.latitude}
                 centerLng={location.coords.longitude}
                 userLatitude={location.coords.latitude}
