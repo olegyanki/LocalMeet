@@ -22,13 +22,7 @@ import { signOut } from '@shared/lib/auth';
 import { LogOut, Instagram, Send, Plus, X, ChevronDown } from 'lucide-react-native';
 import AvatarPicker from '@shared/components/AvatarPicker';
 import InterestPicker from '@shared/components/InterestPicker';
-
-const BG_COLOR = '#F5F5F5';
-const ACCENT_ORANGE = '#FF9500';
-const TEXT_DARK = '#333333';
-const TEXT_LIGHT = '#999999';
-const INPUT_BG = '#FFFFFF';
-const BORDER_COLOR = '#E8E8E8';
+import { COLORS } from '@shared/constants';
 
 const AGE_OPTIONS = Array.from({ length: 63 }, (_, i) => (i + 18).toString());
 const GENDER_OPTIONS = [
@@ -154,7 +148,7 @@ export default function ProfileScreen() {
   if (isProfileLoading && !contextProfile) {
     return (
       <View style={[styles.container, styles.centerContainer]}>
-        <ActivityIndicator size="large" color={ACCENT_ORANGE} />
+        <ActivityIndicator size="large" color={COLORS.ACCENT_ORANGE} />
       </View>
     );
   }
@@ -248,7 +242,7 @@ export default function ProfileScreen() {
               <Text style={[styles.pickerText, !age && styles.placeholderText]}>
                 {age || t('selectAge')}
               </Text>
-              {isEditing && <ChevronDown size={16} color={TEXT_LIGHT} />}
+              {isEditing && <ChevronDown size={16} color={COLORS.TEXT_LIGHT} />}
             </TouchableOpacity>
           </View>
 
@@ -262,7 +256,7 @@ export default function ProfileScreen() {
               <Text style={[styles.pickerText, !gender && styles.placeholderText]}>
                 {gender ? t(gender as any) : t('selectGender')}
               </Text>
-              {isEditing && <ChevronDown size={16} color={TEXT_LIGHT} />}
+              {isEditing && <ChevronDown size={16} color={COLORS.TEXT_LIGHT} />}
             </TouchableOpacity>
           </View>
         </View>
@@ -277,7 +271,7 @@ export default function ProfileScreen() {
               <Text style={styles.chipText}>{t(lang as any)}</Text>
               {isEditing && (
                 <TouchableOpacity onPress={() => toggleLanguage(lang)}>
-                  <X size={14} color="#FFFFFF" />
+                  <X size={14} color={COLORS.CARD_BG} />
                 </TouchableOpacity>
               )}
             </View>
@@ -287,7 +281,7 @@ export default function ProfileScreen() {
               style={styles.addChip}
               onPress={() => setShowLanguagePicker(true)}
             >
-              <Plus size={16} color={ACCENT_ORANGE} />
+              <Plus size={16} color={COLORS.ACCENT_ORANGE} />
               <Text style={styles.addChipText}>{t('addLanguage')}</Text>
             </TouchableOpacity>
           )}
@@ -325,7 +319,7 @@ export default function ProfileScreen() {
               <Text style={styles.socialChipText}>{instagram}</Text>
               {isEditing && (
                 <TouchableOpacity onPress={() => setInstagram('')}>
-                  <X size={14} color={TEXT_DARK} />
+                  <X size={14} color={COLORS.TEXT_DARK} />
                 </TouchableOpacity>
               )}
             </View>
@@ -336,7 +330,7 @@ export default function ProfileScreen() {
               <Text style={styles.socialChipText}>{telegram}</Text>
               {isEditing && (
                 <TouchableOpacity onPress={() => setTelegram('')}>
-                  <X size={14} color={TEXT_DARK} />
+                  <X size={14} color={COLORS.TEXT_DARK} />
                 </TouchableOpacity>
               )}
             </View>
@@ -369,7 +363,7 @@ export default function ProfileScreen() {
           disabled={isSaving}
         >
           {isSaving ? (
-            <ActivityIndicator color="#FFFFFF" />
+            <ActivityIndicator color={COLORS.CARD_BG} />
           ) : (
             <Text style={styles.saveButtonText}>{t('saveChanges')}</Text>
           )}
@@ -387,7 +381,7 @@ export default function ProfileScreen() {
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>{t('selectAge')}</Text>
               <TouchableOpacity onPress={() => setShowAgePicker(false)}>
-                <X size={24} color={TEXT_DARK} />
+                <X size={24} color={COLORS.TEXT_DARK} />
               </TouchableOpacity>
             </View>
             <ScrollView style={styles.modalScroll}>
@@ -418,7 +412,7 @@ export default function ProfileScreen() {
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>{t('selectGender')}</Text>
               <TouchableOpacity onPress={() => setShowGenderPicker(false)}>
-                <X size={24} color={TEXT_DARK} />
+                <X size={24} color={COLORS.TEXT_DARK} />
               </TouchableOpacity>
             </View>
             <ScrollView style={styles.modalScroll}>
@@ -449,7 +443,7 @@ export default function ProfileScreen() {
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>{t('selectLanguages')}</Text>
               <TouchableOpacity onPress={() => setShowLanguagePicker(false)}>
-                <X size={24} color={TEXT_DARK} />
+                <X size={24} color={COLORS.TEXT_DARK} />
               </TouchableOpacity>
             </View>
             <ScrollView style={styles.modalScroll}>
@@ -489,7 +483,7 @@ export default function ProfileScreen() {
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>Instagram</Text>
               <TouchableOpacity onPress={() => setShowInstagramInput(false)}>
-                <X size={24} color={TEXT_DARK} />
+                <X size={24} color={COLORS.TEXT_DARK} />
               </TouchableOpacity>
             </View>
             <View style={styles.modalBody}>
@@ -518,7 +512,7 @@ export default function ProfileScreen() {
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>Telegram</Text>
               <TouchableOpacity onPress={() => setShowTelegramInput(false)}>
-                <X size={24} color={TEXT_DARK} />
+                <X size={24} color={COLORS.TEXT_DARK} />
               </TouchableOpacity>
             </View>
             <View style={styles.modalBody}>
@@ -548,16 +542,16 @@ export default function ProfileScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: BG_COLOR,
+    backgroundColor: '#F2F2F7',
   },
   content: {
-    padding: 24,
+    padding: 20,
   },
   centerContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: BG_COLOR,
+    backgroundColor: '#F2F2F7',
   },
   header: {
     flexDirection: 'row',
@@ -568,11 +562,11 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 32,
     fontWeight: '700',
-    color: TEXT_DARK,
+    color: COLORS.TEXT_DARK,
   },
   editButton: {
     fontSize: 15,
-    color: ACCENT_ORANGE,
+    color: COLORS.ACCENT_ORANGE,
     fontWeight: '600',
   },
   errorText: {
@@ -585,34 +579,45 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   section: {
-    marginBottom: 32,
+    backgroundColor: COLORS.CARD_BG,
+    borderRadius: 20,
+    padding: 20,
+    marginBottom: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 12,
+    elevation: 2,
   },
   sectionTitle: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: TEXT_DARK,
+    fontSize: 14,
+    fontWeight: '600',
+    color: COLORS.TEXT_DARK,
     marginBottom: 16,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
   },
   label: {
     fontSize: 14,
     fontWeight: '600',
-    color: TEXT_DARK,
-    marginBottom: 8,
+    color: COLORS.TEXT_DARK,
+    marginBottom: 10,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
   },
   hint: {
     fontSize: 12,
-    color: TEXT_LIGHT,
+    color: COLORS.TEXT_LIGHT,
     marginTop: 2,
   },
   input: {
-    backgroundColor: INPUT_BG,
-    borderWidth: 1,
-    borderColor: BORDER_COLOR,
+    backgroundColor: '#F2F2F7',
+    borderWidth: 0,
     borderRadius: 12,
     paddingHorizontal: 16,
-    paddingVertical: 12,
-    fontSize: 14,
-    color: TEXT_DARK,
+    paddingVertical: 14,
+    fontSize: 16,
+    color: COLORS.TEXT_DARK,
     marginBottom: 16,
   },
   textArea: {
@@ -630,17 +635,17 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: INPUT_BG,
-    borderWidth: 1,
-    borderColor: BORDER_COLOR,
+    backgroundColor: '#F2F2F7',
+    borderWidth: 0,
     borderRadius: 12,
     paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingVertical: 14,
     marginBottom: 16,
   },
   pickerText: {
-    fontSize: 14,
-    color: TEXT_DARK,
+    fontSize: 16,
+    color: COLORS.TEXT_DARK,
+    fontWeight: '500',
   },
   placeholderText: {
     color: '#AAAAAA',
@@ -649,12 +654,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: INPUT_BG,
-    borderWidth: 1,
-    borderColor: BORDER_COLOR,
+    backgroundColor: '#F2F2F7',
+    borderWidth: 0,
     borderRadius: 12,
     paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingVertical: 14,
     marginBottom: 16,
   },
   chipsContainer: {
@@ -666,14 +670,14 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    backgroundColor: ACCENT_ORANGE,
+    backgroundColor: COLORS.ACCENT_ORANGE,
     paddingHorizontal: 12,
     paddingVertical: 8,
     borderRadius: 20,
   },
   chipText: {
     fontSize: 13,
-    color: '#FFFFFF',
+    color: COLORS.CARD_BG,
     fontWeight: '500',
   },
   addChip: {
@@ -685,64 +689,64 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: ACCENT_ORANGE,
+    borderColor: COLORS.ACCENT_ORANGE,
     borderStyle: 'dashed',
   },
   addChipText: {
     fontSize: 13,
-    color: ACCENT_ORANGE,
+    color: COLORS.ACCENT_ORANGE,
     fontWeight: '500',
   },
   socialChip: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    backgroundColor: INPUT_BG,
+    backgroundColor: COLORS.INPUT_BG,
     paddingHorizontal: 12,
     paddingVertical: 8,
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: BORDER_COLOR,
+    borderColor: COLORS.BORDER_COLOR,
   },
   socialChipText: {
     fontSize: 13,
-    color: TEXT_DARK,
+    color: COLORS.TEXT_DARK,
     fontWeight: '500',
   },
   addSocialChip: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    backgroundColor: INPUT_BG,
+    backgroundColor: COLORS.INPUT_BG,
     paddingHorizontal: 12,
     paddingVertical: 8,
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: BORDER_COLOR,
+    borderColor: COLORS.BORDER_COLOR,
     borderStyle: 'dashed',
   },
   addSocialChipText: {
     fontSize: 13,
-    color: TEXT_LIGHT,
+    color: COLORS.TEXT_LIGHT,
     fontWeight: '500',
   },
   saveButton: {
-    backgroundColor: ACCENT_ORANGE,
-    paddingVertical: 16,
+    backgroundColor: COLORS.ACCENT_ORANGE,
+    paddingVertical: 18,
     borderRadius: 16,
     alignItems: 'center',
     marginBottom: 16,
-    shadowColor: ACCENT_ORANGE,
+    shadowColor: COLORS.ACCENT_ORANGE,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
-    shadowRadius: 8,
+    shadowRadius: 12,
     elevation: 4,
   },
   buttonDisabled: {
     opacity: 0.6,
   },
   saveButtonText: {
-    color: '#FFFFFF',
+    color: COLORS.CARD_BG,
     fontSize: 17,
     fontWeight: '600',
   },
@@ -753,9 +757,9 @@ const styles = StyleSheet.create({
     gap: 10,
     paddingVertical: 18,
     borderRadius: 20,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: COLORS.CARD_BG,
     borderWidth: 1,
-    borderColor: '#E8E8E8',
+    borderColor: COLORS.BORDER_COLOR,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.05,
@@ -774,10 +778,15 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   modalContent: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: COLORS.CARD_BG,
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     maxHeight: '70%',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 12,
+    elevation: 2,
   },
   modalHeader: {
     flexDirection: 'row',
@@ -786,12 +795,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 16,
     borderBottomWidth: 1,
-    borderBottomColor: BORDER_COLOR,
+    borderBottomColor: COLORS.BORDER_COLOR,
   },
   modalTitle: {
     fontSize: 20,
     fontWeight: '700',
-    color: TEXT_DARK,
+    color: COLORS.TEXT_DARK,
   },
   modalScroll: {
     padding: 20,
@@ -804,23 +813,23 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     borderRadius: 12,
     marginBottom: 8,
-    backgroundColor: INPUT_BG,
+    backgroundColor: '#F2F2F7',
   },
   optionSelected: {
     backgroundColor: '#FFF3E0',
   },
   optionText: {
     fontSize: 15,
-    color: TEXT_DARK,
+    color: COLORS.TEXT_DARK,
   },
   optionTextSelected: {
-    color: ACCENT_ORANGE,
+    color: COLORS.ACCENT_ORANGE,
     fontWeight: '600',
   },
   doneButton: {
     margin: 20,
     marginTop: 0,
-    backgroundColor: ACCENT_ORANGE,
+    backgroundColor: COLORS.ACCENT_ORANGE,
     paddingVertical: 16,
     borderRadius: 16,
     alignItems: 'center',
@@ -828,7 +837,7 @@ const styles = StyleSheet.create({
   doneButtonText: {
     fontSize: 17,
     fontWeight: '600',
-    color: '#FFFFFF',
+    color: COLORS.CARD_BG,
   },
   languageSwitcher: {
     flexDirection: 'row',
@@ -838,11 +847,11 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingVertical: 14,
     borderRadius: 16,
-    backgroundColor: '#F8F8F8',
+    backgroundColor: COLORS.BG_SECONDARY,
     alignItems: 'center',
   },
   langButtonActive: {
-    backgroundColor: ACCENT_ORANGE,
+    backgroundColor: COLORS.ACCENT_ORANGE,
   },
   langButtonText: {
     fontSize: 15,
@@ -850,6 +859,6 @@ const styles = StyleSheet.create({
     color: '#666666',
   },
   langButtonTextActive: {
-    color: '#FFFFFF',
+    color: COLORS.CARD_BG,
   },
 });
