@@ -19,16 +19,10 @@ import { ChevronLeft, MoreVertical, Mic, Image as ImageIcon, Trash2 } from 'luci
 import { supabase } from '@shared/lib/supabase';
 import { useAuth } from '@shared/contexts/AuthContext';
 import { useI18n } from '@shared/i18n';
+import { COLORS } from '@shared/constants';
 import AudioRecorder from '@shared/components/AudioRecorder';
 import AudioPlayer from '@shared/components/AudioPlayer';
 import EventDetailsBottomSheet from '@features/events/modals/EventDetailsBottomSheet';
-
-const BACKGROUND = '#FFFFFF';
-const TEXT_DARK = '#1C1C1E';
-const TEXT_LIGHT = '#999999';
-const MESSAGE_INCOMING = '#F0F0F0';
-const MESSAGE_OUTGOING = '#FFE066';
-const ACCENT_ORANGE = '#FF9500';
 
 interface Message {
   id: string;
@@ -566,7 +560,7 @@ export default function ChatScreen() {
               onPress={() => router.back()}
               style={styles.backButton}
             >
-              <ChevronLeft size={28} color={TEXT_DARK} />
+              <ChevronLeft size={28} color={COLORS.TEXT_DARK} />
             </TouchableOpacity>
 
             {preloadedUserAvatar ? (
@@ -590,7 +584,7 @@ export default function ChatScreen() {
               <Text style={styles.headerName}>{preloadedUserName}</Text>
             ) : (
               <View style={{ flex: 1, marginLeft: 12 }}>
-                <ActivityIndicator size="small" color={ACCENT_ORANGE} />
+                <ActivityIndicator size="small" color={COLORS.ACCENT_ORANGE} />
               </View>
             )}
           </View>
@@ -616,7 +610,7 @@ export default function ChatScreen() {
             onPress={() => router.back()}
             style={styles.backButton}
           >
-            <ChevronLeft size={28} color={TEXT_DARK} />
+            <ChevronLeft size={28} color={COLORS.TEXT_DARK} />
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -653,7 +647,7 @@ export default function ChatScreen() {
             style={styles.iconButton}
             onPress={() => setShowOptionsMenu(true)}
           >
-            <MoreVertical size={24} color={TEXT_DARK} />
+            <MoreVertical size={24} color={COLORS.TEXT_DARK} />
           </TouchableOpacity>
         </View>
       </View>
@@ -692,16 +686,17 @@ export default function ChatScreen() {
               disabled={uploading}
             >
               {uploading ? (
-                <ActivityIndicator size="small" color={ACCENT_ORANGE} />
+                <ActivityIndicator size="small" color={COLORS.ACCENT_ORANGE} />
               ) : (
-                <ImageIcon size={24} color={TEXT_LIGHT} />
+                <ImageIcon size={24} color={COLORS.TEXT_LIGHT} />
               )}
             </TouchableOpacity>
 
             <View style={styles.inputWrapper}>
               <TextInput
                 style={styles.input}
-                placeholder="Aa"
+                placeholder="Message..."
+                placeholderTextColor={COLORS.TEXT_LIGHT}
                 value={newMessage}
                 onChangeText={setNewMessage}
                 multiline
@@ -724,7 +719,7 @@ export default function ChatScreen() {
                 onPress={() => setIsRecording(true)}
                 disabled={uploading}
               >
-                <Mic size={24} color={TEXT_LIGHT} />
+                <Mic size={24} color={COLORS.TEXT_LIGHT} />
               </TouchableOpacity>
             )}
           </>
@@ -851,17 +846,20 @@ export default function ChatScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: BACKGROUND,
+    backgroundColor: COLORS.BG_SECONDARY,
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 16,
-    paddingBottom: 8,
-    borderBottomWidth: 1,
-    borderBottomColor: '#E5E5EA',
-    backgroundColor: BACKGROUND,
+    paddingBottom: 12,
+    backgroundColor: COLORS.CARD_BG,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 4,
+    elevation: 2,
   },
   headerLeft: {
     flexDirection: 'row',
@@ -883,7 +881,7 @@ const styles = StyleSheet.create({
     marginRight: 12,
   },
   avatarPlaceholder: {
-    backgroundColor: ACCENT_ORANGE,
+    backgroundColor: COLORS.ACCENT_ORANGE,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -895,7 +893,7 @@ const styles = StyleSheet.create({
   headerName: {
     fontSize: 18,
     fontWeight: '600',
-    color: TEXT_DARK,
+    color: COLORS.TEXT_DARK,
   },
   headerRight: {
     flexDirection: 'row',
@@ -929,6 +927,7 @@ const styles = StyleSheet.create({
   messagesList: {
     paddingHorizontal: 16,
     paddingVertical: 16,
+    backgroundColor: COLORS.BG_SECONDARY,
   },
   dateContainer: {
     alignItems: 'center',
@@ -936,7 +935,7 @@ const styles = StyleSheet.create({
   },
   dateText: {
     fontSize: 13,
-    color: TEXT_LIGHT,
+    color: COLORS.TEXT_LIGHT,
     fontWeight: '500',
   },
   messageContainer: {
@@ -952,8 +951,7 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
   },
   messageBubble: {
-    paddingHorizontal: 16,
-    paddingVertical: 10,
+    padding: 12,
     borderRadius: 20,
     overflow: 'hidden',
   },
@@ -962,27 +960,33 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
   },
   ownBubble: {
-    backgroundColor: MESSAGE_OUTGOING,
+    backgroundColor: COLORS.ACCENT_ORANGE,
     borderBottomRightRadius: 4,
   },
   otherBubble: {
-    backgroundColor: MESSAGE_INCOMING,
+    backgroundColor: COLORS.CARD_BG,
     borderBottomLeftRadius: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.06,
+    shadowRadius: 2,
+    elevation: 1,
   },
   messageText: {
     fontSize: 16,
-    color: TEXT_DARK,
+    color: COLORS.TEXT_DARK,
     lineHeight: 22,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
   },
   messageImage: {
     width: 200,
     height: 200,
     borderRadius: 12,
-    marginBottom: 8,
   },
   messageStatus: {
     fontSize: 12,
-    color: TEXT_LIGHT,
+    color: COLORS.TEXT_LIGHT,
     marginTop: 4,
     marginRight: 4,
   },
@@ -990,36 +994,42 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'flex-end',
     paddingHorizontal: 16,
-    paddingTop: 8,
+    paddingTop: 12,
     paddingBottom: 8,
-    borderTopWidth: 1,
-    borderTopColor: '#E5E5EA',
-    backgroundColor: BACKGROUND,
+    backgroundColor: COLORS.CARD_BG,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: -2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 4,
+    elevation: 2,
   },
   inputWrapper: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#F0F0F0',
+    backgroundColor: COLORS.INPUT_BG,
     borderRadius: 20,
     paddingHorizontal: 12,
     marginHorizontal: 8,
     minHeight: 40,
     maxHeight: 100,
+    borderWidth: 1,
+    borderColor: COLORS.BORDER_COLOR,
   },
   input: {
     flex: 1,
     fontSize: 16,
-    color: TEXT_DARK,
+    color: COLORS.TEXT_DARK,
     paddingVertical: 8,
   },
   inputIconButton: {
     padding: 4,
+    alignSelf: 'center',
   },
   sendButton: {
     paddingHorizontal: 16,
     paddingVertical: 10,
-    backgroundColor: ACCENT_ORANGE,
+    backgroundColor: COLORS.ACCENT_ORANGE,
     borderRadius: 20,
   },
   sendButtonText: {
@@ -1035,7 +1045,7 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   modalContent: {
-    backgroundColor: BACKGROUND,
+    backgroundColor: COLORS.CARD_BG,
     borderRadius: 16,
     padding: 24,
     width: '100%',
@@ -1048,13 +1058,13 @@ const styles = StyleSheet.create({
   modalTitle: {
     fontSize: 20,
     fontWeight: '600',
-    color: TEXT_DARK,
+    color: COLORS.TEXT_DARK,
     marginBottom: 12,
     textAlign: 'center',
   },
   modalMessage: {
     fontSize: 16,
-    color: TEXT_LIGHT,
+    color: COLORS.TEXT_LIGHT,
     marginBottom: 24,
     textAlign: 'center',
   },
@@ -1070,7 +1080,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   modalButtonCancel: {
-    backgroundColor: '#F0F0F0',
+    backgroundColor: COLORS.INPUT_BG,
   },
   modalButtonDelete: {
     backgroundColor: '#FF3B30',
@@ -1078,7 +1088,7 @@ const styles = StyleSheet.create({
   modalButtonTextCancel: {
     fontSize: 16,
     fontWeight: '600',
-    color: TEXT_DARK,
+    color: COLORS.TEXT_DARK,
   },
   modalButtonTextDelete: {
     fontSize: 16,
@@ -1086,7 +1096,7 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
   },
   optionsMenu: {
-    backgroundColor: BACKGROUND,
+    backgroundColor: COLORS.CARD_BG,
     borderRadius: 12,
     marginHorizontal: 20,
     marginTop: 'auto',
@@ -1106,7 +1116,7 @@ const styles = StyleSheet.create({
   optionButtonText: {
     fontSize: 16,
     fontWeight: '500',
-    color: TEXT_DARK,
+    color: COLORS.TEXT_DARK,
   },
   optionButtonTextDelete: {
     color: '#FF3B30',
