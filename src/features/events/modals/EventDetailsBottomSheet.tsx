@@ -13,15 +13,12 @@ import {
   PanResponder,
 } from 'react-native';
 import { BlurView } from 'expo-blur';
-import { Clock, MapPin, MessageCircle, X, Trash2, Clock as ClockIcon, Check } from 'lucide-react-native';
+import { Clock, MapPin, X, Trash2 } from 'lucide-react-native';
 import { deleteWalk, getMyRequestForWalk, WalkRequest } from '@shared/lib/api';
 import { useAuth } from '@shared/contexts/AuthContext';
 import { useI18n } from '@shared/i18n';
+import { COLORS } from '@shared/constants';
 import { router } from 'expo-router';
-
-const ACCENT_ORANGE = '#FF9500';
-const TEXT_DARK = '#333333';
-const TEXT_LIGHT = '#999999';
 
 interface UserLocation {
   id: string;
@@ -191,15 +188,15 @@ export default function EventDetailsBottomSheet({
   };
 
   const getTimeColor = (walkStartTime: string | null) => {
-    if (!walkStartTime) return TEXT_LIGHT;
+    if (!walkStartTime) return COLORS.TEXT_LIGHT;
 
     const now = new Date();
     const startTime = new Date(walkStartTime);
     const diffMs = startTime.getTime() - now.getTime();
     const diffMins = Math.floor(diffMs / 60000);
 
-    if (diffMins < 0) return '#8FD89C';
-    if (diffMins <= 15) return ACCENT_ORANGE;
+    if (diffMins < 0) return COLORS.SUCCESS_GREEN;
+    if (diffMins <= 15) return COLORS.ACCENT_ORANGE;
     return '#12B7DB';
   };
 
@@ -214,7 +211,7 @@ export default function EventDetailsBottomSheet({
       return {
         text: t('loading'),
         icon: null,
-        color: '#CCCCCC',
+        color: COLORS.BORDER_COLOR,
         disabled: true,
       };
     }
@@ -223,7 +220,7 @@ export default function EventDetailsBottomSheet({
       return {
         text: t('connecting'),
         icon: null,
-        color: ACCENT_ORANGE,
+        color: COLORS.ACCENT_ORANGE,
         disabled: false,
       };
     }
@@ -234,21 +231,21 @@ export default function EventDetailsBottomSheet({
         return {
           text: t('requestSentStatus'),
           icon: null,
-          color: '#999999',
+          color: COLORS.TEXT_LIGHT,
           disabled: true,
         };
       case 'accepted':
         return {
           text: t('requestAccepted'),
           icon: null,
-          color: '#8FD89C',
+          color: COLORS.SUCCESS_GREEN,
           disabled: true,
         };
       default:
         return {
           text: t('connecting'),
           icon: null,
-          color: ACCENT_ORANGE,
+          color: COLORS.ACCENT_ORANGE,
           disabled: false,
         };
     }
@@ -303,10 +300,6 @@ export default function EventDetailsBottomSheet({
             <View style={styles.handle} />
           </View>
 
-          <TouchableOpacity style={styles.closeButton} onPress={handleClose}>
-            <X size={24} color={TEXT_DARK} />
-          </TouchableOpacity>
-
           <TouchableOpacity
             style={styles.header}
             onPress={() => {
@@ -332,7 +325,7 @@ export default function EventDetailsBottomSheet({
               <Text style={styles.name}>{user.display_name}</Text>
               {!isOwnEvent && (
                 <View style={styles.distanceContainer}>
-                  <MapPin size={16} color={TEXT_LIGHT} />
+                  <MapPin size={16} color={COLORS.TEXT_LIGHT} />
                   <Text style={styles.distanceText}>{user.distance.toFixed(1)} {t('kmFromYou')}</Text>
                 </View>
               )}
@@ -340,28 +333,30 @@ export default function EventDetailsBottomSheet({
           </TouchableOpacity>
 
           {user.walk?.title && (
-            <View style={styles.section}>
-              <Text style={styles.sectionTitle}>{t('eventTitleLabel')}</Text>
-              <Text style={styles.eventTitle}>{user.walk.title}</Text>
-            </View>
-          )}
-
-          {user.walk?.description && (
-            <View style={styles.section}>
-              <Text style={styles.sectionTitle}>{t('walkDescription')}</Text>
-              <Text style={styles.description}>{user.walk.description}</Text>
-            </View>
-          )}
-
-          {user.walk?.start_time && (
-            <View style={styles.section}>
-              <Text style={styles.sectionTitle}>{t('startTimeLabel')}</Text>
-              <View style={styles.timeContainer}>
-                <Clock size={20} color={getTimeColor(user.walk.start_time)} />
-                <Text style={[styles.timeText, { color: getTimeColor(user.walk.start_time) }]}>
-                  {getTimeText(user.walk.start_time)}
-                </Text>
+            <View style={styles.infoCard}>
+              <View>
+                <Text style={styles.label}>{t('eventTitleLabel')}</Text>
+                <Text style={styles.eventTitle}>{user.walk.title}</Text>
               </View>
+              
+              {user.walk?.description && (
+                <View>
+                  <Text style={styles.label}>{t('walkDescription')}</Text>
+                  <Text style={styles.description}>{user.walk.description}</Text>
+                </View>
+              )}
+              
+              {user.walk?.start_time && (
+                <View style={styles.timeSection}>
+                  <Text style={styles.label}>{t('startTimeLabel')}</Text>
+                  <View style={styles.timeContainer}>
+                    <Clock size={18} color={getTimeColor(user.walk.start_time)} />
+                    <Text style={[styles.timeText, { color: getTimeColor(user.walk.start_time) }]}>
+                      {getTimeText(user.walk.start_time)}
+                    </Text>
+                  </View>
+                </View>
+              )}
             </View>
           )}
 
@@ -417,10 +412,10 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
   bottomSheet: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: COLORS.BG_SECONDARY,
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
-    paddingHorizontal: 24,
+    paddingHorizontal: 20,
     paddingBottom: 40,
     maxHeight: '85%',
   },
@@ -432,68 +427,64 @@ const styles = StyleSheet.create({
   handle: {
     width: 40,
     height: 4,
-    backgroundColor: '#E8E8E8',
+    backgroundColor: COLORS.BORDER_COLOR,
     borderRadius: 2,
-  },
-  closeButton: {
-    position: 'absolute',
-    top: 20,
-    right: 20,
-    zIndex: 1,
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: '#F5F5F5',
-    justifyContent: 'center',
-    alignItems: 'center',
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 24,
+    marginBottom: 20,
     gap: 16,
+    backgroundColor: COLORS.CARD_BG,
+    padding: 16,
+    borderRadius: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 4,
+    elevation: 2,
   },
   avatarSection: {
     position: 'relative',
   },
   avatar: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    backgroundColor: '#E8E8E8',
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    backgroundColor: COLORS.BORDER_COLOR,
   },
   avatarPlaceholder: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    backgroundColor: ACCENT_ORANGE,
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    backgroundColor: COLORS.ACCENT_ORANGE,
     justifyContent: 'center',
     alignItems: 'center',
   },
   avatarText: {
-    fontSize: 32,
+    fontSize: 24,
     fontWeight: '700',
     color: '#FFFFFF',
   },
   activeIndicator: {
     position: 'absolute',
-    bottom: 2,
-    right: 2,
-    width: 20,
-    height: 20,
-    borderRadius: 10,
-    backgroundColor: '#8FD89C',
+    bottom: 0,
+    right: 0,
+    width: 16,
+    height: 16,
+    borderRadius: 8,
+    backgroundColor: COLORS.SUCCESS_GREEN,
     borderWidth: 3,
-    borderColor: '#FFFFFF',
+    borderColor: COLORS.CARD_BG,
   },
   headerInfo: {
     flex: 1,
-    gap: 8,
+    gap: 4,
   },
   name: {
-    fontSize: 24,
+    fontSize: 20,
     fontWeight: '700',
-    color: TEXT_DARK,
+    color: COLORS.TEXT_DARK,
   },
   distanceContainer: {
     flexDirection: 'row',
@@ -502,27 +493,56 @@ const styles = StyleSheet.create({
   },
   distanceText: {
     fontSize: 14,
-    color: TEXT_LIGHT,
+    color: COLORS.TEXT_LIGHT,
   },
   section: {
-    marginBottom: 24,
+    marginBottom: 20,
   },
   sectionTitle: {
-    fontSize: 16,
+    fontSize: 12,
     fontWeight: '600',
-    color: TEXT_DARK,
+    color: COLORS.TEXT_LIGHT,
+    marginBottom: 8,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    paddingHorizontal: 4,
+  },
+  infoCard: {
+    backgroundColor: COLORS.CARD_BG,
+    borderRadius: 20,
+    padding: 20,
     marginBottom: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 4,
+    elevation: 2,
+    gap: 16,
+  },
+  label: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: COLORS.TEXT_LIGHT,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    marginBottom: 6,
   },
   eventTitle: {
-    fontSize: 18,
+    fontSize: 22,
     fontWeight: '700',
-    lineHeight: 24,
-    color: TEXT_DARK,
+    lineHeight: 28,
+    color: COLORS.TEXT_DARK,
   },
   description: {
-    fontSize: 15,
-    lineHeight: 22,
-    color: TEXT_DARK,
+    fontSize: 16,
+    lineHeight: 24,
+    color: COLORS.TEXT_DARK,
+    opacity: 0.8,
+  },
+  timeSection: {
+    paddingTop: 16,
+    borderTopWidth: 1,
+    borderTopColor: COLORS.BORDER_COLOR,
   },
   timeContainer: {
     flexDirection: 'row',
@@ -531,19 +551,24 @@ const styles = StyleSheet.create({
   },
   timeText: {
     fontSize: 15,
-    fontWeight: '500',
+    fontWeight: '600',
   },
   connectButton: {
-    backgroundColor: ACCENT_ORANGE,
+    backgroundColor: COLORS.ACCENT_ORANGE,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 16,
-    borderRadius: 16,
-    marginTop: 8,
+    paddingVertical: 18,
+    borderRadius: 20,
+    marginTop: 4,
+    shadowColor: COLORS.ACCENT_ORANGE,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 4,
   },
   connectButtonText: {
-    fontSize: 16,
-    fontWeight: '600',
+    fontSize: 17,
+    fontWeight: '700',
     color: '#FFFFFF',
   },
   connectButtonDisabled: {
@@ -555,16 +580,21 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
-    paddingVertical: 16,
-    borderRadius: 16,
-    marginTop: 8,
+    paddingVertical: 18,
+    borderRadius: 20,
+    marginTop: 4,
+    shadowColor: '#FF3B30',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 4,
   },
   deleteButtonDisabled: {
     opacity: 0.6,
   },
   deleteButtonText: {
-    fontSize: 16,
-    fontWeight: '600',
+    fontSize: 17,
+    fontWeight: '700',
     color: '#FFFFFF',
   },
 });
