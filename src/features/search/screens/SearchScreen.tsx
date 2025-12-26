@@ -20,7 +20,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Location from 'expo-location';
 import { useAuth } from '@shared/contexts/AuthContext';
 import { useI18n } from '@shared/i18n';
-import { getNearbyUsers, updateLocation, updateWalkStatus } from '@shared/lib/api';
+import { getNearbyUsers, updateWalkStatus } from '@shared/lib/api';
 import { Clock } from 'lucide-react-native';
 import Svg, { Rect, Defs, Filter, FeFlood, FeColorMatrix, FeOffset, FeGaussianBlur, FeBlend, G } from 'react-native-svg';
 import { COLORS, SIZES } from '@shared/constants';
@@ -35,14 +35,6 @@ import { useFocusEffect } from '@react-navigation/native';
 import { router, useLocalSearchParams } from 'expo-router';
 
 
-
-interface UserLocation {
-  id: string;
-  user_id: string;
-  latitude: number;
-  longitude: number;
-  updated_at: string;
-}
 
 interface Walk {
   id: string;
@@ -67,7 +59,6 @@ interface UserProfile {
   avatar_url: string | null;
   status: string | null;
   distance: number;
-  location?: UserLocation | null;
   walk: Walk | null;
   interests: string[];
   isActive?: boolean;
@@ -227,10 +218,6 @@ export default function SearchScreen() {
         accuracy: Location.Accuracy.Balanced,
       });
       setLocation(loc);
-
-      if (user) {
-        await updateLocation(user.id, loc.coords.latitude, loc.coords.longitude);
-      }
     } catch (err) {
       console.error('Location error:', err);
     } finally {

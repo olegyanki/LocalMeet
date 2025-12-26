@@ -33,17 +33,8 @@ export interface Walk {
   updated_at: string;
 }
 
-export interface UserLocation {
-  id: string;
-  user_id: string;
-  latitude: number;
-  longitude: number;
-  updated_at: string;
-}
-
 export interface NearbyWalk extends UserProfile {
   distance: number;
-  location: UserLocation | null;
   walk: Walk | null;
 }
 
@@ -55,29 +46,6 @@ export async function updateProfile(userId: string, data: Partial<UserProfile>) 
 
   if (error) {
     throw error;
-  }
-}
-
-export async function updateLocation(userId: string, latitude: number, longitude: number) {
-  const { data: existing } = await supabase
-    .from('user_locations')
-    .select()
-    .eq('user_id', userId)
-    .maybeSingle();
-
-  if (existing) {
-    const { error } = await supabase
-      .from('user_locations')
-      .update({ latitude, longitude, updated_at: new Date().toISOString() })
-      .eq('id', existing.id);
-    if (error) throw error;
-  } else {
-    const { error } = await supabase.from('user_locations').insert({
-      user_id: userId,
-      latitude,
-      longitude,
-    });
-    if (error) throw error;
   }
 }
 
@@ -159,18 +127,9 @@ export async function getNearbyWalks(latitude: number, longitude: number, radius
 
       const distance = calculateDistance(latitude, longitude, walk.latitude, walk.longitude);
 
-      const location = {
-        id: walk.id,
-        user_id: profile.id,
-        latitude: walk.latitude,
-        longitude: walk.longitude,
-        updated_at: walk.updated_at,
-      };
-
       return {
         ...profile,
         distance,
-        location,
         walk,
       };
     })
