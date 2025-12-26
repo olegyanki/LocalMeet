@@ -13,6 +13,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useI18n } from '@shared/i18n';
+import { COLORS } from '@shared/constants';
 import { getProfile } from '@shared/lib/api';
 import {
   ChevronLeft,
@@ -27,13 +28,6 @@ import {
 } from 'lucide-react-native';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
-
-const BG_COLOR = '#F5F5F5';
-const ACCENT_ORANGE = '#FF9500';
-const TEXT_DARK = '#333333';
-const TEXT_LIGHT = '#999999';
-const INPUT_BG = '#FFFFFF';
-const BORDER_COLOR = '#E8E8E8';
 
 export default function UserProfileScreen() {
   const { id } = useLocalSearchParams();
@@ -69,7 +63,7 @@ export default function UserProfileScreen() {
   if (isLoading) {
     return (
       <View style={styles.centerContainer}>
-        <ActivityIndicator size="large" color={ACCENT_ORANGE} />
+        <ActivityIndicator size="large" color={COLORS.ACCENT_ORANGE} />
       </View>
     );
   }
@@ -95,7 +89,7 @@ export default function UserProfileScreen() {
           onPress={() => router.back()}
           style={styles.headerBackButton}
         >
-          <ChevronLeft size={28} color={TEXT_DARK} />
+          <ChevronLeft size={28} color={COLORS.TEXT_DARK} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>{t('profile')}</Text>
         <View style={{ width: 28 }} />
@@ -141,7 +135,7 @@ export default function UserProfileScreen() {
               {profile.age && (
                 <View style={styles.statCard}>
                   <View style={styles.statIconContainer}>
-                    <Calendar size={18} color={ACCENT_ORANGE} />
+                    <Calendar size={18} color={COLORS.ACCENT_ORANGE} />
                   </View>
                   <Text style={styles.statLabel}>{t('ageLabel')}</Text>
                   <Text style={styles.statValue}>{profile.age}</Text>
@@ -151,7 +145,7 @@ export default function UserProfileScreen() {
               {profile.gender && (
                 <View style={styles.statCard}>
                   <View style={styles.statIconContainer}>
-                    <User size={18} color={ACCENT_ORANGE} />
+                    <User size={18} color={COLORS.ACCENT_ORANGE} />
                   </View>
                   <Text style={styles.statLabel}>{t('genderLabel')}</Text>
                   <Text style={styles.statValue} numberOfLines={1} adjustsFontSizeToFit>
@@ -167,7 +161,7 @@ export default function UserProfileScreen() {
           <View style={styles.section}>
             <View style={styles.sectionHeader}>
               <View style={styles.sectionIconContainer}>
-                <Languages size={18} color={ACCENT_ORANGE} />
+                <Languages size={18} color={COLORS.ACCENT_ORANGE} />
               </View>
               <View style={styles.sectionTitleContainer}>
                 <Text style={styles.sectionTitle}>{t('languagesLabel')}</Text>
@@ -191,7 +185,7 @@ export default function UserProfileScreen() {
           <View style={styles.section}>
             <View style={styles.sectionHeader}>
               <View style={styles.sectionIconContainer}>
-                <Heart size={18} color={ACCENT_ORANGE} />
+                <Heart size={18} color={COLORS.ACCENT_ORANGE} />
               </View>
               <View style={styles.sectionTitleContainer}>
                 <Text style={styles.sectionTitle}>{t('interestsLabel')}</Text>
@@ -219,7 +213,7 @@ export default function UserProfileScreen() {
           <View style={styles.section}>
             <View style={styles.sectionHeader}>
               <View style={styles.sectionIconContainer}>
-                <MessageCircle size={18} color={ACCENT_ORANGE} />
+                <MessageCircle size={18} color={COLORS.ACCENT_ORANGE} />
               </View>
               <Text style={styles.sectionTitle}>{t('lookingForLabel')}</Text>
             </View>
@@ -236,7 +230,7 @@ export default function UserProfileScreen() {
           <View style={styles.section}>
             <View style={styles.sectionHeader}>
               <View style={styles.sectionIconContainer}>
-                <Send size={18} color={ACCENT_ORANGE} />
+                <Send size={18} color={COLORS.ACCENT_ORANGE} />
               </View>
               <Text style={styles.sectionTitle}>{t('socialNetworksLabel')}</Text>
             </View>
@@ -312,7 +306,7 @@ export default function UserProfileScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: BG_COLOR,
+    backgroundColor: COLORS.BG_SECONDARY,
   },
   scrollView: {
     flex: 1,
@@ -324,7 +318,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: BG_COLOR,
+    backgroundColor: COLORS.BG_SECONDARY,
     padding: 20,
   },
   header: {
@@ -333,9 +327,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 16,
     paddingBottom: 12,
-    backgroundColor: INPUT_BG,
-    borderBottomWidth: 1,
-    borderBottomColor: BORDER_COLOR,
+    backgroundColor: COLORS.CARD_BG,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 4,
+    elevation: 2,
   },
   headerBackButton: {
     padding: 8,
@@ -343,149 +340,119 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 18,
     fontWeight: '700',
-    color: TEXT_DARK,
+    color: COLORS.TEXT_DARK,
   },
   profileHeader: {
-    backgroundColor: INPUT_BG,
-    borderRadius: 24,
-    padding: 24,
-    marginTop: 16,
-    marginBottom: 20,
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
-    elevation: 2,
+    paddingTop: 32,
+    paddingBottom: 24,
   },
   avatarContainer: {
-    marginBottom: 16,
-    shadowColor: ACCENT_ORANGE,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 12,
-    elevation: 4,
+    marginBottom: 20,
   },
   avatar: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    borderWidth: 4,
-    borderColor: '#FFFFFF',
+    width: 100,
+    height: 100,
+    borderRadius: 50,
   },
   avatarPlaceholder: {
-    backgroundColor: ACCENT_ORANGE,
+    backgroundColor: COLORS.ACCENT_ORANGE,
     justifyContent: 'center',
     alignItems: 'center',
   },
   avatarText: {
     color: '#FFFFFF',
-    fontSize: 48,
+    fontSize: 40,
     fontWeight: '700',
   },
   displayName: {
-    fontSize: 28,
+    fontSize: 26,
     fontWeight: '700',
-    color: TEXT_DARK,
+    color: COLORS.TEXT_DARK,
     textAlign: 'center',
     marginBottom: 8,
   },
   bio: {
     fontSize: 15,
-    color: TEXT_LIGHT,
+    color: COLORS.TEXT_DARK,
     lineHeight: 22,
     textAlign: 'center',
-    marginTop: 4,
-    marginBottom: 20,
+    opacity: 0.7,
+    paddingHorizontal: 32,
   },
   statsGrid: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'center',
     gap: 12,
-    width: '100%',
-    marginTop: 20,
+    marginTop: 24,
+    paddingHorizontal: 20,
   },
   statCard: {
-    backgroundColor: '#FFF9F0',
+    backgroundColor: COLORS.CARD_BG,
     borderRadius: 16,
     padding: 16,
     alignItems: 'center',
-    minWidth: 80,
     flex: 1,
-    maxWidth: 100,
-    borderWidth: 1,
-    borderColor: '#FFE8CC',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 4,
+    elevation: 2,
   },
   statIconContainer: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: '#FFFFFF',
-    justifyContent: 'center',
-    alignItems: 'center',
     marginBottom: 8,
   },
   statLabel: {
-    fontSize: 12,
-    color: TEXT_LIGHT,
+    fontSize: 11,
+    color: COLORS.TEXT_LIGHT,
     marginBottom: 4,
-    fontWeight: '500',
-    textAlign: 'center',
+    fontWeight: '600',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
   },
   statValue: {
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: '700',
-    color: TEXT_DARK,
-    textAlign: 'center',
+    color: COLORS.TEXT_DARK,
   },
   section: {
-    backgroundColor: INPUT_BG,
+    backgroundColor: COLORS.CARD_BG,
     borderRadius: 20,
     padding: 20,
-    marginBottom: 16,
+    marginHorizontal: 20,
+    marginBottom: 12,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
+    shadowOpacity: 0.06,
+    shadowRadius: 4,
     elevation: 2,
   },
   sectionHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
     marginBottom: 16,
   },
   sectionIconContainer: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: '#FFF9F0',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 12,
+    marginBottom: 8,
   },
   sectionTitleContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    flex: 1,
   },
   sectionTitle: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: TEXT_DARK,
+    fontSize: 12,
+    fontWeight: '600',
+    color: COLORS.TEXT_LIGHT,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
   },
   countBadge: {
-    backgroundColor: ACCENT_ORANGE,
-    borderRadius: 12,
+    backgroundColor: COLORS.ACCENT_ORANGE,
+    borderRadius: 10,
     paddingHorizontal: 8,
     paddingVertical: 2,
     marginLeft: 8,
-    minWidth: 24,
-    alignItems: 'center',
-    justifyContent: 'center',
+    minWidth: 20,
   },
   countBadgeText: {
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: '700',
     color: '#FFFFFF',
   },
@@ -495,44 +462,41 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   languagesList: {
-    gap: 12,
+    gap: 8,
   },
   languageItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FFF9F0',
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderWidth: 1,
-    borderColor: '#FFE8CC',
+    paddingVertical: 8,
   },
   languageIconDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: ACCENT_ORANGE,
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: COLORS.ACCENT_ORANGE,
     marginRight: 12,
   },
   languageText: {
-    fontSize: 15,
-    color: TEXT_DARK,
-    fontWeight: '600',
+    fontSize: 16,
+    color: COLORS.TEXT_DARK,
+    fontWeight: '500',
   },
   interestChip: {
     paddingHorizontal: 16,
     paddingVertical: 10,
     borderRadius: 20,
-    backgroundColor: ACCENT_ORANGE,
+    backgroundColor: COLORS.ACCENT_ORANGE,
   },
   interestChipVariant1: {
-    backgroundColor: ACCENT_ORANGE,
+    backgroundColor: COLORS.ACCENT_ORANGE,
   },
   interestChipVariant2: {
-    backgroundColor: '#FFA726',
+    backgroundColor: COLORS.ACCENT_ORANGE,
+    opacity: 0.9,
   },
   interestChipVariant3: {
-    backgroundColor: '#FFB74D',
+    backgroundColor: COLORS.ACCENT_ORANGE,
+    opacity: 0.8,
   },
   chipText: {
     fontSize: 14,
@@ -540,55 +504,37 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   lookingForCard: {
-    backgroundColor: '#FFF9F0',
-    borderRadius: 16,
-    padding: 16,
-    borderLeftWidth: 4,
-    borderLeftColor: ACCENT_ORANGE,
-    position: 'relative',
+    paddingVertical: 4,
   },
   quoteIcon: {
-    position: 'absolute',
-    top: 8,
-    right: 12,
-    opacity: 0.1,
+    display: 'none',
   },
   quoteText: {
     fontSize: 72,
     fontWeight: '900',
-    color: ACCENT_ORANGE,
+    color: COLORS.ACCENT_ORANGE,
     lineHeight: 72,
   },
   lookingForText: {
-    fontSize: 15,
-    color: TEXT_DARK,
+    fontSize: 16,
+    color: COLORS.TEXT_DARK,
     lineHeight: 24,
-    fontWeight: '500',
   },
   socialLinksContainer: {
-    gap: 12,
+    gap: 8,
   },
   socialLinkCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#F8F8F8',
-    borderRadius: 16,
-    padding: 16,
-    borderWidth: 1,
-    borderColor: BORDER_COLOR,
+    paddingVertical: 12,
   },
   socialIconContainer: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.15,
-    shadowRadius: 6,
-    elevation: 3,
+    marginRight: 12,
   },
   instagramIcon: {
     backgroundColor: '#E4405F',
@@ -600,14 +546,16 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   socialLinkLabel: {
-    fontSize: 12,
-    color: TEXT_LIGHT,
-    marginBottom: 4,
-    fontWeight: '500',
+    fontSize: 11,
+    color: COLORS.TEXT_LIGHT,
+    marginBottom: 2,
+    fontWeight: '600',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
   },
   socialLinkValue: {
     fontSize: 16,
-    color: TEXT_DARK,
+    color: COLORS.TEXT_DARK,
     fontWeight: '600',
   },
   errorText: {
@@ -619,7 +567,7 @@ const styles = StyleSheet.create({
   backButton: {
     paddingHorizontal: 24,
     paddingVertical: 12,
-    backgroundColor: ACCENT_ORANGE,
+    backgroundColor: COLORS.ACCENT_ORANGE,
     borderRadius: 12,
   },
   backButtonText: {
