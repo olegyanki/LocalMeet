@@ -186,7 +186,6 @@ export default function TimePickerModal({
 
           <Animated.View {...panResponder.panHandlers} style={styles.pickerFooter}>
             <Pressable style={styles.confirmButton} onPress={onConfirm}>
-              <Check size={20} color="#FFFFFF" />
               <Text style={styles.confirmButtonText}>{t('confirm')}</Text>
             </Pressable>
           </Animated.View>
@@ -314,13 +313,11 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
   },
   confirmButton: {
-    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: SUCCESS_GREEN,
+    backgroundColor: ACCENT_ORANGE,
     paddingVertical: 16,
     borderRadius: 16,
-    gap: 8,
   },
   confirmButtonText: {
     color: '#FFFFFF',

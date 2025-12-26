@@ -17,11 +17,8 @@ import LocationPin from '@shared/components/LocationPin';
 import NativeMap from '@features/search/maps/NativeMap';
 import { calculateDistance } from '@shared/utils/location';
 import { useI18n } from '@shared/i18n';
+import { COLORS } from '@shared/constants';
 
-const ACCENT_ORANGE = '#FF9500';
-const TEXT_LIGHT = '#999999';
-const BORDER_COLOR = '#E8E8E8';
-const SUCCESS_GREEN = '#4CAF50';
 const RADIUS_FOR_CREATING_EVENT_KM = 15;
 
 interface LocationPickerModalProps {
@@ -148,20 +145,21 @@ export default function LocationPickerModal({
             </View>
           ) : (
             <View style={styles.loadingContainer}>
-              <ActivityIndicator size="large" color={ACCENT_ORANGE} />
+              <ActivityIndicator size="large" color={COLORS.ACCENT_ORANGE} />
             </View>
           )}
 
           <Animated.View {...panResponder.panHandlers} style={styles.locationPickerFooter}>
-            <Text style={styles.locationHint}>
-              {t('tapMapToSelectLocation')}
-            </Text>
+            <View style={styles.hintCard}>
+              <Text style={styles.locationHint}>
+                {t('tapMapToSelectLocation')}
+              </Text>
+            </View>
             <Pressable
               style={[styles.confirmButton, !isLocationValid && styles.buttonDisabled]}
               onPress={onConfirm}
               disabled={!isLocationValid}
             >
-              <Check size={20} color="#FFFFFF" />
               <Text style={styles.confirmButtonText}>{t('confirm')}</Text>
             </Pressable>
           </Animated.View>
@@ -190,9 +188,9 @@ const styles = StyleSheet.create({
   },
   handleContainer: {
     alignItems: 'center',
-    paddingVertical: 16,
+    paddingVertical: 12,
     paddingHorizontal: 20,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: COLORS.CARD_BG,
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     width: '100%',
@@ -208,15 +206,15 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: 20,
-    paddingTop: 8,
-    paddingBottom: 16,
+    paddingTop: 4,
+    paddingBottom: 12,
     borderBottomWidth: 1,
-    borderBottomColor: BORDER_COLOR,
+    borderBottomColor: COLORS.BORDER_COLOR,
   },
   pickerTitle: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: '700',
-    color: '#333333',
+    color: COLORS.TEXT_DARK,
   },
   mapWrapper: {
     height: 400,
@@ -237,33 +235,36 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   locationPickerFooter: {
-    padding: 20,
-    paddingBottom: 30,
+    padding: 16,
+    paddingBottom: 24,
     borderTopWidth: 1,
-    borderTopColor: BORDER_COLOR,
-    backgroundColor: '#FFFFFF',
+    borderTopColor: COLORS.BORDER_COLOR,
+    backgroundColor: COLORS.CARD_BG,
+  },
+  hintCard: {
+    backgroundColor: COLORS.BG_SECONDARY,
+    borderRadius: 12,
+    padding: 12,
+    marginBottom: 12,
   },
   locationHint: {
     fontSize: 13,
-    color: TEXT_LIGHT,
+    color: COLORS.TEXT_LIGHT,
     textAlign: 'center',
-    marginBottom: 16,
     lineHeight: 18,
   },
   confirmButton: {
-    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: SUCCESS_GREEN,
+    backgroundColor: COLORS.ACCENT_ORANGE,
     paddingVertical: 16,
     borderRadius: 16,
-    gap: 8,
   },
   buttonDisabled: {
     opacity: 0.6,
   },
   confirmButtonText: {
-    color: '#FFFFFF',
+    color: COLORS.CARD_BG,
     fontSize: 17,
     fontWeight: '600',
   },

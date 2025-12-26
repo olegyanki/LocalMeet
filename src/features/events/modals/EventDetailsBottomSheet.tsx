@@ -222,7 +222,7 @@ export default function EventDetailsBottomSheet({
     if (!existingRequest) {
       return {
         text: t('connecting'),
-        icon: <MessageCircle size={20} color="#FFFFFF" />,
+        icon: null,
         color: ACCENT_ORANGE,
         disabled: false,
       };
@@ -233,21 +233,21 @@ export default function EventDetailsBottomSheet({
       case 'rejected':
         return {
           text: t('requestSentStatus'),
-          icon: <ClockIcon size={20} color="#FFFFFF" />,
+          icon: null,
           color: '#999999',
           disabled: true,
         };
       case 'accepted':
         return {
           text: t('requestAccepted'),
-          icon: <Check size={20} color="#FFFFFF" />,
+          icon: null,
           color: '#8FD89C',
           disabled: true,
         };
       default:
         return {
           text: t('connecting'),
-          icon: <MessageCircle size={20} color="#FFFFFF" />,
+          icon: null,
           color: ACCENT_ORANGE,
           disabled: false,
         };
@@ -377,7 +377,6 @@ export default function EventDetailsBottomSheet({
                 onPress={handleConnect}
                 disabled={buttonConfig.disabled}
               >
-                {buttonConfig.icon}
                 <Text style={styles.connectButtonText}>{buttonConfig.text}</Text>
               </TouchableOpacity>
             );
@@ -536,10 +535,8 @@ const styles = StyleSheet.create({
   },
   connectButton: {
     backgroundColor: ACCENT_ORANGE,
-    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 8,
     paddingVertical: 16,
     borderRadius: 16,
     marginTop: 8,

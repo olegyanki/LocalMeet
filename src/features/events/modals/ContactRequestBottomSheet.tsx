@@ -158,10 +158,7 @@ export default function ContactRequestBottomSheet({
               {isSubmitting ? (
                 <ActivityIndicator size="small" color="#FFFFFF" />
               ) : (
-                <>
-                  <Send size={20} color="#FFFFFF" />
-                  <Text style={styles.submitButtonText}>{t('sendRequestButton')}</Text>
-                </>
+                <Text style={styles.submitButtonText}>{t('sendRequestButton')}</Text>
               )}
             </TouchableOpacity>
           </View>
@@ -264,10 +261,8 @@ const styles = StyleSheet.create({
   },
   submitButton: {
     backgroundColor: ACCENT_ORANGE,
-    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 8,
     paddingVertical: 16,
     borderRadius: 16,
     marginTop: 8,
