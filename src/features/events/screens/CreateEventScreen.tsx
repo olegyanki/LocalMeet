@@ -72,10 +72,7 @@ export default function GoOnlineScreen() {
 
   useEffect(() => {
     if (showLocationPicker) {
-      setInitialMapCenter(selectedLocation || {
-        latitude: location?.coords.latitude || 39.4699,
-        longitude: location?.coords.longitude || -0.3763
-      });
+      setInitialMapCenter(selectedLocation);
     } else {
       setInitialMapCenter(null);
     }
@@ -93,23 +90,7 @@ export default function GoOnlineScreen() {
     try {
       const { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== 'granted') {
-        const defaultLocation: Location.LocationObject = {
-          coords: {
-            latitude: 39.4699,
-            longitude: -0.3763,
-            altitude: null,
-            accuracy: null,
-            altitudeAccuracy: null,
-            heading: null,
-            speed: null,
-          },
-          timestamp: Date.now(),
-        };
-        setLocation(defaultLocation);
-        setSelectedLocation({
-          latitude: defaultLocation.coords.latitude,
-          longitude: defaultLocation.coords.longitude,
-        });
+        console.log(`Access to location is not granted`)
         return;
       }
 
