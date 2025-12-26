@@ -78,9 +78,7 @@ export default function SearchScreen() {
   const [selectedMarkerId, setSelectedMarkerId] = useState<string | null>(null);
   const [currentCardIndex, setCurrentCardIndex] = useState(0);
   const [mapCenter, setMapCenter] = useState<{latitude: number; longitude: number; paddingBottom?: number} | null>(null);
-  const [mapBounds, setMapBounds] = useState<{markers: Array<{latitude: number; longitude: number}>} | null>(null);
   const previousMarkerIdRef = useRef<string | null>(null);
-  const initialBoundsSet = useRef(false);
   const [detailsVisible, setDetailsVisible] = useState(false);
   const [selectedUser, setSelectedUser] = useState<UserProfile | null>(null);
   const [contactRequestVisible, setContactRequestVisible] = useState(false);
@@ -168,22 +166,8 @@ export default function SearchScreen() {
   }, [location, user]);
 
   useEffect(() => {
-    if (nearbyWalks.length > 0 && user && location && !initialBoundsSet.current) {
+    if (nearbyWalks.length > 0 && user && location) {
       const myWalk = nearbyWalks.find(w => w.id === user.id);
-      
-      const allMarkers = [
-        { latitude: location.coords.latitude, longitude: location.coords.longitude },
-        ...nearbyWalks.filter(w => w.walk).map(w => ({
-          latitude: w.walk!.latitude,
-          longitude: w.walk!.longitude
-        }))
-      ];
-      
-      if (allMarkers.length > 1) {
-        setMapBounds({ markers: allMarkers });
-        setMapCenter(null);
-        initialBoundsSet.current = true;
-      }
       
       if (myWalk && myWalk.walk) {
         const myIndex = 0;
@@ -245,7 +229,6 @@ export default function SearchScreen() {
 
     try {
       setIsLoadingWalks(true);
-      initialBoundsSet.current = false;
       const walks = await getNearbyUsers(location.coords.latitude, location.coords.longitude);
 
       const ownWalk = walks.find((w) => w.id === user.id);
@@ -351,11 +334,11 @@ export default function SearchScreen() {
     <View style={styles.container}>
       <View style={styles.mapContainer}>
         <NativeMap
-          latitude={mapCenter?.latitude || location.coords.latitude}
-          longitude={mapCenter?.longitude || location.coords.longitude}
-          paddingBottom={150}
+          latitude={mapCenter ? mapCenter.latitude : location.coords.latitude}
+          longitude={mapCenter ? mapCenter.longitude : location.coords.longitude}
+          paddingBottom={mapCenter?.paddingBottom || 150}
           markers={mapMarkers}
-          bounds={mapBounds}
+          bounds={null}
           selectedMarkerId={selectedMarkerId}
           userLatitude={location.coords.latitude}
           userLongitude={location.coords.longitude}
@@ -426,7 +409,6 @@ export default function SearchScreen() {
                 latitude: location.coords.latitude,
                 longitude: location.coords.longitude,
               });
-              setMapBounds(null);
             }
           }}
           style={styles.locationButtonInner}
@@ -474,14 +456,13 @@ export default function SearchScreen() {
               setCurrentCardIndex(index);
               const item = sortedWalks[index];
 
-              if (item.location) {
+              if (item.walk) {
                 const padding = 150;
                 setMapCenter({
-                  latitude: item.location.latitude,
-                  longitude: item.location.longitude,
-                  paddingBottom: padding
+                  latitude: item.walk.latitude,
+                  longitude: item.walk.longitude,
+                  paddingBottom: padding,
                 });
-                setMapBounds(null);
               }
 
               previousMarkerIdRef.current = item.walk!.id;
