@@ -2,6 +2,8 @@ import React, { useRef, useEffect } from 'react';
 import { View, StyleSheet } from 'react-native';
 import { WebView } from 'react-native-webview';
 
+const DEFAULT_ZOOM = 13;
+
 interface Marker {
   id: string;
   latitude: number;
@@ -101,19 +103,19 @@ export default function NativeMap({
         <div id="map"></div>
         <script>
           const initialPadding = ${paddingBottom || 0};
+          const DEFAULT_ZOOM = ${DEFAULT_ZOOM};
           const map = L.map('map', {
             zoomControl: false,
             attributionControl: false
           });
           
           if (initialPadding) {
-            const zoom = 14;
-            const point = map.project([${latitude}, ${longitude}], zoom);
+            const point = map.project([${latitude}, ${longitude}], DEFAULT_ZOOM);
             point.y += initialPadding;
-            const newCenter = map.unproject(point, zoom);
-            map.setView(newCenter, zoom);
+            const newCenter = map.unproject(point, DEFAULT_ZOOM);
+            map.setView(newCenter, DEFAULT_ZOOM);
           } else {
-            map.setView([${latitude}, ${longitude}], 14);
+            map.setView([${latitude}, ${longitude}], DEFAULT_ZOOM);
           }
 
           const accessToken = 'pk.eyJ1Ijoib2xlaC15YW5raXZza3lpIiwiYSI6ImNtamJ4cmUxdDAxaTEzZHF0M2s1Zmk4MWMifQ.hC6Ff88M5zCdMEO5mIY2Iw';
@@ -269,17 +271,16 @@ export default function NativeMap({
                 const paddingBottom = ${paddingBottom || 0};
                 
                 if (paddingBottom) {
-                  const zoom = 15;
-                  const point = map.project([selectedMarker.latitude, selectedMarker.longitude], zoom);
+                  const point = map.project([selectedMarker.latitude, selectedMarker.longitude], DEFAULT_ZOOM);
                   point.y += paddingBottom;
-                  const newCenter = map.unproject(point, zoom);
+                  const newCenter = map.unproject(point, DEFAULT_ZOOM);
                   
-                  map.setView(newCenter, zoom, {
+                  map.setView(newCenter, DEFAULT_ZOOM, {
                     animate: true,
                     duration: 0.5
                   });
                 } else {
-                  map.setView([selectedMarker.latitude, selectedMarker.longitude], 15, {
+                  map.setView([selectedMarker.latitude, selectedMarker.longitude], DEFAULT_ZOOM, {
                     animate: true,
                     duration: 0.5
                   });
