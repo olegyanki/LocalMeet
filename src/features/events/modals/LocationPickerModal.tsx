@@ -150,7 +150,7 @@ export default function LocationPickerModal({
 
           <Animated.View {...panResponder.panHandlers} style={styles.locationPickerFooter}>
             <Text style={styles.locationHint}>
-              Натисніть на карту щоб обрати локацію (до 15 км від вас)
+              {t('tapMapToSelectLocation')}
             </Text>
             <Pressable
               style={[styles.confirmButton, !isLocationValid && styles.buttonDisabled]}

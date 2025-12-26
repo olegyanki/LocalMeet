@@ -197,5 +197,6 @@
   "interestFitness": "💪 Fitness",
   "interestMeditation": "🧘‍♀️ Meditation",
   "addInterest": "Add interest",
-  "selectInterests": "Select interests"
+  "selectInterests": "Select interests",
+  "tapMapToSelectLocation": "Tap on the map to select location (up to 15 km from you)"
 }
