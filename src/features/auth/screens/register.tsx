@@ -13,13 +13,8 @@ import {
 import { useRouter } from 'expo-router';
 import { useI18n } from '@shared/i18n';
 import { signUp } from '@shared/lib/auth';
-
-const LOGIN_GRADIENT = '#F5F5F5';
-const ACCENT_ORANGE = '#FF9500';
-const TEXT_DARK = '#333333';
-const TEXT_LIGHT = '#999999';
-const INPUT_BG = '#FFFFFF';
-const BORDER_COLOR = '#E8E8E8';
+import { COLORS } from '@shared/constants';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function RegisterScreen() {
   const [email, setEmail] = useState('');
@@ -30,6 +25,7 @@ export default function RegisterScreen() {
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   const { t } = useI18n();
+  const insets = useSafeAreaInsets();
 
   const handleRegister = async () => {
     setError('');
@@ -59,52 +55,73 @@ export default function RegisterScreen() {
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       style={styles.container}
     >
-      <ScrollView contentContainerStyle={styles.scrollContent}>
-        <View style={styles.content}>
+      <ScrollView 
+        contentContainerStyle={[styles.scrollContent, { paddingTop: insets.top + 60 }]}
+        keyboardShouldPersistTaps="handled"
+      >
+        <View style={styles.header}>
           <Text style={styles.title}>{t('newAccount')}</Text>
           <Text style={styles.subtitle}>{t('registerSubtitle')}</Text>
+        </View>
 
-          {error ? <Text style={styles.errorText}>{error}</Text> : null}
+        <View style={styles.form}>
+          {error ? (
+            <View style={styles.errorContainer}>
+              <Text style={styles.errorText}>{error}</Text>
+            </View>
+          ) : null}
 
-          <TextInput
-            style={styles.input}
-            placeholder={t('displayName')}
-            placeholderTextColor={TEXT_LIGHT}
-            value={displayName}
-            onChangeText={setDisplayName}
-            editable={!isLoading}
-          />
+          <View style={styles.inputGroup}>
+            <Text style={styles.label}>{t('displayName')}</Text>
+            <TextInput
+              style={styles.input}
+              placeholder={t('displayName')}
+              placeholderTextColor={COLORS.TEXT_LIGHT}
+              value={displayName}
+              onChangeText={setDisplayName}
+              editable={!isLoading}
+            />
+          </View>
 
-          <TextInput
-            style={styles.input}
-            placeholder={t('username')}
-            placeholderTextColor={TEXT_LIGHT}
-            value={username}
-            onChangeText={setUsername}
-            editable={!isLoading}
-            autoCapitalize="none"
-          />
+          <View style={styles.inputGroup}>
+            <Text style={styles.label}>{t('username')}</Text>
+            <TextInput
+              style={styles.input}
+              placeholder={t('username')}
+              placeholderTextColor={COLORS.TEXT_LIGHT}
+              value={username}
+              onChangeText={setUsername}
+              editable={!isLoading}
+              autoCapitalize="none"
+            />
+          </View>
 
-          <TextInput
-            style={styles.input}
-            placeholder={t('email')}
-            placeholderTextColor={TEXT_LIGHT}
-            value={email}
-            onChangeText={setEmail}
-            editable={!isLoading}
-            keyboardType="email-address"
-            autoCapitalize="none"
-          />
+          <View style={styles.inputGroup}>
+            <Text style={styles.label}>{t('email')}</Text>
+            <TextInput
+              style={styles.input}
+              placeholder={t('email')}
+              placeholderTextColor={COLORS.TEXT_LIGHT}
+              value={email}
+              onChangeText={setEmail}
+              editable={!isLoading}
+              keyboardType="email-address"
+              autoCapitalize="none"
+            />
+          </View>
 
-          <TextInput
-            style={styles.input}
-            placeholder={t('password')}
-            placeholderTextColor={TEXT_LIGHT}
-            value={password}
-            onChangeText={setPassword}
-            secureTextEntry
-            editable={!isLoading}
-          />
+          <View style={styles.inputGroup}>
+            <Text style={styles.label}>{t('password')}</Text>
+            <TextInput
+              style={styles.input}
+              placeholder={t('password')}
+              placeholderTextColor={COLORS.TEXT_LIGHT}
+              value={password}
+              onChangeText={setPassword}
+              secureTextEntry
+              editable={!isLoading}
+            />
+          </View>
 
           <TouchableOpacity
             style={[styles.registerButton, isLoading && styles.buttonDisabled]}
@@ -133,42 +150,56 @@ export default function RegisterScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: LOGIN_GRADIENT,
+    backgroundColor: COLORS.BG_SECONDARY,
   },
   scrollContent: {
     flexGrow: 1,
+    padding: 20,
+    paddingBottom: 40,
   },
-  content: {
-    flex: 1,
-    padding: 24,
-    justifyContent: 'center',
+  header: {
+    marginBottom: 40,
   },
   title: {
-    fontSize: 32,
+    fontSize: 34,
     fontWeight: '700',
-    color: TEXT_DARK,
+    color: COLORS.TEXT_DARK,
     marginBottom: 8,
   },
   subtitle: {
     fontSize: 16,
-    color: TEXT_LIGHT,
-    marginBottom: 32,
+    color: COLORS.TEXT_LIGHT,
+  },
+  form: {
+    gap: 20,
+  },
+  inputGroup: {
+    gap: 8,
+  },
+  label: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: COLORS.TEXT_DARK,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
   },
   input: {
-    backgroundColor: INPUT_BG,
-    borderWidth: 1,
-    borderColor: BORDER_COLOR,
+    backgroundColor: COLORS.CARD_BG,
     borderRadius: 12,
     paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingVertical: 14,
     fontSize: 16,
-    marginBottom: 16,
-    color: TEXT_DARK,
+    color: COLORS.TEXT_DARK,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    elevation: 2,
   },
   registerButton: {
-    backgroundColor: ACCENT_ORANGE,
-    paddingVertical: 14,
-    borderRadius: 12,
+    backgroundColor: COLORS.ACCENT_ORANGE,
+    paddingVertical: 16,
+    borderRadius: 16,
     alignItems: 'center',
     marginTop: 8,
   },
@@ -177,32 +208,33 @@ const styles = StyleSheet.create({
   },
   registerButtonText: {
     color: '#FFFFFF',
-    fontSize: 16,
+    fontSize: 17,
     fontWeight: '600',
   },
+  errorContainer: {
+    backgroundColor: '#FFE5E5',
+    padding: 12,
+    borderRadius: 12,
+  },
   errorText: {
-    color: '#E74C3C',
+    color: '#FF3B30',
     fontSize: 14,
-    marginBottom: 16,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    backgroundColor: '#FADBD8',
-    borderRadius: 8,
+    fontWeight: '500',
   },
   loginSection: {
-    marginTop: 24,
+    marginTop: 12,
     alignItems: 'center',
     flexDirection: 'row',
     justifyContent: 'center',
-    gap: 8,
+    gap: 6,
   },
   loginText: {
-    color: TEXT_LIGHT,
-    fontSize: 14,
+    color: COLORS.TEXT_LIGHT,
+    fontSize: 15,
   },
   loginLink: {
-    color: ACCENT_ORANGE,
-    fontSize: 14,
+    color: COLORS.ACCENT_ORANGE,
+    fontSize: 15,
     fontWeight: '600',
   },
 });
