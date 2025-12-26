@@ -49,13 +49,11 @@ const LANGUAGE_OPTIONS = [
 ];
 
 export default function ProfileScreen() {
-  const { user } = useAuth();
+  const { user, profile: contextProfile, isProfileLoading, refreshProfile } = useAuth();
   const { t, language, setLanguage } = useI18n();
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const [profile, setProfile] = useState<any>(null);
   const [isEditing, setIsEditing] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState('');
 
@@ -77,47 +75,32 @@ export default function ProfileScreen() {
   const [showTelegramInput, setShowTelegramInput] = useState(false);
 
   useEffect(() => {
-    if (user) {
-      loadProfile();
+    if (contextProfile) {
+      setDisplayName(contextProfile.display_name || '');
+      setBio(contextProfile.bio || '');
+      setAvatarUrl(contextProfile.avatar_url || '');
+      setAge(contextProfile.age?.toString() || '');
+      setGender(contextProfile.gender || '');
+      setLanguages(contextProfile.languages || []);
+      setInterests(contextProfile.interests || []);
+      setInstagram(contextProfile.social_instagram || '');
+      setTelegram(contextProfile.social_telegram || '');
+      setLookingFor(contextProfile.looking_for || '');
     }
-  }, [user]);
-
-  const loadProfile = async () => {
-    if (!user) return;
-
-    try {
-      setIsLoading(true);
-      const data = await getProfile(user.id);
-      if (data) {
-        setProfile(data);
-        setDisplayName(data.display_name || '');
-        setBio(data.bio || '');
-        setAvatarUrl(data.avatar_url || '');
-        setAge(data.age?.toString() || '');
-        setGender(data.gender || '');
-        setLanguages(data.languages || []);
-        setInstagram(data.social_instagram || '');
-        setTelegram(data.social_telegram || '');
-        setLookingFor(data.looking_for || '');
-      }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load profile');
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  }, [contextProfile]);
 
   const handleCancel = () => {
-    if (profile) {
-      setDisplayName(profile.display_name || '');
-      setBio(profile.bio || '');
-      setAvatarUrl(profile.avatar_url || '');
-      setAge(profile.age?.toString() || '');
-      setGender(profile.gender || '');
-      setLanguages(profile.languages || []);
-      setInstagram(profile.social_instagram || '');
-      setTelegram(profile.social_telegram || '');
-      setLookingFor(profile.looking_for || '');
+    if (contextProfile) {
+      setDisplayName(contextProfile.display_name || '');
+      setBio(contextProfile.bio || '');
+      setAvatarUrl(contextProfile.avatar_url || '');
+      setAge(contextProfile.age?.toString() || '');
+      setGender(contextProfile.gender || '');
+      setLanguages(contextProfile.languages || []);
+      setInterests(contextProfile.interests || []);
+      setInstagram(contextProfile.social_instagram || '');
+      setTelegram(contextProfile.social_telegram || '');
+      setLookingFor(contextProfile.looking_for || '');
     }
     setIsEditing(false);
   };
@@ -136,12 +119,13 @@ export default function ProfileScreen() {
         age: age ? parseInt(age) : null,
         gender: gender || null,
         languages,
+        interests,
         social_instagram: instagram || null,
         social_telegram: telegram || null,
         looking_for: lookingFor || null,
       } as any);
 
-      await loadProfile();
+      await refreshProfile();
       setIsEditing(false);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to save profile');
@@ -167,9 +151,9 @@ export default function ProfileScreen() {
     }
   };
 
-  if (isLoading) {
+  if (isProfileLoading && !contextProfile) {
     return (
-      <View style={styles.centerContainer}>
+      <View style={[styles.container, styles.centerContainer]}>
         <ActivityIndicator size="large" color={ACCENT_ORANGE} />
       </View>
     );
