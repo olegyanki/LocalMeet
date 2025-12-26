@@ -9,6 +9,7 @@ import {
   Image,
   Modal,
   Dimensions,
+  Linking,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -57,6 +58,20 @@ export default function UserProfileScreen() {
       setError(err instanceof Error ? err.message : 'Failed to load profile');
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const openSocialLink = async (platform: 'instagram' | 'telegram', username: string) => {
+    const urls = {
+      instagram: `https://instagram.com/${username.replace('@', '')}`,
+      telegram: `https://t.me/${username.replace('@', '')}`,
+    };
+    
+    const url = urls[platform];
+    const canOpen = await Linking.canOpenURL(url);
+    
+    if (canOpen) {
+      await Linking.openURL(url);
     }
   };
 
@@ -239,6 +254,7 @@ export default function UserProfileScreen() {
                 <TouchableOpacity
                   style={styles.socialLinkCard}
                   activeOpacity={0.7}
+                  onPress={() => openSocialLink('instagram', profile.social_instagram)}
                 >
                   <View style={[styles.socialIconContainer, styles.instagramIcon]}>
                     <Instagram size={24} color="#FFFFFF" />
@@ -253,6 +269,7 @@ export default function UserProfileScreen() {
                 <TouchableOpacity
                   style={styles.socialLinkCard}
                   activeOpacity={0.7}
+                  onPress={() => openSocialLink('telegram', profile.social_telegram)}
                 >
                   <View style={[styles.socialIconContainer, styles.telegramIcon]}>
                     <Send size={24} color="#FFFFFF" />
@@ -537,10 +554,11 @@ const styles = StyleSheet.create({
     marginRight: 12,
   },
   instagramIcon: {
-    backgroundColor: '#E4405F',
+    background: 'linear-gradient(45deg, #f09433 0%,#e6683c 25%,#dc2743 50%,#cc2366 75%,#bc1888 100%)',
+    backgroundColor: '#E1306C',
   },
   telegramIcon: {
-    backgroundColor: '#0088cc',
+    backgroundColor: '#229ED9',
   },
   socialLinkInfo: {
     flex: 1,
