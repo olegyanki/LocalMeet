@@ -5,11 +5,8 @@ import { useRouter, useFocusEffect } from 'expo-router';
 import { useAuth } from '@shared/contexts/AuthContext';
 import { getMyWalkRequests, updateWalkRequestStatus, WalkRequestWithProfile } from '@shared/lib/api';
 import { supabase } from '@shared/lib/supabase';
+import { COLORS } from '@shared/constants';
 import RequestCard from '@features/chats/components/RequestCard';
-
-const ACCENT_ORANGE = '#FF9500';
-const TEXT_LIGHT = '#999999';
-const TEXT_DARK = '#1C1C1E';
 
 type TabType = 'requests' | 'chats';
 
@@ -368,10 +365,10 @@ export default function ChatsScreen() {
         <ScrollView
           contentContainerStyle={styles.emptyState}
           refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={ACCENT_ORANGE} />
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={COLORS.ACCENT_ORANGE} />
           }
         >
-          <ActivityIndicator size="large" color={ACCENT_ORANGE} />
+          <ActivityIndicator size="large" color={COLORS.ACCENT_ORANGE} />
         </ScrollView>
       );
     }
@@ -381,7 +378,7 @@ export default function ChatsScreen() {
         <ScrollView
           contentContainerStyle={styles.emptyState}
           refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={ACCENT_ORANGE} />
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={COLORS.ACCENT_ORANGE} />
           }
         >
           <Text style={styles.emptyText}>No requests yet</Text>
@@ -406,7 +403,7 @@ export default function ChatsScreen() {
         scrollEnabled={scrollEnabled}
         contentContainerStyle={{ paddingBottom: insets.bottom + 80 }}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={ACCENT_ORANGE} />
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={COLORS.ACCENT_ORANGE} />
         }
       />
     );
@@ -418,10 +415,10 @@ export default function ChatsScreen() {
         <ScrollView
           contentContainerStyle={styles.emptyState}
           refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={ACCENT_ORANGE} />
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={COLORS.ACCENT_ORANGE} />
           }
         >
-          <ActivityIndicator size="large" color={ACCENT_ORANGE} />
+          <ActivityIndicator size="large" color={COLORS.ACCENT_ORANGE} />
         </ScrollView>
       );
     }
@@ -431,7 +428,7 @@ export default function ChatsScreen() {
         <ScrollView
           contentContainerStyle={styles.emptyState}
           refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={ACCENT_ORANGE} />
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={COLORS.ACCENT_ORANGE} />
           }
         >
           <Text style={styles.emptyText}>No chats yet</Text>
@@ -446,7 +443,7 @@ export default function ChatsScreen() {
         renderItem={renderChatItem}
         contentContainerStyle={{ paddingBottom: insets.bottom + 80 }}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={ACCENT_ORANGE} />
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={COLORS.ACCENT_ORANGE} />
         }
       />
     );
@@ -456,49 +453,49 @@ export default function ChatsScreen() {
     <View style={[styles.container, { paddingTop: insets.top }]}>
       <Text style={styles.title}>Messages</Text>
 
-        <View style={styles.switchContainer}>
-          <TouchableOpacity
+      <View style={styles.switchContainer}>
+        <TouchableOpacity
+          style={[
+            styles.switchButton,
+            activeTab === 'chats' && styles.switchButtonActive,
+          ]}
+          onPress={() => setActiveTab('chats')}
+        >
+          <Text
             style={[
-              styles.switchButton,
-              activeTab === 'chats' && styles.switchButtonActive,
+              styles.switchText,
+              activeTab === 'chats' && styles.switchTextActive,
             ]}
-            onPress={() => setActiveTab('chats')}
           >
-            <Text
-              style={[
-                styles.switchText,
-                activeTab === 'chats' && styles.switchTextActive,
-              ]}
-            >
-              Chats
-            </Text>
-          </TouchableOpacity>
+            Chats
+          </Text>
+        </TouchableOpacity>
 
-          <TouchableOpacity
+        <TouchableOpacity
+          style={[
+            styles.switchButton,
+            activeTab === 'requests' && styles.switchButtonActive,
+          ]}
+          onPress={() => setActiveTab('requests')}
+        >
+          <Text
             style={[
-              styles.switchButton,
-              activeTab === 'requests' && styles.switchButtonActive,
+              styles.switchText,
+              activeTab === 'requests' && styles.switchTextActive,
             ]}
-            onPress={() => setActiveTab('requests')}
           >
-            <Text
-              style={[
-                styles.switchText,
-                activeTab === 'requests' && styles.switchTextActive,
-              ]}
-            >
-              Requests
-            </Text>
-          </TouchableOpacity>
-        </View>
+            Requests
+          </Text>
+        </TouchableOpacity>
+      </View>
 
-        <View style={styles.content}>
-          {activeTab === 'requests' ? (
-            renderRequestsContent()
-          ) : (
-            renderChatsContent()
-          )}
-        </View>
+      <View style={styles.content}>
+        {activeTab === 'requests' ? (
+          renderRequestsContent()
+        ) : (
+          renderChatsContent()
+        )}
+      </View>
     </View>
   );
 }
@@ -506,12 +503,12 @@ export default function ChatsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: COLORS.BG_SECONDARY,
   },
   title: {
     fontSize: 34,
     fontWeight: '700',
-    color: TEXT_DARK,
+    color: COLORS.TEXT_DARK,
     paddingHorizontal: 20,
     paddingTop: 20,
     paddingBottom: 16,
@@ -519,33 +516,33 @@ const styles = StyleSheet.create({
   switchContainer: {
     flexDirection: 'row',
     marginHorizontal: 20,
-    marginBottom: 20,
-    backgroundColor: '#F2F2F7',
-    borderRadius: 10,
-    padding: 2,
+    marginBottom: 16,
+    backgroundColor: COLORS.INPUT_BG,
+    borderRadius: 12,
+    padding: 3,
   },
   switchButton: {
     flex: 1,
-    paddingVertical: 8,
+    paddingVertical: 10,
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: 8,
+    borderRadius: 10,
   },
   switchButtonActive: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: COLORS.CARD_BG,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 4,
     elevation: 2,
   },
   switchText: {
     fontSize: 15,
     fontWeight: '600',
-    color: TEXT_LIGHT,
+    color: COLORS.TEXT_LIGHT,
   },
   switchTextActive: {
-    color: TEXT_DARK,
+    color: COLORS.TEXT_DARK,
   },
   content: {
     flex: 1,
@@ -557,16 +554,22 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     fontSize: 16,
-    color: TEXT_LIGHT,
+    color: COLORS.TEXT_LIGHT,
   },
   chatItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingVertical: 12,
-    backgroundColor: '#FFFFFF',
-    borderBottomWidth: 1,
-    borderBottomColor: '#E5E5EA',
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    backgroundColor: COLORS.CARD_BG,
+    marginHorizontal: 20,
+    marginBottom: 8,
+    borderRadius: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 4,
+    elevation: 2,
   },
   chatAvatar: {
     width: 56,
@@ -575,7 +578,7 @@ const styles = StyleSheet.create({
     marginRight: 12,
   },
   chatAvatarPlaceholder: {
-    backgroundColor: ACCENT_ORANGE,
+    backgroundColor: COLORS.ACCENT_ORANGE,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -597,26 +600,26 @@ const styles = StyleSheet.create({
   chatName: {
     fontSize: 17,
     fontWeight: '600',
-    color: TEXT_DARK,
+    color: COLORS.TEXT_DARK,
   },
   chatTime: {
     fontSize: 14,
-    color: TEXT_LIGHT,
+    color: COLORS.TEXT_LIGHT,
   },
   chatMessage: {
     fontSize: 15,
-    color: TEXT_LIGHT,
+    color: COLORS.TEXT_LIGHT,
     lineHeight: 20,
   },
   chatMessageUnread: {
     fontWeight: '600',
-    color: TEXT_DARK,
+    color: COLORS.TEXT_DARK,
   },
   unreadBadge: {
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: ACCENT_ORANGE,
+    backgroundColor: COLORS.ACCENT_ORANGE,
     marginLeft: 8,
   },
 });
