@@ -101,7 +101,7 @@ export default function LocationPickerModal({
           tempLocation.latitude,
           tempLocation.longitude
         ) <= 15
-      : false;
+      : true;
 
   return (
     <Modal visible={visible} transparent animationType="none" onRequestClose={onClose}>

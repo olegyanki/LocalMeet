@@ -199,17 +199,7 @@ export default function GoOnlineScreen() {
   };
 
   const handleMapMove = (lat: number, lng: number) => {
-    if (location) {
-      const distance = calculateDistance(
-        location.coords.latitude,
-        location.coords.longitude,
-        lat,
-        lng
-      );
-      if (distance <= 15) {
-        setTempLocation({ latitude: lat, longitude: lng });
-      }
-    }
+    setTempLocation({ latitude: lat, longitude: lng });
   };
 
   const confirmLocation = () => {
