@@ -16,6 +16,8 @@ import { BlurView } from 'expo-blur';
 import { createWalkRequest } from '@shared/lib/api';
 import { useI18n } from '@shared/i18n';
 import { COLORS } from '@shared/constants';
+import { Image } from 'react-native';
+import { Clock } from 'lucide-react-native';
 
 interface ContactRequestBottomSheetProps {
   visible: boolean;
@@ -23,6 +25,9 @@ interface ContactRequestBottomSheetProps {
   walkId: string;
   requesterId: string;
   walkOwnerName: string;
+  walkOwnerAvatar?: string | null;
+  walkTitle: string;
+  walkStartTime?: string;
   onRequestSent?: () => void;
 }
 
@@ -32,6 +37,9 @@ export default function ContactRequestBottomSheet({
   walkId,
   requesterId,
   walkOwnerName,
+  walkOwnerAvatar,
+  walkTitle,
+  walkStartTime,
   onRequestSent,
 }: ContactRequestBottomSheetProps) {
   const slideAnim = React.useRef(new Animated.Value(Dimensions.get('window').height)).current;
@@ -39,6 +47,22 @@ export default function ContactRequestBottomSheet({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { t } = useI18n();
+
+  const getTimeText = (walkStartTime: string) => {
+    const now = new Date();
+    const startTime = new Date(walkStartTime);
+    const diffMs = startTime.getTime() - now.getTime();
+    const diffMins = Math.floor(diffMs / 60000);
+
+    if (diffMins < 0) return t('alreadyStarted');
+    if (diffMins === 0) return t('startingNow');
+    if (diffMins < 60) return t('startsInMinutes').replace('{{minutes}}', diffMins.toString());
+
+    const hours = Math.floor(diffMins / 60);
+    const mins = diffMins % 60;
+    if (mins === 0) return t('startsInHours').replace('{{hours}}', hours.toString());
+    return t('startsInHoursMinutes').replace('{{hours}}', hours.toString()).replace('{{minutes}}', mins.toString());
+  };
 
   React.useEffect(() => {
     if (visible) {
@@ -115,9 +139,27 @@ export default function ContactRequestBottomSheet({
           <View style={styles.handle} />
 
           <View style={styles.content}>
-            <Text style={styles.subtitle}>
-              {t('sendRequestTo')} <Text style={styles.userName}>{walkOwnerName}</Text>
-            </Text>
+            <View style={styles.eventCard}>
+              <View style={styles.ownerSection}>
+                {walkOwnerAvatar ? (
+                  <Image source={{ uri: walkOwnerAvatar }} style={styles.avatar} />
+                ) : (
+                  <View style={styles.avatarPlaceholder}>
+                    <Text style={styles.avatarText}>{walkOwnerName[0]?.toUpperCase()}</Text>
+                  </View>
+                )}
+                <View style={styles.ownerInfo}>
+                  <Text style={styles.ownerName}>{walkOwnerName}</Text>
+                  <Text style={styles.eventTitle}>{walkTitle}</Text>
+                </View>
+              </View>
+              {walkStartTime && (
+                <View style={styles.timeRow}>
+                  <Clock size={16} color={COLORS.TEXT_LIGHT} />
+                  <Text style={styles.timeText}>{getTimeText(walkStartTime)}</Text>
+                </View>
+              )}
+            </View>
 
             <View style={styles.inputContainer}>
               <Text style={styles.label}>{t('yourMessageLabel')}</Text>
@@ -188,20 +230,70 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   content: {
-    gap: 20,
+    gap: 16,
   },
-  subtitle: {
-    fontSize: 16,
-    color: COLORS.TEXT_DARK,
-    lineHeight: 22,
+  eventCard: {
+    backgroundColor: COLORS.CARD_BG,
+    borderRadius: 16,
+    padding: 16,
+    gap: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    elevation: 2,
   },
-  userName: {
-    color: COLORS.ACCENT_ORANGE,
+  ownerSection: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  avatar: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: COLORS.BORDER_COLOR,
+  },
+  avatarPlaceholder: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: COLORS.ACCENT_ORANGE,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  avatarText: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#FFFFFF',
+  },
+  ownerInfo: {
+    flex: 1,
+    gap: 2,
+  },
+  ownerName: {
+    fontSize: 14,
     fontWeight: '600',
+    color: COLORS.TEXT_LIGHT,
   },
-  inputContainer: {
-    marginBottom: 16,
+  eventTitle: {
+    fontSize: 17,
+    fontWeight: '600',
+    color: COLORS.TEXT_DARK,
   },
+  timeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingTop: 8,
+    borderTopWidth: 1,
+    borderTopColor: COLORS.BORDER_COLOR,
+  },
+  timeText: {
+    fontSize: 14,
+    color: COLORS.TEXT_LIGHT,
+  },
+  inputContainer: {},
   label: {
     fontSize: 11,
     fontWeight: '600',

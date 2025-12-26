@@ -82,7 +82,13 @@ export default function SearchScreen() {
   const [detailsVisible, setDetailsVisible] = useState(false);
   const [selectedUser, setSelectedUser] = useState<UserProfile | null>(null);
   const [contactRequestVisible, setContactRequestVisible] = useState(false);
-  const [contactRequestData, setContactRequestData] = useState<{walkId: string; walkOwnerName: string} | null>(null);
+  const [contactRequestData, setContactRequestData] = useState<{
+    walkId: string;
+    walkOwnerName: string;
+    walkOwnerAvatar?: string | null;
+    walkTitle: string;
+    walkStartTime?: string;
+  } | null>(null);
   const [isCardsCollapsed, setIsCardsCollapsed] = useState(false);
   const [showFilterSheet, setShowFilterSheet] = useState(false);
   const [timeFilter, setTimeFilter] = useState<TimeFilter>('all');
@@ -554,7 +560,14 @@ export default function SearchScreen() {
           loadNearbyWalks();
         }}
         onConnectPress={(walkId, walkOwnerName) => {
-          setContactRequestData({ walkId, walkOwnerName });
+          const walkData = selectedUser?.walk;
+          setContactRequestData({
+            walkId,
+            walkOwnerName,
+            walkOwnerAvatar: selectedUser?.avatar_url,
+            walkTitle: walkData?.title || '',
+            walkStartTime: walkData?.start_time,
+          });
           setDetailsVisible(false);
           setTimeout(() => {
             setContactRequestVisible(true);
@@ -572,6 +585,9 @@ export default function SearchScreen() {
           walkId={contactRequestData.walkId}
           requesterId={user.id}
           walkOwnerName={contactRequestData.walkOwnerName}
+          walkOwnerAvatar={contactRequestData.walkOwnerAvatar}
+          walkTitle={contactRequestData.walkTitle}
+          walkStartTime={contactRequestData.walkStartTime}
           onRequestSent={() => {
             loadNearbyWalks();
           }}
