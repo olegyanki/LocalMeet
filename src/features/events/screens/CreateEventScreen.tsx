@@ -272,7 +272,7 @@ export default function CreateEventScreen() {
               <TextInput
                 style={styles.input}
                 placeholder={t('eventPlaceholder')}
-                placeholderTextColor="#9CA3AF"
+                placeholderTextColor={COLORS.GRAY_PLACEHOLDER}
                 value={title}
                 onChangeText={setTitle}
               />
@@ -284,7 +284,7 @@ export default function CreateEventScreen() {
                 ref={descriptionInputRef}
                 style={[styles.input, styles.textArea]}
                 placeholder={t('descriptionPlaceholder')}
-                placeholderTextColor="#9CA3AF"
+                placeholderTextColor={COLORS.GRAY_PLACEHOLDER}
                 value={description}
                 onChangeText={setDescription}
                 multiline
@@ -302,7 +302,7 @@ export default function CreateEventScreen() {
                     value={date}
                     onChangeText={setDate}
                     placeholder={t('datePlaceholder')}
-                    placeholderTextColor="#9CA3AF"
+                    placeholderTextColor={COLORS.GRAY_PLACEHOLDER}
                   />
                 </View>
               </View>
@@ -326,7 +326,7 @@ export default function CreateEventScreen() {
                   <TextInput
                     style={styles.locationInputText}
                     placeholder={t('searchLocationPlaceholder')}
-                    placeholderTextColor="#9CA3AF"
+                    placeholderTextColor={COLORS.GRAY_PLACEHOLDER}
                     value={locationText}
                     onChangeText={setLocationText}
                   />
@@ -361,7 +361,7 @@ export default function CreateEventScreen() {
               disabled={isSubmitting}
             >
               {isSubmitting ? (
-                <ActivityIndicator color="#FFFFFF" />
+                <ActivityIndicator color={COLORS.WHITE} />
               ) : (
                 <>
                   <Text style={styles.publishButtonText}>{t('publishEvent')}</Text>
@@ -480,7 +480,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 12,
-    shadowColor: '#000',
+    shadowColor: COLORS.SHADOW_BLACK,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.06,
     shadowRadius: 8,
@@ -489,7 +489,7 @@ const styles = StyleSheet.create({
   coverPhotoText: {
     fontSize: 14,
     fontWeight: '500',
-    color: '#6B7280',
+    color: COLORS.GRAY_DARK,
   },
   removeCoverButton: {
     position: 'absolute',
@@ -509,14 +509,14 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#6B7280',
+    color: COLORS.GRAY_DARK,
     marginBottom: 6,
     marginLeft: 4,
   },
   smallLabel: {
     fontSize: 12,
     fontWeight: '600',
-    color: '#6B7280',
+    color: COLORS.GRAY_DARK,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
     marginBottom: 6,
@@ -531,7 +531,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     fontSize: 16,
     color: COLORS.TEXT_DARK,
-    shadowColor: '#000',
+    shadowColor: COLORS.SHADOW_BLACK,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.06,
     shadowRadius: 8,
@@ -560,7 +560,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     paddingHorizontal: 12,
     paddingVertical: 12,
-    shadowColor: '#000',
+    shadowColor: COLORS.SHADOW_BLACK,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.06,
     shadowRadius: 8,
@@ -568,7 +568,7 @@ const styles = StyleSheet.create({
   },
   dateTimeInputText: {
     fontSize: 14,
-    color: '#9CA3AF',
+    color: COLORS.GRAY_PLACEHOLDER,
     marginLeft: 8,
     flex: 1,
   },
@@ -585,7 +585,7 @@ const styles = StyleSheet.create({
     borderColor: COLORS.BORDER_COLOR,
     borderRadius: 12,
     overflow: 'hidden',
-    shadowColor: '#000',
+    shadowColor: COLORS.SHADOW_BLACK,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.06,
     shadowRadius: 8,
@@ -643,7 +643,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 8,
-    shadowColor: '#000',
+    shadowColor: COLORS.SHADOW_BLACK,
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
@@ -656,13 +656,13 @@ const styles = StyleSheet.create({
   },
   // Error
   errorContainer: {
-    backgroundColor: '#FFE5E5',
+    backgroundColor: COLORS.ERROR_BG,
     borderRadius: 12,
     padding: 12,
     marginBottom: 20,
   },
   errorText: {
-    color: '#FF3B30',
+    color: COLORS.ERROR_RED,
     fontSize: 14,
     fontWeight: '500',
     textAlign: 'center',
@@ -686,7 +686,7 @@ const styles = StyleSheet.create({
     opacity: 0.6,
   },
   publishButtonText: {
-    color: '#FFFFFF',
+    color: COLORS.WHITE,
     fontSize: 16,
     fontWeight: '700',
   },

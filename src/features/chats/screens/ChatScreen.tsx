@@ -576,7 +576,7 @@ export default function ChatScreen() {
               </View>
             ) : (
               <View style={[styles.avatar, styles.avatarPlaceholder]}>
-                <ActivityIndicator size="small" color="#FFFFFF" />
+                <ActivityIndicator size="small" color={COLORS.WHITE} />
               </View>
             )}
 
@@ -774,7 +774,7 @@ export default function ChatScreen() {
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
             <View style={styles.modalIconContainer}>
-              <Trash2 size={32} color="#FF3B30" />
+              <Trash2 size={32} color={COLORS.ERROR_RED} />
             </View>
             <Text style={styles.modalTitle}>{t('deleteChatConfirm')}</Text>
             <Text style={styles.modalMessage}>
@@ -796,7 +796,7 @@ export default function ChatScreen() {
                 disabled={deleting}
               >
                 {deleting ? (
-                  <ActivityIndicator size="small" color="#FFFFFF" />
+                  <ActivityIndicator size="small" color={COLORS.WHITE} />
                 ) : (
                   <Text style={styles.modalButtonTextDelete}>{t('delete')}</Text>
                 )}
@@ -855,7 +855,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingBottom: 12,
     backgroundColor: COLORS.CARD_BG,
-    shadowColor: '#000',
+    shadowColor: COLORS.SHADOW_BLACK,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.06,
     shadowRadius: 4,
@@ -886,7 +886,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   avatarText: {
-    color: '#FFFFFF',
+    color: COLORS.WHITE,
     fontSize: 18,
     fontWeight: '600',
   },
@@ -904,7 +904,7 @@ const styles = StyleSheet.create({
     marginLeft: 4,
   },
   errorContainer: {
-    backgroundColor: '#FFE5E5',
+    backgroundColor: COLORS.ERROR_BG,
     padding: 12,
     marginHorizontal: 16,
     marginVertical: 8,
@@ -966,7 +966,7 @@ const styles = StyleSheet.create({
   otherBubble: {
     backgroundColor: COLORS.CARD_BG,
     borderBottomLeftRadius: 4,
-    shadowColor: '#000',
+    shadowColor: COLORS.SHADOW_BLACK,
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.06,
     shadowRadius: 2,
@@ -997,7 +997,7 @@ const styles = StyleSheet.create({
     paddingTop: 12,
     paddingBottom: 8,
     backgroundColor: COLORS.CARD_BG,
-    shadowColor: '#000',
+    shadowColor: COLORS.SHADOW_BLACK,
     shadowOffset: { width: 0, height: -2 },
     shadowOpacity: 0.06,
     shadowRadius: 4,
@@ -1033,7 +1033,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
   },
   sendButtonText: {
-    color: '#FFFFFF',
+    color: COLORS.WHITE,
     fontSize: 16,
     fontWeight: '600',
   },
@@ -1083,7 +1083,7 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.INPUT_BG,
   },
   modalButtonDelete: {
-    backgroundColor: '#FF3B30',
+    backgroundColor: COLORS.ERROR_RED,
   },
   modalButtonTextCancel: {
     fontSize: 16,
@@ -1093,7 +1093,7 @@ const styles = StyleSheet.create({
   modalButtonTextDelete: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#FFFFFF',
+    color: COLORS.WHITE,
   },
   optionsMenu: {
     backgroundColor: COLORS.CARD_BG,
@@ -1102,7 +1102,7 @@ const styles = StyleSheet.create({
     marginTop: 'auto',
     marginBottom: 'auto',
     overflow: 'hidden',
-    shadowColor: '#000',
+    shadowColor: COLORS.SHADOW_BLACK,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
     shadowRadius: 8,
@@ -1119,7 +1119,7 @@ const styles = StyleSheet.create({
     color: COLORS.TEXT_DARK,
   },
   optionButtonTextDelete: {
-    color: '#FF3B30',
+    color: COLORS.ERROR_RED,
   },
   optionDivider: {
     height: 1,

@@ -15,7 +15,6 @@ import { COLORS } from '@shared/constants';
 import { updateProfile } from '@shared/lib/api';
 
 const BG_COLOR = '#F5F5F5';
-const INPUT_BG = '#FFFFFF';
 export default function OnboardingScreen() {
   const { user } = useAuth();
   const { t } = useI18n();
@@ -80,7 +79,7 @@ export default function OnboardingScreen() {
         disabled={isLoading}
       >
         {isLoading ? (
-          <ActivityIndicator color="#FFFFFF" />
+          <ActivityIndicator color={COLORS.WHITE} />
         ) : (
           <Text style={styles.buttonText}>{t('continue')}</Text>
         )}
@@ -116,7 +115,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   input: {
-    backgroundColor: INPUT_BG,
+    backgroundColor: COLORS.WHITE,
     borderWidth: 1,
     borderColor: COLORS.BORDER_COLOR,
     borderRadius: 12,
@@ -141,7 +140,7 @@ const styles = StyleSheet.create({
     opacity: 0.6,
   },
   buttonText: {
-    color: '#FFFFFF',
+    color: COLORS.WHITE,
     fontSize: 16,
     fontWeight: '600',
   },

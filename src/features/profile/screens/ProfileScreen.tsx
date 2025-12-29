@@ -213,7 +213,7 @@ export default function ProfileScreen() {
         <TextInput
           style={styles.input}
           placeholder={t('enterName')}
-          placeholderTextColor="#AAAAAA"
+          placeholderTextColor={COLORS.GRAY_DISABLED}
           value={displayName}
           onChangeText={setDisplayName}
           editable={isEditing}
@@ -223,7 +223,7 @@ export default function ProfileScreen() {
         <TextInput
           style={[styles.input, styles.textArea]}
           placeholder={t('enterBio')}
-          placeholderTextColor="#AAAAAA"
+          placeholderTextColor={COLORS.GRAY_DISABLED}
           value={bio}
           onChangeText={setBio}
           editable={isEditing}
@@ -301,7 +301,7 @@ export default function ProfileScreen() {
         <TextInput
           style={[styles.input, styles.textArea]}
           placeholder={t('enterLookingFor')}
-          placeholderTextColor="#AAAAAA"
+          placeholderTextColor={COLORS.GRAY_DISABLED}
           value={lookingFor}
           onChangeText={setLookingFor}
           editable={isEditing}
@@ -315,7 +315,7 @@ export default function ProfileScreen() {
         <View style={styles.chipsContainer}>
           {instagram && (
             <View style={styles.socialChip}>
-              <Instagram size={16} color="#E4405F" />
+              <Instagram size={16} color={COLORS.INSTAGRAM} />
               <Text style={styles.socialChipText}>{instagram}</Text>
               {isEditing && (
                 <TouchableOpacity onPress={() => setInstagram('')}>
@@ -326,7 +326,7 @@ export default function ProfileScreen() {
           )}
           {telegram && (
             <View style={styles.socialChip}>
-              <Send size={16} color="#0088cc" />
+              <Send size={16} color={COLORS.TELEGRAM} />
               <Text style={styles.socialChipText}>{telegram}</Text>
               {isEditing && (
                 <TouchableOpacity onPress={() => setTelegram('')}>
@@ -340,7 +340,7 @@ export default function ProfileScreen() {
               style={styles.addSocialChip}
               onPress={() => setShowInstagramInput(true)}
             >
-              <Instagram size={16} color="#E4405F" />
+              <Instagram size={16} color={COLORS.INSTAGRAM} />
               <Text style={styles.addSocialChipText}>Instagram</Text>
             </TouchableOpacity>
           )}
@@ -349,7 +349,7 @@ export default function ProfileScreen() {
               style={styles.addSocialChip}
               onPress={() => setShowTelegramInput(true)}
             >
-              <Send size={16} color="#0088cc" />
+              <Send size={16} color={COLORS.TELEGRAM} />
               <Text style={styles.addSocialChipText}>Telegram</Text>
             </TouchableOpacity>
           )}
@@ -371,7 +371,7 @@ export default function ProfileScreen() {
       )}
 
       <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-        <LogOut size={18} color="#FF3B30" strokeWidth={2.5} />
+        <LogOut size={18} color={COLORS.ERROR_RED} strokeWidth={2.5} />
         <Text style={styles.logoutText}>{t('logout')}</Text>
       </TouchableOpacity>
 
@@ -490,7 +490,7 @@ export default function ProfileScreen() {
               <TextInput
                 style={styles.input}
                 placeholder="instagram_username"
-                placeholderTextColor="#AAAAAA"
+                placeholderTextColor={COLORS.GRAY_DISABLED}
                 value={instagram}
                 onChangeText={setInstagram}
                 autoCapitalize="none"
@@ -519,7 +519,7 @@ export default function ProfileScreen() {
               <TextInput
                 style={styles.input}
                 placeholder="@telegram_username"
-                placeholderTextColor="#AAAAAA"
+                placeholderTextColor={COLORS.GRAY_DISABLED}
                 value={telegram}
                 onChangeText={setTelegram}
                 autoCapitalize="none"
@@ -542,7 +542,7 @@ export default function ProfileScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F2F2F7',
+    backgroundColor: COLORS.BG_SECONDARY,
   },
   content: {
     padding: 20,
@@ -551,7 +551,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#F2F2F7',
+    backgroundColor: COLORS.BG_SECONDARY,
   },
   header: {
     flexDirection: 'row',
@@ -570,11 +570,11 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   errorText: {
-    color: '#E74C3C',
+    color: COLORS.ERROR_LIGHT,
     fontSize: 13,
     marginBottom: 16,
     textAlign: 'center',
-    backgroundColor: '#FFEBEE',
+    backgroundColor: COLORS.ERROR_BG_LIGHT,
     padding: 12,
     borderRadius: 8,
   },
@@ -583,7 +583,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     padding: 20,
     marginBottom: 20,
-    shadowColor: '#000',
+    shadowColor: COLORS.SHADOW_BLACK,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.06,
     shadowRadius: 12,
@@ -611,7 +611,7 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   input: {
-    backgroundColor: '#F2F2F7',
+    backgroundColor: COLORS.BG_SECONDARY,
     borderWidth: 0,
     borderRadius: 12,
     paddingHorizontal: 16,
@@ -635,7 +635,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: '#F2F2F7',
+    backgroundColor: COLORS.BG_SECONDARY,
     borderWidth: 0,
     borderRadius: 12,
     paddingHorizontal: 16,
@@ -648,13 +648,13 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   placeholderText: {
-    color: '#AAAAAA',
+    color: COLORS.GRAY_DISABLED,
   },
   switchRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: '#F2F2F7',
+    backgroundColor: COLORS.BG_SECONDARY,
     borderWidth: 0,
     borderRadius: 12,
     paddingHorizontal: 16,
@@ -684,7 +684,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    backgroundColor: '#FFF3E0',
+    backgroundColor: COLORS.WARNING_BG,
     paddingHorizontal: 12,
     paddingVertical: 8,
     borderRadius: 20,
@@ -755,14 +755,14 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.CARD_BG,
     borderWidth: 1,
     borderColor: COLORS.BORDER_COLOR,
-    shadowColor: '#000',
+    shadowColor: COLORS.SHADOW_BLACK,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.05,
     shadowRadius: 8,
     elevation: 2,
   },
   logoutText: {
-    color: '#FF3B30',
+    color: COLORS.ERROR_RED,
     fontSize: 16,
     fontWeight: '600',
     letterSpacing: -0.3,
@@ -777,7 +777,7 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     maxHeight: '70%',
-    shadowColor: '#000',
+    shadowColor: COLORS.SHADOW_BLACK,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.06,
     shadowRadius: 12,
@@ -808,10 +808,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     borderRadius: 12,
     marginBottom: 8,
-    backgroundColor: '#F2F2F7',
+    backgroundColor: COLORS.BG_SECONDARY,
   },
   optionSelected: {
-    backgroundColor: '#FFF3E0',
+    backgroundColor: COLORS.WARNING_BG,
   },
   optionText: {
     fontSize: 15,

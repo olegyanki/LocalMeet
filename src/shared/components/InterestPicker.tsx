@@ -74,7 +74,7 @@ export default function InterestPicker({
               <Text style={styles.selectedTagText}>{interest}</Text>
               {isEditing && (
                 <TouchableOpacity onPress={() => removeInterest(interest)}>
-                  <X size={14} color="#FFFFFF" />
+                  <X size={14} color={COLORS.WHITE} />
                 </TouchableOpacity>
               )}
             </View>
@@ -165,13 +165,13 @@ const styles = StyleSheet.create({
   },
   selectedTagText: {
     fontSize: 13,
-    color: '#FFFFFF',
+    color: COLORS.WHITE,
     fontWeight: '500',
   },
   addButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FFF3E0',
+    backgroundColor: COLORS.WARNING_BG,
     paddingHorizontal: 16,
     paddingVertical: 12,
     borderRadius: 12,
@@ -191,7 +191,7 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   modalContent: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: COLORS.WHITE,
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     paddingTop: 20,
@@ -238,7 +238,7 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   tagTextSelected: {
-    color: '#FFFFFF',
+    color: COLORS.WHITE,
   },
   doneButton: {
     margin: 20,
@@ -250,6 +250,6 @@ const styles = StyleSheet.create({
   doneButtonText: {
     fontSize: 17,
     fontWeight: '600',
-    color: '#FFFFFF',
+    color: COLORS.WHITE,
   },
 });

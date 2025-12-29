@@ -1,5 +1,6 @@
 import React, { useRef, useEffect } from 'react';
 import { View, StyleSheet } from 'react-native';
+import { COLORS } from '@shared/constants';
 import { WebView } from 'react-native-webview';
 
 const DEFAULT_ZOOM = 13;
@@ -127,8 +128,8 @@ export default function NativeMap({
             html: \`
               <div class="user-location-pulse">
                 <div style="position: relative; width: 20px; height: 20px;">
-                  <div style="position: absolute; width: 20px; height: 20px; left: 0; top: 0; background: #FF9500; border-radius: 50%; animation: pulse 2s ease-out infinite;"></div>
-                  <div style="position: absolute; width: 14px; height: 14px; left: 3px; top: 3px; background: #FF9500; border-radius: 50%; border: 2px solid white; box-shadow: 0 2px 8px rgba(0,0,0,0.3);"></div>
+                  <div style="position: absolute; width: 20px; height: 20px; left: 0; top: 0; background: COLORS.ACCENT_ORANGE; border-radius: 50%; animation: pulse 2s ease-out infinite;"></div>
+                  <div style="position: absolute; width: 14px; height: 14px; left: 3px; top: 3px; background: COLORS.ACCENT_ORANGE; border-radius: 50%; border: 2px solid white; box-shadow: 0 2px 8px rgba(0,0,0,0.3);"></div>
                 </div>
               </div>
             \`,
@@ -138,8 +139,8 @@ export default function NativeMap({
 
           ${radiusKm && centerLat && centerLng ? `
           L.circle([${centerLat}, ${centerLng}], {
-            color: '#FF9500',
-            fillColor: '#FF9500',
+            color: COLORS.ACCENT_ORANGE,
+            fillColor: COLORS.ACCENT_ORANGE,
             fillOpacity: 0,
             radius: ${radiusKm * 1000}
           }).addTo(map);
@@ -184,7 +185,7 @@ export default function NativeMap({
               let iconAnchor = [13, 13];
 
               if (isEvent) {
-                const color = marker.isOwner ? '#FF9500' : (marker.isActive ? '#8FD89C' : '#12B7DB');
+                const color = marker.isOwner ? COLORS.ACCENT_ORANGE : (marker.isActive ? COLORS.SUCCESS_LIGHT : COLORS.BLUE_LIGHT);
 
                 if (isSelected) {
                   markerHtml = \`
@@ -209,7 +210,7 @@ export default function NativeMap({
                 }
               } else {
                 // User marker - orange if owner, green if active (walk started), blue if future walk
-                const userColor = marker.isOwner ? '#FF9500' : (marker.isActive ? '#8FD89C' : '#12B7DB');
+                const userColor = marker.isOwner ? COLORS.ACCENT_ORANGE : (marker.isActive ? COLORS.SUCCESS_LIGHT : COLORS.BLUE_LIGHT);
 
                 if (isSelected) {
                   markerHtml = \`

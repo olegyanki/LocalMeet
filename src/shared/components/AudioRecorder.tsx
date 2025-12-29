@@ -2,8 +2,8 @@ import { useState, useRef, useEffect } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Platform } from 'react-native';
 import { Audio } from 'expo-av';
 import { Mic, X, Send } from 'lucide-react-native';
+import { COLORS } from '@shared/constants';
 
-const ACCENT_ORANGE = '#FF9500';
 const TEXT_DARK = '#1C1C1E';
 const TEXT_LIGHT = '#999999';
 
@@ -114,7 +114,7 @@ export default function AudioRecorder({ onSend, onCancel }: AudioRecorderProps) 
         style={styles.sendButton}
         onPress={() => stopRecording(true)}
       >
-        <Send size={24} color="#FFFFFF" />
+        <Send size={24} color={COLORS.WHITE} />
       </TouchableOpacity>
     </View>
   );
@@ -127,14 +127,14 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: 16,
     paddingVertical: 12,
-    backgroundColor: '#F2F2F7',
+    backgroundColor: COLORS.BG_SECONDARY,
     borderRadius: 24,
   },
   cancelButton: {
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: COLORS.WHITE,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -149,7 +149,7 @@ const styles = StyleSheet.create({
     width: 12,
     height: 12,
     borderRadius: 6,
-    backgroundColor: '#FF3B30',
+    backgroundColor: COLORS.ERROR_RED,
   },
   duration: {
     fontSize: 17,
@@ -160,7 +160,7 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: ACCENT_ORANGE,
+    backgroundColor: COLORS.ACCENT_ORANGE,
     justifyContent: 'center',
     alignItems: 'center',
   },

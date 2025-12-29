@@ -1,15 +1,54 @@
 export const COLORS = {
-  ACCENT_ORANGE: '#FF7A00',
+  // Primary colors
+  ACCENT_ORANGE: '#FF9500',
   TEXT_DARK: '#333333',
   TEXT_LIGHT: '#999999',
+  
+  // Background colors
   BG_COLOR: '#F5F5F5',
   BG_SECONDARY: '#F2F2F7',
   CARD_BG: '#FFFFFF',
   INPUT_BG: '#FFFFFF',
+  
+  // Utility colors
   BORDER_COLOR: '#E8E8E8',
   SUCCESS_GREEN: '#8FD89C',
   ERROR_RED: '#FF3B30',
+  
+  // Message colors
   MESSAGE_INCOMING: '#F0F0F0',
   MESSAGE_OUTGOING: '#FFE066',
   TIME_BLUE: '#12B7DB',
+  
+  // Common colors
+  WHITE: '#FFFFFF',
+  BLACK: '#000000',
+  SHADOW_BLACK: '#000',
+  
+  // Gray variations
+  GRAY_LIGHT: '#F5F5F5',
+  GRAY_MEDIUM: '#E8E8E8',
+  GRAY_DARK: '#6B7280',
+  GRAY_PLACEHOLDER: '#9CA3AF',
+  GRAY_DISABLED: '#AAAAAA',
+  TEXT_SECONDARY: '#4F4F4F',
+  
+  // Social colors
+  INSTAGRAM: '#E4405F',
+  TELEGRAM: '#0088cc',
+  TELEGRAM_BLUE: '#229ED9',
+  INSTAGRAM_PINK: '#E1306C',
+  
+  // Special backgrounds
+  ERROR_BG: '#FFE5E5',
+  ERROR_BG_LIGHT: '#FFEBEE',
+  WARNING_BG: '#FFF3E0',
+  OVERLAY: 'rgba(0, 0, 0, 0.5)',
+  
+  // Additional colors
+  SUCCESS_LIGHT: '#8FD89C',
+  BLUE_LIGHT: '#12B7DB',
+  GRAY_ICON: '#E0E0E0',
+  ORANGE_ICON: '#F2994A',
+  ERROR_LIGHT: '#E74C3C',
 } as const;

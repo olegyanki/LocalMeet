@@ -120,11 +120,11 @@ export default function RequestCard({ request, onReject, onAccept, onSwipeStart,
   return (
     <View style={styles.container}>
       <Animated.View style={[styles.acceptBackground, { opacity: acceptOpacity }]}>
-        <Check size={28} color="#FFFFFF" strokeWidth={3} />
+        <Check size={28} color={COLORS.WHITE} strokeWidth={3} />
       </Animated.View>
 
       <Animated.View style={[styles.rejectBackground, { opacity: rejectOpacity }]}>
-        <X size={28} color="#FFFFFF" strokeWidth={3} />
+        <X size={28} color={COLORS.WHITE} strokeWidth={3} />
       </Animated.View>
 
       <Animated.View
@@ -223,7 +223,7 @@ const styles = StyleSheet.create({
     top: 0,
     bottom: 0,
     right: 0,
-    backgroundColor: '#FF3B30',
+    backgroundColor: COLORS.ERROR_RED,
     justifyContent: 'center',
     alignItems: 'flex-end',
     paddingRight: 30,
@@ -232,7 +232,7 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.CARD_BG,
     paddingHorizontal: 16,
     paddingVertical: 14,
-    shadowColor: '#000',
+    shadowColor: COLORS.SHADOW_BLACK,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.06,
     shadowRadius: 4,
@@ -258,7 +258,7 @@ const styles = StyleSheet.create({
   avatarText: {
     fontSize: 24,
     fontWeight: '600',
-    color: '#FFFFFF',
+    color: COLORS.WHITE,
   },
   infoContainer: {
     flex: 1,

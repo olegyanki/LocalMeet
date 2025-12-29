@@ -369,10 +369,10 @@ export default function SearchScreen() {
             <G filter="url(#filter0_d_3223_2156)">
               <Rect x="11" y="11" width="32" height="32" rx="16" fill="white"/>
             </G>
-            <Rect x="18" y="22" width="9" height="3" rx="1" fill="#E0E0E0"/>
-            <Rect x="27" y="30" width="9" height="3" rx="1" fill="#E0E0E0"/>
-            <Rect x="30" y="20" width="6" height="6" rx="3" fill="#F2994A"/>
-            <Rect x="18" y="28" width="6" height="6" rx="3" fill="#F2994A"/>
+            <Rect x="18" y="22" width="9" height="3" rx="1" fill={COLORS.GRAY_ICON}/>
+            <Rect x="27" y="30" width="9" height="3" rx="1" fill={COLORS.GRAY_ICON}/>
+            <Rect x="30" y="20" width="6" height="6" rx="3" fill={COLORS.ORANGE_ICON}/>
+            <Rect x="18" y="28" width="6" height="6" rx="3" fill={COLORS.ORANGE_ICON}/>
             <Defs>
               <Filter id="filter0_d_3223_2156" x="0" y="0" width="54" height="54" filterUnits="userSpaceOnUse" colorInterpolationFilters="sRGB">
                 <FeFlood floodOpacity="0" result="BackgroundImageFix"/>
@@ -656,7 +656,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#000',
+    shadowColor: COLORS.SHADOW_BLACK,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.08,
     shadowRadius: 12,
@@ -669,7 +669,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     padding: 20,
-    shadowColor: '#000',
+    shadowColor: COLORS.SHADOW_BLACK,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.08,
     shadowRadius: 12,
@@ -681,10 +681,10 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   userCard: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: COLORS.WHITE,
     borderRadius: 24,
     padding: 20,
-    shadowColor: '#000',
+    shadowColor: COLORS.SHADOW_BLACK,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.08,
     shadowRadius: 8,
@@ -731,7 +731,7 @@ const styles = StyleSheet.create({
   },
   walkDescription: {
     fontSize: 14,
-    color: '#4F4F4F',
+    color: COLORS.TEXT_SECONDARY,
     lineHeight: 20,
   },
   cardFooter: {
@@ -770,10 +770,10 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: COLORS.WHITE,
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#000',
+    shadowColor: COLORS.SHADOW_BLACK,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.15,
     shadowRadius: 4,

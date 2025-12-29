@@ -5,8 +5,7 @@ import { useRouter } from 'expo-router';
 import { useEffect } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-const ACCENT_ORANGE = '#FF9500';
-const TEXT_LIGHT = '#999999';
+import { COLORS } from '@shared/constants';
 
 export default function TabLayout() {
   const { user, isLoading } = useAuth();
@@ -23,14 +22,14 @@ export default function TabLayout() {
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: ACCENT_ORANGE,
-        tabBarInactiveTintColor: TEXT_LIGHT,
+        tabBarActiveTintColor: COLORS.ACCENT_ORANGE,
+        tabBarInactiveTintColor: COLORS.TEXT_LIGHT,
         tabBarStyle: {
           position: 'absolute',
-          backgroundColor: '#FFFFFF',
+          backgroundColor: COLORS.WHITE,
           borderTopWidth: 0,
           elevation: 8,
-          shadowColor: '#000',
+          shadowColor: COLORS.SHADOW_BLACK,
           shadowOffset: { width: 0, height: -4 },
           shadowOpacity: 0.08,
           shadowRadius: 12,

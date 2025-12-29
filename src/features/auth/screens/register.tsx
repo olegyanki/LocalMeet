@@ -129,7 +129,7 @@ export default function RegisterScreen() {
             disabled={isLoading}
           >
             {isLoading ? (
-              <ActivityIndicator color="#FFFFFF" />
+              <ActivityIndicator color={COLORS.WHITE} />
             ) : (
               <Text style={styles.registerButtonText}>{t('registerButton')}</Text>
             )}
@@ -190,7 +190,7 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     fontSize: 16,
     color: COLORS.TEXT_DARK,
-    shadowColor: '#000',
+    shadowColor: COLORS.SHADOW_BLACK,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.06,
     shadowRadius: 8,
@@ -207,17 +207,17 @@ const styles = StyleSheet.create({
     opacity: 0.6,
   },
   registerButtonText: {
-    color: '#FFFFFF',
+    color: COLORS.WHITE,
     fontSize: 17,
     fontWeight: '600',
   },
   errorContainer: {
-    backgroundColor: '#FFE5E5',
+    backgroundColor: COLORS.ERROR_BG,
     padding: 12,
     borderRadius: 12,
   },
   errorText: {
-    color: '#FF3B30',
+    color: COLORS.ERROR_RED,
     fontSize: 14,
     fontWeight: '500',
   },

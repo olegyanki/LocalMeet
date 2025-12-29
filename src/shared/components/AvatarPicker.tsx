@@ -3,6 +3,7 @@ import { View, Text, TouchableOpacity, StyleSheet, Image, ActivityIndicator, Ale
 import { Camera, ImageIcon } from 'lucide-react-native';
 import { pickAndUploadAvatar, takePhotoAndUploadAvatar } from '@shared/lib';
 import { useI18n } from '@shared/i18n';
+import { COLORS } from '@shared/constants';
 
 const AVATAR_PLACEHOLDER = 'https://api.dicebear.com/7.x/initials/svg?seed=';
 
@@ -88,9 +89,9 @@ export default function AvatarPicker({
         {isEditing && (
           <View style={styles.editBadge}>
             {uploading ? (
-              <ActivityIndicator size="small" color="#FFFFFF" />
+              <ActivityIndicator size="small" color={COLORS.WHITE} />
             ) : (
-              <Camera size={16} color="#FFFFFF" />
+              <Camera size={16} color={COLORS.WHITE} />
             )}
           </View>
         )}
@@ -118,7 +119,7 @@ const styles = StyleSheet.create({
     borderRadius: 60,
     backgroundColor: '#E8E8E8',
     borderWidth: 4,
-    borderColor: '#FFFFFF',
+    borderColor: COLORS.WHITE,
   },
   editBadge: {
     position: 'absolute',
@@ -127,11 +128,11 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: '#FF9500',
+    backgroundColor: COLORS.ACCENT_ORANGE,
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 3,
-    borderColor: '#FFFFFF',
+    borderColor: COLORS.WHITE,
   },
   hint: {
     marginTop: 8,

@@ -2,8 +2,8 @@ import { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { Audio } from 'expo-av';
 import { Play, Pause } from 'lucide-react-native';
+import { COLORS } from '@shared/constants';
 
-const ACCENT_ORANGE = '#FF9500';
 const TEXT_LIGHT = '#999999';
 
 interface AudioPlayerProps {
@@ -104,9 +104,9 @@ export default function AudioPlayer({ audioUrl, duration, isOwnMessage }: AudioP
         disabled={isLoading}
       >
         {isPlaying ? (
-          <Pause size={20} color={isOwnMessage ? '#FFFFFF' : ACCENT_ORANGE} fill={isOwnMessage ? '#FFFFFF' : ACCENT_ORANGE} />
+          <Pause size={20} color={isOwnMessage ? COLORS.WHITE : COLORS.ACCENT_ORANGE} fill={isOwnMessage ? COLORS.WHITE : COLORS.ACCENT_ORANGE} />
         ) : (
-          <Play size={20} color={isOwnMessage ? '#FFFFFF' : ACCENT_ORANGE} fill={isOwnMessage ? '#FFFFFF' : ACCENT_ORANGE} />
+          <Play size={20} color={isOwnMessage ? COLORS.WHITE : COLORS.ACCENT_ORANGE} fill={isOwnMessage ? COLORS.WHITE : COLORS.ACCENT_ORANGE} />
         )}
       </TouchableOpacity>
 
@@ -117,7 +117,7 @@ export default function AudioPlayer({ audioUrl, duration, isOwnMessage }: AudioP
               styles.waveformProgress,
               {
                 width: `${progress * 100}%`,
-                backgroundColor: isOwnMessage ? 'rgba(255, 255, 255, 0.5)' : ACCENT_ORANGE,
+                backgroundColor: isOwnMessage ? 'rgba(255, 255, 255, 0.5)' : COLORS.ACCENT_ORANGE,
               },
             ]}
           />
@@ -148,7 +148,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255, 255, 255, 0.3)',
   },
   playButtonOther: {
-    backgroundColor: '#F2F2F7',
+    backgroundColor: COLORS.BG_SECONDARY,
   },
   waveformContainer: {
     flex: 1,

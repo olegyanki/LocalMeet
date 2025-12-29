@@ -169,7 +169,7 @@ export default function TimePickerModal({
                   onValueChange={handleSliderChange}
                   minimumTrackTintColor={COLORS.ACCENT_ORANGE}
                   maximumTrackTintColor={COLORS.BORDER_COLOR}
-                  thumbTintColor="#FFFFFF"
+                  thumbTintColor={COLORS.WHITE}
                 />
                 <View style={styles.sliderLabels}>
                   <Text style={styles.sliderLabel}>30{t('minutes')}</Text>
@@ -197,11 +197,11 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   bottomSheetModal: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: COLORS.WHITE,
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     maxHeight: '90%',
-    shadowColor: '#000',
+    shadowColor: COLORS.SHADOW_BLACK,
     shadowOffset: { width: 0, height: -4 },
     shadowOpacity: 0.1,
     shadowRadius: 12,
@@ -211,7 +211,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 12,
     paddingHorizontal: 20,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: COLORS.WHITE,
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     width: '100%',
@@ -280,7 +280,7 @@ const styles = StyleSheet.create({
     height: 40,
     ...Platform.select({
       ios: {
-        shadowColor: '#000',
+        shadowColor: COLORS.SHADOW_BLACK,
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.15,
         shadowRadius: 3,
@@ -305,7 +305,7 @@ const styles = StyleSheet.create({
     paddingBottom: 24,
     borderTopWidth: 1,
     borderTopColor: COLORS.BORDER_COLOR,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: COLORS.WHITE,
   },
   confirmButton: {
     alignItems: 'center',
@@ -315,7 +315,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
   },
   confirmButtonText: {
-    color: '#FFFFFF',
+    color: COLORS.WHITE,
     fontSize: 17,
     fontWeight: '600',
   },

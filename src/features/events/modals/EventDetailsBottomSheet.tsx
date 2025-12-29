@@ -384,10 +384,10 @@ export default function EventDetailsBottomSheet({
               disabled={isDeleting}
             >
               {isDeleting ? (
-                <ActivityIndicator size="small" color="#FFFFFF" />
+                <ActivityIndicator size="small" color={COLORS.WHITE} />
               ) : (
                 <>
-                  <Trash2 size={20} color="#FFFFFF" />
+                  <Trash2 size={20} color={COLORS.WHITE} />
                   <Text style={styles.deleteButtonText}>{t('deleteEvent')}</Text>
                 </>
               )}
@@ -438,7 +438,7 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.CARD_BG,
     padding: 16,
     borderRadius: 20,
-    shadowColor: '#000',
+    shadowColor: COLORS.SHADOW_BLACK,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.06,
     shadowRadius: 4,
@@ -464,7 +464,7 @@ const styles = StyleSheet.create({
   avatarText: {
     fontSize: 24,
     fontWeight: '700',
-    color: '#FFFFFF',
+    color: COLORS.WHITE,
   },
   activeIndicator: {
     position: 'absolute',
@@ -512,7 +512,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     padding: 20,
     marginBottom: 12,
-    shadowColor: '#000',
+    shadowColor: COLORS.SHADOW_BLACK,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.06,
     shadowRadius: 4,
@@ -564,13 +564,13 @@ const styles = StyleSheet.create({
   connectButtonText: {
     fontSize: 17,
     fontWeight: '700',
-    color: '#FFFFFF',
+    color: COLORS.WHITE,
   },
   connectButtonDisabled: {
     opacity: 0.8,
   },
   deleteButton: {
-    backgroundColor: '#FF3B30',
+    backgroundColor: COLORS.ERROR_RED,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
@@ -585,6 +585,6 @@ const styles = StyleSheet.create({
   deleteButtonText: {
     fontSize: 17,
     fontWeight: '700',
-    color: '#FFFFFF',
+    color: COLORS.WHITE,
   },
 });
