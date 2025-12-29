@@ -209,5 +209,8 @@
   "searchLocationPlaceholder": "Пошук локації або поставте пін",
   "expandMap": "Розгорнути карту",
   "tapMapToSetLocation": "Оберіть локацію на карті",
-  "setPin": "Встановити пін"
+  "setPin": "Встановити пін",
+  "actionRequired": "Потрібна дія",
+  "dateRequired": "Дата обов'язкова",
+  "timeRequired": "Час обов'язковий"
 }

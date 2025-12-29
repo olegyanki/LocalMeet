@@ -21,7 +21,7 @@ import * as ImagePicker from 'expo-image-picker';
 import { useAuth } from '@shared/contexts/AuthContext';
 import { useI18n } from '@shared/i18n';
 import { updateWalkStatus } from '@shared/lib/api';
-import { Clock, MapPin, Camera, ArrowRight, X, Maximize2 } from 'lucide-react-native';
+import { Clock, MapPin, Camera, ArrowRight, X, Maximize2, AlertTriangle } from 'lucide-react-native';
 import { router } from 'expo-router';
 import TimePickerModal from '@features/events/modals/TimePickerModal';
 import LocationPickerModal from '@features/events/modals/LocationPickerModal';
@@ -402,8 +402,16 @@ export default function CreateEventScreen() {
           </View>
 
           {error ? (
-            <View style={styles.errorContainer}>
-              <Text style={styles.errorText}>{error}</Text>
+            <View style={styles.section}>
+              <View style={styles.errorBanner}>
+                <View style={styles.errorIconContainer}>
+                  <AlertTriangle size={18} color={COLORS.ERROR_RED} />
+                </View>
+                <View style={styles.errorContent}>
+                  <Text style={styles.errorTitle}>{t('actionRequired')}</Text>
+                  <Text style={styles.errorDescription}>{error}</Text>
+                </View>
+              </View>
             </View>
           ) : null}
 
@@ -701,6 +709,40 @@ const styles = StyleSheet.create({
     marginTop: 4,
     marginLeft: 4,
     fontWeight: '500',
+  },
+  // Error Banner
+  errorBanner: {
+    backgroundColor: COLORS.ERROR_BG,
+    borderWidth: 1,
+    borderColor: COLORS.ERROR_RED,
+    borderRadius: 16,
+    padding: 16,
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 12,
+  },
+  errorIconContainer: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: COLORS.ERROR_BG_LIGHT,
+    justifyContent: 'center',
+    alignItems: 'center',
+    flexShrink: 0,
+  },
+  errorContent: {
+    flex: 1,
+  },
+  errorTitle: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: COLORS.TEXT_DARK,
+    marginBottom: 4,
+  },
+  errorDescription: {
+    fontSize: 12,
+    color: COLORS.TEXT_LIGHT,
+    lineHeight: 16,
   },
   errorContainer: {
     backgroundColor: COLORS.ERROR_BG,
