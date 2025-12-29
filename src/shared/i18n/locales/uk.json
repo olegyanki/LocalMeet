@@ -212,5 +212,7 @@
   "setPin": "Встановити пін",
   "actionRequired": "Потрібна дія",
   "dateRequired": "Дата обов'язкова",
-  "timeRequired": "Час обов'язковий"
+  "timeRequired": "Час обов'язковий",
+  "timeDuration": "Час та тривалість",
+  "startTime": "Час початку"
 }

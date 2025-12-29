@@ -9,18 +9,17 @@ import {
   Platform,
   PanResponder,
   Animated,
-  TouchableWithoutFeedback,
-  Keyboard,
+  ScrollView,
 } from 'react-native';
 import Slider from '@react-native-community/slider';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import { Check, Clock, Timer } from 'lucide-react-native';
 import { useI18n } from '@shared/i18n';
 import { COLORS } from '@shared/constants';
 
 interface TimePickerModalProps {
   visible: boolean;
   selectedTime: Date;
+  selectedDate: string;
   selectedDuration: string;
   onTimeChange: (event: any, date?: Date) => void;
   onDurationChange: (duration: string) => void;
@@ -31,6 +30,7 @@ interface TimePickerModalProps {
 export default function TimePickerModal({
   visible,
   selectedTime,
+  selectedDate,
   selectedDuration,
   onTimeChange,
   onDurationChange,
@@ -40,10 +40,18 @@ export default function TimePickerModal({
   const { t } = useI18n();
   const translateY = useRef(new Animated.Value(0)).current;
   const [sliderValue, setSliderValue] = useState(parseFloat(selectedDuration));
+  const [tempTime, setTempTime] = useState(selectedTime);
 
   useEffect(() => {
     setSliderValue(parseFloat(selectedDuration));
   }, [selectedDuration]);
+
+  useEffect(() => {
+    if (visible) {
+      const now = new Date();
+      setTempTime(now);
+    }
+  }, [visible]);
 
   const panResponder = useRef(
     PanResponder.create({
@@ -98,9 +106,9 @@ export default function TimePickerModal({
     const minutes = Math.round((value - hours) * 60);
     
     if (minutes === 0) {
-      return `${hours} ${t('hoursShort')} 00 ${t('minutes')}`;
+      return `${hours}h`;
     }
-    return `${hours} ${t('hoursShort')} ${minutes} ${t('minutes')}`;
+    return `${hours}h ${minutes}m`;
   };
 
   const handleSliderChange = (value: number) => {
@@ -108,14 +116,15 @@ export default function TimePickerModal({
     onDurationChange(value.toString());
   };
 
+  const handleConfirm = () => {
+    onTimeChange(null, tempTime);
+    onConfirm();
+  };
+
   return (
     <Modal visible={visible} transparent animationType="none" onRequestClose={onClose}>
       <View style={styles.backdrop}>
-        <TouchableOpacity
-          style={StyleSheet.absoluteFill}
-          activeOpacity={1}
-          onPress={onClose}
-        />
+        <TouchableOpacity style={StyleSheet.absoluteFill} activeOpacity={1} onPress={onClose} />
         <Animated.View
           style={[
             styles.bottomSheetModal,
@@ -125,65 +134,98 @@ export default function TimePickerModal({
           ]}
           onStartShouldSetResponder={() => true}
         >
+          {/* Handle */}
           <Animated.View {...panResponder.panHandlers} style={styles.handleContainer}>
             <View style={styles.handle} />
           </Animated.View>
-          <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-            <Animated.View {...panResponder.panHandlers} style={styles.pickerHeader}>
-              <Text style={styles.pickerTitle}>{t('whenStartsActivity')}</Text>
-            </Animated.View>
-          </TouchableWithoutFeedback>
 
-          <View style={styles.pickerContent}>
-            <View style={styles.card}>
-              <View style={styles.labelRow}>
-                <Clock size={20} color={COLORS.ACCENT_ORANGE} />
-                <Text style={styles.pickerLabel}>{t('startTime')}</Text>
-              </View>
-              <View style={styles.timePickerWrapper}>
-                <DateTimePicker
-                  value={selectedTime}
-                  mode="time"
-                  is24Hour={true}
-                  display="spinner"
-                  onChange={onTimeChange}
-                  textColor={COLORS.TEXT_DARK}
-                  locale="uk-UA"
-                />
-              </View>
+          {/* Header */}
+          <View style={styles.header}>
+            <TouchableOpacity onPress={onClose}>
+              <Text style={styles.cancelButton}>{t('cancel')}</Text>
+            </TouchableOpacity>
+            <Text style={styles.title}>{t('time')} & {t('duration')}</Text>
+            <TouchableOpacity onPress={handleConfirm}>
+              <Text style={styles.doneButton}>{t('done')}</Text>
+            </TouchableOpacity>
+          </View>
+
+          <View style={styles.content}>
+            {/* Start Time Section */}
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>{t('startTime')}</Text>
+              <DateTimePicker
+                value={tempTime}
+                mode="time"
+                is24Hour={true}
+                display="spinner"
+                onChange={(event, date) => {
+                  if (date) {
+                    const now = new Date();
+                    const today = now.toISOString().split('T')[0];
+                    
+                    // If selected date is today, check if time is in the past
+                    if (selectedDate === today) {
+                      const selectedDateTime = new Date(
+                        now.getFullYear(),
+                        now.getMonth(),
+                        now.getDate(),
+                        date.getHours(),
+                        date.getMinutes()
+                      );
+                      
+                      if (selectedDateTime < now) {
+                        setTempTime(now);
+                      } else {
+                        setTempTime(date);
+                      }
+                    } else {
+                      // If selected date is not today, any time is valid
+                      setTempTime(date);
+                    }
+                  }
+                }}
+                textColor={COLORS.TEXT_DARK}
+                style={styles.timePicker}
+              />
             </View>
 
-            <View style={styles.card}>
-              <View style={styles.labelRow}>
-                <Timer size={20} color={COLORS.ACCENT_ORANGE} />
-                <Text style={styles.pickerLabel}>{t('howLongWalk')}</Text>
+            {/* Divider */}
+            <View style={styles.divider} />
+
+            {/* Duration Section */}
+            <View style={styles.section}>
+              <View style={styles.durationHeader}>
+                <Text style={styles.sectionTitle}>{t('duration')}</Text>
+                <View style={styles.durationBadge}>
+                  <Text style={styles.durationBadgeText}>{formatDuration(sliderValue)}</Text>
+                </View>
               </View>
+              
               <View style={styles.sliderContainer}>
-                <Text style={styles.durationValue}>{formatDuration(sliderValue)}</Text>
-                <Slider
-                  style={styles.slider}
-                  minimumValue={0.5}
-                  maximumValue={6}
-                  step={0.5}
-                  value={sliderValue}
-                  onValueChange={handleSliderChange}
-                  minimumTrackTintColor={COLORS.ACCENT_ORANGE}
-                  maximumTrackTintColor={COLORS.BORDER_COLOR}
-                  thumbTintColor={COLORS.WHITE}
-                />
+                <View style={styles.sliderWrapper}>
+                  <Slider
+                    style={styles.slider}
+                    minimumValue={0.5}
+                    maximumValue={8}
+                    step={0.5}
+                    value={sliderValue}
+                    onValueChange={handleSliderChange}
+                    minimumTrackTintColor={COLORS.ACCENT_ORANGE}
+                    maximumTrackTintColor={COLORS.BORDER_COLOR}
+                    thumbTintColor={COLORS.WHITE}
+                  />
+                </View>
                 <View style={styles.sliderLabels}>
-                  <Text style={styles.sliderLabel}>30{t('minutes')}</Text>
-                  <Text style={styles.sliderLabel}>6{t('hoursShort')}</Text>
+                  <Text style={styles.sliderLabel}>30m</Text>
+                  <Text style={styles.sliderLabel}>1h</Text>
+                  <Text style={styles.sliderLabel}>2h</Text>
+                  <Text style={styles.sliderLabel}>4h</Text>
+                  <Text style={styles.sliderLabel}>8h+</Text>
                 </View>
               </View>
             </View>
           </View>
-
-          <Animated.View {...panResponder.panHandlers} style={styles.pickerFooter}>
-            <Pressable style={styles.confirmButton} onPress={onConfirm}>
-              <Text style={styles.confirmButtonText}>{t('confirm')}</Text>
-            </Pressable>
-          </Animated.View>
         </Animated.View>
       </View>
     </Modal>
@@ -193,11 +235,11 @@ export default function TimePickerModal({
 const styles = StyleSheet.create({
   backdrop: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: 'rgba(0, 0, 0, 0.4)',
     justifyContent: 'flex-end',
   },
   bottomSheetModal: {
-    backgroundColor: COLORS.WHITE,
+    backgroundColor: COLORS.CARD_BG,
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     maxHeight: '90%',
@@ -211,112 +253,97 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 12,
     paddingHorizontal: 20,
-    backgroundColor: COLORS.WHITE,
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-    width: '100%',
   },
   handle: {
     width: 48,
-    height: 5,
-    backgroundColor: '#D1D1D1',
+    height: 6,
+    backgroundColor: COLORS.BORDER_COLOR,
     borderRadius: 3,
   },
-  pickerHeader: {
+  header: {
     flexDirection: 'row',
-    justifyContent: 'center',
+    justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingTop: 4,
-    paddingBottom: 12,
+    paddingHorizontal: 24,
+    paddingVertical: 16,
     borderBottomWidth: 1,
     borderBottomColor: COLORS.BORDER_COLOR,
   },
-  pickerTitle: {
+  cancelButton: {
+    fontSize: 16,
+    fontWeight: '500',
+    color: COLORS.TEXT_LIGHT,
+  },
+  title: {
     fontSize: 18,
     fontWeight: '700',
     color: COLORS.TEXT_DARK,
   },
-  pickerContent: {
-    padding: 16,
-    paddingBottom: 12,
-    gap: 12,
+  doneButton: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: COLORS.ACCENT_ORANGE,
   },
-  card: {
-    backgroundColor: '#F8F8F8',
-    borderRadius: 16,
-    padding: 16,
+  content: {
+    paddingHorizontal: 24,
+    paddingBottom: 24,
   },
-  labelRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    marginBottom: 8,
+  section: {
+    paddingVertical: 32,
   },
-  pickerLabel: {
+  sectionTitle: {
     fontSize: 16,
     fontWeight: '600',
     color: COLORS.TEXT_DARK,
+    marginBottom: 16,
   },
-  timePickerWrapper: {
+  timePicker: {
+    alignSelf: 'center',
+  },
+  divider: {
+    height: 1,
+    backgroundColor: COLORS.BORDER_COLOR,
+    marginHorizontal: -24,
+  },
+  durationHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 8,
+    marginBottom: 24,
   },
-  sliderContainer: {
+  durationBadge: {
+    backgroundColor: 'rgba(255, 149, 0, 0.1)',
+    paddingHorizontal: 12,
     paddingVertical: 4,
+    borderRadius: 8,
   },
-  durationValue: {
-    fontSize: 28,
+  durationBadgeText: {
+    fontSize: 18,
     fontWeight: '700',
     color: COLORS.ACCENT_ORANGE,
-    textAlign: 'center',
-    marginBottom: 16,
-    fontVariant: ['tabular-nums'],
-    minWidth: 200,
+  },
+  sliderContainer: {
+    paddingHorizontal: 4,
+    paddingBottom: 8,
+  },
+  sliderWrapper: {
+    position: 'relative',
+    height: 32,
+    justifyContent: 'center',
   },
   slider: {
     width: '100%',
     height: 40,
-    ...Platform.select({
-      ios: {
-        shadowColor: COLORS.SHADOW_BLACK,
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.15,
-        shadowRadius: 3,
-      },
-      android: {
-        elevation: 3,
-      },
-    }),
   },
   sliderLabels: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     marginTop: 8,
+    paddingHorizontal: 4,
   },
   sliderLabel: {
     fontSize: 12,
-    color: COLORS.TEXT_LIGHT,
     fontWeight: '500',
-  },
-  pickerFooter: {
-    padding: 16,
-    paddingBottom: 24,
-    borderTopWidth: 1,
-    borderTopColor: COLORS.BORDER_COLOR,
-    backgroundColor: COLORS.WHITE,
-  },
-  confirmButton: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: COLORS.ACCENT_ORANGE,
-    paddingVertical: 16,
-    borderRadius: 16,
-  },
-  confirmButtonText: {
-    color: COLORS.WHITE,
-    fontSize: 17,
-    fontWeight: '600',
+    color: COLORS.TEXT_LIGHT,
   },
 });

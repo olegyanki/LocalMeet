@@ -212,5 +212,7 @@
   "setPin": "Set Pin",
   "actionRequired": "Action Required",
   "dateRequired": "Date is required",
-  "timeRequired": "Time is required"
+  "timeRequired": "Time is required",
+  "timeDuration": "Time & Duration",
+  "startTime": "Start Time"
 }

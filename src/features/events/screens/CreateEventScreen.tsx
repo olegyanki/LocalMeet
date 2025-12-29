@@ -449,6 +449,7 @@ export default function CreateEventScreen() {
       <TimePickerModal
         visible={showTimePicker}
         selectedTime={selectedTime}
+        selectedDate={date}
         selectedDuration={selectedDuration}
         onTimeChange={onTimeChange}
         onDurationChange={setSelectedDuration}
