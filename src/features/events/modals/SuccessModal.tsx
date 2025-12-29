@@ -2,11 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, Modal, Animated } from 'react-native';
 import { CheckCircle, Sparkles } from 'lucide-react-native';
 import { useI18n } from '@shared/i18n';
-
-const TEXT_DARK = '#1C1C1E';
-const TEXT_LIGHT = '#8E8E93';
-const SUCCESS_GREEN = '#4CAF50';
-const ACCENT_ORANGE = '#FF9500';
+import { COLORS } from '@shared/constants';
 
 interface SuccessModalProps {
   visible: boolean;
@@ -73,7 +69,7 @@ export default function SuccessModal({ visible }: SuccessModalProps) {
                 },
               ]}
             >
-              <Sparkles size={20} color={ACCENT_ORANGE} fill={ACCENT_ORANGE} />
+              <Sparkles size={20} color={COLORS.ACCENT_ORANGE} fill={COLORS.ACCENT_ORANGE} />
             </Animated.View>
             <Animated.View
               style={[
@@ -92,7 +88,7 @@ export default function SuccessModal({ visible }: SuccessModalProps) {
                 },
               ]}
             >
-              <Sparkles size={16} color={ACCENT_ORANGE} fill={ACCENT_ORANGE} />
+              <Sparkles size={16} color={COLORS.ACCENT_ORANGE} fill={COLORS.ACCENT_ORANGE} />
             </Animated.View>
           </View>
           <Text style={styles.title}>{t('eventCreated')}</Text>
@@ -132,10 +128,10 @@ const styles = StyleSheet.create({
     width: 96,
     height: 96,
     borderRadius: 48,
-    backgroundColor: SUCCESS_GREEN,
+    backgroundColor: COLORS.SUCCESS_GREEN,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: SUCCESS_GREEN,
+    shadowColor: COLORS.SUCCESS_GREEN,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.4,
     shadowRadius: 12,
@@ -155,13 +151,13 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 26,
     fontWeight: '700',
-    color: TEXT_DARK,
+    color: COLORS.TEXT_DARK,
     marginBottom: 12,
     textAlign: 'center',
   },
   message: {
     fontSize: 16,
-    color: TEXT_LIGHT,
+    color: COLORS.TEXT_LIGHT,
     textAlign: 'center',
     lineHeight: 22,
   },

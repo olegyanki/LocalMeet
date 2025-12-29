@@ -11,15 +11,11 @@ import {
 import { useRouter } from 'expo-router';
 import { useAuth } from '@shared/contexts/AuthContext';
 import { useI18n } from '@shared/i18n';
+import { COLORS } from '@shared/constants';
 import { updateProfile } from '@shared/lib/api';
 
 const BG_COLOR = '#F5F5F5';
-const ACCENT_ORANGE = '#FF9500';
-const TEXT_DARK = '#333333';
-const TEXT_LIGHT = '#999999';
 const INPUT_BG = '#FFFFFF';
-const BORDER_COLOR = '#E8E8E8';
-
 export default function OnboardingScreen() {
   const { user } = useAuth();
   const { t } = useI18n();
@@ -58,7 +54,7 @@ export default function OnboardingScreen() {
       <TextInput
         style={styles.input}
         placeholder={t('statusPlaceholder')}
-        placeholderTextColor={TEXT_LIGHT}
+        placeholderTextColor={COLORS.TEXT_LIGHT}
         value={status}
         onChangeText={setStatus}
         multiline
@@ -70,7 +66,7 @@ export default function OnboardingScreen() {
       <TextInput
         style={[styles.input, styles.bioInput]}
         placeholder={t('aboutYouPlaceholder')}
-        placeholderTextColor={TEXT_LIGHT}
+        placeholderTextColor={COLORS.TEXT_LIGHT}
         value={bio}
         onChangeText={setBio}
         multiline
@@ -105,29 +101,29 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 28,
     fontWeight: '700',
-    color: TEXT_DARK,
+    color: COLORS.TEXT_DARK,
     marginBottom: 8,
   },
   subtitle: {
     fontSize: 14,
-    color: TEXT_LIGHT,
+    color: COLORS.TEXT_LIGHT,
     marginBottom: 32,
   },
   label: {
     fontSize: 14,
     fontWeight: '600',
-    color: TEXT_DARK,
+    color: COLORS.TEXT_DARK,
     marginBottom: 8,
   },
   input: {
     backgroundColor: INPUT_BG,
     borderWidth: 1,
-    borderColor: BORDER_COLOR,
+    borderColor: COLORS.BORDER_COLOR,
     borderRadius: 12,
     paddingHorizontal: 16,
     paddingVertical: 12,
     fontSize: 14,
-    color: TEXT_DARK,
+    color: COLORS.TEXT_DARK,
     marginBottom: 24,
   },
   bioInput: {
@@ -135,7 +131,7 @@ const styles = StyleSheet.create({
     textAlignVertical: 'top',
   },
   button: {
-    backgroundColor: ACCENT_ORANGE,
+    backgroundColor: COLORS.ACCENT_ORANGE,
     paddingVertical: 14,
     borderRadius: 12,
     alignItems: 'center',

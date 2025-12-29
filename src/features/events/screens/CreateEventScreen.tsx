@@ -25,9 +25,6 @@ import TimePickerModal from '@features/events/modals/TimePickerModal';
 import LocationPickerModal from '@features/events/modals/LocationPickerModal';
 import SuccessModal from '@features/events/modals/SuccessModal';
 import { COLORS } from '@shared/constants';
-
-const { BG_SECONDARY, CARD_BG, TEXT_DARK, TEXT_LIGHT, ACCENT_ORANGE, BORDER_COLOR } = COLORS;
-
 export default function CreateEventScreen() {
   const { user } = useAuth();
   const { t } = useI18n();
@@ -259,7 +256,7 @@ export default function CreateEventScreen() {
                   />
                   <View style={styles.coverPhotoOverlay}>
                     <View style={styles.coverPhotoIcon}>
-                      <Camera size={24} color={ACCENT_ORANGE} />
+                      <Camera size={24} color={COLORS.ACCENT_ORANGE} />
                     </View>
                     <Text style={styles.coverPhotoText}>{t('addCoverPhoto')}</Text>
                   </View>
@@ -299,7 +296,7 @@ export default function CreateEventScreen() {
               <View style={styles.dateTimeItem}>
                 <Text style={styles.smallLabel}>{t('date').toUpperCase()}</Text>
                 <View style={styles.dateTimeInput}>
-                  <Clock size={18} color={ACCENT_ORANGE} style={styles.inputIcon} />
+                  <Clock size={18} color={COLORS.ACCENT_ORANGE} style={styles.inputIcon} />
                   <TextInput
                     style={styles.dateTimeInputText}
                     value={date}
@@ -313,7 +310,7 @@ export default function CreateEventScreen() {
               <View style={styles.dateTimeItem}>
                 <Text style={styles.smallLabel}>{t('time').toUpperCase()}</Text>
                 <Pressable style={styles.dateTimeInput} onPress={() => setShowTimePicker(true)}>
-                  <Clock size={18} color={ACCENT_ORANGE} style={styles.inputIcon} />
+                  <Clock size={18} color={COLORS.ACCENT_ORANGE} style={styles.inputIcon} />
                   <Text style={[styles.dateTimeInputText, time && styles.filledText]}>
                     {time || t('timePlaceholder')}
                   </Text>
@@ -325,7 +322,7 @@ export default function CreateEventScreen() {
               <Text style={styles.smallLabel}>{t('location').toUpperCase()}</Text>
               <View style={styles.locationContainer}>
                 <View style={styles.locationInput}>
-                  <MapPin size={20} color={ACCENT_ORANGE} style={styles.inputIcon} />
+                  <MapPin size={20} color={COLORS.ACCENT_ORANGE} style={styles.inputIcon} />
                   <TextInput
                     style={styles.locationInputText}
                     placeholder={t('searchLocationPlaceholder')}
@@ -407,7 +404,7 @@ export default function CreateEventScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: BG_SECONDARY,
+    backgroundColor: COLORS.BG_SECONDARY,
   },
   flex: {
     flex: 1,
@@ -418,17 +415,17 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 24,
     paddingBottom: 16,
-    backgroundColor: BG_SECONDARY,
+    backgroundColor: COLORS.BG_SECONDARY,
   },
   headerTitle: {
     fontSize: 20,
     fontWeight: '700',
-    color: TEXT_DARK,
+    color: COLORS.TEXT_DARK,
   },
   clearButton: {
     fontSize: 14,
     fontWeight: '600',
-    color: ACCENT_ORANGE,
+    color: COLORS.ACCENT_ORANGE,
   },
   scrollContent: {
     flex: 1,
@@ -442,7 +439,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontWeight: '700',
-    color: TEXT_DARK,
+    color: COLORS.TEXT_DARK,
     marginBottom: 20,
   },
   // Cover Photo
@@ -451,7 +448,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     backgroundColor: '#F3F4F6',
     borderWidth: 2,
-    borderColor: BORDER_COLOR,
+    borderColor: COLORS.BORDER_COLOR,
     borderStyle: 'dashed',
     overflow: 'hidden',
     position: 'relative',
@@ -479,7 +476,7 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 24,
-    backgroundColor: CARD_BG,
+    backgroundColor: COLORS.CARD_BG,
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 12,
@@ -526,14 +523,14 @@ const styles = StyleSheet.create({
     marginLeft: 4,
   },
   input: {
-    backgroundColor: CARD_BG,
+    backgroundColor: COLORS.CARD_BG,
     borderWidth: 1,
-    borderColor: BORDER_COLOR,
+    borderColor: COLORS.BORDER_COLOR,
     borderRadius: 12,
     paddingHorizontal: 16,
     paddingVertical: 12,
     fontSize: 16,
-    color: TEXT_DARK,
+    color: COLORS.TEXT_DARK,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.06,
@@ -557,9 +554,9 @@ const styles = StyleSheet.create({
   dateTimeInput: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: CARD_BG,
+    backgroundColor: COLORS.CARD_BG,
     borderWidth: 1,
-    borderColor: BORDER_COLOR,
+    borderColor: COLORS.BORDER_COLOR,
     borderRadius: 12,
     paddingHorizontal: 12,
     paddingVertical: 12,
@@ -576,16 +573,16 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   filledText: {
-    color: TEXT_DARK,
+    color: COLORS.TEXT_DARK,
   },
   inputIcon: {
     marginRight: 4,
   },
   // Location
   locationContainer: {
-    backgroundColor: CARD_BG,
+    backgroundColor: COLORS.CARD_BG,
     borderWidth: 1,
-    borderColor: BORDER_COLOR,
+    borderColor: COLORS.BORDER_COLOR,
     borderRadius: 12,
     overflow: 'hidden',
     shadowColor: '#000',
@@ -600,11 +597,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: BORDER_COLOR,
+    borderBottomColor: COLORS.BORDER_COLOR,
   },
   locationInputText: {
     fontSize: 16,
-    color: TEXT_DARK,
+    color: COLORS.TEXT_DARK,
     flex: 1,
     marginLeft: 8,
   },
@@ -634,7 +631,7 @@ const styles = StyleSheet.create({
     width: 16,
     height: 16,
     borderRadius: 8,
-    backgroundColor: ACCENT_ORANGE,
+    backgroundColor: COLORS.ACCENT_ORANGE,
     borderWidth: 2,
     borderColor: '#FFF',
   },
@@ -642,7 +639,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: 8,
     right: 8,
-    backgroundColor: CARD_BG,
+    backgroundColor: COLORS.CARD_BG,
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 8,
@@ -655,7 +652,7 @@ const styles = StyleSheet.create({
   expandMapText: {
     fontSize: 12,
     fontWeight: '500',
-    color: TEXT_DARK,
+    color: COLORS.TEXT_DARK,
   },
   // Error
   errorContainer: {
@@ -673,13 +670,13 @@ const styles = StyleSheet.create({
   // Publish Button
   publishButton: {
     flexDirection: 'row',
-    backgroundColor: ACCENT_ORANGE,
+    backgroundColor: COLORS.ACCENT_ORANGE,
     paddingVertical: 16,
     borderRadius: 20,
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
-    shadowColor: ACCENT_ORANGE,
+    shadowColor: COLORS.ACCENT_ORANGE,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.2,
     shadowRadius: 12,

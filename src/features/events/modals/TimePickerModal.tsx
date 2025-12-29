@@ -16,12 +16,7 @@ import Slider from '@react-native-community/slider';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Check, Clock, Timer } from 'lucide-react-native';
 import { useI18n } from '@shared/i18n';
-
-const ACCENT_ORANGE = '#FF9500';
-const TEXT_DARK = '#333333';
-const TEXT_LIGHT = '#999999';
-const BORDER_COLOR = '#E8E8E8';
-const SUCCESS_GREEN = '#4CAF50';
+import { COLORS } from '@shared/constants';
 
 interface TimePickerModalProps {
   visible: boolean;
@@ -142,7 +137,7 @@ export default function TimePickerModal({
           <View style={styles.pickerContent}>
             <View style={styles.card}>
               <View style={styles.labelRow}>
-                <Clock size={20} color={ACCENT_ORANGE} />
+                <Clock size={20} color={COLORS.ACCENT_ORANGE} />
                 <Text style={styles.pickerLabel}>{t('startTime')}</Text>
               </View>
               <View style={styles.timePickerWrapper}>
@@ -152,7 +147,7 @@ export default function TimePickerModal({
                   is24Hour={true}
                   display="spinner"
                   onChange={onTimeChange}
-                  textColor={TEXT_DARK}
+                  textColor={COLORS.TEXT_DARK}
                   locale="uk-UA"
                 />
               </View>
@@ -160,7 +155,7 @@ export default function TimePickerModal({
 
             <View style={styles.card}>
               <View style={styles.labelRow}>
-                <Timer size={20} color={ACCENT_ORANGE} />
+                <Timer size={20} color={COLORS.ACCENT_ORANGE} />
                 <Text style={styles.pickerLabel}>{t('howLongWalk')}</Text>
               </View>
               <View style={styles.sliderContainer}>
@@ -172,8 +167,8 @@ export default function TimePickerModal({
                   step={0.5}
                   value={sliderValue}
                   onValueChange={handleSliderChange}
-                  minimumTrackTintColor={ACCENT_ORANGE}
-                  maximumTrackTintColor={BORDER_COLOR}
+                  minimumTrackTintColor={COLORS.ACCENT_ORANGE}
+                  maximumTrackTintColor={COLORS.BORDER_COLOR}
                   thumbTintColor="#FFFFFF"
                 />
                 <View style={styles.sliderLabels}>
@@ -235,12 +230,12 @@ const styles = StyleSheet.create({
     paddingTop: 4,
     paddingBottom: 12,
     borderBottomWidth: 1,
-    borderBottomColor: BORDER_COLOR,
+    borderBottomColor: COLORS.BORDER_COLOR,
   },
   pickerTitle: {
     fontSize: 18,
     fontWeight: '700',
-    color: TEXT_DARK,
+    color: COLORS.TEXT_DARK,
   },
   pickerContent: {
     padding: 16,
@@ -261,7 +256,7 @@ const styles = StyleSheet.create({
   pickerLabel: {
     fontSize: 16,
     fontWeight: '600',
-    color: TEXT_DARK,
+    color: COLORS.TEXT_DARK,
   },
   timePickerWrapper: {
     alignItems: 'center',
@@ -274,7 +269,7 @@ const styles = StyleSheet.create({
   durationValue: {
     fontSize: 28,
     fontWeight: '700',
-    color: ACCENT_ORANGE,
+    color: COLORS.ACCENT_ORANGE,
     textAlign: 'center',
     marginBottom: 16,
     fontVariant: ['tabular-nums'],
@@ -302,20 +297,20 @@ const styles = StyleSheet.create({
   },
   sliderLabel: {
     fontSize: 12,
-    color: TEXT_LIGHT,
+    color: COLORS.TEXT_LIGHT,
     fontWeight: '500',
   },
   pickerFooter: {
     padding: 16,
     paddingBottom: 24,
     borderTopWidth: 1,
-    borderTopColor: BORDER_COLOR,
+    borderTopColor: COLORS.BORDER_COLOR,
     backgroundColor: '#FFFFFF',
   },
   confirmButton: {
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: ACCENT_ORANGE,
+    backgroundColor: COLORS.ACCENT_ORANGE,
     paddingVertical: 16,
     borderRadius: 16,
   },
