@@ -276,7 +276,7 @@ export default function CreateEventScreen() {
           style={styles.scrollContent}
           contentContainerStyle={[
             styles.content,
-            { paddingBottom: 120 + insets.bottom },
+            { paddingBottom: 50 + insets.bottom },
           ]}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
