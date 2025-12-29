@@ -1,6 +1,4 @@
 import { COLORS } from '../constants/colors';
-import { COLORS } from '@shared/constants';
-
 
 export const parseDuration = (duration: string | null): number => {
   if (!duration) return 0;

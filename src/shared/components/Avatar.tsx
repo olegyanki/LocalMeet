@@ -1,9 +1,6 @@
 import React from 'react';
 import { View, Image, Text, StyleSheet, ViewStyle } from 'react-native';
-import { COLORS } from '@shared/constants';
-
-const { ACCENT_ORANGE, WHITE, BORDER_COLOR } = COLORS;
-
+import { COLORS } from '../constants/colors';
 
 interface AvatarProps {
   uri?: string | null;
@@ -30,15 +27,15 @@ export default function Avatar({ uri, name, size = 60, style }: AvatarProps) {
 
 const styles = StyleSheet.create({
   avatar: {
-    backgroundColor: BORDER_COLOR,
+    backgroundColor: '#E8E8E8',
   },
   placeholder: {
-    backgroundColor: ACCENT_ORANGE,
+    backgroundColor: COLORS.ACCENT_ORANGE,
     justifyContent: 'center',
     alignItems: 'center',
   },
   text: {
     fontWeight: '700',
-    color: WHITE,
+    color: '#FFFFFF',
   },
 });

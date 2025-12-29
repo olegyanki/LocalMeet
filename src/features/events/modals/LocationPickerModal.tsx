@@ -176,11 +176,11 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   bottomSheetModal: {
-    backgroundColor: WHITE,
+    backgroundColor: '#FFFFFF',
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     maxHeight: '90%',
-    shadowColor: BLACK,
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: -4 },
     shadowOpacity: 0.1,
     shadowRadius: 12,
@@ -198,7 +198,7 @@ const styles = StyleSheet.create({
   handle: {
     width: 48,
     height: 5,
-    backgroundColor: HANDLE_GRAY,
+    backgroundColor: '#D1D1D1',
     borderRadius: 3,
   },
   locationPickerHeader: {

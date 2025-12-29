@@ -223,7 +223,7 @@ const styles = StyleSheet.create({
     top: 0,
     bottom: 0,
     right: 0,
-    backgroundColor: ERROR_RED,
+    backgroundColor: '#FF3B30',
     justifyContent: 'center',
     alignItems: 'flex-end',
     paddingRight: 30,
@@ -232,7 +232,7 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.CARD_BG,
     paddingHorizontal: 16,
     paddingVertical: 14,
-    shadowColor: BLACK,
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.06,
     shadowRadius: 4,
@@ -258,7 +258,7 @@ const styles = StyleSheet.create({
   avatarText: {
     fontSize: 24,
     fontWeight: '600',
-    color: WHITE,
+    color: '#FFFFFF',
   },
   infoContainer: {
     flex: 1,

@@ -26,7 +26,7 @@ import LocationPickerModal from '@features/events/modals/LocationPickerModal';
 import SuccessModal from '@features/events/modals/SuccessModal';
 import { COLORS } from '@shared/constants';
 
-const { BG_SECONDARY, CARD_BG, TEXT_DARK, TEXT_LIGHT, ACCENT_ORANGE, BORDER_COLOR, GRAY_LIGHT, GRAY_MEDIUM, GRAY_BG, ERROR_BG, ERROR_RED, WHITE, BLACK } = COLORS;
+const { BG_SECONDARY, CARD_BG, TEXT_DARK, TEXT_LIGHT, ACCENT_ORANGE, BORDER_COLOR } = COLORS;
 
 export default function CreateEventScreen() {
   const { user } = useAuth();
@@ -248,7 +248,7 @@ export default function CreateEventScreen() {
                 <>
                   <Image source={{ uri: coverImage }} style={styles.coverImage} />
                   <Pressable style={styles.removeCoverButton} onPress={() => setCoverImage(null)}>
-                    <X size={16} color={WHITE} />
+                    <X size={16} color="#FFF" />
                   </Pressable>
                 </>
               ) : (
@@ -275,7 +275,7 @@ export default function CreateEventScreen() {
               <TextInput
                 style={styles.input}
                 placeholder={t('eventPlaceholder')}
-                placeholderTextColor={GRAY_MEDIUM}
+                placeholderTextColor="#9CA3AF"
                 value={title}
                 onChangeText={setTitle}
               />
@@ -287,7 +287,7 @@ export default function CreateEventScreen() {
                 ref={descriptionInputRef}
                 style={[styles.input, styles.textArea]}
                 placeholder={t('descriptionPlaceholder')}
-                placeholderTextColor={GRAY_MEDIUM}
+                placeholderTextColor="#9CA3AF"
                 value={description}
                 onChangeText={setDescription}
                 multiline
@@ -305,7 +305,7 @@ export default function CreateEventScreen() {
                     value={date}
                     onChangeText={setDate}
                     placeholder={t('datePlaceholder')}
-                    placeholderTextColor={GRAY_MEDIUM}
+                    placeholderTextColor="#9CA3AF"
                   />
                 </View>
               </View>
@@ -329,7 +329,7 @@ export default function CreateEventScreen() {
                   <TextInput
                     style={styles.locationInputText}
                     placeholder={t('searchLocationPlaceholder')}
-                    placeholderTextColor={GRAY_MEDIUM}
+                    placeholderTextColor="#9CA3AF"
                     value={locationText}
                     onChangeText={setLocationText}
                   />
@@ -364,11 +364,11 @@ export default function CreateEventScreen() {
               disabled={isSubmitting}
             >
               {isSubmitting ? (
-                <ActivityIndicator color={WHITE} />
+                <ActivityIndicator color="#FFFFFF" />
               ) : (
                 <>
                   <Text style={styles.publishButtonText}>{t('publishEvent')}</Text>
-                  <ArrowRight size={20} color={WHITE} />
+                  <ArrowRight size={20} color="#FFF" />
                 </>
               )}
             </Pressable>
@@ -449,7 +449,7 @@ const styles = StyleSheet.create({
   coverPhotoContainer: {
     height: 192,
     borderRadius: 16,
-    backgroundColor: GRAY_BG,
+    backgroundColor: '#F3F4F6',
     borderWidth: 2,
     borderColor: BORDER_COLOR,
     borderStyle: 'dashed',
@@ -483,7 +483,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 12,
-    shadowColor: BLACK,
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.06,
     shadowRadius: 8,
@@ -492,7 +492,7 @@ const styles = StyleSheet.create({
   coverPhotoText: {
     fontSize: 14,
     fontWeight: '500',
-    color: GRAY_LIGHT,
+    color: '#6B7280',
   },
   removeCoverButton: {
     position: 'absolute',
@@ -512,14 +512,14 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 14,
     fontWeight: '600',
-    color: GRAY_LIGHT,
+    color: '#6B7280',
     marginBottom: 6,
     marginLeft: 4,
   },
   smallLabel: {
     fontSize: 12,
     fontWeight: '600',
-    color: GRAY_LIGHT,
+    color: '#6B7280',
     textTransform: 'uppercase',
     letterSpacing: 0.5,
     marginBottom: 6,
@@ -534,7 +534,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     fontSize: 16,
     color: TEXT_DARK,
-    shadowColor: BLACK,
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.06,
     shadowRadius: 8,
@@ -563,7 +563,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     paddingHorizontal: 12,
     paddingVertical: 12,
-    shadowColor: BLACK,
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.06,
     shadowRadius: 8,
@@ -571,7 +571,7 @@ const styles = StyleSheet.create({
   },
   dateTimeInputText: {
     fontSize: 14,
-    color: GRAY_MEDIUM,
+    color: '#9CA3AF',
     marginLeft: 8,
     flex: 1,
   },
@@ -588,7 +588,7 @@ const styles = StyleSheet.create({
     borderColor: BORDER_COLOR,
     borderRadius: 12,
     overflow: 'hidden',
-    shadowColor: BLACK,
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.06,
     shadowRadius: 8,
@@ -636,7 +636,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     backgroundColor: ACCENT_ORANGE,
     borderWidth: 2,
-    borderColor: WHITE,
+    borderColor: '#FFF',
   },
   expandMapButton: {
     position: 'absolute',
@@ -646,7 +646,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 8,
-    shadowColor: BLACK,
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
@@ -659,13 +659,13 @@ const styles = StyleSheet.create({
   },
   // Error
   errorContainer: {
-    backgroundColor: ERROR_BG,
+    backgroundColor: '#FFE5E5',
     borderRadius: 12,
     padding: 12,
     marginBottom: 20,
   },
   errorText: {
-    color: ERROR_RED,
+    color: '#FF3B30',
     fontSize: 14,
     fontWeight: '500',
     textAlign: 'center',
@@ -689,7 +689,7 @@ const styles = StyleSheet.create({
     opacity: 0.6,
   },
   publishButtonText: {
-    color: WHITE,
+    color: '#FFFFFF',
     fontSize: 16,
     fontWeight: '700',
   },

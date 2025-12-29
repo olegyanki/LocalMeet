@@ -11,8 +11,6 @@ import { Plus, X } from 'lucide-react-native';
 import { useI18n } from '@shared/i18n';
 import { COLORS } from '@shared/constants';
 
-const { ACCENT_ORANGE, TEXT_DARK, WHITE, ORANGE_LIGHT, BORDER_COLOR, BG_COLOR, GRAY_DISABLED } = COLORS;
-
 interface InterestPickerProps {
   selectedInterests: string[];
   onInterestsChange: (interests: string[]) => void;
@@ -76,7 +74,7 @@ export default function InterestPicker({
               <Text style={styles.selectedTagText}>{interest}</Text>
               {isEditing && (
                 <TouchableOpacity onPress={() => removeInterest(interest)}>
-                  <X size={14} color={WHITE} />
+                  <X size={14} color="#FFFFFF" />
                 </TouchableOpacity>
               )}
             </View>
@@ -87,7 +85,7 @@ export default function InterestPicker({
       {isEditing && (
         <>
           <TouchableOpacity style={styles.addButton} onPress={() => setShowModal(true)}>
-            <Plus size={16} color={ACCENT_ORANGE} />
+            <Plus size={16} color={COLORS.ACCENT_ORANGE} />
             <Text style={styles.addButtonText}>{t('addInterest')}</Text>
           </TouchableOpacity>
 
@@ -97,7 +95,7 @@ export default function InterestPicker({
                 <View style={styles.modalHeader}>
                   <Text style={styles.modalTitle}>{t('selectInterests')}</Text>
                   <TouchableOpacity onPress={() => setShowModal(false)}>
-                    <X size={24} color={TEXT_DARK} />
+                    <X size={24} color="#333333" />
                   </TouchableOpacity>
                 </View>
 
@@ -147,7 +145,7 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 15,
     fontWeight: '600',
-    color: TEXT_DARK,
+    color: '#333333',
     marginBottom: 12,
   },
   selectedContainer: {
@@ -159,7 +157,7 @@ const styles = StyleSheet.create({
   selectedTag: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: ACCENT_ORANGE,
+    backgroundColor: COLORS.ACCENT_ORANGE,
     paddingHorizontal: 12,
     paddingVertical: 8,
     borderRadius: 20,
@@ -167,24 +165,24 @@ const styles = StyleSheet.create({
   },
   selectedTagText: {
     fontSize: 13,
-    color: WHITE,
+    color: '#FFFFFF',
     fontWeight: '500',
   },
   addButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: ORANGE_LIGHT,
+    backgroundColor: '#FFF3E0',
     paddingHorizontal: 16,
     paddingVertical: 12,
     borderRadius: 12,
     gap: 8,
     borderWidth: 1,
-    borderColor: ACCENT_ORANGE,
+    borderColor: COLORS.ACCENT_ORANGE,
     borderStyle: 'dashed',
   },
   addButtonText: {
     fontSize: 14,
-    color: ACCENT_ORANGE,
+    color: COLORS.ACCENT_ORANGE,
     fontWeight: '500',
   },
   modalOverlay: {
@@ -193,7 +191,7 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   modalContent: {
-    backgroundColor: WHITE,
+    backgroundColor: '#FFFFFF',
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     paddingTop: 20,
@@ -206,12 +204,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingBottom: 16,
     borderBottomWidth: 1,
-    borderBottomColor: BORDER_COLOR,
+    borderBottomColor: '#E8E8E8',
   },
   modalTitle: {
     fontSize: 20,
     fontWeight: '700',
-    color: TEXT_DARK,
+    color: '#333333',
   },
   modalScroll: {
     padding: 20,
@@ -226,25 +224,25 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 10,
     borderRadius: 20,
-    backgroundColor: BG_COLOR,
+    backgroundColor: '#F5F5F5',
     borderWidth: 1,
-    borderColor: BORDER_COLOR,
+    borderColor: '#E8E8E8',
   },
   tagSelected: {
-    backgroundColor: ACCENT_ORANGE,
-    borderColor: ACCENT_ORANGE,
+    backgroundColor: COLORS.ACCENT_ORANGE,
+    borderColor: COLORS.ACCENT_ORANGE,
   },
   tagText: {
     fontSize: 13,
-    color: GRAY_DISABLED,
+    color: '#666666',
     fontWeight: '500',
   },
   tagTextSelected: {
-    color: WHITE,
+    color: '#FFFFFF',
   },
   doneButton: {
     margin: 20,
-    backgroundColor: ACCENT_ORANGE,
+    backgroundColor: COLORS.ACCENT_ORANGE,
     paddingVertical: 16,
     borderRadius: 16,
     alignItems: 'center',
@@ -252,6 +250,6 @@ const styles = StyleSheet.create({
   doneButtonText: {
     fontSize: 17,
     fontWeight: '600',
-    color: WHITE,
+    color: '#FFFFFF',
   },
 });

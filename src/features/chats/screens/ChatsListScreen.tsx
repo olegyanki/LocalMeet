@@ -530,7 +530,7 @@ const styles = StyleSheet.create({
   },
   switchButtonActive: {
     backgroundColor: COLORS.CARD_BG,
-    shadowColor: BLACK,
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.06,
     shadowRadius: 4,
@@ -565,7 +565,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 20,
     marginBottom: 8,
     borderRadius: 16,
-    shadowColor: BLACK,
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.06,
     shadowRadius: 4,
@@ -583,7 +583,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   chatAvatarText: {
-    color: WHITE,
+    color: '#FFFFFF',
     fontSize: 22,
     fontWeight: '600',
   },
