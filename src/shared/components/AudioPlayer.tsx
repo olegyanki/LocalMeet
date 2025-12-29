@@ -2,9 +2,9 @@ import { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { Audio } from 'expo-av';
 import { Play, Pause } from 'lucide-react-native';
-import { COLORS } from '@shared/constants';
 
-const { ACCENT_ORANGE, TEXT_LIGHT } = COLORS;
+const ACCENT_ORANGE = '#FF9500';
+const TEXT_LIGHT = '#999999';
 
 interface AudioPlayerProps {
   audioUrl: string;

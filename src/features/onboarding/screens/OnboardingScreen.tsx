@@ -12,9 +12,13 @@ import { useRouter } from 'expo-router';
 import { useAuth } from '@shared/contexts/AuthContext';
 import { useI18n } from '@shared/i18n';
 import { updateProfile } from '@shared/lib/api';
-import { COLORS } from '@shared/constants';
 
-const { BG_COLOR, ACCENT_ORANGE, TEXT_DARK, TEXT_LIGHT, INPUT_BG, BORDER_COLOR } = COLORS;
+const BG_COLOR = '#F5F5F5';
+const ACCENT_ORANGE = '#FF9500';
+const TEXT_DARK = '#333333';
+const TEXT_LIGHT = '#999999';
+const INPUT_BG = '#FFFFFF';
+const BORDER_COLOR = '#E8E8E8';
 
 export default function OnboardingScreen() {
   const { user } = useAuth();

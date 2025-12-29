@@ -16,9 +16,12 @@ import Slider from '@react-native-community/slider';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Check, Clock, Timer } from 'lucide-react-native';
 import { useI18n } from '@shared/i18n';
-import { COLORS } from '@shared/constants';
 
-const { ACCENT_ORANGE, TEXT_DARK, TEXT_LIGHT, BORDER_COLOR } = COLORS;
+const ACCENT_ORANGE = '#FF9500';
+const TEXT_DARK = '#333333';
+const TEXT_LIGHT = '#999999';
+const BORDER_COLOR = '#E8E8E8';
+const SUCCESS_GREEN = '#4CAF50';
 
 interface TimePickerModalProps {
   visible: boolean;
