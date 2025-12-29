@@ -209,5 +209,8 @@
   "searchLocationPlaceholder": "Search location or drop pin",
   "expandMap": "Expand Map",
   "tapMapToSetLocation": "Tap map to set location",
-  "setPin": "Set Pin"
+  "setPin": "Set Pin",
+  "actionRequired": "Action Required",
+  "dateRequired": "Date is required",
+  "timeRequired": "Time is required"
 }
