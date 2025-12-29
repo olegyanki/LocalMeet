@@ -104,6 +104,10 @@ export default function NativeMap({
         <script>
           const initialPadding = ${paddingBottom || 0};
           const DEFAULT_ZOOM = ${DEFAULT_ZOOM};
+          const ACCENT_ORANGE = '${COLORS.ACCENT_ORANGE}';
+          const SUCCESS_LIGHT = '${COLORS.SUCCESS_LIGHT}';
+          const BLUE_LIGHT = '${COLORS.BLUE_LIGHT}';
+          
           const map = L.map('map', {
             zoomControl: false,
             attributionControl: false
@@ -129,8 +133,8 @@ export default function NativeMap({
             html: \`
               <div class="user-location-pulse">
                 <div style="position: relative; width: 20px; height: 20px;">
-                  <div style="position: absolute; width: 20px; height: 20px; left: 0; top: 0; background: COLORS.ACCENT_ORANGE; border-radius: 50%; animation: pulse 2s ease-out infinite;"></div>
-                  <div style="position: absolute; width: 14px; height: 14px; left: 3px; top: 3px; background: COLORS.ACCENT_ORANGE; border-radius: 50%; border: 2px solid white; box-shadow: 0 2px 8px rgba(0,0,0,0.3);"></div>
+                  <div style="position: absolute; width: 20px; height: 20px; left: 0; top: 0; background: \${ACCENT_ORANGE}; border-radius: 50%; animation: pulse 2s ease-out infinite;"></div>
+                  <div style="position: absolute; width: 14px; height: 14px; left: 3px; top: 3px; background: \${ACCENT_ORANGE}; border-radius: 50%; border: 2px solid white; box-shadow: 0 2px 8px rgba(0,0,0,0.3);"></div>
                 </div>
               </div>
             \`,
@@ -140,8 +144,8 @@ export default function NativeMap({
 
           ${radiusKm && centerLat && centerLng ? `
           L.circle([${centerLat}, ${centerLng}], {
-            color: COLORS.ACCENT_ORANGE,
-            fillColor: COLORS.ACCENT_ORANGE,
+            color: ACCENT_ORANGE,
+            fillColor: ACCENT_ORANGE,
             fillOpacity: 0,
             radius: ${radiusKm * 1000}
           }).addTo(map);
@@ -186,7 +190,7 @@ export default function NativeMap({
               let iconAnchor = [13, 13];
 
               if (isEvent) {
-                const color = marker.isOwner ? COLORS.ACCENT_ORANGE : (marker.isActive ? COLORS.SUCCESS_LIGHT : COLORS.BLUE_LIGHT);
+                const color = marker.isOwner ? ACCENT_ORANGE : (marker.isActive ? SUCCESS_LIGHT : BLUE_LIGHT);
 
                 if (isSelected) {
                   markerHtml = \`
@@ -211,7 +215,7 @@ export default function NativeMap({
                 }
               } else {
                 // User marker - orange if owner, green if active (walk started), blue if future walk
-                const userColor = marker.isOwner ? COLORS.ACCENT_ORANGE : (marker.isActive ? COLORS.SUCCESS_LIGHT : COLORS.BLUE_LIGHT);
+                const userColor = marker.isOwner ? ACCENT_ORANGE : (marker.isActive ? SUCCESS_LIGHT : BLUE_LIGHT);
 
                 if (isSelected) {
                   markerHtml = \`
