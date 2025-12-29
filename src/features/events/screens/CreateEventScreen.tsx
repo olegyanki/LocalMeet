@@ -20,7 +20,7 @@ import * as Location from 'expo-location';
 import * as ImagePicker from 'expo-image-picker';
 import { useAuth } from '@shared/contexts/AuthContext';
 import { useI18n } from '@shared/i18n';
-import { updateWalkStatus } from '@shared/lib/api';
+import { createWalk, uploadEventImage, getActiveWalksByUserId } from '@shared/lib/api';
 import { Clock, MapPin, Camera, ArrowRight, X, Maximize2, AlertTriangle } from 'lucide-react-native';
 import { router } from 'expo-router';
 import TimePickerModal from '@features/events/modals/TimePickerModal';
@@ -59,6 +59,19 @@ export default function CreateEventScreen() {
   const [userLocationWasManuallyChanged, setUserLocationWasManuallyChanged] = useState(false);
   const scrollViewRef = useRef<ScrollView>(null);
   const descriptionInputRef = useRef<TextInput>(null);
+
+  const parseDuration = (duration: string): number => {
+    const parts = duration.toLowerCase().split(' ');
+    let totalMinutes = 0;
+    for (let i = 0; i < parts.length; i += 2) {
+      const value = parseInt(parts[i]);
+      const unit = parts[i + 1];
+      if (unit?.includes('hour') || unit?.includes('h')) {
+        totalMinutes += value * 60;
+      }
+    }
+    return totalMinutes;
+  };
 
   useEffect(() => {
     loadCurrentLocation();
@@ -166,14 +179,33 @@ export default function CreateEventScreen() {
       const [hours, minutes] = time.split(':').map(Number);
       const walkStartDateTime = new Date(year, month - 1, day, hours, minutes, 0, 0);
 
-      await updateWalkStatus(user.id, {
-        isWalking: true,
-        walkTitle: title,
-        walkStartTime: walkStartDateTime.toISOString(),
-        walkDuration: `${selectedDuration} ${t("hoursShort")}`,
-        walkDescription: description,
-        walkLatitude: selectedLocation?.latitude,
-        walkLongitude: selectedLocation?.longitude,
+      // Check for time overlap
+      const existingWalks = await getActiveWalksByUserId(user.id);
+      for (const walk of existingWalks) {
+        const walkStart = new Date(walk.start_time);
+        const walkEnd = new Date(walkStart.getTime() + parseDuration(walk.duration) * 60000);
+        const newStart = walkStartDateTime;
+        const newEnd = new Date(newStart.getTime() + parseFloat(selectedDuration) * 60 * 60000);
+        
+        if (newStart < walkEnd && walkStart < newEnd) {
+          throw new Error('TIME_OVERLAP');
+        }
+      }
+
+      let walkImageUrl: string | undefined;
+      if (coverImage) {
+        walkImageUrl = await uploadEventImage(user.id, coverImage);
+      }
+
+      await createWalk({
+        userId: user.id,
+        title,
+        startTime: walkStartDateTime.toISOString(),
+        duration: `${selectedDuration} ${t("hoursShort")}`,
+        description,
+        latitude: selectedLocation!.latitude,
+        longitude: selectedLocation!.longitude,
+        imageUrl: walkImageUrl,
       });
 
       setShowSuccess(true);

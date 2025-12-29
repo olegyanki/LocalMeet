@@ -1,6 +1,5 @@
 import { supabase } from './supabase';
 import * as ImagePicker from 'expo-image-picker';
-import { Platform } from 'react-native';
 
 export interface UserProfile {
   id: string;
@@ -84,6 +83,9 @@ function isWalkStillActive(walkStartTime: string | null, walkDuration: string | 
 }
 
 export async function getNearbyWalks(latitude: number, longitude: number, radiusKm: number = 5): Promise<NearbyWalk[]> {
+  // Call database function to auto-deactivate expired walks
+  await supabase.rpc('deactivate_expired_walks');
+
   const { data: walks, error: walksError } = await supabase
     .from('walks')
     .select('*')
@@ -98,15 +100,7 @@ export async function getNearbyWalks(latitude: number, longitude: number, radius
     return [];
   }
 
-  const activeWalks = walks.filter(walk =>
-    isWalkStillActive(walk.start_time, walk.duration)
-  );
-
-  if (activeWalks.length === 0) {
-    return [];
-  }
-
-  const userIds = [...new Set(activeWalks.map(w => w.user_id))];
+  const userIds = [...new Set(walks.map(w => w.user_id))];
   const { data: profiles, error: profileError } = await supabase
     .from('profiles')
     .select('*')
@@ -120,7 +114,7 @@ export async function getNearbyWalks(latitude: number, longitude: number, radius
     return [];
   }
 
-  const walksWithDistance = activeWalks
+  const walksWithDistance = walks
     .map((walk) => {
       const profile = profiles.find(p => p.id === walk.user_id);
       if (!profile) return null;
@@ -236,6 +230,7 @@ export async function createWalk(data: {
   description?: string;
   latitude: number;
   longitude: number;
+  imageUrl?: string;
 }) {
   const { data: walk, error } = await supabase
     .from('walks')
@@ -247,6 +242,7 @@ export async function createWalk(data: {
       description: data.description || null,
       latitude: data.latitude,
       longitude: data.longitude,
+      image_url: data.imageUrl || null,
       is_active: true,
     })
     .select()
@@ -316,64 +312,6 @@ export async function getActiveWalksByUserId(userId: string): Promise<Walk[]> {
   }
 
   return data || [];
-}
-
-function doTimesOverlap(
-  start1: string,
-  duration1: string,
-  start2: string,
-  duration2: string
-): boolean {
-  const s1 = new Date(start1);
-  const s2 = new Date(start2);
-  const e1 = new Date(s1.getTime() + parseDuration(duration1) * 60000);
-  const e2 = new Date(s2.getTime() + parseDuration(duration2) * 60000);
-
-  return s1 < e2 && s2 < e1;
-}
-
-export async function updateWalkStatus(userId: string, data: {
-  isWalking: boolean;
-  walkTitle?: string;
-  walkStartTime?: string;
-  walkDuration?: string;
-  walkDescription?: string;
-  walkLatitude?: number;
-  walkLongitude?: number;
-}) {
-  if (data.isWalking) {
-    // Перевіряємо перетин часу з існуючими івентами
-    const existingWalks = await getActiveWalksByUserId(userId);
-    
-    for (const walk of existingWalks) {
-      if (doTimesOverlap(
-        walk.start_time,
-        walk.duration,
-        data.walkStartTime!,
-        data.walkDuration!
-      )) {
-        throw new Error('TIME_OVERLAP');
-      }
-    }
-
-    // Створюємо нову прогулянку
-    await createWalk({
-      userId,
-      title: data.walkTitle!,
-      startTime: data.walkStartTime!,
-      duration: data.walkDuration!,
-      description: data.walkDescription,
-      latitude: data.walkLatitude!,
-      longitude: data.walkLongitude!,
-    });
-  } else {
-    // Завершуємо всі активні прогулянки користувача
-    await supabase
-      .from('walks')
-      .update({ is_active: false, updated_at: new Date().toISOString() })
-      .eq('user_id', userId)
-      .eq('is_active', true);
-  }
 }
 
 export interface WalkRequest {
@@ -518,30 +456,64 @@ export async function getMyWalkRequests(userId: string): Promise<WalkRequestWith
   return requestsWithProfiles;
 }
 
+export async function uploadEventImage(userId: string, imageUri: string): Promise<string> {
+  try {
+    const response = await fetch(imageUri);
+    const blob = await response.blob();
+    const reader = new FileReader();
+    
+    const fileData = await new Promise<ArrayBuffer>((resolve, reject) => {
+      reader.onloadend = () => {
+        if (reader.result instanceof ArrayBuffer) {
+          resolve(reader.result);
+        } else {
+          reject(new Error('Failed to read file'));
+        }
+      };
+      reader.onerror = reject;
+      reader.readAsArrayBuffer(blob);
+    });
+
+    const ext = imageUri.split('.').pop()?.split('?')[0] || 'jpg';
+    const fileName = `${userId}/${Date.now()}.${ext}`;
+
+    const { data, error } = await supabase.storage
+      .from('event-images')
+      .upload(fileName, fileData, {
+        contentType: `image/${ext}`,
+        upsert: false,
+      });
+
+    if (error) throw error;
+
+    const { data: urlData } = supabase.storage
+      .from('event-images')
+      .getPublicUrl(fileName);
+
+    return urlData.publicUrl;
+  } catch (error) {
+    console.error('Error uploading event image:', error);
+    throw error;
+  }
+}
+
 export async function uploadAvatar(userId: string, imageUri: string): Promise<string> {
   try {
-    let fileData: Blob | ArrayBuffer;
+    const response = await fetch(imageUri);
+    const blob = await response.blob();
+    const reader = new FileReader();
     
-    if (Platform.OS === 'web') {
-      const response = await fetch(imageUri);
-      fileData = await response.blob();
-    } else {
-      const response = await fetch(imageUri);
-      const blob = await response.blob();
-      const reader = new FileReader();
-      
-      fileData = await new Promise((resolve, reject) => {
-        reader.onloadend = () => {
-          if (reader.result instanceof ArrayBuffer) {
-            resolve(reader.result);
-          } else {
-            reject(new Error('Failed to read file'));
-          }
-        };
-        reader.onerror = reject;
-        reader.readAsArrayBuffer(blob);
-      });
-    }
+    const fileData = await new Promise<ArrayBuffer>((resolve, reject) => {
+      reader.onloadend = () => {
+        if (reader.result instanceof ArrayBuffer) {
+          resolve(reader.result);
+        } else {
+          reject(new Error('Failed to read file'));
+        }
+      };
+      reader.onerror = reject;
+      reader.readAsArrayBuffer(blob);
+    });
 
     const ext = imageUri.split('.').pop()?.split('?')[0] || 'jpg';
     const fileName = `${userId}/${Date.now()}.${ext}`;

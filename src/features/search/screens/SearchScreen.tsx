@@ -20,7 +20,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Location from 'expo-location';
 import { useAuth } from '@shared/contexts/AuthContext';
 import { useI18n } from '@shared/i18n';
-import { getNearbyUsers, updateWalkStatus } from '@shared/lib/api';
+import { getNearbyUsers } from '@shared/lib/api';
 import { Clock } from 'lucide-react-native';
 import Svg, { Rect, Defs, Filter, FeFlood, FeColorMatrix, FeOffset, FeGaussianBlur, FeBlend, G } from 'react-native-svg';
 import { COLORS, SIZES } from '@shared/constants';
@@ -215,49 +215,12 @@ export default function SearchScreen() {
     }
   };
 
-  const checkAndEndWalk = async (profile: UserProfile) => {
-    if (!profile.walk) {
-      return;
-    }
-
-    const now = new Date();
-    const startTime = new Date(profile.walk.start_time);
-    const durationMinutes = parseDuration(profile.walk.duration);
-    const endTime = new Date(startTime.getTime() + durationMinutes * 60000);
-
-    if (now >= endTime) {
-      await updateWalkStatus(profile.id, { isWalking: false });
-    }
-  };
-
   const loadNearbyWalks = async () => {
     if (!location || !user) return;
 
     try {
       setIsLoadingWalks(true);
       const walks = await getNearbyUsers(location.coords.latitude, location.coords.longitude);
-
-      const ownWalk = walks.find((w) => w.id === user.id);
-      if (ownWalk && ownWalk.walk) {
-        const hadWalk = !!ownWalk.walk;
-        await checkAndEndWalk(ownWalk);
-
-        if (hadWalk) {
-          const now = new Date();
-          const startTime = new Date(ownWalk.walk.start_time);
-          const durationMinutes = parseDuration(ownWalk.walk.duration);
-          const endTime = new Date(startTime.getTime() + durationMinutes * 60000);
-
-          if (now >= endTime) {
-            const updatedWalks = await getNearbyUsers(location.coords.latitude, location.coords.longitude);
-            const updatedOwnWalks = updatedWalks.filter((w) => w.id === user.id);
-            const updatedOtherWalks = updatedWalks.filter((w) => w.id !== user.id);
-            const updatedSortedWalks = [...updatedOwnWalks, ...updatedOtherWalks];
-            setNearbyWalks(updatedSortedWalks);
-            return;
-          }
-        }
-      }
 
       const otherWalks = walks.filter((w) => w.id !== user.id);
       const ownWalks = walks.filter((w) => w.id === user.id);
