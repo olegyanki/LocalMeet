@@ -12,6 +12,7 @@ import {
   Keyboard,
   Dimensions,
   Image,
+  TouchableOpacity,
 } from 'react-native';
 import MapPreview from '@shared/components/MapPreview';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -220,9 +221,9 @@ export default function CreateEventScreen() {
       {/* Header */}
       <View style={[styles.header, { paddingTop: insets.top + 16 }]}>
         <Text style={styles.headerTitle}>{t('createEvent')}</Text>
-        <Pressable onPress={clearForm}>
+        <TouchableOpacity onPress={clearForm} activeOpacity={0.6}>
           <Text style={styles.clearButton}>{t('clear')}</Text>
-        </Pressable>
+        </TouchableOpacity>
       </View>
 
       <KeyboardAvoidingView 
