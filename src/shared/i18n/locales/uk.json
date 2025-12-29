@@ -207,5 +207,7 @@
   "datePlaceholder": "РРРР-ММ-ДД",
   "timePlaceholder": "ГГ:ХХ",
   "searchLocationPlaceholder": "Пошук локації або поставте пін",
-  "expandMap": "Розгорнути карту"
+  "expandMap": "Розгорнути карту",
+  "tapMapToSetLocation": "Оберіть локацію на карті",
+  "setPin": "Встановити пін"
 }

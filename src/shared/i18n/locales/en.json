@@ -207,5 +207,7 @@
   "datePlaceholder": "YYYY-MM-DD",
   "timePlaceholder": "HH:MM",
   "searchLocationPlaceholder": "Search location or drop pin",
-  "expandMap": "Expand Map"
+  "expandMap": "Expand Map",
+  "tapMapToSetLocation": "Tap map to set location",
+  "setPin": "Set Pin"
 }

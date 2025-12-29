@@ -19,7 +19,7 @@ import * as ImagePicker from 'expo-image-picker';
 import { useAuth } from '@shared/contexts/AuthContext';
 import { useI18n } from '@shared/i18n';
 import { updateWalkStatus } from '@shared/lib/api';
-import { Clock, MapPin, Camera, ArrowRight, X } from 'lucide-react-native';
+import { Clock, MapPin, Camera, ArrowRight, X, Maximize2 } from 'lucide-react-native';
 import { router } from 'expo-router';
 import TimePickerModal from '@features/events/modals/TimePickerModal';
 import LocationPickerModal from '@features/events/modals/LocationPickerModal';
@@ -320,16 +320,10 @@ export default function CreateEventScreen() {
 
             <View style={styles.inputGroup}>
               <Text style={styles.smallLabel}>{t('location').toUpperCase()}</Text>
-              <View style={styles.locationContainer}>
-                <View style={styles.locationInput}>
+              <Pressable style={styles.locationContainer} onPress={() => setShowLocationPicker(true)}>
+                <View style={styles.locationHeader}>
                   <MapPin size={20} color={COLORS.ACCENT_ORANGE} style={styles.inputIcon} />
-                  <TextInput
-                    style={styles.locationInputText}
-                    placeholder={t('searchLocationPlaceholder')}
-                    placeholderTextColor={COLORS.GRAY_PLACEHOLDER}
-                    value={locationText}
-                    onChangeText={setLocationText}
-                  />
+                  <Text style={styles.locationPlaceholder}>{t('tapMapToSetLocation')}</Text>
                 </View>
                 <View style={styles.mapPreview}>
                   <Image 
@@ -337,13 +331,15 @@ export default function CreateEventScreen() {
                     style={styles.mapImage}
                   />
                   <View style={styles.mapPin}>
-                    <View style={styles.mapPinInner} />
+                    <MapPin size={32} color={COLORS.ACCENT_ORANGE} />
+                    <View style={styles.mapPinShadow} />
                   </View>
-                  <Pressable style={styles.expandMapButton} onPress={() => setShowLocationPicker(true)}>
-                    <Text style={styles.expandMapText}>{t('expandMap')}</Text>
-                  </Pressable>
+                  <View style={styles.setPinButton}>
+                    <Text style={styles.setPinText}>{t('setPin')}</Text>
+                    <Maximize2 size={14} color={COLORS.ACCENT_ORANGE} />
+                  </View>
                 </View>
-              </View>
+              </Pressable>
             </View>
           </View>
 
@@ -591,22 +587,24 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 2,
   },
-  locationInput: {
+  locationHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 12,
     paddingVertical: 12,
     borderBottomWidth: 1,
     borderBottomColor: COLORS.BORDER_COLOR,
+    backgroundColor: '#F9FAFB',
   },
-  locationInputText: {
-    fontSize: 16,
-    color: COLORS.TEXT_DARK,
-    flex: 1,
-    marginLeft: 8,
+  locationPlaceholder: {
+    fontSize: 14,
+    color: COLORS.TEXT_LIGHT,
+    fontWeight: '500',
+    fontStyle: 'italic',
+    marginLeft: 12,
   },
   mapPreview: {
-    height: 128,
+    height: 160,
     position: 'relative',
   },
   mapImage: {
@@ -618,27 +616,22 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: '50%',
     left: '50%',
-    width: 32,
-    height: 32,
-    marginTop: -16,
+    marginTop: -20,
     marginLeft: -16,
-    borderRadius: 16,
-    backgroundColor: 'rgba(255, 149, 0, 0.2)',
-    justifyContent: 'center',
     alignItems: 'center',
   },
-  mapPinInner: {
-    width: 16,
-    height: 16,
-    borderRadius: 8,
-    backgroundColor: COLORS.ACCENT_ORANGE,
-    borderWidth: 2,
-    borderColor: '#FFF',
+  mapPinShadow: {
+    width: 8,
+    height: 4,
+    backgroundColor: 'rgba(0,0,0,0.2)',
+    borderRadius: 4,
+    marginTop: -4,
+    transform: [{ scaleX: 1 }],
   },
-  expandMapButton: {
+  setPinButton: {
     position: 'absolute',
-    bottom: 8,
-    right: 8,
+    bottom: 12,
+    right: 12,
     backgroundColor: COLORS.CARD_BG,
     paddingHorizontal: 12,
     paddingVertical: 6,
@@ -648,11 +641,15 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 2,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    pointerEvents: 'none',
   },
-  expandMapText: {
+  setPinText: {
     fontSize: 12,
-    fontWeight: '500',
-    color: COLORS.TEXT_DARK,
+    fontWeight: '700',
+    color: COLORS.ACCENT_ORANGE,
   },
   // Error
   errorContainer: {
