@@ -44,14 +44,14 @@ export default function MapPreview({
         
         L.tileLayer('${MAP_CONFIG.MAPBOX_STYLE_URL}${MAP_CONFIG.MAPBOX_ACCESS_TOKEN}').addTo(map);
         
-        const customIcon = L.divIcon({
-          html: '<div style="background: #FF9500; width: 20px; height: 20px; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 8px rgba(0,0,0,0.3);"></div>',
-          className: 'custom-marker',
-          iconSize: [20, 20],
-          iconAnchor: [10, 10]
+        const locationIcon = L.divIcon({
+          className: 'location-marker',
+          html: '<div style="display: flex; align-items: center; justify-content: center; width: 32px; height: 32px;"><svg width="32" height="32" viewBox="0 0 20 20" fill="none"><path d="M10 2C7.24 2 5 4.24 5 7C5 10.88 10 18 10 18C10 18 15 10.88 15 7C15 4.24 12.76 2 10 2ZM10 9C8.9 9 8 8.1 8 7C8 5.9 8.9 5 10 5C11.1 5 12 5.9 12 7C12 8.1 11.1 9 10 9Z" fill="#FF9500"/></svg></div>',
+          iconSize: [32, 32],
+          iconAnchor: [16, 32]
         });
         
-        L.marker([${latitude}, ${longitude}], {icon: customIcon}).addTo(map);
+        L.marker([${latitude}, ${longitude}], {icon: locationIcon}).addTo(map);
       </script>
     </body>
     </html>

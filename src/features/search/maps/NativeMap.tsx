@@ -107,6 +107,8 @@ export default function NativeMap({
           const ACCENT_ORANGE = '${COLORS.ACCENT_ORANGE}';
           const SUCCESS_LIGHT = '${COLORS.SUCCESS_LIGHT}';
           const BLUE_LIGHT = '${COLORS.BLUE_LIGHT}';
+          const MAPBOX_ACCESS_TOKEN = '${MAP_CONFIG.MAPBOX_ACCESS_TOKEN}';
+          const MAPBOX_STYLE_URL = '${MAP_CONFIG.MAPBOX_STYLE_URL}';
           
           const map = L.map('map', {
             zoomControl: false,
@@ -122,8 +124,8 @@ export default function NativeMap({
             map.setView([${latitude}, ${longitude}], DEFAULT_ZOOM);
           }
 
-          const accessToken = '${MAP_CONFIG.MAPBOX_ACCESS_TOKEN}';
-          L.tileLayer('${MAP_CONFIG.MAPBOX_STYLE_URL}' + accessToken, {
+          const accessToken = MAPBOX_ACCESS_TOKEN;
+          L.tileLayer(MAPBOX_STYLE_URL + accessToken, {
             maxZoom: 19,
             attribution: '© Mapbox © OpenStreetMap'
           }).addTo(map);
