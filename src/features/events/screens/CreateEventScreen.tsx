@@ -90,8 +90,18 @@ export default function CreateEventScreen() {
     setDescription('');
     setCoverImage(null);
     setLocationText('');
+    setSelectedDuration('2');
+    setTempLocation(null);
+    setUserLocationWasManuallyChanged(false);
     setCurrentDateTime();
     setError('');
+    // Reset location to user's current location
+    if (location) {
+      setSelectedLocation({
+        latitude: location.coords.latitude,
+        longitude: location.coords.longitude,
+      });
+    }
   };
 
   const loadCurrentLocation = async () => {
