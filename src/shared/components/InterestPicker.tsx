@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import { Plus, X } from 'lucide-react-native';
 import { useI18n } from '@shared/i18n';
+import { COLORS } from '@shared/constants';
 
 interface InterestPickerProps {
   selectedInterests: string[];
@@ -84,7 +85,7 @@ export default function InterestPicker({
       {isEditing && (
         <>
           <TouchableOpacity style={styles.addButton} onPress={() => setShowModal(true)}>
-            <Plus size={16} color="#FF9500" />
+            <Plus size={16} color={COLORS.ACCENT_ORANGE} />
             <Text style={styles.addButtonText}>{t('addInterest')}</Text>
           </TouchableOpacity>
 
@@ -156,7 +157,7 @@ const styles = StyleSheet.create({
   selectedTag: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FF9500',
+    backgroundColor: COLORS.ACCENT_ORANGE,
     paddingHorizontal: 12,
     paddingVertical: 8,
     borderRadius: 20,
@@ -176,12 +177,12 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     gap: 8,
     borderWidth: 1,
-    borderColor: '#FF9500',
+    borderColor: COLORS.ACCENT_ORANGE,
     borderStyle: 'dashed',
   },
   addButtonText: {
     fontSize: 14,
-    color: '#FF9500',
+    color: COLORS.ACCENT_ORANGE,
     fontWeight: '500',
   },
   modalOverlay: {
@@ -228,8 +229,8 @@ const styles = StyleSheet.create({
     borderColor: '#E8E8E8',
   },
   tagSelected: {
-    backgroundColor: '#FF9500',
-    borderColor: '#FF9500',
+    backgroundColor: COLORS.ACCENT_ORANGE,
+    borderColor: COLORS.ACCENT_ORANGE,
   },
   tagText: {
     fontSize: 13,
@@ -241,7 +242,7 @@ const styles = StyleSheet.create({
   },
   doneButton: {
     margin: 20,
-    backgroundColor: '#FF9500',
+    backgroundColor: COLORS.ACCENT_ORANGE,
     paddingVertical: 16,
     borderRadius: 16,
     alignItems: 'center',

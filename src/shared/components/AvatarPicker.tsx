@@ -3,6 +3,7 @@ import { View, Text, TouchableOpacity, StyleSheet, Image, ActivityIndicator, Ale
 import { Camera, ImageIcon } from 'lucide-react-native';
 import { pickAndUploadAvatar, takePhotoAndUploadAvatar } from '@shared/lib';
 import { useI18n } from '@shared/i18n';
+import { COLORS } from '@shared/constants';
 
 const AVATAR_PLACEHOLDER = 'https://api.dicebear.com/7.x/initials/svg?seed=';
 
@@ -127,7 +128,7 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: '#FF9500',
+    backgroundColor: COLORS.ACCENT_ORANGE,
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 3,

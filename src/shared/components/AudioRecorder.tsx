@@ -2,10 +2,9 @@ import { useState, useRef, useEffect } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Platform } from 'react-native';
 import { Audio } from 'expo-av';
 import { Mic, X, Send } from 'lucide-react-native';
+import { COLORS } from '@shared/constants';
 
-const ACCENT_ORANGE = '#FF9500';
-const TEXT_DARK = '#1C1C1E';
-const TEXT_LIGHT = '#999999';
+const { ACCENT_ORANGE, TEXT_DARK, TEXT_LIGHT } = COLORS;
 
 interface AudioRecorderProps {
   onSend: (audioUri: string, duration: number) => void;

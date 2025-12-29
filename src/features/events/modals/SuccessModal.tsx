@@ -2,11 +2,9 @@ import React, { useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, Modal, Animated } from 'react-native';
 import { CheckCircle, Sparkles } from 'lucide-react-native';
 import { useI18n } from '@shared/i18n';
+import { COLORS } from '@shared/constants';
 
-const TEXT_DARK = '#1C1C1E';
-const TEXT_LIGHT = '#8E8E93';
-const SUCCESS_GREEN = '#4CAF50';
-const ACCENT_ORANGE = '#FF9500';
+const { TEXT_DARK, TEXT_LIGHT, SUCCESS_GREEN, ACCENT_ORANGE } = COLORS;
 
 interface SuccessModalProps {
   visible: boolean;
