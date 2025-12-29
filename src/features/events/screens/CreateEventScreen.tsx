@@ -40,6 +40,12 @@ export default function CreateEventScreen() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [error, setError] = useState('');
+  const [fieldErrors, setFieldErrors] = useState<{
+    title?: string;
+    description?: string;
+    date?: string;
+    time?: string;
+  }>({});
   const [showTimePicker, setShowTimePicker] = useState(false);
   const [selectedTime, setSelectedTime] = useState(new Date());
   const [selectedDuration, setSelectedDuration] = useState('2');
@@ -95,6 +101,7 @@ export default function CreateEventScreen() {
     setUserLocationWasManuallyChanged(false);
     setCurrentDateTime();
     setError('');
+    setFieldErrors({});
     // Reset location to user's current location
     if (location) {
       setSelectedLocation({
@@ -126,24 +133,34 @@ export default function CreateEventScreen() {
   const handleSubmit = async () => {
     Keyboard.dismiss();
     
+    // Reset field errors
+    setFieldErrors({});
+    setError('');
+    
+    // Validate required fields
+    const errors: typeof fieldErrors = {};
+    
     if (!title.trim()) {
-      setError(t('eventTitleRequired'));
-      return;
+      errors.title = t('eventTitleRequired');
     }
-
+    
     if (!date || !time.trim()) {
-      setError(t('startTimeRequired'));
-      return;
+      if (!date) errors.date = t('dateRequired');
+      if (!time.trim()) errors.time = t('timeRequired');
     }
-
+    
     if (!description.trim()) {
-      setError(t('descriptionRequired'));
+      errors.description = t('descriptionRequired');
+    }
+    
+    // If there are field errors, show them and return
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors);
       return;
     }
 
     try {
       setIsSubmitting(true);
-      setError('');
 
       const [year, month, day] = date.split('-').map(Number);
       const [hours, minutes] = time.split(':').map(Number);
@@ -282,51 +299,83 @@ export default function CreateEventScreen() {
             <View style={styles.inputGroup}>
               <Text style={styles.label}>{t('eventName')}</Text>
               <TextInput
-                style={styles.input}
+                style={[
+                  styles.input,
+                  fieldErrors.title && styles.inputError
+                ]}
                 placeholder={t('eventPlaceholder')}
-                placeholderTextColor={COLORS.GRAY_PLACEHOLDER}
+                placeholderTextColor={fieldErrors.title ? COLORS.ERROR_RED : COLORS.GRAY_PLACEHOLDER}
                 value={title}
                 onChangeText={setTitle}
               />
+              {fieldErrors.title && (
+                <Text style={styles.fieldErrorText}>{fieldErrors.title}</Text>
+              )}
             </View>
 
             <View style={styles.inputGroup}>
               <Text style={styles.label}>{t('description')}</Text>
               <TextInput
                 ref={descriptionInputRef}
-                style={[styles.input, styles.textArea]}
+                style={[
+                  styles.input,
+                  styles.textArea,
+                  fieldErrors.description && styles.inputError
+                ]}
                 placeholder={t('descriptionPlaceholder')}
-                placeholderTextColor={COLORS.GRAY_PLACEHOLDER}
+                placeholderTextColor={fieldErrors.description ? COLORS.ERROR_RED : COLORS.GRAY_PLACEHOLDER}
                 value={description}
                 onChangeText={setDescription}
                 multiline
                 numberOfLines={4}
               />
+              {fieldErrors.description && (
+                <Text style={styles.fieldErrorText}>{fieldErrors.description}</Text>
+              )}
             </View>
 
             <View style={styles.dateTimeRow}>
               <View style={styles.dateTimeItem}>
                 <Text style={styles.smallLabel}>{t('date').toUpperCase()}</Text>
-                <View style={styles.dateTimeInput}>
-                  <Clock size={18} color={COLORS.ACCENT_ORANGE} style={styles.inputIcon} />
+                <View style={[
+                  styles.dateTimeInput,
+                  fieldErrors.date && styles.inputError
+                ]}>
+                  <Clock size={18} color={fieldErrors.date ? COLORS.ERROR_RED : COLORS.ACCENT_ORANGE} style={styles.inputIcon} />
                   <TextInput
-                    style={styles.dateTimeInputText}
+                    style={[
+                      styles.dateTimeInputText,
+                      fieldErrors.date && { color: COLORS.ERROR_RED }
+                    ]}
                     value={date}
                     onChangeText={setDate}
                     placeholder={t('datePlaceholder')}
-                    placeholderTextColor={COLORS.GRAY_PLACEHOLDER}
+                    placeholderTextColor={fieldErrors.date ? COLORS.ERROR_RED : COLORS.GRAY_PLACEHOLDER}
                   />
                 </View>
+                {fieldErrors.date && (
+                  <Text style={styles.fieldErrorText}>{fieldErrors.date}</Text>
+                )}
               </View>
               
               <View style={styles.dateTimeItem}>
                 <Text style={styles.smallLabel}>{t('time').toUpperCase()}</Text>
-                <Pressable style={styles.dateTimeInput} onPress={() => setShowTimePicker(true)}>
-                  <Clock size={18} color={COLORS.ACCENT_ORANGE} style={styles.inputIcon} />
-                  <Text style={[styles.dateTimeInputText, time && styles.filledText]}>
+                <Pressable style={[
+                  styles.dateTimeInput,
+                  fieldErrors.time && styles.inputError
+                ]} onPress={() => setShowTimePicker(true)}>
+                  <Clock size={18} color={fieldErrors.time ? COLORS.ERROR_RED : COLORS.ACCENT_ORANGE} style={styles.inputIcon} />
+                  <Text style={[
+                    styles.dateTimeInputText,
+                    time && styles.filledText,
+                    fieldErrors.time && { color: COLORS.ERROR_RED }
+                  ]}>
                     {time || t('timePlaceholder')}
                   </Text>
                 </Pressable>
+                {fieldErrors.time && (
+                  <Text style={styles.fieldErrorText}>{fieldErrors.time}</Text>
+                )}
               </View>
             </View>
 
@@ -643,7 +692,16 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: COLORS.ACCENT_ORANGE,
   },
-  // Error
+  inputError: {
+    borderColor: COLORS.ERROR_RED,
+  },
+  fieldErrorText: {
+    fontSize: 12,
+    color: COLORS.ERROR_RED,
+    marginTop: 4,
+    marginLeft: 4,
+    fontWeight: '500',
+  },
   errorContainer: {
     backgroundColor: COLORS.ERROR_BG,
     borderRadius: 12,
