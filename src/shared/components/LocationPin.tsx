@@ -1,12 +1,15 @@
 import React from 'react';
 import Svg, { Path } from 'react-native-svg';
+import { COLORS } from '@shared/constants';
+
+const { ORANGE_DEFAULT } = COLORS;
 
 interface LocationPinProps {
   size?: number;
   color?: string;
 }
 
-export default function LocationPin({ size = 24, color = '#F27D11' }: LocationPinProps) {
+export default function LocationPin({ size = 24, color = ORANGE_DEFAULT }: LocationPinProps) {
   return (
     <Svg width={size} height={size} viewBox="0 0 20 20" fill="none">
       <Path 

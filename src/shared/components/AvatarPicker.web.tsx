@@ -84,9 +84,9 @@ const styles = StyleSheet.create({
     width: 120,
     height: 120,
     borderRadius: 60,
-    backgroundColor: '#E8E8E8',
+    backgroundColor: BORDER_COLOR,
     borderWidth: 4,
-    borderColor: '#FFFFFF',
+    borderColor: WHITE,
   },
   editBadge: {
     position: 'absolute',
@@ -99,11 +99,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 3,
-    borderColor: '#FFFFFF',
+    borderColor: WHITE,
   },
   hint: {
     marginTop: 8,
     fontSize: 12,
-    color: '#999999',
+    color: TEXT_LIGHT,
   },
 });

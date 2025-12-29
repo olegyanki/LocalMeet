@@ -5,6 +5,7 @@ import { pickAndUploadAvatar, takePhotoAndUploadAvatar } from '@shared/lib';
 import { useI18n } from '@shared/i18n';
 import { COLORS } from '@shared/constants';
 
+const { ACCENT_ORANGE, WHITE, BORDER_COLOR, TEXT_LIGHT } = COLORS;
 const AVATAR_PLACEHOLDER = 'https://api.dicebear.com/7.x/initials/svg?seed=';
 
 interface AvatarPickerProps {
@@ -89,9 +90,9 @@ export default function AvatarPicker({
         {isEditing && (
           <View style={styles.editBadge}>
             {uploading ? (
-              <ActivityIndicator size="small" color="#FFFFFF" />
+              <ActivityIndicator size="small" color={WHITE} />
             ) : (
-              <Camera size={16} color="#FFFFFF" />
+              <Camera size={16} color={WHITE} />
             )}
           </View>
         )}
@@ -117,9 +118,9 @@ const styles = StyleSheet.create({
     width: 120,
     height: 120,
     borderRadius: 60,
-    backgroundColor: '#E8E8E8',
+    backgroundColor: BORDER_COLOR,
     borderWidth: 4,
-    borderColor: '#FFFFFF',
+    borderColor: WHITE,
   },
   editBadge: {
     position: 'absolute',
@@ -128,15 +129,15 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: COLORS.ACCENT_ORANGE,
+    backgroundColor: ACCENT_ORANGE,
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 3,
-    borderColor: '#FFFFFF',
+    borderColor: WHITE,
   },
   hint: {
     marginTop: 8,
     fontSize: 12,
-    color: '#999999',
+    color: TEXT_LIGHT,
   },
 });

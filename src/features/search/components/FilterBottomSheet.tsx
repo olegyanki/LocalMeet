@@ -215,7 +215,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     borderRadius: 20,
     backgroundColor: COLORS.CARD_BG,
-    shadowColor: '#000',
+    shadowColor: BLACK,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.06,
     shadowRadius: 8,
@@ -230,7 +230,7 @@ const styles = StyleSheet.create({
     color: COLORS.TEXT_DARK,
   },
   filterChipTextActive: {
-    color: '#FFFFFF',
+    color: WHITE,
   },
   sortContainer: {
     flexDirection: 'row',
@@ -242,7 +242,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     backgroundColor: COLORS.CARD_BG,
     alignItems: 'center',
-    shadowColor: '#000',
+    shadowColor: BLACK,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.06,
     shadowRadius: 8,
@@ -257,6 +257,6 @@ const styles = StyleSheet.create({
     color: COLORS.TEXT_DARK,
   },
   sortOptionTextActive: {
-    color: '#FFFFFF',
+    color: WHITE,
   },
 });

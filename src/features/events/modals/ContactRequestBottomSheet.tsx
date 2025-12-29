@@ -237,7 +237,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     padding: 16,
     gap: 12,
-    shadowColor: '#000',
+    shadowColor: BLACK,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.06,
     shadowRadius: 8,
@@ -265,7 +265,7 @@ const styles = StyleSheet.create({
   avatarText: {
     fontSize: 20,
     fontWeight: '700',
-    color: '#FFFFFF',
+    color: WHITE,
   },
   ownerInfo: {
     flex: 1,
@@ -309,7 +309,7 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: COLORS.TEXT_DARK,
     minHeight: 120,
-    shadowColor: '#000',
+    shadowColor: BLACK,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.06,
     shadowRadius: 8,
@@ -322,14 +322,14 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   errorContainer: {
-    backgroundColor: '#FFE5E5',
+    backgroundColor: ERROR_BG,
     padding: 12,
     borderRadius: 12,
     marginBottom: 16,
   },
   errorText: {
     fontSize: 14,
-    color: '#FF3B30',
+    color: ERROR_RED,
   },
   submitButton: {
     backgroundColor: COLORS.ACCENT_ORANGE,
@@ -345,6 +345,6 @@ const styles = StyleSheet.create({
   submitButtonText: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#FFFFFF',
+    color: WHITE,
   },
 });

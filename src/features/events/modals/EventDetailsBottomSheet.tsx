@@ -197,7 +197,7 @@ export default function EventDetailsBottomSheet({
 
     if (diffMins < 0) return COLORS.SUCCESS_GREEN;
     if (diffMins <= 15) return COLORS.ACCENT_ORANGE;
-    return '#12B7DB';
+    return TIME_BLUE;
   };
 
   const handleConnect = () => {
@@ -438,7 +438,7 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.CARD_BG,
     padding: 16,
     borderRadius: 20,
-    shadowColor: '#000',
+    shadowColor: BLACK,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.06,
     shadowRadius: 4,
@@ -464,7 +464,7 @@ const styles = StyleSheet.create({
   avatarText: {
     fontSize: 24,
     fontWeight: '700',
-    color: '#FFFFFF',
+    color: WHITE,
   },
   activeIndicator: {
     position: 'absolute',
@@ -512,7 +512,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     padding: 20,
     marginBottom: 12,
-    shadowColor: '#000',
+    shadowColor: BLACK,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.06,
     shadowRadius: 4,
@@ -564,13 +564,13 @@ const styles = StyleSheet.create({
   connectButtonText: {
     fontSize: 17,
     fontWeight: '700',
-    color: '#FFFFFF',
+    color: WHITE,
   },
   connectButtonDisabled: {
     opacity: 0.8,
   },
   deleteButton: {
-    backgroundColor: '#FF3B30',
+    backgroundColor: ERROR_RED,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
@@ -585,6 +585,6 @@ const styles = StyleSheet.create({
   deleteButtonText: {
     fontSize: 17,
     fontWeight: '700',
-    color: '#FFFFFF',
+    color: WHITE,
   },
 });

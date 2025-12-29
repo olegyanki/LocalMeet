@@ -199,11 +199,11 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   bottomSheetModal: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: WHITE,
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     maxHeight: '90%',
-    shadowColor: '#000',
+    shadowColor: BLACK,
     shadowOffset: { width: 0, height: -4 },
     shadowOpacity: 0.1,
     shadowRadius: 12,
@@ -213,7 +213,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 12,
     paddingHorizontal: 20,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: WHITE,
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     width: '100%',
@@ -221,7 +221,7 @@ const styles = StyleSheet.create({
   handle: {
     width: 48,
     height: 5,
-    backgroundColor: '#D1D1D1',
+    backgroundColor: HANDLE_GRAY,
     borderRadius: 3,
   },
   pickerHeader: {
@@ -245,7 +245,7 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   card: {
-    backgroundColor: '#F8F8F8',
+    backgroundColor: CARD_GRAY,
     borderRadius: 16,
     padding: 16,
   },
@@ -282,7 +282,7 @@ const styles = StyleSheet.create({
     height: 40,
     ...Platform.select({
       ios: {
-        shadowColor: '#000',
+        shadowColor: BLACK,
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.15,
         shadowRadius: 3,
@@ -307,7 +307,7 @@ const styles = StyleSheet.create({
     paddingBottom: 24,
     borderTopWidth: 1,
     borderTopColor: BORDER_COLOR,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: WHITE,
   },
   confirmButton: {
     alignItems: 'center',
@@ -317,7 +317,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
   },
   confirmButtonText: {
-    color: '#FFFFFF',
+    color: WHITE,
     fontSize: 17,
     fontWeight: '600',
   },

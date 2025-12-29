@@ -104,9 +104,9 @@ export default function AudioPlayer({ audioUrl, duration, isOwnMessage }: AudioP
         disabled={isLoading}
       >
         {isPlaying ? (
-          <Pause size={20} color={isOwnMessage ? '#FFFFFF' : ACCENT_ORANGE} fill={isOwnMessage ? '#FFFFFF' : ACCENT_ORANGE} />
+          <Pause size={20} color={isOwnMessage ? WHITE : ACCENT_ORANGE} fill={isOwnMessage ? WHITE : ACCENT_ORANGE} />
         ) : (
-          <Play size={20} color={isOwnMessage ? '#FFFFFF' : ACCENT_ORANGE} fill={isOwnMessage ? '#FFFFFF' : ACCENT_ORANGE} />
+          <Play size={20} color={isOwnMessage ? WHITE : ACCENT_ORANGE} fill={isOwnMessage ? WHITE : ACCENT_ORANGE} />
         )}
       </TouchableOpacity>
 
@@ -148,7 +148,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255, 255, 255, 0.3)',
   },
   playButtonOther: {
-    backgroundColor: '#F2F2F7',
+    backgroundColor: BG_SECONDARY,
   },
   waveformContainer: {
     flex: 1,

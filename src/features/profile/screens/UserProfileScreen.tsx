@@ -345,7 +345,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingBottom: 12,
     backgroundColor: COLORS.CARD_BG,
-    shadowColor: '#000',
+    shadowColor: BLACK,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.06,
     shadowRadius: 4,
@@ -378,7 +378,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   avatarText: {
-    color: '#FFFFFF',
+    color: WHITE,
     fontSize: 40,
     fontWeight: '700',
   },
@@ -409,7 +409,7 @@ const styles = StyleSheet.create({
     padding: 16,
     alignItems: 'center',
     flex: 1,
-    shadowColor: '#000',
+    shadowColor: BLACK,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.06,
     shadowRadius: 4,
@@ -437,7 +437,7 @@ const styles = StyleSheet.create({
     padding: 20,
     marginHorizontal: 20,
     marginBottom: 12,
-    shadowColor: '#000',
+    shadowColor: BLACK,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.06,
     shadowRadius: 4,
@@ -471,7 +471,7 @@ const styles = StyleSheet.create({
   countBadgeText: {
     fontSize: 11,
     fontWeight: '700',
-    color: '#FFFFFF',
+    color: WHITE,
   },
   chipsContainer: {
     flexDirection: 'row',
@@ -517,7 +517,7 @@ const styles = StyleSheet.create({
   },
   chipText: {
     fontSize: 14,
-    color: '#FFFFFF',
+    color: WHITE,
     fontWeight: '600',
   },
   lookingForCard: {
@@ -555,10 +555,10 @@ const styles = StyleSheet.create({
   },
   instagramIcon: {
     background: 'linear-gradient(45deg, #f09433 0%,#e6683c 25%,#dc2743 50%,#cc2366 75%,#bc1888 100%)',
-    backgroundColor: '#E1306C',
+    backgroundColor: INSTAGRAM,
   },
   telegramIcon: {
-    backgroundColor: '#229ED9',
+    backgroundColor: TELEGRAM,
   },
   socialLinkInfo: {
     flex: 1,
@@ -577,7 +577,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   errorText: {
-    color: '#E74C3C',
+    color: ERROR_CRITICAL,
     fontSize: 16,
     textAlign: 'center',
     marginBottom: 16,
@@ -589,7 +589,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
   },
   backButtonText: {
-    color: '#FFFFFF',
+    color: WHITE,
     fontSize: 16,
     fontWeight: '600',
   },
@@ -612,7 +612,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255, 255, 255, 0.2)',
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#000',
+    shadowColor: BLACK,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.3,
     shadowRadius: 4,

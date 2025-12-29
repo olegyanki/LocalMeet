@@ -141,17 +141,17 @@ const styles = StyleSheet.create({
     opacity: 0.6,
   },
   buttonText: {
-    color: '#FFFFFF',
+    color: WHITE,
     fontSize: 16,
     fontWeight: '600',
   },
   errorText: {
-    color: '#E74C3C',
+    color: ERROR_CRITICAL,
     fontSize: 14,
     marginBottom: 16,
     paddingHorizontal: 12,
     paddingVertical: 8,
-    backgroundColor: '#FADBD8',
+    backgroundColor: ERROR_LIGHT,
     borderRadius: 8,
   },
 });

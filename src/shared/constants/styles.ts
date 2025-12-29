@@ -1,16 +1,19 @@
 import { StyleSheet } from 'react-native';
 import { COLORS } from './colors';
 
+const { BLACK, WHITE, BORDER_COLOR } = COLORS;
+
+
 export const COMMON_STYLES = StyleSheet.create({
   shadow: {
-    shadowColor: '#000',
+    shadowColor: BLACK,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.08,
     shadowRadius: 8,
     elevation: 3,
   },
   shadowLarge: {
-    shadowColor: '#000',
+    shadowColor: BLACK,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.08,
     shadowRadius: 12,
@@ -20,7 +23,7 @@ export const COMMON_STYLES = StyleSheet.create({
     width: 60,
     height: 60,
     borderRadius: 30,
-    backgroundColor: '#E8E8E8',
+    backgroundColor: BORDER_COLOR,
   },
   avatarPlaceholder: {
     backgroundColor: COLORS.ACCENT_ORANGE,
@@ -30,7 +33,7 @@ export const COMMON_STYLES = StyleSheet.create({
   avatarText: {
     fontSize: 24,
     fontWeight: '700',
-    color: '#FFFFFF',
+    color: WHITE,
   },
 });
 
