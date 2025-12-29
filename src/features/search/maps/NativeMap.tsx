@@ -1,9 +1,10 @@
 import React, { useRef, useEffect } from 'react';
 import { View, StyleSheet } from 'react-native';
 import { COLORS } from '@shared/constants';
+import { MAP_CONFIG } from '@shared/constants/map';
 import { WebView } from 'react-native-webview';
 
-const DEFAULT_ZOOM = 13;
+const DEFAULT_ZOOM = MAP_CONFIG.DEFAULT_ZOOM;
 
 interface Marker {
   id: string;
@@ -117,8 +118,8 @@ export default function NativeMap({
             map.setView([${latitude}, ${longitude}], DEFAULT_ZOOM);
           }
 
-          const accessToken = 'pk.eyJ1Ijoib2xlaC15YW5raXZza3lpIiwiYSI6ImNtamJ4cmUxdDAxaTEzZHF0M2s1Zmk4MWMifQ.hC6Ff88M5zCdMEO5mIY2Iw';
-          L.tileLayer('https://api.mapbox.com/styles/v1/oleh-yankivskyi/cmjby103d000701s15oy6drxv/tiles/256/{z}/{x}/{y}@2x?access_token=' + accessToken, {
+          const accessToken = '${MAP_CONFIG.MAPBOX_ACCESS_TOKEN}';
+          L.tileLayer('${MAP_CONFIG.MAPBOX_STYLE_URL}' + accessToken, {
             maxZoom: 19,
             attribution: '© Mapbox © OpenStreetMap'
           }).addTo(map);

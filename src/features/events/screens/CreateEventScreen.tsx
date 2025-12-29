@@ -13,6 +13,7 @@ import {
   Dimensions,
   Image,
 } from 'react-native';
+import MapPreview from '@shared/components/MapPreview';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Location from 'expo-location';
 import * as ImagePicker from 'expo-image-picker';
@@ -326,14 +327,11 @@ export default function CreateEventScreen() {
                   <Text style={styles.locationPlaceholder}>{t('tapMapToSetLocation')}</Text>
                 </View>
                 <View style={styles.mapPreview}>
-                  <Image 
-                    source={{ uri: 'https://images.unsplash.com/photo-1524661135-423995f22d0b?w=400&h=150&fit=crop&crop=entropy&auto=format&q=60' }}
-                    style={styles.mapImage}
+                  <MapPreview
+                    latitude={selectedLocation?.latitude || 50.4501}
+                    longitude={selectedLocation?.longitude || 30.5234}
+                    style={styles.mapWebView}
                   />
-                  <View style={styles.mapPin}>
-                    <MapPin size={32} color={COLORS.ACCENT_ORANGE} />
-                    <View style={styles.mapPinShadow} />
-                  </View>
                   <View style={styles.setPinButton}>
                     <Text style={styles.setPinText}>{t('setPin')}</Text>
                     <Maximize2 size={14} color={COLORS.ACCENT_ORANGE} />
@@ -607,26 +605,9 @@ const styles = StyleSheet.create({
     height: 160,
     position: 'relative',
   },
-  mapImage: {
+  mapWebView: {
     width: '100%',
     height: '100%',
-    opacity: 0.8,
-  },
-  mapPin: {
-    position: 'absolute',
-    top: '50%',
-    left: '50%',
-    marginTop: -20,
-    marginLeft: -16,
-    alignItems: 'center',
-  },
-  mapPinShadow: {
-    width: 8,
-    height: 4,
-    backgroundColor: 'rgba(0,0,0,0.2)',
-    borderRadius: 4,
-    marginTop: -4,
-    transform: [{ scaleX: 1 }],
   },
   setPinButton: {
     position: 'absolute',
