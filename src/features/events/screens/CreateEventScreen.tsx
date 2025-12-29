@@ -196,38 +196,18 @@ export default function CreateEventScreen() {
     }
   };
 
-  const confirmTime = () => {
-    const hours = selectedTime.getHours().toString().padStart(2, '0');
-    const minutes = selectedTime.getMinutes().toString().padStart(2, '0');
+  const confirmTime = (finalTime: Date) => {
+    const hours = finalTime.getHours().toString().padStart(2, '0');
+    const minutes = finalTime.getMinutes().toString().padStart(2, '0');
     setTime(`${hours}:${minutes}`);
+    setSelectedTime(finalTime);
     setShowTimePicker(false);
     if (error) setError('');
   };
 
   const onTimeChange = (event: any, date?: Date) => {
     if (date) {
-      const now = new Date();
-      const selectedDateTime = new Date(
-        now.getFullYear(),
-        now.getMonth(),
-        now.getDate(),
-        date.getHours(),
-        date.getMinutes()
-      );
-      
-      if (selectedDateTime < now) {
-        setSelectedTime(now);
-      } else {
-        setSelectedTime(date);
-      }
-      
-      if (Platform.OS === 'android') {
-        setShowTimePicker(false);
-        const finalTime = selectedDateTime < now ? now : date;
-        const hours = finalTime.getHours().toString().padStart(2, '0');
-        const minutes = finalTime.getMinutes().toString().padStart(2, '0');
-        setTime(`${hours}:${minutes}`);
-      }
+      setSelectedTime(date);
     }
   };
 
@@ -358,6 +338,15 @@ export default function CreateEventScreen() {
                     value={date}
                     onChangeText={(text) => {
                       setDate(text);
+                      // If date is changed to today, update time to current time
+                      const now = new Date();
+                      const today = now.toISOString().split('T')[0];
+                      if (text === today) {
+                        const hours = now.getHours().toString().padStart(2, '0');
+                        const minutes = now.getMinutes().toString().padStart(2, '0');
+                        setTime(`${hours}:${minutes}`);
+                        setSelectedTime(now);
+                      }
                       if (error) setError('');
                     }}
                     placeholder={t('datePlaceholder')}

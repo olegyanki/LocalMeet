@@ -23,7 +23,7 @@ interface TimePickerModalProps {
   selectedDuration: string;
   onTimeChange: (event: any, date?: Date) => void;
   onDurationChange: (duration: string) => void;
-  onConfirm: () => void;
+  onConfirm: (time: Date) => void;
   onClose: () => void;
 }
 
@@ -48,10 +48,9 @@ export default function TimePickerModal({
 
   useEffect(() => {
     if (visible) {
-      const now = new Date();
-      setTempTime(now);
+      setTempTime(selectedTime);
     }
-  }, [visible]);
+  }, [visible, selectedTime]);
 
   const panResponder = useRef(
     PanResponder.create({
@@ -118,7 +117,7 @@ export default function TimePickerModal({
 
   const handleConfirm = () => {
     onTimeChange(null, tempTime);
-    onConfirm();
+    onConfirm(tempTime);
   };
 
   return (
