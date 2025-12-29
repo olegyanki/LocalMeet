@@ -201,6 +201,7 @@ export default function CreateEventScreen() {
     const minutes = selectedTime.getMinutes().toString().padStart(2, '0');
     setTime(`${hours}:${minutes}`);
     setShowTimePicker(false);
+    if (error) setError('');
   };
 
   const onTimeChange = (event: any, date?: Date) => {
@@ -241,6 +242,7 @@ export default function CreateEventScreen() {
     }
     setShowLocationPicker(false);
     setTempLocation(null);
+    if (error) setError('');
   };
 
   return (
@@ -306,7 +308,10 @@ export default function CreateEventScreen() {
                 placeholder={t('eventPlaceholder')}
                 placeholderTextColor={fieldErrors.title ? COLORS.ERROR_RED : COLORS.GRAY_PLACEHOLDER}
                 value={title}
-                onChangeText={setTitle}
+                onChangeText={(text) => {
+                  setTitle(text);
+                  if (error) setError('');
+                }}
               />
               {fieldErrors.title && (
                 <Text style={styles.fieldErrorText}>{fieldErrors.title}</Text>
@@ -325,7 +330,10 @@ export default function CreateEventScreen() {
                 placeholder={t('descriptionPlaceholder')}
                 placeholderTextColor={fieldErrors.description ? COLORS.ERROR_RED : COLORS.GRAY_PLACEHOLDER}
                 value={description}
-                onChangeText={setDescription}
+                onChangeText={(text) => {
+                  setDescription(text);
+                  if (error) setError('');
+                }}
                 multiline
                 numberOfLines={4}
               />
@@ -348,7 +356,10 @@ export default function CreateEventScreen() {
                       fieldErrors.date && { color: COLORS.ERROR_RED }
                     ]}
                     value={date}
-                    onChangeText={setDate}
+                    onChangeText={(text) => {
+                      setDate(text);
+                      if (error) setError('');
+                    }}
                     placeholder={t('datePlaceholder')}
                     placeholderTextColor={fieldErrors.date ? COLORS.ERROR_RED : COLORS.GRAY_PLACEHOLDER}
                   />
