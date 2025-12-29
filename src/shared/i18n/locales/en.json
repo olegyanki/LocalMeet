@@ -199,5 +199,13 @@
   "addInterest": "Add interest",
   "selectInterests": "Select interests",
   "tapMapToSelectLocation": "Tap on the map to select location (up to 15 km from you)",
-  "usingCurrentLocation": "Using your current location"
+  "usingCurrentLocation": "Using your current location",
+  "clear": "Clear",
+  "addCoverPhoto": "Add Cover Photo",
+  "logistics": "Logistics",
+  "date": "Date",
+  "datePlaceholder": "YYYY-MM-DD",
+  "timePlaceholder": "HH:MM",
+  "searchLocationPlaceholder": "Search location or drop pin",
+  "expandMap": "Expand Map"
 }

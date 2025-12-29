@@ -199,5 +199,13 @@
   "addInterest": "Додати інтерес",
   "selectInterests": "Виберіть інтереси",
   "tapMapToSelectLocation": "Натисніть на карту щоб обрати локацію (до 15 км від вас)",
-  "usingCurrentLocation": "Використовується ваша поточна локація"
+  "usingCurrentLocation": "Використовується ваша поточна локація",
+  "clear": "Очистити",
+  "addCoverPhoto": "Додати обкладинку",
+  "logistics": "Логістика",
+  "date": "Дата",
+  "datePlaceholder": "РРРР-ММ-ДД",
+  "timePlaceholder": "ГГ:ХХ",
+  "searchLocationPlaceholder": "Пошук локації або поставте пін",
+  "expandMap": "Розгорнути карту"
 }

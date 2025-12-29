@@ -11,34 +11,33 @@ import {
   KeyboardAvoidingView,
   Keyboard,
   Dimensions,
-  Animated,
+  Image,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Location from 'expo-location';
+import * as ImagePicker from 'expo-image-picker';
 import { useAuth } from '@shared/contexts/AuthContext';
 import { useI18n } from '@shared/i18n';
 import { updateWalkStatus } from '@shared/lib/api';
-import { Clock, MapPin, Sparkles } from 'lucide-react-native';
+import { Clock, MapPin, Camera, ArrowRight, X } from 'lucide-react-native';
 import { router } from 'expo-router';
 import TimePickerModal from '@features/events/modals/TimePickerModal';
 import LocationPickerModal from '@features/events/modals/LocationPickerModal';
 import SuccessModal from '@features/events/modals/SuccessModal';
-import { calculateDistance } from '@shared/utils/location';
+import { COLORS } from '@shared/constants';
 
-const BG_COLOR = '#F2F2F7';
-const ACCENT_ORANGE = '#FF9500';
-const TEXT_DARK = '#1C1C1E';
-const TEXT_LIGHT = '#8E8E93';
-const INPUT_BG = '#FFFFFF';
-const CARD_BG = '#FFFFFF';
+const { BG_SECONDARY, CARD_BG, TEXT_DARK, TEXT_LIGHT, ACCENT_ORANGE, BORDER_COLOR } = COLORS;
 
-export default function GoOnlineScreen() {
+export default function CreateEventScreen() {
   const { user } = useAuth();
   const { t } = useI18n();
   const insets = useSafeAreaInsets();
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
+  const [date, setDate] = useState('');
   const [time, setTime] = useState('');
+  const [coverImage, setCoverImage] = useState<string | null>(null);
+  const [locationText, setLocationText] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [error, setError] = useState('');
@@ -55,27 +54,45 @@ export default function GoOnlineScreen() {
   const [userLocationWasManuallyChanged, setUserLocationWasManuallyChanged] = useState(false);
   const scrollViewRef = useRef<ScrollView>(null);
   const descriptionInputRef = useRef<TextInput>(null);
-  const fadeAnim = useRef(new Animated.Value(0)).current;
-
-  useEffect(() => {
-    Animated.timing(fadeAnim, {
-      toValue: 1,
-      duration: 600,
-      useNativeDriver: true,
-    }).start();
-  }, []);
 
   useEffect(() => {
     loadCurrentLocation();
-    setCurrentTime();
+    setCurrentDateTime();
   }, []);
 
-  const setCurrentTime = () => {
+  const setCurrentDateTime = () => {
     const now = new Date();
     setSelectedTime(now);
     const hours = now.getHours().toString().padStart(2, '0');
     const minutes = now.getMinutes().toString().padStart(2, '0');
     setTime(`${hours}:${minutes}`);
+    
+    const year = now.getFullYear();
+    const month = (now.getMonth() + 1).toString().padStart(2, '0');
+    const day = now.getDate().toString().padStart(2, '0');
+    setDate(`${year}-${month}-${day}`);
+  };
+
+  const pickCoverImage = async () => {
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [16, 9],
+      quality: 0.8,
+    });
+
+    if (!result.canceled) {
+      setCoverImage(result.assets[0].uri);
+    }
+  };
+
+  const clearForm = () => {
+    setTitle('');
+    setDescription('');
+    setCoverImage(null);
+    setLocationText('');
+    setCurrentDateTime();
+    setError('');
   };
 
   const loadCurrentLocation = async () => {
@@ -105,7 +122,7 @@ export default function GoOnlineScreen() {
       return;
     }
 
-    if (!time.trim()) {
+    if (!date || !time.trim()) {
       setError(t('startTimeRequired'));
       return;
     }
@@ -119,9 +136,9 @@ export default function GoOnlineScreen() {
       setIsSubmitting(true);
       setError('');
 
-      const now = new Date();
+      const [year, month, day] = date.split('-').map(Number);
       const [hours, minutes] = time.split(':').map(Number);
-      const walkStartDateTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), hours, minutes, 0, 0);
+      const walkStartDateTime = new Date(year, month - 1, day, hours, minutes, 0, 0);
 
       await updateWalkStatus(user.id, {
         isWalking: true,
@@ -136,10 +153,7 @@ export default function GoOnlineScreen() {
       setShowSuccess(true);
       setTimeout(() => {
         setShowSuccess(false);
-        setTitle('');
-        setDescription('');
-        setCurrentTime();
-        setError('');
+        clearForm();
         router.push({
           pathname: '/(tabs)',
           params: { reloadEvents: 'true' }
@@ -204,66 +218,67 @@ export default function GoOnlineScreen() {
   };
 
   return (
-    <KeyboardAvoidingView 
-      style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-    >
-      <ScrollView
-        ref={scrollViewRef}
-        style={styles.scrollContent}
-        contentContainerStyle={[
-          styles.content,
-          { paddingTop: 20 + insets.top, paddingBottom: 100 + insets.bottom },
-        ]}
-        keyboardShouldPersistTaps="handled"
-        showsVerticalScrollIndicator={false}
+    <View style={styles.container}>
+      {/* Header */}
+      <View style={[styles.header, { paddingTop: insets.top + 16 }]}>
+        <Text style={styles.headerTitle}>{t('createEvent')}</Text>
+        <Pressable onPress={clearForm}>
+          <Text style={styles.clearButton}>{t('clear')}</Text>
+        </Pressable>
+      </View>
+
+      <KeyboardAvoidingView 
+        style={styles.flex}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
-        <Animated.View style={{ opacity: fadeAnim }}>
-          <View style={styles.header}>
-            <View style={styles.iconBadge}>
-              <Sparkles size={24} color={ACCENT_ORANGE} />
-            </View>
-            <Text style={styles.headerTitle}>{t('createEventTitle')}</Text>
-            <Text style={styles.headerSubtitle}>{t('createEventSubtitle')}</Text>
+        <ScrollView
+          ref={scrollViewRef}
+          style={styles.scrollContent}
+          contentContainerStyle={[
+            styles.content,
+            { paddingBottom: 120 + insets.bottom },
+          ]}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+        >
+          {/* Cover Photo Section */}
+          <View style={styles.section}>
+            <Pressable style={styles.coverPhotoContainer} onPress={pickCoverImage}>
+              {coverImage ? (
+                <>
+                  <Image source={{ uri: coverImage }} style={styles.coverImage} />
+                  <Pressable style={styles.removeCoverButton} onPress={() => setCoverImage(null)}>
+                    <X size={16} color="#FFF" />
+                  </Pressable>
+                </>
+              ) : (
+                <>
+                  <Image 
+                    source={{ uri: 'https://images.unsplash.com/photo-1557804506-669a67965ba0?w=400&h=200&fit=crop&crop=entropy&auto=format&q=60' }}
+                    style={styles.backgroundImage}
+                  />
+                  <View style={styles.coverPhotoOverlay}>
+                    <View style={styles.coverPhotoIcon}>
+                      <Camera size={24} color={ACCENT_ORANGE} />
+                    </View>
+                    <Text style={styles.coverPhotoText}>{t('addCoverPhoto')}</Text>
+                  </View>
+                </>
+              )}
+            </Pressable>
           </View>
 
-          <View style={styles.card}>
+          {/* Form Fields */}
+          <View style={[styles.section, { marginBottom: 0 }]}>
             <View style={styles.inputGroup}>
               <Text style={styles.label}>{t('eventName')}</Text>
               <TextInput
                 style={styles.input}
                 placeholder={t('eventPlaceholder')}
-                placeholderTextColor={TEXT_LIGHT}
+                placeholderTextColor="#9CA3AF"
                 value={title}
                 onChangeText={setTitle}
               />
-            </View>
-
-            <View style={styles.inputGroup}>
-              <Text style={styles.label}>{t('startTime')}</Text>
-              <Pressable style={styles.selectButton} onPress={() => setShowTimePicker(true)}>
-                <View style={styles.selectIcon}>
-                  <Clock size={20} color={ACCENT_ORANGE} />
-                </View>
-                <Text style={[styles.selectText, time && styles.selectTextFilled]}>
-                  {time ? `${time} (${selectedDuration}${t('hours')})` : t('selectTimeButton')}
-                </Text>
-              </Pressable>
-            </View>
-
-            <View style={styles.inputGroup}>
-              <Text style={styles.label}>{t('location')}</Text>
-              <Pressable
-                style={styles.selectButton}
-                onPress={() => setShowLocationPicker(true)}
-              >
-                <View style={styles.selectIcon}>
-                  <MapPin size={20} color={ACCENT_ORANGE} />
-                </View>
-                <Text style={[styles.selectText, selectedLocation && styles.selectTextFilled]}>
-                  {userLocationWasManuallyChanged ? t('locationSelected') : t('usingCurrentLocation')}
-                </Text>
-              </Pressable>
             </View>
 
             <View style={styles.inputGroup}>
@@ -272,26 +287,66 @@ export default function GoOnlineScreen() {
                 ref={descriptionInputRef}
                 style={[styles.input, styles.textArea]}
                 placeholder={t('descriptionPlaceholder')}
-                placeholderTextColor={TEXT_LIGHT}
+                placeholderTextColor="#9CA3AF"
                 value={description}
                 onChangeText={setDescription}
                 multiline
-                numberOfLines={5}
-                onFocus={() => {
-                  setTimeout(() => {
-                    descriptionInputRef.current?.measure((x, y, width, height, pageX, pageY) => {
-                      const keyboardHeight = Keyboard.metrics()?.height || 300;
-                      const screenHeight = Dimensions.get('window').height;
-                      const inputBottom = pageY + height;
-                      const visibleHeight = screenHeight - keyboardHeight;
-                      
-                      if (inputBottom > visibleHeight) {
-                        scrollViewRef.current?.scrollTo({ y: pageY - 50, animated: true });
-                      }
-                    });
-                  }, 300);
-                }}
+                numberOfLines={4}
               />
+            </View>
+
+            <View style={styles.dateTimeRow}>
+              <View style={styles.dateTimeItem}>
+                <Text style={styles.smallLabel}>{t('date').toUpperCase()}</Text>
+                <View style={styles.dateTimeInput}>
+                  <Clock size={18} color={ACCENT_ORANGE} style={styles.inputIcon} />
+                  <TextInput
+                    style={styles.dateTimeInputText}
+                    value={date}
+                    onChangeText={setDate}
+                    placeholder={t('datePlaceholder')}
+                    placeholderTextColor="#9CA3AF"
+                  />
+                </View>
+              </View>
+              
+              <View style={styles.dateTimeItem}>
+                <Text style={styles.smallLabel}>{t('time').toUpperCase()}</Text>
+                <Pressable style={styles.dateTimeInput} onPress={() => setShowTimePicker(true)}>
+                  <Clock size={18} color={ACCENT_ORANGE} style={styles.inputIcon} />
+                  <Text style={[styles.dateTimeInputText, time && styles.filledText]}>
+                    {time || t('timePlaceholder')}
+                  </Text>
+                </Pressable>
+              </View>
+            </View>
+
+            <View style={styles.inputGroup}>
+              <Text style={styles.smallLabel}>{t('location').toUpperCase()}</Text>
+              <View style={styles.locationContainer}>
+                <View style={styles.locationInput}>
+                  <MapPin size={20} color={ACCENT_ORANGE} style={styles.inputIcon} />
+                  <TextInput
+                    style={styles.locationInputText}
+                    placeholder={t('searchLocationPlaceholder')}
+                    placeholderTextColor="#9CA3AF"
+                    value={locationText}
+                    onChangeText={setLocationText}
+                  />
+                </View>
+                <View style={styles.mapPreview}>
+                  <Image 
+                    source={{ uri: 'https://images.unsplash.com/photo-1524661135-423995f22d0b?w=400&h=150&fit=crop&crop=entropy&auto=format&q=60' }}
+                    style={styles.mapImage}
+                  />
+                  <View style={styles.mapPin}>
+                    <View style={styles.mapPinInner} />
+                  </View>
+                  <Pressable style={styles.expandMapButton} onPress={() => setShowLocationPicker(true)}>
+                    <Text style={styles.expandMapText}>{t('expandMap')}</Text>
+                  </Pressable>
+                </View>
+              </View>
             </View>
           </View>
 
@@ -301,22 +356,25 @@ export default function GoOnlineScreen() {
             </View>
           ) : null}
 
-          <Pressable
-            style={[styles.publishButton, isSubmitting && styles.publishButtonDisabled]}
-            onPress={handleSubmit}
-            disabled={isSubmitting}
-          >
-            {isSubmitting ? (
-              <ActivityIndicator color="#FFFFFF" />
-            ) : (
-              <>
-                <Sparkles size={20} color="#FFF" />
-                <Text style={styles.publishButtonText}>{t('publishEvent')}</Text>
-              </>
-            )}
-          </Pressable>
-        </Animated.View>
-      </ScrollView>
+          {/* Publish Button */}
+          <View style={styles.section}>
+            <Pressable
+              style={[styles.publishButton, isSubmitting && styles.publishButtonDisabled]}
+              onPress={handleSubmit}
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? (
+                <ActivityIndicator color="#FFFFFF" />
+              ) : (
+                <>
+                  <Text style={styles.publishButtonText}>{t('publishEvent')}</Text>
+                  <ArrowRight size={20} color="#FFF" />
+                </>
+              )}
+            </Pressable>
+          </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
 
       <TimePickerModal
         visible={showTimePicker}
@@ -342,138 +400,297 @@ export default function GoOnlineScreen() {
       />
 
       <SuccessModal visible={showSuccess} />
-    </KeyboardAvoidingView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: BG_COLOR,
+    backgroundColor: BG_SECONDARY,
+  },
+  flex: {
+    flex: 1,
+  },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 24,
+    paddingBottom: 16,
+    backgroundColor: BG_SECONDARY,
+  },
+  headerTitle: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: TEXT_DARK,
+  },
+  clearButton: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: ACCENT_ORANGE,
   },
   scrollContent: {
     flex: 1,
   },
   content: {
-    padding: 20,
+    paddingHorizontal: 24,
   },
-  header: {
+  section: {
+    marginBottom: 20,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: TEXT_DARK,
+    marginBottom: 20,
+  },
+  // Cover Photo
+  coverPhotoContainer: {
+    height: 192,
+    borderRadius: 16,
+    backgroundColor: '#F3F4F6',
+    borderWidth: 2,
+    borderColor: BORDER_COLOR,
+    borderStyle: 'dashed',
+    overflow: 'hidden',
+    position: 'relative',
+  },
+  backgroundImage: {
+    position: 'absolute',
+    width: '100%',
+    height: '100%',
+    opacity: 0.2,
+  },
+  coverImage: {
+    width: '100%',
+    height: '100%',
+  },
+  coverPhotoOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 32,
   },
-  iconBadge: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
+  coverPhotoIcon: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
     backgroundColor: CARD_BG,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 12,
-    elevation: 3,
-  },
-  headerTitle: {
-    fontSize: 28,
-    fontWeight: '700',
-    color: TEXT_DARK,
-    marginBottom: 8,
-  },
-  headerSubtitle: {
-    fontSize: 15,
-    color: TEXT_LIGHT,
-    textAlign: 'center',
-  },
-  card: {
-    backgroundColor: CARD_BG,
-    borderRadius: 20,
-    padding: 20,
-    marginBottom: 20,
+    marginBottom: 12,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.06,
-    shadowRadius: 12,
+    shadowRadius: 8,
     elevation: 2,
   },
+  coverPhotoText: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#6B7280',
+  },
+  removeCoverButton: {
+    position: 'absolute',
+    top: 12,
+    right: 12,
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: 'rgba(0,0,0,0.6)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  // Form Fields
   inputGroup: {
     marginBottom: 20,
   },
   label: {
     fontSize: 14,
     fontWeight: '600',
-    color: TEXT_DARK,
-    marginBottom: 10,
+    color: '#6B7280',
+    marginBottom: 6,
+    marginLeft: 4,
+  },
+  smallLabel: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#6B7280',
     textTransform: 'uppercase',
     letterSpacing: 0.5,
+    marginBottom: 6,
+    marginLeft: 4,
   },
   input: {
-    backgroundColor: BG_COLOR,
+    backgroundColor: CARD_BG,
+    borderWidth: 1,
+    borderColor: BORDER_COLOR,
     borderRadius: 12,
     paddingHorizontal: 16,
-    paddingVertical: 14,
+    paddingVertical: 12,
     fontSize: 16,
     color: TEXT_DARK,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    elevation: 2,
   },
   textArea: {
-    minHeight: 120,
+    minHeight: 96,
     textAlignVertical: 'top',
-    paddingTop: 14,
+    paddingTop: 12,
   },
-  selectButton: {
+  // Date/Time Row
+  dateTimeRow: {
+    flexDirection: 'row',
+    gap: 16,
+    marginBottom: 20,
+  },
+  dateTimeItem: {
+    flex: 1,
+  },
+  dateTimeInput: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: BG_COLOR,
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    gap: 12,
-  },
-  selectIcon: {
-    width: 36,
-    height: 36,
-    borderRadius: 10,
     backgroundColor: CARD_BG,
+    borderWidth: 1,
+    borderColor: BORDER_COLOR,
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  dateTimeInputText: {
+    fontSize: 14,
+    color: '#9CA3AF',
+    marginLeft: 8,
+    flex: 1,
+  },
+  filledText: {
+    color: TEXT_DARK,
+  },
+  inputIcon: {
+    marginRight: 4,
+  },
+  // Location
+  locationContainer: {
+    backgroundColor: CARD_BG,
+    borderWidth: 1,
+    borderColor: BORDER_COLOR,
+    borderRadius: 12,
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  locationInput: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: BORDER_COLOR,
+  },
+  locationInputText: {
+    fontSize: 16,
+    color: TEXT_DARK,
+    flex: 1,
+    marginLeft: 8,
+  },
+  mapPreview: {
+    height: 128,
+    position: 'relative',
+  },
+  mapImage: {
+    width: '100%',
+    height: '100%',
+    opacity: 0.8,
+  },
+  mapPin: {
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
+    width: 32,
+    height: 32,
+    marginTop: -16,
+    marginLeft: -16,
+    borderRadius: 16,
+    backgroundColor: 'rgba(255, 149, 0, 0.2)',
     justifyContent: 'center',
     alignItems: 'center',
   },
-  selectText: {
-    fontSize: 16,
-    color: TEXT_LIGHT,
-    flex: 1,
+  mapPinInner: {
+    width: 16,
+    height: 16,
+    borderRadius: 8,
+    backgroundColor: ACCENT_ORANGE,
+    borderWidth: 2,
+    borderColor: '#FFF',
   },
-  selectTextFilled: {
-    color: TEXT_DARK,
+  expandMapButton: {
+    position: 'absolute',
+    bottom: 8,
+    right: 8,
+    backgroundColor: CARD_BG,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  expandMapText: {
+    fontSize: 12,
     fontWeight: '500',
+    color: TEXT_DARK,
   },
+  // Error
   errorContainer: {
-    backgroundColor: '#FFEBEE',
+    backgroundColor: '#FFE5E5',
     borderRadius: 12,
-    padding: 16,
+    padding: 12,
     marginBottom: 20,
   },
   errorText: {
-    color: '#C62828',
+    color: '#FF3B30',
     fontSize: 14,
     fontWeight: '500',
     textAlign: 'center',
   },
+  // Publish Button
   publishButton: {
     flexDirection: 'row',
     backgroundColor: ACCENT_ORANGE,
-    paddingVertical: 18,
+    paddingVertical: 16,
     borderRadius: 16,
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
+    shadowColor: ACCENT_ORANGE,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 12,
+    elevation: 4,
   },
   publishButtonDisabled: {
     opacity: 0.6,
   },
   publishButtonText: {
     color: '#FFFFFF',
-    fontSize: 17,
+    fontSize: 16,
     fontWeight: '700',
   },
 });
