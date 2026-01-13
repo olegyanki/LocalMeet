@@ -24,6 +24,7 @@ import { createWalk, uploadEventImage, getActiveWalksByUserId } from '@shared/li
 import { Clock, MapPin, Camera, ArrowRight, X, Maximize2, AlertTriangle } from 'lucide-react-native';
 import { router } from 'expo-router';
 import TimePickerModal from '@features/events/modals/TimePickerModal';
+import DatePickerModal from '@features/events/modals/DatePickerModal';
 import LocationPickerModal from '@features/events/modals/LocationPickerModal';
 import SuccessModal from '@features/events/modals/SuccessModal';
 import { COLORS } from '@shared/constants';
@@ -47,6 +48,7 @@ export default function CreateEventScreen() {
     time?: string;
   }>({});
   const [showTimePicker, setShowTimePicker] = useState(false);
+  const [showDatePicker, setShowDatePicker] = useState(false);
   const [selectedTime, setSelectedTime] = useState(new Date());
   const [selectedDuration, setSelectedDuration] = useState('2');
   const [location, setLocation] = useState<Location.LocationObject | null>(null);
@@ -357,34 +359,19 @@ export default function CreateEventScreen() {
             <View style={styles.dateTimeRow}>
               <View style={styles.dateTimeItem}>
                 <Text style={styles.smallLabel}>{t('date').toUpperCase()}</Text>
-                <View style={[
+                <Pressable style={[
                   styles.dateTimeInput,
                   fieldErrors.date && styles.inputError
-                ]}>
+                ]} onPress={() => setShowDatePicker(true)}>
                   <Clock size={18} color={fieldErrors.date ? COLORS.ERROR_RED : COLORS.ACCENT_ORANGE} style={styles.inputIcon} />
-                  <TextInput
-                    style={[
-                      styles.dateTimeInputText,
-                      fieldErrors.date && { color: COLORS.ERROR_RED }
-                    ]}
-                    value={date}
-                    onChangeText={(text) => {
-                      setDate(text);
-                      // If date is changed to today, update time to current time
-                      const now = new Date();
-                      const today = now.toISOString().split('T')[0];
-                      if (text === today) {
-                        const hours = now.getHours().toString().padStart(2, '0');
-                        const minutes = now.getMinutes().toString().padStart(2, '0');
-                        setTime(`${hours}:${minutes}`);
-                        setSelectedTime(now);
-                      }
-                      if (error) setError('');
-                    }}
-                    placeholder={t('datePlaceholder')}
-                    placeholderTextColor={fieldErrors.date ? COLORS.ERROR_RED : COLORS.GRAY_PLACEHOLDER}
-                  />
-                </View>
+                  <Text style={[
+                    styles.dateTimeInputText,
+                    date && styles.filledText,
+                    fieldErrors.date && { color: COLORS.ERROR_RED }
+                  ]}>
+                    {date ? date : t('datePlaceholder')}
+                  </Text>
+                </Pressable>
                 {fieldErrors.date && (
                   <Text style={styles.fieldErrorText}>{fieldErrors.date}</Text>
                 )}
@@ -466,6 +453,26 @@ export default function CreateEventScreen() {
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
+
+      <DatePickerModal
+        visible={showDatePicker}
+        selectedDate={date}
+        onDateSelect={(selectedDate) => {
+          setDate(selectedDate);
+          // If date is changed to today, update time to current time
+          const now = new Date();
+          const today = now.toISOString().split('T')[0];
+          if (selectedDate === today) {
+            const hours = now.getHours().toString().padStart(2, '0');
+            const minutes = now.getMinutes().toString().padStart(2, '0');
+            setTime(`${hours}:${minutes}`);
+            setSelectedTime(now);
+          }
+          if (error) setError('');
+          setShowDatePicker(false);
+        }}
+        onClose={() => setShowDatePicker(false)}
+      />
 
       <TimePickerModal
         visible={showTimePicker}

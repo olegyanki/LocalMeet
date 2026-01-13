@@ -214,5 +214,6 @@
   "dateRequired": "Date is required",
   "timeRequired": "Time is required",
   "timeDuration": "Time & Duration",
-  "startTime": "Start Time"
+  "startTime": "Start Time",
+  "selectEventDate": "Select Event Date"
 }

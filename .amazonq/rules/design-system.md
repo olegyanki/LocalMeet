@@ -207,3 +207,6 @@ Never use colored shadows (e.g., shadowColor: COLORS.ACCENT_ORANGE). Always use 
 - Duration: 200-300ms for quick transitions
 - Tension: 50-80, Friction: 8-11 for springs
 - Always use useNativeDriver: true when possible
+- **CRITICAL**: All modals, bottom sheets, and UI transitions MUST be animated
+- Never show/hide components instantly - always animate in/out
+- Use Animated.spring for show animations, Animated.timing for hide animations
