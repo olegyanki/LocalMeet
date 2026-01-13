@@ -26,6 +26,7 @@ export interface Walk {
   description: string | null;
   latitude: number;
   longitude: number;
+  image_url: string | null;
   is_active: boolean;
   deleted: boolean;
   created_at: string;
@@ -82,7 +83,7 @@ function isWalkStillActive(walkStartTime: string | null, walkDuration: string | 
   return now < endTime;
 }
 
-export async function getNearbyWalks(latitude: number, longitude: number, radiusKm: number = 5): Promise<NearbyWalk[]> {
+export async function getNearbyWalks(latitude: number, longitude: number, radiusKm: number = 15): Promise<NearbyWalk[]> {
   // Call database function to auto-deactivate expired walks
   await supabase.rpc('deactivate_expired_walks');
 

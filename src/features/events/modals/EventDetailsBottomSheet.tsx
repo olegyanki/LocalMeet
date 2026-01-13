@@ -15,6 +15,7 @@ import {
 import { BlurView } from 'expo-blur';
 import { Clock, MapPin, X, Trash2 } from 'lucide-react-native';
 import { deleteWalk, getMyRequestForWalk, WalkRequest } from '@shared/lib/api';
+import { getEventImage } from '@shared/utils/eventImage';
 import { useAuth } from '@shared/contexts/AuthContext';
 import { useI18n } from '@shared/i18n';
 import { COLORS } from '@shared/constants';
@@ -311,8 +312,8 @@ export default function EventDetailsBottomSheet({
             activeOpacity={0.7}
           >
             <View style={styles.avatarSection}>
-              {user.avatar_url ? (
-                <Image source={{ uri: user.avatar_url }} style={styles.avatar} />
+              {getEventImage(user.walk, user.avatar_url) ? (
+                <Image source={{ uri: getEventImage(user.walk, user.avatar_url)! }} style={styles.avatar} />
               ) : (
                 <View style={styles.avatarPlaceholder}>
                   <Text style={styles.avatarText}>{user.display_name[0].toUpperCase()}</Text>

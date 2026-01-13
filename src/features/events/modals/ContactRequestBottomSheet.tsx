@@ -17,7 +17,7 @@ import { createWalkRequest } from '@shared/lib/api';
 import { useI18n } from '@shared/i18n';
 import { COLORS } from '@shared/constants';
 import { Image } from 'react-native';
-import { Clock } from 'lucide-react-native';
+import { getEventImage } from '@shared/utils/eventImage';
 
 interface ContactRequestBottomSheetProps {
   visible: boolean;
@@ -28,6 +28,7 @@ interface ContactRequestBottomSheetProps {
   walkOwnerAvatar?: string | null;
   walkTitle: string;
   walkStartTime?: string;
+  walkImageUrl?: string | null;
   onRequestSent?: () => void;
 }
 
@@ -40,6 +41,7 @@ export default function ContactRequestBottomSheet({
   walkOwnerAvatar,
   walkTitle,
   walkStartTime,
+  walkImageUrl,
   onRequestSent,
 }: ContactRequestBottomSheetProps) {
   const slideAnim = React.useRef(new Animated.Value(Dimensions.get('window').height)).current;
@@ -141,13 +143,17 @@ export default function ContactRequestBottomSheet({
           <View style={styles.content}>
             <View style={styles.eventCard}>
               <View style={styles.ownerSection}>
-                {walkOwnerAvatar ? (
-                  <Image source={{ uri: walkOwnerAvatar }} style={styles.avatar} />
-                ) : (
-                  <View style={styles.avatarPlaceholder}>
-                    <Text style={styles.avatarText}>{walkOwnerName[0]?.toUpperCase()}</Text>
-                  </View>
-                )}
+                {(() => {
+                  const walk = { image_url: walkImageUrl } as any;
+                  const eventImageUrl = getEventImage(walk, walkOwnerAvatar);
+                  return eventImageUrl ? (
+                    <Image source={{ uri: eventImageUrl }} style={styles.avatar} />
+                  ) : (
+                    <View style={styles.avatarPlaceholder}>
+                      <Text style={styles.avatarText}>{walkOwnerName[0]?.toUpperCase()}</Text>
+                    </View>
+                  );
+                })()}
                 <View style={styles.ownerInfo}>
                   <Text style={styles.ownerName}>{walkOwnerName}</Text>
                   <Text style={styles.eventTitle}>{walkTitle}</Text>

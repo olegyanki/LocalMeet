@@ -16,6 +16,7 @@ interface ChatWithLastMessage {
   walker_id: string;
   updated_at: string;
   walk_title?: string;
+  walk_image_url?: string | null;
   requester: {
     id: string;
     display_name: string;
@@ -99,6 +100,7 @@ export default function ChatsScreen() {
             .maybeSingle();
 
           let walkTitle: string | undefined;
+          let walkImageUrl: string | null = null;
           if (chat.walk_request_id) {
             const { data: walkRequest } = await supabase
               .from('walk_requests')
@@ -109,17 +111,19 @@ export default function ChatsScreen() {
             if (walkRequest?.walk_id) {
               const { data: walk } = await supabase
                 .from('walks')
-                .select('title')
+                .select('title, image_url')
                 .eq('id', walkRequest.walk_id)
                 .maybeSingle();
 
               walkTitle = walk?.title;
+              walkImageUrl = walk?.image_url;
             }
           }
 
           return {
             ...chat,
             walk_title: walkTitle,
+            walk_image_url: walkImageUrl,
             lastMessage: lastMessage || undefined,
           } as ChatWithLastMessage;
         })
@@ -309,6 +313,9 @@ export default function ChatsScreen() {
     const lastMessageText = item.lastMessage?.content || otherUser.display_name;
     const isUnread = item.lastMessage && !item.lastMessage.read && item.lastMessage.sender_id !== user?.id;
 
+    const walk = { image_url: item.walk_image_url } as any;
+    const eventImageUrl = getEventImage(walk, otherUser.avatar_url);
+
     const timeAgo = item.lastMessage ? (() => {
       const date = new Date(item.lastMessage.created_at);
       const now = new Date();
@@ -333,8 +340,8 @@ export default function ChatsScreen() {
           },
         })}
       >
-        {otherUser.avatar_url ? (
-          <Image source={{ uri: otherUser.avatar_url }} style={styles.chatAvatar} />
+        {eventImageUrl ? (
+          <Image source={{ uri: eventImageUrl }} style={styles.chatAvatar} />
         ) : (
           <View style={[styles.chatAvatar, styles.chatAvatarPlaceholder]}>
             <Text style={styles.chatAvatarText}>

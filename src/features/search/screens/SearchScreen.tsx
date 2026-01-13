@@ -25,6 +25,7 @@ import { Clock } from 'lucide-react-native';
 import Svg, { Rect, Defs, Filter, FeFlood, FeColorMatrix, FeOffset, FeGaussianBlur, FeBlend, G } from 'react-native-svg';
 import { COLORS, SIZES } from '@shared/constants';
 import { parseDuration, isWalkActive, getTimeColor, formatTime } from '@shared/utils/time';
+import { getEventImage } from '@shared/utils/eventImage';
 import Avatar from '@shared/components/Avatar';
 import LocationPin from '@shared/components/LocationPin';
 import FilterBottomSheet, { TimeFilter, SortBy } from '@features/search/components/FilterBottomSheet';
@@ -88,6 +89,7 @@ export default function SearchScreen() {
     walkOwnerAvatar?: string | null;
     walkTitle: string;
     walkStartTime?: string;
+    walkImageUrl?: string | null;
   } | null>(null);
   const [isCardsCollapsed, setIsCardsCollapsed] = useState(false);
   const [showFilterSheet, setShowFilterSheet] = useState(false);
@@ -469,7 +471,7 @@ export default function SearchScreen() {
                           router.push(`/user/${item.id}`);
                         }}
                       >
-                        <Avatar uri={item.avatar_url} name={item.display_name} size={SIZES.AVATAR_MEDIUM} />
+                        <Avatar uri={getEventImage(item.walk, item.avatar_url)} name={item.display_name} size={SIZES.AVATAR_MEDIUM} />
                       </Pressable>
 
                       <View style={styles.cardHeaderInfo}>
@@ -530,6 +532,7 @@ export default function SearchScreen() {
             walkOwnerAvatar: selectedUser?.avatar_url,
             walkTitle: walkData?.title || '',
             walkStartTime: walkData?.start_time,
+            walkImageUrl: walkData?.image_url,
           });
           setDetailsVisible(false);
           setTimeout(() => {
@@ -551,6 +554,7 @@ export default function SearchScreen() {
           walkOwnerAvatar={contactRequestData.walkOwnerAvatar}
           walkTitle={contactRequestData.walkTitle}
           walkStartTime={contactRequestData.walkStartTime}
+          walkImageUrl={contactRequestData.walkImageUrl}
           onRequestSent={() => {
             loadNearbyWalks();
           }}
