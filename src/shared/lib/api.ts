@@ -144,12 +144,11 @@ export async function deleteWalk(walkId: string) {
   }
 }
 
-export async function getActiveWalksByUserId(userId: string): Promise<Walk[]> {
+export async function getWalksByUserId(userId: string): Promise<Walk[]> {
   const { data, error } = await supabase
     .from('walks')
     .select('*')
     .eq('user_id', userId)
-    .eq('is_active', true)
     .or('deleted.is.null,deleted.eq.false')
     .order('start_time', { ascending: true });
 
@@ -235,7 +234,6 @@ export async function getMyWalkRequests(userId: string): Promise<WalkRequestWith
     .from('walks')
     .select('*')
     .eq('user_id', userId)
-    .eq('is_active', true)
     .or('deleted.is.null,deleted.eq.false');
 
   if (walksError) {

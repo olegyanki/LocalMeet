@@ -20,7 +20,7 @@ import * as Location from 'expo-location';
 import * as ImagePicker from 'expo-image-picker';
 import { useAuth } from '@shared/contexts/AuthContext';
 import { useI18n } from '@shared/i18n';
-import { createWalk, uploadEventImage, getActiveWalksByUserId } from '@shared/lib/api';
+import { createWalk, uploadEventImage, getWalksByUserId } from '@shared/lib/api';
 import { Clock, MapPin, Camera, ArrowRight, X, Maximize2, AlertTriangle } from 'lucide-react-native';
 import { router } from 'expo-router';
 import TimePickerModal from '@features/events/modals/TimePickerModal';
@@ -173,7 +173,7 @@ export default function CreateEventScreen() {
       const walkStartDateTime = new Date(year, month - 1, day, hours, minutes, 0, 0);
 
       // Check for time overlap
-      const existingWalks = await getActiveWalksByUserId(user.id);
+      const existingWalks = await getWalksByUserId(user.id);
       for (const walk of existingWalks) {
         const walkStart = new Date(walk.start_time);
         const walkEnd = new Date(walkStart.getTime() + walk.duration * 1000);
