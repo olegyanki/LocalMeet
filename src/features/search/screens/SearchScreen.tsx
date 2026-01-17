@@ -20,7 +20,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Location from 'expo-location';
 import { useAuth } from '@shared/contexts/AuthContext';
 import { useI18n } from '@shared/i18n';
-import { getNearbyWalks } from '@shared/lib/api';
+import { getNearbyWalks, NearbyWalk, getProfile, UserProfile } from '@shared/lib/api';
 import { Clock } from 'lucide-react-native';
 import Svg, { Rect, Defs, Filter, FeFlood, FeColorMatrix, FeOffset, FeGaussianBlur, FeBlend, G } from 'react-native-svg';
 import { COLORS, SIZES } from '@shared/constants';
@@ -37,32 +37,7 @@ import { router, useLocalSearchParams } from 'expo-router';
 
 
 
-interface Walk {
-  id: string;
-  user_id: string;
-  title: string;
-  start_time: string;
-  duration: string;
-  description: string | null;
-  latitude: number;
-  longitude: number;
-  deleted: boolean;
-  created_at: string;
-  updated_at: string;
-}
 
-interface UserProfile {
-  id: string;
-  username: string;
-  display_name: string;
-  bio: string | null;
-  avatar_url: string | null;
-  status: string | null;
-  distance: number;
-  walk: Walk | null;
-  interests: string[];
-  isActive?: boolean;
-}
 
 export default function SearchScreen() {
   const { user } = useAuth();
@@ -73,14 +48,15 @@ export default function SearchScreen() {
   const isScrollingProgrammatically = useRef(false);
   const [location, setLocation] = useState<Location.LocationObject | null>(null);
   const [isLoadingLocation, setIsLoadingLocation] = useState(true);
-  const [nearbyWalks, setNearbyWalks] = useState<UserProfile[]>([]);
+  const [nearbyWalks, setNearbyWalks] = useState<NearbyWalk[]>([]);
   const [isLoadingWalks, setIsLoadingWalks] = useState(false);
   const [selectedMarkerId, setSelectedMarkerId] = useState<string | null>(null);
   const [currentCardIndex, setCurrentCardIndex] = useState(0);
   const [mapCenter, setMapCenter] = useState<{latitude: number; longitude: number; paddingBottom?: number} | null>(null);
   const previousMarkerIdRef = useRef<string | null>(null);
   const [detailsVisible, setDetailsVisible] = useState(false);
-  const [selectedUser, setSelectedUser] = useState<UserProfile | null>(null);
+  const [selectedWalk, setSelectedWalk] = useState<NearbyWalk | null>(null);
+  const [selectedUserProfile, setSelectedUserProfile] = useState<UserProfile | null>(null);
   const [contactRequestVisible, setContactRequestVisible] = useState(false);
   const [contactRequestData, setContactRequestData] = useState<{
     walkId: string;
@@ -174,7 +150,7 @@ export default function SearchScreen() {
 
   useEffect(() => {
     if (nearbyWalks.length > 0 && user && location) {
-      const myWalk = nearbyWalks.find(w => w.id === user.id);
+      const myWalk = nearbyWalks.find(w => w.walk?.user_id === user.id);
       
       if (myWalk && myWalk.walk) {
         const myIndex = 0;
@@ -223,8 +199,8 @@ export default function SearchScreen() {
       setIsLoadingWalks(true);
       const walks = await getNearbyWalks(location.coords.latitude, location.coords.longitude);
 
-      const otherWalks = walks.filter((w) => w.id !== user.id);
-      const ownWalks = walks.filter((w) => w.id === user.id);
+      const otherWalks = walks.filter((w) => w.walk?.user_id !== user.id);
+      const ownWalks = walks.filter((w) => w.walk?.user_id === user.id);
       const sortedWalks = [...ownWalks, ...otherWalks];
 
       setNearbyWalks(sortedWalks);
@@ -235,7 +211,7 @@ export default function SearchScreen() {
     }
   };
 
-  const filterWalks = (walks: UserProfile[]) => {
+  const filterWalks = (walks: NearbyWalk[]) => {
     const now = new Date();
     const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     const todayEnd = new Date(todayStart.getTime() + 24 * 60 * 60 * 1000);
@@ -279,7 +255,7 @@ export default function SearchScreen() {
       longitude: w.walk!.longitude,
       type: 'event' as const,
       isActive: isWalkActive(w.walk?.start_time || null),
-      isOwner: w.id === user?.id,
+      isOwner: w.walk!.user_id === user?.id,
     }));
 
   if (isLoadingLocation) {
@@ -456,9 +432,13 @@ export default function SearchScreen() {
                     styles.userCard,
                     { width: cardWidth }
                   ]}
-                  onPress={() => {
-                    setSelectedUser(item);
-                    setDetailsVisible(true);
+                  onPress={async () => {
+                    if (item.walk) {
+                      setSelectedWalk(item);
+                      const profile = await getProfile(item.walk.user_id);
+                      setSelectedUserProfile(profile);
+                      setDetailsVisible(true);
+                    }
                   }}
                 >
                   <View style={styles.cardContent}>
@@ -467,15 +447,17 @@ export default function SearchScreen() {
                         style={styles.avatarContainer}
                         onPress={(e) => {
                           e.stopPropagation();
-                          router.push(`/user/${item.id}`);
+                          if (item.walk) {
+                            router.push(`/user/${item.walk.user_id}`);
+                          }
                         }}
                       >
-                        <Avatar uri={getEventImage(item.walk, item.avatar_url)} name={item.display_name} size={SIZES.AVATAR_MEDIUM} />
+                        <Avatar uri={item.walk?.image_url} name="" size={SIZES.AVATAR_MEDIUM} />
                       </Pressable>
 
                       <View style={styles.cardHeaderInfo}>
                         <Text style={styles.userName} numberOfLines={1}>
-                          {item.display_name}
+                          {item.walk?.title || ''}
                         </Text>
                       </View>
                     </View>
@@ -494,8 +476,8 @@ export default function SearchScreen() {
                   </View>
 
                   <View style={styles.cardFooter}>
-                    <Text style={[styles.distance, item.id === user?.id && styles.ownEventText]}>
-                      {item.id === user?.id ? t('yourEvent') : `${(item.distance / 1000).toFixed(1)} ${t('kmFromYou')}`}
+                    <Text style={[styles.distance, item.walk?.user_id === user?.id && styles.ownEventText]}>
+                      {item.walk?.user_id === user?.id ? t('yourEvent') : `${(item.distance / 1000).toFixed(1)} ${t('kmFromYou')}`}
                     </Text>
                     {item.walk?.start_time && (
                       <View style={styles.timeInfo}>
@@ -518,17 +500,18 @@ export default function SearchScreen() {
         onClose={() => {
           setDetailsVisible(false);
         }}
-        user={selectedUser}
-        isOwnEvent={selectedUser?.id === user?.id}
+        walk={selectedWalk}
+        userProfile={selectedUserProfile}
+        isOwnEvent={selectedWalk?.walk?.user_id === user?.id}
         onDelete={() => {
           loadNearbyWalks();
         }}
         onConnectPress={(walkId, walkOwnerName) => {
-          const walkData = selectedUser?.walk;
+          const walkData = selectedWalk?.walk;
           setContactRequestData({
             walkId,
             walkOwnerName,
-            walkOwnerAvatar: selectedUser?.avatar_url,
+            walkOwnerAvatar: selectedUserProfile?.avatar_url,
             walkTitle: walkData?.title || '',
             walkStartTime: walkData?.start_time,
             walkImageUrl: walkData?.image_url,

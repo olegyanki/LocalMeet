@@ -14,50 +14,19 @@ import {
 } from 'react-native';
 import { BlurView } from 'expo-blur';
 import { Clock, MapPin, X, Trash2 } from 'lucide-react-native';
-import { deleteWalk, getMyRequestForWalk, WalkRequest } from '@shared/lib/api';
-import { getEventImage } from '@shared/utils/eventImage';
+import { deleteWalk, getMyRequestForWalk, WalkRequest, NearbyWalk, UserProfile } from '@shared/lib/api';
 import { useAuth } from '@shared/contexts/AuthContext';
 import { useI18n } from '@shared/i18n';
 import { COLORS } from '@shared/constants';
 import { router } from 'expo-router';
 
-interface UserLocation {
-  id: string;
-  user_id: string;
-  latitude: number;
-  longitude: number;
-  updated_at: string;
-}
 
-interface Walk {
-  id: string;
-  user_id: string;
-  title: string;
-  start_time: string;
-  duration: string;
-  description: string | null;
-  latitude: number;
-  longitude: number;
-}
-
-interface UserProfile {
-  id: string;
-  username: string;
-  display_name: string;
-  bio: string | null;
-  avatar_url: string | null;
-  status: string | null;
-  distance: number;
-  location?: UserLocation | null;
-  walk: Walk | null;
-  interests: string[];
-  isActive?: boolean;
-}
 
 interface EventDetailsBottomSheetProps {
   visible: boolean;
   onClose: () => void;
-  user: UserProfile | null;
+  walk: NearbyWalk | null;
+  userProfile: UserProfile | null;
   isOwnEvent: boolean;
   onDelete?: () => void;
   onConnectPress?: (walkId: string, walkOwnerName: string) => void;
@@ -66,7 +35,8 @@ interface EventDetailsBottomSheetProps {
 export default function EventDetailsBottomSheet({
   visible,
   onClose,
-  user,
+  walk,
+  userProfile,
   isOwnEvent,
   onDelete,
   onConnectPress,
@@ -145,11 +115,11 @@ export default function EventDetailsBottomSheet({
 
   React.useEffect(() => {
     const loadExistingRequest = async () => {
-      if (!currentUser || !user?.walk) return;
+      if (!currentUser || !walk?.walk) return;
 
       try {
         setIsLoadingRequest(true);
-        const request = await getMyRequestForWalk(user.walk.id, currentUser.id);
+        const request = await getMyRequestForWalk(walk.walk.id, currentUser.id);
         setExistingRequest(request);
       } catch (error) {
         console.error('Failed to load request:', error);
@@ -158,13 +128,13 @@ export default function EventDetailsBottomSheet({
       }
     };
 
-    if (visible && currentUser && user?.walk && !isOwnEvent) {
+    if (visible && currentUser && walk?.walk && !isOwnEvent) {
       loadExistingRequest();
     } else if (!visible) {
       setExistingRequest(null);
       setIsLoadingRequest(false);
     }
-  }, [visible, currentUser, user?.walk?.id, isOwnEvent]);
+  }, [visible, currentUser, walk?.walk?.id, isOwnEvent]);
 
   const getTimeText = (walkStartTime: string | null) => {
     if (!walkStartTime) return t('timeNotSpecified');
@@ -198,8 +168,8 @@ export default function EventDetailsBottomSheet({
   };
 
   const handleConnect = () => {
-    if (!existingRequest && user?.walk && onConnectPress) {
-      onConnectPress(user.walk.id, user.display_name);
+    if (!existingRequest && walk?.walk && userProfile && onConnectPress) {
+      onConnectPress(walk.walk.id, userProfile.display_name);
     }
   };
 
@@ -249,13 +219,13 @@ export default function EventDetailsBottomSheet({
   };
 
   const handleDelete = async () => {
-    if (!user?.walk?.id) {
+    if (!walk?.walk?.id) {
       return;
     }
 
     try {
       setIsDeleting(true);
-      await deleteWalk(user.walk.id);
+      await deleteWalk(walk.walk.id);
       setIsDeleting(false);
       handleClose();
       setTimeout(() => {
@@ -269,7 +239,7 @@ export default function EventDetailsBottomSheet({
     }
   };
 
-  if (!user) return null;
+  if (!walk || !userProfile) return null;
 
   return (
     <Modal visible={visible} transparent animationType="none" onRequestClose={handleClose}>
@@ -302,54 +272,55 @@ export default function EventDetailsBottomSheet({
             onPress={() => {
               handleClose();
               setTimeout(() => {
-                router.push(`/user/${user.id}`);
+                if (walk?.walk?.user_id) {
+                  router.push(`/user/${walk.walk.user_id}`);
+                }
               }, 300);
             }}
             activeOpacity={0.7}
           >
             <View style={styles.avatarSection}>
-              {getEventImage(user.walk, user.avatar_url) ? (
-                <Image source={{ uri: getEventImage(user.walk, user.avatar_url)! }} style={styles.avatar} />
+              {walk.walk?.image_url ? (
+                <Image source={{ uri: walk.walk.image_url }} style={styles.avatar} />
               ) : (
                 <View style={styles.avatarPlaceholder}>
-                  <Text style={styles.avatarText}>{user.display_name[0].toUpperCase()}</Text>
+                  <Text style={styles.avatarText}>{userProfile.display_name[0].toUpperCase()}</Text>
                 </View>
               )}
-              {user.isActive && <View style={styles.activeIndicator} />}
             </View>
 
             <View style={styles.headerInfo}>
-              <Text style={styles.name}>{user.display_name}</Text>
+              <Text style={styles.name}>{userProfile.display_name}</Text>
               {!isOwnEvent && (
                 <View style={styles.distanceContainer}>
                   <MapPin size={16} color={COLORS.TEXT_LIGHT} />
-                  <Text style={styles.distanceText}>{(user.distance / 1000).toFixed(1)} {t('kmFromYou')}</Text>
+                  <Text style={styles.distanceText}>{(walk.distance / 1000).toFixed(1)} {t('kmFromYou')}</Text>
                 </View>
               )}
             </View>
           </TouchableOpacity>
 
-          {user.walk?.title && (
+          {walk.walk?.title && (
             <View style={styles.infoCard}>
               <View>
                 <Text style={styles.label}>{t('eventTitleLabel')}</Text>
-                <Text style={styles.eventTitle}>{user.walk.title}</Text>
+                <Text style={styles.eventTitle}>{walk.walk.title}</Text>
               </View>
               
-              {user.walk?.description && (
+              {walk.walk?.description && (
                 <View>
                   <Text style={styles.label}>{t('walkDescription')}</Text>
-                  <Text style={styles.description}>{user.walk.description}</Text>
+                  <Text style={styles.description}>{walk.walk.description}</Text>
                 </View>
               )}
               
-              {user.walk?.start_time && (
+              {walk.walk?.start_time && (
                 <View style={styles.timeSection}>
                   <Text style={styles.label}>{t('startTimeLabel')}</Text>
                   <View style={styles.timeContainer}>
-                    <Clock size={18} color={getTimeColor(user.walk.start_time)} />
-                    <Text style={[styles.timeText, { color: getTimeColor(user.walk.start_time) }]}>
-                      {getTimeText(user.walk.start_time)}
+                    <Clock size={18} color={getTimeColor(walk.walk.start_time)} />
+                    <Text style={[styles.timeText, { color: getTimeColor(walk.walk.start_time) }]}>
+                      {getTimeText(walk.walk.start_time)}
                     </Text>
                   </View>
                 </View>
