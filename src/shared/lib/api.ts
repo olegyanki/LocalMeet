@@ -203,17 +203,6 @@ export async function createWalk(data: {
   return walk;
 }
 
-export async function endWalk(walkId: string) {
-  const { error } = await supabase
-    .from('walks')
-    .update({ is_active: false })
-    .eq('id', walkId);
-
-  if (error) {
-    throw error;
-  }
-}
-
 export async function deleteWalk(walkId: string) {
   const { data, error } = await supabase
     .from('walks')
