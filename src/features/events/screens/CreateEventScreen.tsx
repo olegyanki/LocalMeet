@@ -210,15 +210,8 @@ export default function CreateEventScreen() {
         imageUrl: walkImageUrl,
       });
 
+      clearForm();
       setShowSuccess(true);
-      setTimeout(() => {
-        setShowSuccess(false);
-        clearForm();
-        router.push({
-          pathname: '/(tabs)',
-          params: { reloadEvents: 'true' }
-        });
-      }, 1500);
     } catch (err: any) {
       if (err.message === 'TIME_OVERLAP') {
         setError(t('timeOverlap'));
@@ -498,7 +491,10 @@ export default function CreateEventScreen() {
         }}
       />
 
-      <SuccessModal visible={showSuccess} />
+      <SuccessModal 
+        visible={showSuccess} 
+        onClose={() => setShowSuccess(false)} 
+      />
     </View>
   );
 }
