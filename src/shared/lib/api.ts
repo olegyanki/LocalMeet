@@ -49,53 +49,39 @@ export async function updateProfile(userId: string, data: Partial<UserProfile>) 
   }
 }
 
-export async function getNearbyWalks(latitude: number, longitude: number, radiusKm: number = 15): Promise<NearbyWalk[]> {
-  const { data: walks, error: walksError } = await supabase
-    .from('walks')
-    .select('*')
-    .eq('is_active', true)
-    .or('deleted.is.null,deleted.eq.false');
+export async function getNearbyWalks(
+  latitude: number,
+  longitude: number,
+  radiusKm: number = 15
+): Promise<NearbyWalk[]> {
+  const { data, error } = await supabase.rpc('get_nearby_walks', {
+    p_latitude: latitude,
+    p_longitude: longitude,
+    p_radius_km: radiusKm,
+  });
 
-  if (walksError) {
-    throw walksError;
+  if (error) {
+    throw error;
   }
 
-  if (!walks || walks.length === 0) {
+  if (!data || data.length === 0) {
     return [];
   }
 
-  const userIds = [...new Set(walks.map(w => w.user_id))];
-  const { data: profiles, error: profileError } = await supabase
-    .from('profiles')
-    .select('*')
-    .in('id', userIds);
-
-  if (profileError) {
-    throw profileError;
-  }
-
-  if (!profiles || profiles.length === 0) {
-    return [];
-  }
-
-  const walksWithDistance = walks
-    .map((walk) => {
-      const profile = profiles.find(p => p.id === walk.user_id);
-      if (!profile) return null;
-
-      const distance = calculateDistance(latitude, longitude, walk.latitude, walk.longitude);
-
-      return {
-        ...profile,
-        distance,
-        walk,
-      };
-    })
-    .filter((walk): walk is NonNullable<typeof walk> =>
-      walk !== null && walk.distance <= radiusKm
-    );
-
-  return walksWithDistance?.sort((a, b) => a.distance - b.distance) || [];
+  return data.map((row: any) => ({
+    distance: row.distance,
+    walk: {
+      id: row.id,
+      user_id: row.user_id,
+      title: row.title,
+      start_time: row.start_time,
+      duration: row.duration,
+      description: row.description ?? null,
+      latitude: row.latitude,
+      longitude: row.longitude,
+      image_url: row.image_url ?? null,
+    },
+  }));
 }
 
 export async function getProfile(userId: string): Promise<UserProfile | null> {

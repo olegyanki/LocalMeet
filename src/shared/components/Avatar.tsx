@@ -16,10 +16,12 @@ export default function Avatar({ uri, name, size = 60, style }: AvatarProps) {
     return <Image source={{ uri }} style={[styles.avatar, avatarSize, style]} />;
   }
 
+  const initial = name && name.length > 0 ? name.charAt(0).toUpperCase() : '?';
+
   return (
     <View style={[styles.avatar, styles.placeholder, avatarSize, style]}>
       <Text style={[styles.text, { fontSize: size / 2.5 }]}>
-        {name.charAt(0).toUpperCase()}
+        {initial}
       </Text>
     </View>
   );
