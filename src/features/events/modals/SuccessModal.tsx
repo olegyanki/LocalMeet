@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, Modal, Animated, Platform, Pressable } from 'react-native';
 import { BlurView } from 'expo-blur';
-import { CheckCircle } from 'lucide-react-native';
+import { Check } from 'lucide-react-native';
 import { useI18n } from '@shared/i18n';
 import { COLORS } from '@shared/constants';
 import { router } from 'expo-router';
@@ -100,7 +100,7 @@ export default function SuccessModal({ visible, onClose }: SuccessModalProps) {
             
             {/* Icon circle */}
             <View style={styles.iconCircle}>
-              <CheckCircle size={48} color="#FFF" strokeWidth={3} />
+              <Check size={52} color={COLORS.WHITE} strokeWidth={4} />
             </View>
           </View>
           
