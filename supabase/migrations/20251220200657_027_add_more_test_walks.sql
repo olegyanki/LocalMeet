@@ -6,7 +6,7 @@
 */
 
 -- Add more walks with different locations
-INSERT INTO walks (user_id, title, description, start_time, duration, latitude, longitude, is_active) VALUES
+INSERT INTO walks (user_id, title, description, start_time, duration, latitude, longitude) VALUES
   -- Multiple walks for Sofia
   (
     '99999999-9999-9999-9999-999999999999',

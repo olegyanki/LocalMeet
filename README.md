@@ -172,7 +172,6 @@ LocalMeet/
 - `duration` (text) - тривалість ("2 год", "1 год 30 хв")
 - `description` (text)
 - `latitude`, `longitude` (float) - локація івенту
-- `is_active` (boolean) - чи активний
 - `deleted` (boolean) - м'яке видалення
 - `created_at`, `updated_at` (timestamp)
 
@@ -365,7 +364,6 @@ import EventDetailsBottomSheet from '@features/events/modals/EventDetailsBottomS
 
 ### Активність івенту
 Івент вважається активним якщо:
-- `is_active = true`
 - `deleted = false` або `null`
 - Поточний час < `start_time + duration`
 

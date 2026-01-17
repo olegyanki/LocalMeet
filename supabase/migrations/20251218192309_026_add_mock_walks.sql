@@ -20,7 +20,7 @@
 */
 
 -- Insert mock walks for various Valencia locations
-INSERT INTO walks (user_id, title, description, start_time, duration, latitude, longitude, is_active) VALUES
+INSERT INTO walks (user_id, title, description, start_time, duration, latitude, longitude) VALUES
   -- Sofia's yoga walk in Turia Gardens
   (
     '99999999-9999-9999-9999-999999999999',

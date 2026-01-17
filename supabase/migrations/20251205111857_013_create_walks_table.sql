@@ -10,7 +10,6 @@
       - `description` (text, nullable) - Description of the walk
       - `latitude` (numeric) - Walk meeting location latitude
       - `longitude` (numeric) - Walk meeting location longitude
-      - `is_active` (boolean) - Whether walk is currently active
       - `created_at` (timestamptz) - When walk was created
       - `updated_at` (timestamptz) - Last update time
       
@@ -40,7 +39,6 @@ CREATE TABLE IF NOT EXISTS walks (
   description text,
   latitude numeric(10, 8) NOT NULL,
   longitude numeric(11, 8) NOT NULL,
-  is_active boolean DEFAULT true,
   created_at timestamptz DEFAULT now(),
   updated_at timestamptz DEFAULT now()
 );
@@ -49,9 +47,6 @@ CREATE TABLE IF NOT EXISTS walks (
 ALTER TABLE walks ENABLE ROW LEVEL SECURITY;
 
 -- Walks policies
-CREATE POLICY "Active walks are viewable by all"
-  ON walks FOR SELECT
-  USING (is_active = true);
 
 CREATE POLICY "Users can create own walks"
   ON walks FOR INSERT
@@ -71,7 +66,6 @@ CREATE POLICY "Users can delete own walks"
 
 -- Create index for faster queries
 CREATE INDEX IF NOT EXISTS idx_walks_user_id ON walks(user_id);
-CREATE INDEX IF NOT EXISTS idx_walks_is_active ON walks(is_active);
 CREATE INDEX IF NOT EXISTS idx_walks_start_time ON walks(start_time);
 
 -- Remove walk fields from profiles table

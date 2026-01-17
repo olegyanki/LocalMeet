@@ -8,7 +8,7 @@
 
   2. Security
     - USING clause verifies user owns the walk
-    - Allows setting deleted=true and is_active=false fields
+    - Allows setting deleted=true
 */
 
 -- Drop the existing UPDATE policy

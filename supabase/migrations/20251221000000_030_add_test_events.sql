@@ -1,6 +1,6 @@
 -- Add test events for different users in Valencia area
 
-INSERT INTO walks (user_id, title, description, start_time, duration, latitude, longitude, is_active) VALUES
+INSERT INTO walks (user_id, title, description, start_time, duration, latitude, longitude) VALUES
   -- Events starting soon
   (
     '99999999-9999-9999-9999-999999999999',
