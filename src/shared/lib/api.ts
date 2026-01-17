@@ -22,7 +22,7 @@ export interface Walk {
   user_id: string;
   title: string;
   start_time: string;
-  duration: string;
+  duration: number;
   description: string | null;
   latitude: number;
   longitude: number;
@@ -47,40 +47,6 @@ export async function updateProfile(userId: string, data: Partial<UserProfile>) 
   if (error) {
     throw error;
   }
-}
-
-function parseDuration(duration: string | null): number {
-  if (!duration) return 0;
-
-  const parts = duration.toLowerCase().split(' ');
-  let totalMinutes = 0;
-
-  for (let i = 0; i < parts.length; i += 2) {
-    const value = parseInt(parts[i]);
-    const unit = parts[i + 1];
-
-    if (unit?.includes('hour') || unit?.includes('год')) {
-      totalMinutes += value * 60;
-    } else if (unit?.includes('minute') || unit?.includes('хв')) {
-      totalMinutes += value;
-    }
-  }
-
-  return totalMinutes;
-}
-
-function isWalkStillActive(walkStartTime: string | null, walkDuration: string | null): boolean {
-  if (!walkStartTime) return false;
-
-  const now = new Date();
-  const startTime = new Date(walkStartTime);
-
-  if (isNaN(startTime.getTime())) return false;
-
-  const durationMinutes = parseDuration(walkDuration);
-  const endTime = new Date(startTime.getTime() + durationMinutes * 60000);
-
-  return now < endTime;
 }
 
 export async function getNearbyWalks(latitude: number, longitude: number, radiusKm: number = 15): Promise<NearbyWalk[]> {
@@ -224,7 +190,7 @@ export async function createWalk(data: {
   userId: string;
   title: string;
   startTime: string;
-  duration: string;
+  duration: number;
   description?: string;
   latitude: number;
   longitude: number;

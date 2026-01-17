@@ -62,17 +62,8 @@ export default function CreateEventScreen() {
   const scrollViewRef = useRef<ScrollView>(null);
   const descriptionInputRef = useRef<TextInput>(null);
 
-  const parseDuration = (duration: string): number => {
-    const parts = duration.toLowerCase().split(' ');
-    let totalMinutes = 0;
-    for (let i = 0; i < parts.length; i += 2) {
-      const value = parseInt(parts[i]);
-      const unit = parts[i + 1];
-      if (unit?.includes('hour') || unit?.includes('h')) {
-        totalMinutes += value * 60;
-      }
-    }
-    return totalMinutes;
+  const parseDuration = (durationSeconds: number): number => {
+    return durationSeconds / 60;
   };
 
   useEffect(() => {
@@ -185,9 +176,9 @@ export default function CreateEventScreen() {
       const existingWalks = await getActiveWalksByUserId(user.id);
       for (const walk of existingWalks) {
         const walkStart = new Date(walk.start_time);
-        const walkEnd = new Date(walkStart.getTime() + parseDuration(walk.duration) * 60000);
+        const walkEnd = new Date(walkStart.getTime() + walk.duration * 1000);
         const newStart = walkStartDateTime;
-        const newEnd = new Date(newStart.getTime() + parseFloat(selectedDuration) * 60 * 60000);
+        const newEnd = new Date(newStart.getTime() + parseFloat(selectedDuration) * 3600 * 1000);
         
         if (newStart < walkEnd && walkStart < newEnd) {
           throw new Error('TIME_OVERLAP');
@@ -203,7 +194,7 @@ export default function CreateEventScreen() {
         userId: user.id,
         title,
         startTime: walkStartDateTime.toISOString(),
-        duration: `${selectedDuration} ${t("hoursShort")}`,
+        duration: parseFloat(selectedDuration) * 3600,
         description,
         latitude: selectedLocation!.latitude,
         longitude: selectedLocation!.longitude,
