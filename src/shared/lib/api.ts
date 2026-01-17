@@ -96,80 +96,6 @@ export async function getProfile(userId: string): Promise<UserProfile | null> {
   return data;
 }
 
-export async function sendConnectionRequest(fromUserId: string, toUserId: string) {
-  const { data, error } = await supabase
-    .from('connection_requests')
-    .insert({
-      from_user_id: fromUserId,
-      to_user_id: toUserId,
-      status: 'pending',
-    })
-    .select();
-
-  if (error) {
-    throw error;
-  }
-
-  return data?.[0];
-}
-
-export async function respondToConnectionRequest(
-  requestId: string,
-  status: 'accepted' | 'rejected'
-) {
-  const { error } = await supabase
-    .from('connection_requests')
-    .update({ status })
-    .eq('id', requestId);
-
-  if (error) {
-    throw error;
-  }
-}
-
-export async function getConnectionRequests(userId: string) {
-  const { data, error } = await supabase
-    .from('connection_requests')
-    .select('*')
-    .eq('to_user_id', userId)
-    .eq('status', 'pending');
-
-  if (error) {
-    throw error;
-  }
-
-  return data || [];
-}
-
-export async function getConnectionRequestsSent(userId: string) {
-  const { data, error } = await supabase
-    .from('connection_requests')
-    .select('*')
-    .eq('from_user_id', userId)
-    .eq('status', 'pending');
-
-  if (error) {
-    throw error;
-  }
-
-  return data || [];
-}
-
-function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
-  const R = 6371;
-  const dLat = toRad(lat2 - lat1);
-  const dLon = toRad(lon2 - lon1);
-  const a =
-    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  return R * c;
-}
-
-function toRad(deg: number): number {
-  return deg * (Math.PI / 180);
-}
-
 export async function createWalk(data: {
   userId: string;
   title: string;
@@ -216,22 +142,6 @@ export async function deleteWalk(walkId: string) {
   if (error) {
     throw error;
   }
-}
-
-export async function getActiveWalkByUserId(userId: string): Promise<Walk | null> {
-  const { data, error } = await supabase
-    .from('walks')
-    .select('*')
-    .eq('user_id', userId)
-    .eq('is_active', true)
-    .or('deleted.is.null,deleted.eq.false')
-    .maybeSingle();
-
-  if (error) {
-    throw error;
-  }
-
-  return data;
 }
 
 export async function getActiveWalksByUserId(userId: string): Promise<Walk[]> {
@@ -295,20 +205,6 @@ export async function updateWalkRequestStatus(
   if (error) {
     throw error;
   }
-}
-
-export async function getWalkRequestsForWalk(walkId: string): Promise<WalkRequest[]> {
-  const { data, error } = await supabase
-    .from('walk_requests')
-    .select('*')
-    .eq('walk_id', walkId)
-    .order('created_at', { ascending: false });
-
-  if (error) {
-    throw error;
-  }
-
-  return data || [];
 }
 
 export async function getMyRequestForWalk(
