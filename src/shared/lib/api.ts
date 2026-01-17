@@ -84,9 +84,6 @@ function isWalkStillActive(walkStartTime: string | null, walkDuration: string | 
 }
 
 export async function getNearbyWalks(latitude: number, longitude: number, radiusKm: number = 15): Promise<NearbyWalk[]> {
-  // Call database function to auto-deactivate expired walks
-  await supabase.rpc('deactivate_expired_walks');
-
   const { data: walks, error: walksError } = await supabase
     .from('walks')
     .select('*')
