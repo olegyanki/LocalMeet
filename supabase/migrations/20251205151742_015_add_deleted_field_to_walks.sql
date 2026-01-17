@@ -25,7 +25,7 @@ DROP POLICY IF EXISTS "Active walks are viewable by all" ON walks;
 -- Create new SELECT policy that excludes deleted walks
 CREATE POLICY "Active non-deleted walks are viewable by all"
   ON walks FOR SELECT
-  USING (is_active = true AND (deleted = false OR deleted IS NULL));
+  USING (deleted = false OR deleted IS NULL);
 
 -- Create index for faster queries on deleted field
 CREATE INDEX IF NOT EXISTS idx_walks_deleted ON walks(deleted);

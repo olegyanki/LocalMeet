@@ -27,7 +27,6 @@ export interface Walk {
   latitude: number;
   longitude: number;
   image_url: string | null;
-  is_active: boolean;
   deleted: boolean;
 }
 
@@ -117,7 +116,6 @@ export async function createWalk(data: {
       latitude: data.latitude,
       longitude: data.longitude,
       image_url: data.imageUrl || null,
-      is_active: true,
     })
     .select()
     .single();
@@ -133,8 +131,7 @@ export async function deleteWalk(walkId: string) {
   const { data, error } = await supabase
     .from('walks')
     .update({
-      deleted: true,
-      is_active: false
+      deleted: true
     })
     .eq('id', walkId)
     .select();
@@ -149,7 +146,6 @@ export async function getWalksByUserId(userId: string): Promise<Walk[]> {
     .from('walks')
     .select('*')
     .eq('user_id', userId)
-    .or('deleted.is.null,deleted.eq.false')
     .order('start_time', { ascending: true });
 
   if (error) {
@@ -234,7 +230,6 @@ export async function getMyWalkRequests(userId: string): Promise<WalkRequestWith
     .from('walks')
     .select('*')
     .eq('user_id', userId)
-    .or('deleted.is.null,deleted.eq.false');
 
   if (walksError) {
     throw walksError;
