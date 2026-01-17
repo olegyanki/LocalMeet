@@ -416,5 +416,3 @@ export async function pickAndUploadAvatar(userId: string): Promise<string | null
   
   return avatarUrl;
 }
-
-export const getNearbyUsers = getNearbyWalks;

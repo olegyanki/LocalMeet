@@ -20,7 +20,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Location from 'expo-location';
 import { useAuth } from '@shared/contexts/AuthContext';
 import { useI18n } from '@shared/i18n';
-import { getNearbyUsers } from '@shared/lib/api';
+import { getNearbyWalks } from '@shared/lib/api';
 import { Clock } from 'lucide-react-native';
 import Svg, { Rect, Defs, Filter, FeFlood, FeColorMatrix, FeOffset, FeGaussianBlur, FeBlend, G } from 'react-native-svg';
 import { COLORS, SIZES } from '@shared/constants';
@@ -222,7 +222,7 @@ export default function SearchScreen() {
 
     try {
       setIsLoadingWalks(true);
-      const walks = await getNearbyUsers(location.coords.latitude, location.coords.longitude);
+      const walks = await getNearbyWalks(location.coords.latitude, location.coords.longitude);
 
       const otherWalks = walks.filter((w) => w.id !== user.id);
       const ownWalks = walks.filter((w) => w.id === user.id);
