@@ -496,7 +496,7 @@ export default function SearchScreen() {
 
                   <View style={styles.cardFooter}>
                     <Text style={[styles.distance, item.id === user?.id && styles.ownEventText]}>
-                      {item.id === user?.id ? t('yourEvent') : `${item.distance.toFixed(1)} ${t('kmFromYou')}`}
+                      {item.id === user?.id ? t('yourEvent') : `${(item.distance / 1000).toFixed(1)} ${t('kmFromYou')}`}
                     </Text>
                     {item.walk?.start_time && (
                       <View style={styles.timeInfo}>

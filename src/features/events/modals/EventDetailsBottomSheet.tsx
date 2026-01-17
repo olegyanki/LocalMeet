@@ -327,7 +327,7 @@ export default function EventDetailsBottomSheet({
               {!isOwnEvent && (
                 <View style={styles.distanceContainer}>
                   <MapPin size={16} color={COLORS.TEXT_LIGHT} />
-                  <Text style={styles.distanceText}>{user.distance.toFixed(1)} {t('kmFromYou')}</Text>
+                  <Text style={styles.distanceText}>{(user.distance / 1000).toFixed(1)} {t('kmFromYou')}</Text>
                 </View>
               )}
             </View>

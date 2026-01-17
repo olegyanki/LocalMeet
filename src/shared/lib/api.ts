@@ -34,7 +34,7 @@ export interface Walk {
 }
 
 export interface NearbyWalk extends UserProfile {
-  distance: number;
+  distance: number; // in meters
   walk: Walk | null;
 }
 
