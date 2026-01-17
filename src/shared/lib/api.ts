@@ -29,8 +29,6 @@ export interface Walk {
   image_url: string | null;
   is_active: boolean;
   deleted: boolean;
-  created_at: string;
-  updated_at: string;
 }
 
 export interface NearbyWalk extends UserProfile {
@@ -208,7 +206,7 @@ export async function createWalk(data: {
 export async function endWalk(walkId: string) {
   const { error } = await supabase
     .from('walks')
-    .update({ is_active: false, updated_at: new Date().toISOString() })
+    .update({ is_active: false })
     .eq('id', walkId);
 
   if (error) {
@@ -221,8 +219,7 @@ export async function deleteWalk(walkId: string) {
     .from('walks')
     .update({
       deleted: true,
-      is_active: false,
-      updated_at: new Date().toISOString()
+      is_active: false
     })
     .eq('id', walkId)
     .select();
@@ -303,7 +300,7 @@ export async function updateWalkRequestStatus(
 ) {
   const { error } = await supabase
     .from('walk_requests')
-    .update({ status, updated_at: new Date().toISOString() })
+    .update({ status })
     .eq('id', requestId);
 
   if (error) {

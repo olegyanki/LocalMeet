@@ -38,10 +38,6 @@ interface Walk {
   description: string | null;
   latitude: number;
   longitude: number;
-  is_active: boolean;
-  deleted: boolean;
-  created_at: string;
-  updated_at: string;
 }
 
 interface UserProfile {
