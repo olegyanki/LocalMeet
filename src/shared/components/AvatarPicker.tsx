@@ -8,7 +8,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 
 const AVATAR_PLACEHOLDER = 'https://api.dicebear.com/7.x/initials/svg?seed=';
 const AVATAR_SIZE = 128;
-const AVATAR_BORDER_RADIUS = 24;
+const AVATAR_BORDER_RADIUS = 32;
 const CAMERA_ICON_SIZE = 40;
 const CAMERA_ICON_BORDER_RADIUS = 20;
 const HINT_MARGIN_TOP = 12;
