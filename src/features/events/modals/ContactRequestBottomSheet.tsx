@@ -13,6 +13,7 @@ import {
   KeyboardAvoidingView,
 } from 'react-native';
 import { BlurView } from 'expo-blur';
+import { Clock } from 'lucide-react-native';
 import { createWalkRequest } from '@shared/lib/api';
 import { useI18n } from '@shared/i18n';
 import { COLORS } from '@shared/constants';
