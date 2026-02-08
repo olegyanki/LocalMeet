@@ -357,6 +357,7 @@ const styles = StyleSheet.create({
   avatarSection: {
     alignItems: 'center',
     marginBottom: 16,
+    marginTop: 16,
   },
   inputGroup: {
     marginBottom: 24,
