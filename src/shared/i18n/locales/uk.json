@@ -221,5 +221,11 @@
   "startTime": "Час початку",
   "selectEventDate": "Оберіть дату події",
   "settings": "Налаштування",
-  "appLanguage": "Мова додатку"
+  "appLanguage": "Мова додатку",
+  "profile": "Профіль",
+  "socialMedia": "Соціальні мережі",
+  "instagramUsername": "Instagram Username",
+  "telegramUsername": "Telegram Username",
+  "namePlaceholder": "наприклад, Олена Коваленко",
+  "bioPlaceholder": "Розкажіть трохи про себе..."
 }

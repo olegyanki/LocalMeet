@@ -1,11 +1,21 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Image, ActivityIndicator, Alert } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Image, ActivityIndicator, Alert, ImageBackground } from 'react-native';
 import { Camera, ImageIcon } from 'lucide-react-native';
 import { pickAndUploadAvatar, takePhotoAndUploadAvatar } from '@shared/lib';
 import { useI18n } from '@shared/i18n';
 import { COLORS } from '@shared/constants';
+import { LinearGradient } from 'expo-linear-gradient';
 
 const AVATAR_PLACEHOLDER = 'https://api.dicebear.com/7.x/initials/svg?seed=';
+const AVATAR_SIZE = 128;
+const AVATAR_BORDER_RADIUS = 24;
+const CAMERA_ICON_SIZE = 40;
+const CAMERA_ICON_BORDER_RADIUS = 20;
+const HINT_MARGIN_TOP = 12;
+const GRADIENT_COLORS = ['#F5F5F5', '#E0E0E0'] as const;
+const GRADIENT_START = { x: 0, y: 0 };
+const GRADIENT_END = { x: 1, y: 1 };
+const PLACEHOLDER_OPACITY = 0.3;
 
 interface AvatarPickerProps {
   currentAvatar: string | null;
@@ -85,13 +95,29 @@ export default function AvatarPicker({
         disabled={!isEditing || uploading}
         style={styles.avatarContainer}
       >
-        <Image source={{ uri: avatarUri }} style={styles.avatar} />
-        {isEditing && (
+        {currentAvatar ? (
+          <Image source={{ uri: avatarUri }} style={styles.avatar} />
+        ) : (
+          <LinearGradient
+            colors={GRADIENT_COLORS}
+            start={GRADIENT_START}
+            end={GRADIENT_END}
+            style={styles.gradientBackground}
+          >
+            <Image 
+              source={{ uri: avatarUri }} 
+              style={[styles.avatar, { opacity: PLACEHOLDER_OPACITY }]} 
+            />
+          </LinearGradient>
+        )}
+        {isEditing && !currentAvatar && (
           <View style={styles.editBadge}>
             {uploading ? (
               <ActivityIndicator size="small" color={COLORS.WHITE} />
             ) : (
-              <Camera size={16} color={COLORS.WHITE} />
+              <View style={styles.cameraIconContainer}>
+                <Camera size={24} color={COLORS.ACCENT_ORANGE} />
+              </View>
             )}
           </View>
         )}
@@ -108,35 +134,52 @@ export default function AvatarPicker({
 const styles = StyleSheet.create({
   container: {
     alignItems: 'center',
-    marginBottom: 24,
+    marginBottom: 0,
   },
   avatarContainer: {
     position: 'relative',
+    width: AVATAR_SIZE,
+    height: AVATAR_SIZE,
+    borderRadius: AVATAR_BORDER_RADIUS,
+    backgroundColor: COLORS.CARD_BG,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    elevation: 2,
+    overflow: 'hidden',
   },
   avatar: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    backgroundColor: '#E8E8E8',
-    borderWidth: 4,
-    borderColor: COLORS.WHITE,
+    width: '100%',
+    height: '100%',
+  },
+  gradientBackground: {
+    width: '100%',
+    height: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   editBadge: {
     position: 'absolute',
     bottom: 0,
     right: 0,
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: COLORS.ACCENT_ORANGE,
+    left: 0,
+    top: 0,
     justifyContent: 'center',
     alignItems: 'center',
-    borderWidth: 3,
-    borderColor: COLORS.WHITE,
+  },
+  cameraIconContainer: {
+    width: CAMERA_ICON_SIZE,
+    height: CAMERA_ICON_SIZE,
+    borderRadius: CAMERA_ICON_BORDER_RADIUS,
+    backgroundColor: 'rgba(255, 122, 0, 0.1)',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   hint: {
-    marginTop: 8,
-    fontSize: 12,
-    color: '#999999',
+    marginTop: HINT_MARGIN_TOP,
+    fontSize: 14,
+    fontWeight: '500',
+    color: COLORS.ACCENT_ORANGE,
   },
 });

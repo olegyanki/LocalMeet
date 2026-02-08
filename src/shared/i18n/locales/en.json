@@ -221,5 +221,11 @@
   "startTime": "Start Time",
   "selectEventDate": "Select Event Date",
   "settings": "Settings",
-  "appLanguage": "App Language"
+  "appLanguage": "App Language",
+  "profile": "Profile",
+  "socialMedia": "Social Media",
+  "instagramUsername": "Instagram Username",
+  "telegramUsername": "Telegram Username",
+  "namePlaceholder": "e.g. Jessica Smith",
+  "bioPlaceholder": "Tell us a bit about yourself..."
 }

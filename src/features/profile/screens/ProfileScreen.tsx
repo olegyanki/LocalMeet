@@ -160,7 +160,7 @@ export default function ProfileScreen() {
       >
         <View style={styles.header}>
           <View style={{ width: 60 }} />
-          <Text style={styles.title}>Profile</Text>
+          <Text style={styles.title}>{t('profile')}</Text>
           <TouchableOpacity onPress={handleCancel}>
             <Text style={styles.cancelButton}>{t('cancel')}</Text>
           </TouchableOpacity>
@@ -183,7 +183,7 @@ export default function ProfileScreen() {
           <View style={styles.inputWrapper}>
             <TextInput
               style={styles.input}
-              placeholder="e.g. Jessica Smith"
+              placeholder={t('namePlaceholder')}
               placeholderTextColor="#9CA3AF"
               value={displayName}
               onChangeText={setDisplayName}
@@ -196,7 +196,7 @@ export default function ProfileScreen() {
           <View style={[styles.inputWrapper, { minHeight: 'auto' }]}>
             <TextInput
               style={[styles.input, styles.textArea]}
-              placeholder="Tell us a bit about yourself..."
+              placeholder={t('bioPlaceholder')}
               placeholderTextColor="#9CA3AF"
               value={bio}
               onChangeText={setBio}
@@ -261,7 +261,7 @@ export default function ProfileScreen() {
         </View>
 
         <View style={styles.inputGroup}>
-          <Text style={styles.label}>SOCIAL MEDIA</Text>
+          <Text style={styles.label}>{t('socialMedia').toUpperCase()}</Text>
           <View style={styles.socialInputsContainer}>
             <View style={styles.socialInputWrapper}>
               <View style={styles.socialIconContainer}>
@@ -271,7 +271,7 @@ export default function ProfileScreen() {
               </View>
               <TextInput
                 style={styles.socialInput}
-                placeholder="Instagram Username"
+                placeholder={t('instagramUsername')}
                 placeholderTextColor="#9CA3AF"
                 value={instagram}
                 onChangeText={setInstagram}
@@ -287,7 +287,7 @@ export default function ProfileScreen() {
               </View>
               <TextInput
                 style={styles.socialInput}
-                placeholder="Telegram Username"
+                placeholder={t('telegramUsername')}
                 placeholderTextColor="#9CA3AF"
                 value={telegram}
                 onChangeText={setTelegram}
