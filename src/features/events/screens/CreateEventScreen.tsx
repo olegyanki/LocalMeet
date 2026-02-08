@@ -40,6 +40,7 @@ export default function CreateEventScreen() {
   const [locationText, setLocationText] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [createdWalkId, setCreatedWalkId] = useState<string | null>(null);
   const [error, setError] = useState('');
   const [fieldErrors, setFieldErrors] = useState<{
     title?: string;
@@ -190,7 +191,7 @@ export default function CreateEventScreen() {
         walkImageUrl = await uploadEventImage(user.id, coverImage);
       }
 
-      await createWalk({
+      const newWalk = await createWalk({
         userId: user.id,
         title,
         startTime: walkStartDateTime.toISOString(),
@@ -201,6 +202,7 @@ export default function CreateEventScreen() {
         imageUrl: walkImageUrl,
       });
 
+      setCreatedWalkId(newWalk.id);
       clearForm();
       setShowSuccess(true);
     } catch (err: any) {
@@ -484,7 +486,11 @@ export default function CreateEventScreen() {
 
       <SuccessModal 
         visible={showSuccess} 
-        onClose={() => setShowSuccess(false)} 
+        walkId={createdWalkId}
+        onClose={() => {
+          setShowSuccess(false);
+          setCreatedWalkId(null);
+        }} 
       />
     </View>
   );

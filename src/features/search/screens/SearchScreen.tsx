@@ -137,6 +137,36 @@ export default function SearchScreen() {
   }, [params.reloadEvents]);
 
   useEffect(() => {
+    if (params.selectWalkId && nearbyWalks.length > 0) {
+      const walkIndex = sortedWalks.findIndex((w) => w.walk?.id === params.selectWalkId);
+      if (walkIndex !== -1) {
+        const walk = sortedWalks[walkIndex];
+        setSelectedMarkerId(walk.walk!.id);
+        setCurrentCardIndex(walkIndex);
+        
+        if (scrollViewRef.current) {
+          isScrollingProgrammatically.current = true;
+          scrollViewRef.current.scrollTo({
+            x: walkIndex * (cardWidth + cardGap),
+            animated: true,
+          });
+          setTimeout(() => {
+            isScrollingProgrammatically.current = false;
+          }, 500);
+        }
+
+        if (walk.walk) {
+          setMapCenter({
+            latitude: walk.walk.latitude,
+            longitude: walk.walk.longitude,
+            paddingBottom: 150,
+          });
+        }
+      }
+    }
+  }, [params.selectWalkId, nearbyWalks]);
+
+  useEffect(() => {
     if (user) {
       loadLocation();
     }

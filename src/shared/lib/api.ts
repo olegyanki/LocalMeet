@@ -146,6 +146,7 @@ export async function getWalksByUserId(userId: string): Promise<Walk[]> {
     .from('walks')
     .select('*')
     .eq('user_id', userId)
+    .eq('deleted', false)
     .order('start_time', { ascending: true });
 
   if (error) {
@@ -226,14 +227,7 @@ export interface WalkRequestWithProfile extends WalkRequest {
 }
 
 export async function getMyWalkRequests(userId: string): Promise<WalkRequestWithProfile[]> {
-  const { data: myWalks, error: walksError } = await supabase
-    .from('walks')
-    .select('*')
-    .eq('user_id', userId)
-
-  if (walksError) {
-    throw walksError;
-  }
+  const myWalks = await getWalksByUserId(userId);
 
   if (!myWalks || myWalks.length === 0) {
     return [];

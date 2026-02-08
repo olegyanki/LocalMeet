@@ -8,10 +8,11 @@ import { router } from 'expo-router';
 
 interface SuccessModalProps {
   visible: boolean;
+  walkId: string | null;
   onClose: () => void;
 }
 
-export default function SuccessModal({ visible, onClose }: SuccessModalProps) {
+export default function SuccessModal({ visible, walkId, onClose }: SuccessModalProps) {
   const { t } = useI18n();
   const scaleAnim = useRef(new Animated.Value(0)).current;
   const glowAnim = useRef(new Animated.Value(0)).current;
@@ -55,7 +56,13 @@ export default function SuccessModal({ visible, onClose }: SuccessModalProps) {
 
   const handleButtonPress = () => {
     onClose();
-    router.push('/(tabs)');
+    router.push({
+      pathname: '/(tabs)',
+      params: { 
+        reloadEvents: 'true',
+        selectWalkId: walkId || undefined,
+      },
+    });
   };
 
   return (
