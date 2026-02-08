@@ -1,6 +1,6 @@
 export const COLORS = {
   // Primary colors
-  ACCENT_ORANGE: '#FF9500',
+  ACCENT_ORANGE: '#FF7A00',
   TEXT_DARK: '#333333',
   TEXT_LIGHT: '#999999',
   

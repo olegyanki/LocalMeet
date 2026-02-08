@@ -6,7 +6,7 @@ Minimalist, clean, modern aesthetic with focus on content and usability. No unne
 ## Color Palette
 
 ### Primary Colors
-- **ACCENT_ORANGE** (#FF9500) - Primary actions, active states, highlights
+- **ACCENT_ORANGE** (#FF7A00) - Primary actions, active states, highlights
 - **TEXT_DARK** (#333333) - Primary text, headings
 - **TEXT_LIGHT** (#999999) - Secondary text, labels, placeholders
 
