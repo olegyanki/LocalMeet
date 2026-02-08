@@ -13,12 +13,13 @@ import {
   PanResponder,
 } from 'react-native';
 import { BlurView } from 'expo-blur';
-import { Clock, MapPin, X, Trash2 } from 'lucide-react-native';
+import { Clock, MapPin, Trash2 } from 'lucide-react-native';
 import { deleteWalk, getMyRequestForWalk, WalkRequest, NearbyWalk, UserProfile } from '@shared/lib/api';
 import { useAuth } from '@shared/contexts/AuthContext';
 import { useI18n } from '@shared/i18n';
 import { COLORS } from '@shared/constants';
 import { router } from 'expo-router';
+import PrimaryButton from '@shared/components/PrimaryButton';
 
 
 
@@ -331,35 +332,23 @@ export default function EventDetailsBottomSheet({
           {!isOwnEvent && (() => {
             const buttonConfig = getConnectButtonConfig();
             return (
-              <TouchableOpacity
-                style={[
-                  styles.connectButton,
-                  { backgroundColor: buttonConfig.color },
-                  buttonConfig.disabled && styles.connectButtonDisabled,
-                ]}
+              <PrimaryButton
+                title={buttonConfig.text}
                 onPress={handleConnect}
                 disabled={buttonConfig.disabled}
-              >
-                <Text style={styles.connectButtonText}>{buttonConfig.text}</Text>
-              </TouchableOpacity>
+                style={{ backgroundColor: buttonConfig.color }}
+              />
             );
           })()}
 
           {isOwnEvent && (
-            <TouchableOpacity
-              style={[styles.deleteButton, isDeleting && styles.deleteButtonDisabled]}
+            <PrimaryButton
+              title={t('deleteEvent')}
               onPress={handleDelete}
               disabled={isDeleting}
-            >
-              {isDeleting ? (
-                <ActivityIndicator size="small" color={COLORS.WHITE} />
-              ) : (
-                <>
-                  <Trash2 size={20} color={COLORS.WHITE} />
-                  <Text style={styles.deleteButtonText}>{t('deleteEvent')}</Text>
-                </>
-              )}
-            </TouchableOpacity>
+              loading={isDeleting}
+              style={styles.deleteButton}
+            />
           )}
         </Animated.View>
       </View>
@@ -521,38 +510,7 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: '600',
   },
-  connectButton: {
-    backgroundColor: COLORS.ACCENT_ORANGE,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 18,
-    borderRadius: 20,
-    marginTop: 4,
-  },
-  connectButtonText: {
-    fontSize: 17,
-    fontWeight: '700',
-    color: COLORS.WHITE,
-  },
-  connectButtonDisabled: {
-    opacity: 0.8,
-  },
   deleteButton: {
     backgroundColor: COLORS.ERROR_RED,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-    paddingVertical: 18,
-    borderRadius: 20,
-    marginTop: 4,
-  },
-  deleteButtonDisabled: {
-    opacity: 0.6,
-  },
-  deleteButtonText: {
-    fontSize: 17,
-    fontWeight: '700',
-    color: COLORS.WHITE,
   },
 });

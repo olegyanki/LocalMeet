@@ -11,7 +11,6 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useI18n } from '@shared/i18n';
 import { useRouter } from 'expo-router';
 import { signOut } from '@shared/lib/auth';
-import { LogOut } from 'lucide-react-native';
 import { COLORS } from '@shared/constants';
 
 export default function SettingsScreen() {
@@ -63,7 +62,6 @@ export default function SettingsScreen() {
       </View>
 
       <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-        <LogOut size={18} color={COLORS.ERROR_RED} strokeWidth={2.5} />
         <Text style={styles.logoutText}>{t('logout')}</Text>
       </TouchableOpacity>
     </ScrollView>
@@ -133,20 +131,17 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: 10,
     paddingVertical: 18,
-    borderRadius: 20,
-    backgroundColor: COLORS.CARD_BG,
-    borderWidth: 1,
-    borderColor: COLORS.BORDER_COLOR,
-    shadowColor: COLORS.SHADOW_BLACK,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
-    elevation: 2,
+    borderRadius: 24,
+    backgroundColor: COLORS.ERROR_RED,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 12,
+    elevation: 4,
   },
   logoutText: {
-    color: COLORS.ERROR_RED,
+    color: COLORS.CARD_BG,
     fontSize: 16,
-    fontWeight: '600',
-    letterSpacing: -0.3,
+    fontWeight: '700',
   },
 });

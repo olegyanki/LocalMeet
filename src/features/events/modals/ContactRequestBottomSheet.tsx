@@ -19,6 +19,7 @@ import { useI18n } from '@shared/i18n';
 import { COLORS } from '@shared/constants';
 import { Image } from 'react-native';
 import { getEventImage } from '@shared/utils/eventImage';
+import PrimaryButton from '@shared/components/PrimaryButton';
 
 interface ContactRequestBottomSheetProps {
   visible: boolean;
@@ -190,17 +191,12 @@ export default function ContactRequestBottomSheet({
               </View>
             )}
 
-            <TouchableOpacity
-              style={[styles.submitButton, isSubmitting && styles.submitButtonDisabled]}
+            <PrimaryButton
+              title={t('sendRequestButton')}
               onPress={handleSubmit}
               disabled={isSubmitting}
-            >
-              {isSubmitting ? (
-                <ActivityIndicator size="small" color={COLORS.WHITE} />
-              ) : (
-                <Text style={styles.submitButtonText}>{t('sendRequestButton')}</Text>
-              )}
-            </TouchableOpacity>
+              loading={isSubmitting}
+            />
           </View>
         </Animated.View>
       </KeyboardAvoidingView>
@@ -332,26 +328,9 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.ERROR_BG,
     padding: 12,
     borderRadius: 12,
-    marginBottom: 16,
   },
   errorText: {
     fontSize: 14,
     color: COLORS.ERROR_RED,
-  },
-  submitButton: {
-    backgroundColor: COLORS.ACCENT_ORANGE,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 16,
-    borderRadius: 16,
-    marginTop: 8,
-  },
-  submitButtonDisabled: {
-    opacity: 0.6,
-  },
-  submitButtonText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: COLORS.WHITE,
   },
 });

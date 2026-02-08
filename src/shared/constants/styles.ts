@@ -1,48 +1,124 @@
 import { StyleSheet } from 'react-native';
 import { COLORS } from './colors';
 
-export const COMMON_STYLES = StyleSheet.create({
-  shadow: {
-    shadowColor: COLORS.SHADOW_BLACK,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 8,
-    elevation: 3,
-  },
-  shadowLarge: {
-    shadowColor: COLORS.SHADOW_BLACK,
+// Common button styles
+export const BUTTON_STYLES = {
+  primary: {
+    backgroundColor: COLORS.ACCENT_ORANGE,
+    paddingVertical: 18,
+    borderRadius: 24,
+    alignItems: 'center' as const,
+    justifyContent: 'center' as const,
+    flexDirection: 'row' as const,
+    gap: 8,
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.08,
+    shadowOpacity: 0.15,
     shadowRadius: 12,
     elevation: 4,
   },
-  avatar: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    backgroundColor: '#E8E8E8',
+  primaryText: {
+    color: COLORS.CARD_BG,
+    fontSize: 16,
+    fontWeight: '700' as const,
   },
-  avatarPlaceholder: {
-    backgroundColor: COLORS.ACCENT_ORANGE,
-    justifyContent: 'center',
-    alignItems: 'center',
+  disabled: {
+    opacity: 0.6,
   },
-  avatarText: {
-    fontSize: 24,
-    fontWeight: '700',
-    color: COLORS.WHITE,
-  },
-});
+};
 
+// Common input styles
+export const INPUT_STYLES = {
+  wrapper: {
+    backgroundColor: COLORS.CARD_BG,
+    borderRadius: 24,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    elevation: 2,
+    padding: 4,
+    minHeight: 56,
+  },
+  input: {
+    backgroundColor: 'transparent',
+    borderWidth: 0,
+    borderRadius: 16,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    fontSize: 16,
+    fontWeight: '500' as const,
+    color: COLORS.TEXT_DARK,
+  },
+  label: {
+    fontSize: 12,
+    fontWeight: '700' as const,
+    color: COLORS.TEXT_LIGHT,
+    marginBottom: 8,
+    letterSpacing: 0.5,
+  },
+};
+
+// Common chip styles
+export const CHIP_STYLES = {
+  active: {
+    flexDirection: 'row' as const,
+    alignItems: 'center' as const,
+    gap: 6,
+    backgroundColor: COLORS.ACCENT_ORANGE,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  activeText: {
+    fontSize: 14,
+    color: COLORS.CARD_BG,
+    fontWeight: '500' as const,
+  },
+  inactive: {
+    flexDirection: 'row' as const,
+    alignItems: 'center' as const,
+    gap: 6,
+    backgroundColor: 'rgba(255, 122, 0, 0.1)',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 16,
+  },
+  inactiveText: {
+    fontSize: 14,
+    color: COLORS.ACCENT_ORANGE,
+    fontWeight: '500' as const,
+  },
+};
+
+// Common shadow
+export const SHADOW = {
+  standard: {
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  elevated: {
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 12,
+    elevation: 4,
+  },
+};
+
+// Common sizes
 export const SIZES = {
-  AVATAR_SMALL: 40,
-  AVATAR_MEDIUM: 60,
+  AVATAR_SMALL: 32,
+  AVATAR_MEDIUM: 48,
   AVATAR_LARGE: 80,
-  AVATAR_XLARGE: 120,
-  BORDER_RADIUS: 12,
-  BORDER_RADIUS_LARGE: 20,
-  BORDER_RADIUS_XLARGE: 24,
   TAB_BAR_HEIGHT: 78,
   CARDS_COLLAPSE_DISTANCE: 250,
-  LOCATION_BUTTON_OFFSET: -56,
-} as const;
+};

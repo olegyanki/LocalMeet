@@ -12,12 +12,12 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import * as Location from 'expo-location';
-import { Check } from 'lucide-react-native';
 import LocationPin from '@shared/components/LocationPin';
 import NativeMap from '@features/search/maps/NativeMap';
 import { calculateDistance } from '@shared/utils/location';
 import { useI18n } from '@shared/i18n';
 import { COLORS } from '@shared/constants';
+import PrimaryButton from '@shared/components/PrimaryButton';
 
 const RADIUS_FOR_CREATING_EVENT_KM = 15;
 
@@ -155,13 +155,11 @@ export default function LocationPickerModal({
                 {t('tapMapToSelectLocation')}
               </Text>
             </View>
-            <Pressable
-              style={[styles.confirmButton, !isLocationValid && styles.buttonDisabled]}
+            <PrimaryButton
+              title={t('confirm')}
               onPress={onConfirm}
               disabled={!isLocationValid}
-            >
-              <Text style={styles.confirmButtonText}>{t('confirm')}</Text>
-            </Pressable>
+            />
           </Animated.View>
         </Animated.View>
       </View>
@@ -252,20 +250,5 @@ const styles = StyleSheet.create({
     color: COLORS.TEXT_LIGHT,
     textAlign: 'center',
     lineHeight: 18,
-  },
-  confirmButton: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: COLORS.ACCENT_ORANGE,
-    paddingVertical: 16,
-    borderRadius: 16,
-  },
-  buttonDisabled: {
-    opacity: 0.6,
-  },
-  confirmButtonText: {
-    color: COLORS.CARD_BG,
-    fontSize: 17,
-    fontWeight: '600',
   },
 });

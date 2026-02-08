@@ -23,6 +23,7 @@ import { COLORS } from '@shared/constants';
 import AudioRecorder from '@shared/components/AudioRecorder';
 import AudioPlayer from '@shared/components/AudioPlayer';
 import EventDetailsBottomSheet from '@features/events/modals/EventDetailsBottomSheet';
+import PrimaryButton from '@shared/components/PrimaryButton';
 
 interface Message {
   id: string;
@@ -706,13 +707,15 @@ export default function ChatScreen() {
             </View>
 
             {newMessage.trim() ? (
-              <TouchableOpacity
-                style={styles.sendButton}
-                onPress={sendMessage}
-                disabled={uploading}
-              >
-                <Text style={styles.sendButtonText}>Send</Text>
-              </TouchableOpacity>
+              <View style={styles.sendButtonWrapper}>
+                <PrimaryButton
+                  title="Send"
+                  onPress={sendMessage}
+                  disabled={uploading}
+                  style={styles.sendButton}
+                  textStyle={styles.sendButtonText}
+                />
+              </View>
             ) : (
               <TouchableOpacity
                 style={styles.inputIconButton}
@@ -1022,16 +1025,17 @@ const styles = StyleSheet.create({
     padding: 4,
     alignSelf: 'center',
   },
+  sendButtonWrapper: {
+    alignSelf: 'center',
+  },
   sendButton: {
     paddingHorizontal: 16,
     paddingVertical: 10,
-    backgroundColor: COLORS.ACCENT_ORANGE,
     borderRadius: 20,
+    minWidth: 80,
   },
   sendButtonText: {
-    color: COLORS.WHITE,
-    fontSize: 16,
-    fontWeight: '600',
+    fontSize: 15,
   },
   modalOverlay: {
     flex: 1,

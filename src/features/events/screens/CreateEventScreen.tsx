@@ -21,13 +21,13 @@ import * as ImagePicker from 'expo-image-picker';
 import { useAuth } from '@shared/contexts/AuthContext';
 import { useI18n } from '@shared/i18n';
 import { createWalk, uploadEventImage, getWalksByUserId } from '@shared/lib/api';
-import { Clock, MapPin, Camera, ArrowRight, X, Maximize2, AlertTriangle } from 'lucide-react-native';
-import { router } from 'expo-router';
+import { Clock, MapPin, Camera, X, Maximize2, AlertTriangle } from 'lucide-react-native';
 import TimePickerModal from '@features/events/modals/TimePickerModal';
 import DatePickerModal from '@features/events/modals/DatePickerModal';
 import LocationPickerModal from '@features/events/modals/LocationPickerModal';
 import SuccessModal from '@features/events/modals/SuccessModal';
 import { COLORS } from '@shared/constants';
+import PrimaryButton from '@shared/components/PrimaryButton';
 export default function CreateEventScreen() {
   const { user } = useAuth();
   const { t } = useI18n();
@@ -422,20 +422,12 @@ export default function CreateEventScreen() {
 
           {/* Publish Button */}
           <View style={styles.section}>
-            <Pressable
-              style={[styles.publishButton, isSubmitting && styles.publishButtonDisabled]}
+            <PrimaryButton
+              title={t('publishEvent')}
               onPress={handleSubmit}
               disabled={isSubmitting}
-            >
-              {isSubmitting ? (
-                <ActivityIndicator color={COLORS.WHITE} />
-              ) : (
-                <>
-                  <Text style={styles.publishButtonText}>{t('publishEvent')}</Text>
-                  <ArrowRight size={20} color="#FFF" />
-                </>
-              )}
-            </Pressable>
+              loading={isSubmitting}
+            />
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
@@ -788,28 +780,5 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '500',
     textAlign: 'center',
-  },
-  // Publish Button
-  publishButton: {
-    flexDirection: 'row',
-    backgroundColor: COLORS.ACCENT_ORANGE,
-    paddingVertical: 16,
-    borderRadius: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-    shadowColor: COLORS.ACCENT_ORANGE,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 12,
-    elevation: 4,
-  },
-  publishButtonDisabled: {
-    opacity: 0.6,
-  },
-  publishButtonText: {
-    color: COLORS.WHITE,
-    fontSize: 16,
-    fontWeight: '700',
   },
 });

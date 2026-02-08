@@ -16,7 +16,8 @@ import { useI18n } from '@shared/i18n';
 import { updateProfile } from '@shared/lib/api';
 import { Plus } from 'lucide-react-native';
 import AvatarPicker from '@shared/components/AvatarPicker';
-import { COLORS } from '@shared/constants';
+import PrimaryButton from '@shared/components/PrimaryButton';
+import { COLORS, INPUT_STYLES, CHIP_STYLES } from '@shared/constants';
 
 const LANGUAGE_OPTIONS = [
   'langUkrainian',
@@ -52,7 +53,7 @@ const AVATAR_SIZE = 128;
 const AVATAR_BORDER_RADIUS = 24;
 const INPUT_MIN_HEIGHT = 56;
 const TEXTAREA_MIN_HEIGHT = 120;
-const CHIP_PADDING_VERTICAL = 10;
+const CHIP_PADDING_VERTICAL = 8;
 const CHIP_PADDING_HORIZONTAL = 16;
 
 export default function ProfileScreen() {
@@ -297,20 +298,13 @@ export default function ProfileScreen() {
           </View>
         </View>
 
-        <TouchableOpacity
-          style={[styles.saveButton, isSaving && styles.buttonDisabled]}
+        <PrimaryButton
+          title={t('saveChanges')}
           onPress={handleSave}
           disabled={isSaving}
-        >
-          {isSaving ? (
-            <ActivityIndicator color={COLORS.CARD_BG} />
-          ) : (
-            <>
-              <Text style={styles.saveButtonText}>{t('saveChanges')}</Text>
-              <Text style={styles.saveButtonText}>✓</Text>
-            </>
-          )}
-        </TouchableOpacity>
+          loading={isSaving}
+          style={{ marginTop: 16 }}
+        />
       </ScrollView>
     </KeyboardAvoidingView>
   );
@@ -357,7 +351,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     backgroundColor: '#FFE5E5',
     padding: 12,
-    borderRadius: 12,
+    borderRadius: 16,
     fontWeight: '500',
   },
   avatarSection: {
@@ -376,7 +370,7 @@ const styles = StyleSheet.create({
   },
   inputWrapper: {
     backgroundColor: COLORS.CARD_BG,
-    borderRadius: 16,
+    borderRadius: 24,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.06,
@@ -388,7 +382,7 @@ const styles = StyleSheet.create({
   input: {
     backgroundColor: 'transparent',
     borderWidth: 0,
-    borderRadius: 12,
+    borderRadius: 16,
     paddingHorizontal: 16,
     paddingVertical: 14,
     fontSize: 16,
@@ -411,7 +405,7 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.ACCENT_ORANGE,
     paddingHorizontal: CHIP_PADDING_HORIZONTAL,
     paddingVertical: CHIP_PADDING_VERTICAL,
-    borderRadius: 12,
+    borderRadius: 16,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.06,
@@ -430,7 +424,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255, 122, 0, 0.1)',
     paddingHorizontal: CHIP_PADDING_HORIZONTAL,
     paddingVertical: CHIP_PADDING_VERTICAL,
-    borderRadius: 12,
+    borderRadius: 16,
   },
   addChipText: {
     fontSize: 14,
@@ -444,7 +438,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: COLORS.CARD_BG,
-    borderRadius: 16,
+    borderRadius: 24,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.06,
@@ -472,28 +466,5 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     fontSize: 14,
     color: COLORS.TEXT_DARK,
-  },
-  saveButton: {
-    backgroundColor: COLORS.ACCENT_ORANGE,
-    paddingVertical: 16,
-    borderRadius: 16,
-    alignItems: 'center',
-    justifyContent: 'center',
-    flexDirection: 'row',
-    gap: 8,
-    marginTop: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 8,
-    elevation: 2,
-  },
-  buttonDisabled: {
-    opacity: 0.6,
-  },
-  saveButtonText: {
-    color: COLORS.CARD_BG,
-    fontSize: 16,
-    fontWeight: '700',
   },
 });

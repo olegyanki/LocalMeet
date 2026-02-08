@@ -60,10 +60,12 @@ Minimalist, clean, modern aesthetic with focus on content and usability. No unne
 
 ### Border Radius
 - **Cards**: 16-20px
-- **Inputs**: 12px
-- **Buttons**: 16-20px
-- **Chips**: 20-24px
+- **Input wrappers**: 24px
+- **Inner inputs**: 16px
+- **Buttons**: 24px
+- **Chips**: 16px
 - **Modals**: 24px (top corners)
+- **Avatar**: 32px
 
 ## Shadows
 
@@ -82,16 +84,19 @@ Never use colored shadows (e.g., shadowColor: COLORS.ACCENT_ORANGE). Always use 
 ## Components
 
 ### Buttons
-- **Primary**: Orange background, white text, 16px vertical padding, 16px border radius
-- **No icons**: Buttons should not have icons unless absolutely necessary
+- **Primary**: Orange background, white text, 18px vertical padding, 24px border radius
+- **Text**: 16px, fontWeight 700
+- **Shadow**: Black with opacity 0.15, offset (0, 4), radius 12
+- **No icons**: Buttons should not have icons unless absolutely necessary (exception: check icon on save buttons)
 - **Disabled state**: opacity 0.6
 
 ### Inputs
 - **Background**: White (CARD_BG) with shadow
 - **No borders**: Use shadows instead of borders
-- **Padding**: 14px vertical, 16px horizontal
-- **Border radius**: 12px
-- **Label**: Uppercase, 14px, above input with 8px gap
+- **Wrapper**: 24px border radius, 4px padding
+- **Inner input**: 16px border radius, 14px vertical padding, 16px horizontal padding
+- **Label**: Uppercase, 12px, fontWeight 700, above input with 8px gap
+- **Min height**: 56px for single-line inputs
 
 ### Cards
 - **Background**: White (CARD_BG)
@@ -122,9 +127,10 @@ Never use colored shadows (e.g., shadowColor: COLORS.ACCENT_ORANGE). Always use 
 ### Chips / Tags
 - **Background**: CARD_BG with shadow (inactive) or ACCENT_ORANGE (active)
 - **Text**: TEXT_DARK (inactive) or white (active)
-- **Padding**: 12-14px vertical, 20-24px horizontal
-- **Border radius**: 20-24px
-- **Font**: 13-14px, fontWeight 500-600
+- **Padding**: 8px vertical, 16px horizontal
+- **Border radius**: 16px
+- **Font**: 14px, fontWeight 500
+- **Shadow** (active): Black with opacity 0.06, offset (0, 2), radius 8
 
 ## Layout Patterns
 
@@ -156,6 +162,42 @@ Never use colored shadows (e.g., shadowColor: COLORS.ACCENT_ORANGE). Always use 
     <Text style={styles.buttonText}>Action</Text>
   </TouchableOpacity>
 </View>
+```
+
+### Primary Button Structure
+```typescript
+<TouchableOpacity style={styles.primaryButton}>
+  <Text style={styles.primaryButtonText}>Save Changes</Text>
+  <Text style={styles.checkIcon}>✓</Text>
+</TouchableOpacity>
+
+// Styles
+const styles = StyleSheet.create({
+  primaryButton: {
+    backgroundColor: COLORS.ACCENT_ORANGE,
+    paddingVertical: 18,
+    borderRadius: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexDirection: 'row',
+    gap: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 12,
+    elevation: 4,
+  },
+  primaryButtonText: {
+    color: COLORS.CARD_BG,
+    fontSize: 16,
+    fontWeight: '700',
+  },
+  checkIcon: {
+    color: COLORS.CARD_BG,
+    fontSize: 20,
+    fontWeight: '700',
+  },
+});
 ```
 
 ### Card Structure
