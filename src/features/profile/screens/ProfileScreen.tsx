@@ -18,8 +18,7 @@ import { useAuth } from '@shared/contexts/AuthContext';
 import { useI18n } from '@shared/i18n';
 import { useRouter } from 'expo-router';
 import { getProfile, updateProfile } from '@shared/lib/api';
-import { signOut } from '@shared/lib/auth';
-import { LogOut, Instagram, Send, Plus, X, ChevronDown } from 'lucide-react-native';
+import { Instagram, Send, Plus, X, ChevronDown } from 'lucide-react-native';
 import AvatarPicker from '@shared/components/AvatarPicker';
 import InterestPicker from '@shared/components/InterestPicker';
 import { COLORS } from '@shared/constants';
@@ -44,7 +43,7 @@ const LANGUAGE_OPTIONS = [
 
 export default function ProfileScreen() {
   const { user, profile: contextProfile, isProfileLoading, refreshProfile } = useAuth();
-  const { t, language, setLanguage } = useI18n();
+  const { t } = useI18n();
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const [isEditing, setIsEditing] = useState(false);
@@ -128,15 +127,6 @@ export default function ProfileScreen() {
     }
   };
 
-  const handleLogout = async () => {
-    try {
-      await signOut();
-      router.replace('/auth/login');
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to logout');
-    }
-  };
-
   const toggleLanguage = (lang: string) => {
     if (languages.includes(lang)) {
       setLanguages(languages.filter((l) => l !== lang));
@@ -175,28 +165,6 @@ export default function ProfileScreen() {
       </View>
 
       {error ? <Text style={styles.errorText}>{error}</Text> : null}
-
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>{t('languages')}</Text>
-        <View style={styles.languageSwitcher}>
-          <Pressable
-            style={[styles.langButton, language === 'uk' && styles.langButtonActive]}
-            onPress={() => setLanguage('uk')}
-          >
-            <Text style={[styles.langButtonText, language === 'uk' && styles.langButtonTextActive]}>
-              {t('langUkrainian')}
-            </Text>
-          </Pressable>
-          <Pressable
-            style={[styles.langButton, language === 'en' && styles.langButtonActive]}
-            onPress={() => setLanguage('en')}
-          >
-            <Text style={[styles.langButtonText, language === 'en' && styles.langButtonTextActive]}>
-              {t('langEnglish')}
-            </Text>
-          </Pressable>
-        </View>
-      </View>
 
       <AvatarPicker
         currentAvatar={avatarUrl}
@@ -369,11 +337,6 @@ export default function ProfileScreen() {
           )}
         </TouchableOpacity>
       )}
-
-      <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-        <LogOut size={18} color={COLORS.ERROR_RED} strokeWidth={2.5} />
-        <Text style={styles.logoutText}>{t('logout')}</Text>
-      </TouchableOpacity>
 
       <Modal visible={showAgePicker} transparent animationType="slide">
         <View style={styles.modalOverlay}>
@@ -745,28 +708,6 @@ const styles = StyleSheet.create({
     fontSize: 17,
     fontWeight: '600',
   },
-  logoutButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 10,
-    paddingVertical: 18,
-    borderRadius: 20,
-    backgroundColor: COLORS.CARD_BG,
-    borderWidth: 1,
-    borderColor: COLORS.BORDER_COLOR,
-    shadowColor: COLORS.SHADOW_BLACK,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
-    elevation: 2,
-  },
-  logoutText: {
-    color: COLORS.ERROR_RED,
-    fontSize: 16,
-    fontWeight: '600',
-    letterSpacing: -0.3,
-  },
   modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
@@ -832,28 +773,6 @@ const styles = StyleSheet.create({
   doneButtonText: {
     fontSize: 17,
     fontWeight: '600',
-    color: COLORS.CARD_BG,
-  },
-  languageSwitcher: {
-    flexDirection: 'row',
-    gap: 12,
-  },
-  langButton: {
-    flex: 1,
-    paddingVertical: 14,
-    borderRadius: 16,
-    backgroundColor: COLORS.BG_SECONDARY,
-    alignItems: 'center',
-  },
-  langButtonActive: {
-    backgroundColor: COLORS.ACCENT_ORANGE,
-  },
-  langButtonText: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: '#666666',
-  },
-  langButtonTextActive: {
     color: COLORS.CARD_BG,
   },
 });

@@ -219,5 +219,7 @@
   "timeRequired": "Час обов'язковий",
   "timeDuration": "Час та тривалість",
   "startTime": "Час початку",
-  "selectEventDate": "Оберіть дату події"
+  "selectEventDate": "Оберіть дату події",
+  "settings": "Налаштування",
+  "appLanguage": "Мова додатку"
 }

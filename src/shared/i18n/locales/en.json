@@ -219,5 +219,7 @@
   "timeRequired": "Time is required",
   "timeDuration": "Time & Duration",
   "startTime": "Start Time",
-  "selectEventDate": "Select Event Date"
+  "selectEventDate": "Select Event Date",
+  "settings": "Settings",
+  "appLanguage": "App Language"
 }
