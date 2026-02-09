@@ -60,6 +60,21 @@ export default function ProfileScreen() {
   const [showLanguagePicker, setShowLanguagePicker] = useState(false);
   const [showInterestPicker, setShowInterestPicker] = useState(false);
 
+  // Track if there are any changes
+  const hasChanges = React.useMemo(() => {
+    if (!contextProfile) return false;
+    
+    return (
+      displayName !== (contextProfile.display_name || '') ||
+      bio !== (contextProfile.bio || '') ||
+      avatarUrl !== (contextProfile.avatar_url || '') ||
+      instagram !== (contextProfile.social_instagram || '') ||
+      telegram !== (contextProfile.social_telegram || '') ||
+      JSON.stringify(languages) !== JSON.stringify(contextProfile.languages || []) ||
+      JSON.stringify(interests) !== JSON.stringify(contextProfile.interests || [])
+    );
+  }, [displayName, bio, avatarUrl, instagram, telegram, languages, interests, contextProfile]);
+
   useEffect(() => {
     if (contextProfile) {
       setDisplayName(contextProfile.display_name || '');
@@ -151,9 +166,13 @@ export default function ProfileScreen() {
         <View style={styles.header}>
           <View style={{ width: 60 }} />
           <Text style={styles.title}>{t('profile')}</Text>
-          <TouchableOpacity onPress={handleCancel}>
-            <Text style={styles.cancelButton}>{t('cancel')}</Text>
-          </TouchableOpacity>
+          {hasChanges ? (
+            <TouchableOpacity onPress={handleCancel}>
+              <Text style={styles.cancelButton}>{t('cancel')}</Text>
+            </TouchableOpacity>
+          ) : (
+            <View style={{ width: 60 }} />
+          )}
         </View>
 
         {error ? <Text style={styles.errorText}>{error}</Text> : null}
@@ -289,13 +308,15 @@ export default function ProfileScreen() {
           </View>
         </View>
 
-        <PrimaryButton
-          title={t('saveChanges')}
-          onPress={handleSave}
-          disabled={isSaving}
-          loading={isSaving}
-          style={{ marginTop: 16 }}
-        />
+        {hasChanges && (
+          <PrimaryButton
+            title={t('saveChanges')}
+            onPress={handleSave}
+            disabled={isSaving}
+            loading={isSaving}
+            style={{ marginTop: 16 }}
+          />
+        )}
       </ScrollView>
 
       <LanguagePickerModal
