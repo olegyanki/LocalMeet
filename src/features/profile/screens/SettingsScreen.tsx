@@ -31,7 +31,7 @@ export default function SettingsScreen() {
       style={[
         styles.container,
         { 
-          paddingTop: insets.top + 16, 
+          paddingTop: insets.top + SIZES.SCREEN_TOP_PADDING, 
           paddingBottom: SIZES.TAB_BAR_HEIGHT + 20 
         },
       ]}

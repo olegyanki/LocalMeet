@@ -177,7 +177,7 @@ export default function ProfileScreen() {
         contentContainerStyle={[
           styles.content,
           { 
-            paddingTop: insets.top + 16, 
+            paddingTop: insets.top + SIZES.SCREEN_TOP_PADDING, 
             paddingBottom: isKeyboardVisible ? 20 : SIZES.TAB_BAR_HEIGHT + 20 
           },
         ]}

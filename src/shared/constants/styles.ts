@@ -122,6 +122,7 @@ export const SIZES = {
   TAB_BAR_HEIGHT: 78,
   CARDS_COLLAPSE_DISTANCE: 250,
   HEADER_SPACER_WIDTH: 60,
+  SCREEN_TOP_PADDING: 16,
 };
 
 // Common header styles
