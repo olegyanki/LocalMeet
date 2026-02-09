@@ -18,6 +18,7 @@ import { Plus } from 'lucide-react-native';
 import AvatarPicker from '@shared/components/AvatarPicker';
 import PrimaryButton from '@shared/components/PrimaryButton';
 import LanguagePickerModal from '@features/profile/modals/LanguagePickerModal';
+import InterestPickerModal from '@features/profile/modals/InterestPickerModal';
 import { COLORS, getLanguageByCode } from '@shared/constants';
 
 const INTEREST_OPTIONS = [
@@ -57,6 +58,7 @@ export default function ProfileScreen() {
   const [instagram, setInstagram] = useState('');
   const [telegram, setTelegram] = useState('');
   const [showLanguagePicker, setShowLanguagePicker] = useState(false);
+  const [showInterestPicker, setShowInterestPicker] = useState(false);
 
   useEffect(() => {
     if (contextProfile) {
@@ -236,12 +238,7 @@ export default function ProfileScreen() {
             ))}
             <TouchableOpacity
               style={styles.addChip}
-              onPress={() => {
-                const availableInterests = INTEREST_OPTIONS.filter(i => !interests.includes(i));
-                if (availableInterests.length > 0) {
-                  setInterests([...interests, availableInterests[0]]);
-                }
-              }}
+              onPress={() => setShowInterestPicker(true)}
             >
               <Plus size={14} color={COLORS.ACCENT_ORANGE} />
               <Text style={styles.addChipText}>{t('addInterest')}</Text>
@@ -300,6 +297,13 @@ export default function ProfileScreen() {
         selectedLanguages={languages}
         onClose={() => setShowLanguagePicker(false)}
         onConfirm={(selectedLangs) => setLanguages(selectedLangs)}
+      />
+
+      <InterestPickerModal
+        visible={showInterestPicker}
+        selectedInterests={interests}
+        onClose={() => setShowInterestPicker(false)}
+        onConfirm={(selectedInterests) => setInterests(selectedInterests)}
       />
     </KeyboardAvoidingView>
   );
