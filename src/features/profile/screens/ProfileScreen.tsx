@@ -244,7 +244,7 @@ export default function ProfileScreen() {
               }}
             >
               <Plus size={14} color={COLORS.ACCENT_ORANGE} />
-              <Text style={styles.addChipText}>Add Interest</Text>
+              <Text style={styles.addChipText}>{t('addInterest')}</Text>
             </TouchableOpacity>
           </View>
         </View>
