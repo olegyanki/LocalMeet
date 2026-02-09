@@ -26,8 +26,9 @@ import TimePickerModal from '@features/events/modals/TimePickerModal';
 import DatePickerModal from '@features/events/modals/DatePickerModal';
 import LocationPickerModal from '@features/events/modals/LocationPickerModal';
 import SuccessModal from '@features/events/modals/SuccessModal';
-import { COLORS } from '@shared/constants';
+import { COLORS, HEADER_STYLES, SIZES } from '@shared/constants';
 import PrimaryButton from '@shared/components/PrimaryButton';
+
 export default function CreateEventScreen() {
   const { user } = useAuth();
   const { t } = useI18n();
@@ -249,6 +250,7 @@ export default function CreateEventScreen() {
     <View style={styles.container}>
       {/* Header */}
       <View style={[styles.header, { paddingTop: insets.top + 16 }]}>
+        <View style={styles.headerSpacer} />
         <Text style={styles.headerTitle}>{t('createEvent')}</Text>
         <TouchableOpacity onPress={clearForm} activeOpacity={0.6}>
           <Text style={styles.clearButton}>{t('clear')}</Text>
@@ -497,22 +499,19 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    ...HEADER_STYLES.container,
     paddingHorizontal: 24,
     paddingBottom: 16,
     backgroundColor: COLORS.BG_SECONDARY,
   },
+  headerSpacer: {
+    ...HEADER_STYLES.spacer,
+  },
   headerTitle: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: COLORS.TEXT_DARK,
+    ...HEADER_STYLES.title,
   },
   clearButton: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: COLORS.ACCENT_ORANGE,
+    ...HEADER_STYLES.headerTextButton,
   },
   scrollContent: {
     flex: 1,

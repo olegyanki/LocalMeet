@@ -3,15 +3,14 @@ import {
   View,
   Text,
   StyleSheet,
-  TouchableOpacity,
-  ScrollView,
   Pressable,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useI18n } from '@shared/i18n';
 import { useRouter } from 'expo-router';
 import { signOut } from '@shared/lib/auth';
-import { COLORS } from '@shared/constants';
+import { COLORS, SIZES, HEADER_STYLES } from '@shared/constants';
+import PrimaryButton from '@shared/components/PrimaryButton';
 
 export default function SettingsScreen() {
   const { t, language, setLanguage } = useI18n();
@@ -28,26 +27,30 @@ export default function SettingsScreen() {
   };
 
   return (
-    <ScrollView
-      style={styles.container}
-      contentContainerStyle={[
-        styles.content,
-        { paddingTop: 40 + insets.top, paddingBottom: 100 + insets.bottom },
+    <View
+      style={[
+        styles.container,
+        { 
+          paddingTop: insets.top + 16, 
+          paddingBottom: SIZES.TAB_BAR_HEIGHT + 20 
+        },
       ]}
     >
       <View style={styles.header}>
+        <View style={styles.headerSpacer} />
         <Text style={styles.title}>{t('settings')}</Text>
+        <View style={styles.headerSpacer} />
       </View>
 
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>{t('appLanguage')}</Text>
+      <View style={styles.inputGroup}>
+        <Text style={styles.label}>{t('appLanguage').toUpperCase()}</Text>
         <View style={styles.languageSwitcher}>
           <Pressable
             style={[styles.langButton, language === 'uk' && styles.langButtonActive]}
             onPress={() => setLanguage('uk')}
           >
             <Text style={[styles.langButtonText, language === 'uk' && styles.langButtonTextActive]}>
-              {t('langUkrainian')}
+              🇺🇦 Українська
             </Text>
           </Pressable>
           <Pressable
@@ -55,16 +58,18 @@ export default function SettingsScreen() {
             onPress={() => setLanguage('en')}
           >
             <Text style={[styles.langButtonText, language === 'en' && styles.langButtonTextActive]}>
-              {t('langEnglish')}
+              🇬🇧 English
             </Text>
           </Pressable>
         </View>
       </View>
 
-      <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-        <Text style={styles.logoutText}>{t('logout')}</Text>
-      </TouchableOpacity>
-    </ScrollView>
+      <PrimaryButton
+        title={t('logout')}
+        onPress={handleLogout}
+        style={styles.logoutButton}
+      />
+    </View>
   );
 }
 
@@ -72,35 +77,25 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: COLORS.BG_SECONDARY,
-  },
-  content: {
-    padding: 20,
+    paddingHorizontal: 24,
   },
   header: {
-    marginBottom: 24,
+    ...HEADER_STYLES.container,
+  },
+  headerSpacer: {
+    ...HEADER_STYLES.spacer,
   },
   title: {
-    fontSize: 32,
+    ...HEADER_STYLES.title,
+  },
+  inputGroup: {
+    marginBottom: 24,
+  },
+  label: {
+    fontSize: 12,
     fontWeight: '700',
-    color: COLORS.TEXT_DARK,
-  },
-  section: {
-    backgroundColor: COLORS.CARD_BG,
-    borderRadius: 20,
-    padding: 20,
-    marginBottom: 20,
-    shadowColor: COLORS.SHADOW_BLACK,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 12,
-    elevation: 2,
-  },
-  sectionTitle: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: COLORS.TEXT_DARK,
-    marginBottom: 16,
-    textTransform: 'uppercase',
+    color: COLORS.TEXT_LIGHT,
+    marginBottom: 8,
     letterSpacing: 0.5,
   },
   languageSwitcher: {
@@ -111,37 +106,28 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingVertical: 14,
     borderRadius: 16,
-    backgroundColor: COLORS.BG_SECONDARY,
+    backgroundColor: COLORS.CARD_BG,
     alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    elevation: 2,
   },
   langButtonActive: {
     backgroundColor: COLORS.ACCENT_ORANGE,
   },
   langButtonText: {
     fontSize: 15,
-    fontWeight: '600',
-    color: '#666666',
+    fontWeight: '500',
+    color: COLORS.TEXT_DARK,
   },
   langButtonTextActive: {
     color: COLORS.CARD_BG,
+    fontWeight: '600',
   },
   logoutButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 10,
-    paddingVertical: 18,
-    borderRadius: 24,
     backgroundColor: COLORS.ERROR_RED,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 12,
-    elevation: 4,
-  },
-  logoutText: {
-    color: COLORS.CARD_BG,
-    fontSize: 16,
-    fontWeight: '700',
+    marginTop: 16,
   },
 });

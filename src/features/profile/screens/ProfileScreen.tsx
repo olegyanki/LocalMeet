@@ -20,7 +20,7 @@ import AvatarPicker from '@shared/components/AvatarPicker';
 import PrimaryButton from '@shared/components/PrimaryButton';
 import LanguagePickerModal from '@features/profile/modals/LanguagePickerModal';
 import InterestPickerModal from '@features/profile/modals/InterestPickerModal';
-import { COLORS, getLanguageByCode, getInterestByKey, SIZES } from '@shared/constants';
+import { COLORS, getLanguageByCode, getInterestByKey, SIZES, HEADER_STYLES } from '@shared/constants';
 
 const INTEREST_OPTIONS = [
   'interestSport',
@@ -369,25 +369,17 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: 16,
+    ...HEADER_STYLES.container,
     position: 'relative',
   },
   title: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: COLORS.TEXT_DARK,
+    ...HEADER_STYLES.title,
     position: 'absolute',
     left: 0,
     right: 0,
-    textAlign: 'center',
   },
   cancelButton: {
-    fontSize: 16,
-    color: COLORS.ACCENT_ORANGE,
-    fontWeight: '500',
+    ...HEADER_STYLES.headerTextButton,
     zIndex: 1,
   },
   errorText: {

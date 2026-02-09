@@ -121,4 +121,32 @@ export const SIZES = {
   AVATAR_LARGE: 80,
   TAB_BAR_HEIGHT: 78,
   CARDS_COLLAPSE_DISTANCE: 250,
+  HEADER_SPACER_WIDTH: 60,
+};
+
+// Common header styles
+export const HEADER_STYLES = {
+  container: {
+    flexDirection: 'row' as const,
+    justifyContent: 'space-between' as const,
+    alignItems: 'center' as const,
+    paddingVertical: 16,
+  },
+  spacer: {
+    width: 60,
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: '700' as const,
+    color: COLORS.TEXT_DARK,
+    flex: 1,
+    textAlign: 'center' as const,
+  },
+  headerTextButton: {
+    fontSize: 16,
+    fontWeight: '600' as const,
+    color: COLORS.ACCENT_ORANGE,
+    width: 60,
+    textAlign: 'right' as const,
+  },
 };
