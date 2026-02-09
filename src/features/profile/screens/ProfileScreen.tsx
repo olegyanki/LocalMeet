@@ -17,18 +17,8 @@ import { updateProfile } from '@shared/lib/api';
 import { Plus } from 'lucide-react-native';
 import AvatarPicker from '@shared/components/AvatarPicker';
 import PrimaryButton from '@shared/components/PrimaryButton';
-import { COLORS, INPUT_STYLES, CHIP_STYLES } from '@shared/constants';
-
-const LANGUAGE_OPTIONS = [
-  'langUkrainian',
-  'langEnglish',
-  'langSpanish',
-  'langFrench',
-  'langGerman',
-  'langItalian',
-  'langPolish',
-  'langRussian',
-];
+import LanguagePickerModal from '@features/profile/modals/LanguagePickerModal';
+import { COLORS, getLanguageByCode } from '@shared/constants';
 
 const INTEREST_OPTIONS = [
   'interestSport',
@@ -49,12 +39,8 @@ const INTEREST_OPTIONS = [
 ];
 
 // UI Constants
-const AVATAR_SIZE = 128;
-const AVATAR_BORDER_RADIUS = 24;
 const INPUT_MIN_HEIGHT = 56;
 const TEXTAREA_MIN_HEIGHT = 120;
-const CHIP_PADDING_VERTICAL = 8;
-const CHIP_PADDING_HORIZONTAL = 16;
 
 export default function ProfileScreen() {
   const { user, profile: contextProfile, isProfileLoading, refreshProfile } = useAuth();
@@ -70,6 +56,7 @@ export default function ProfileScreen() {
   const [interests, setInterests] = useState<string[]>([]);
   const [instagram, setInstagram] = useState('');
   const [telegram, setTelegram] = useState('');
+  const [showLanguagePicker, setShowLanguagePicker] = useState(false);
 
   useEffect(() => {
     if (contextProfile) {
@@ -210,26 +197,27 @@ export default function ProfileScreen() {
         <View style={styles.inputGroup}>
           <Text style={styles.label}>{t('languages').toUpperCase()}</Text>
           <View style={styles.chipsContainer}>
-            {languages.map((lang) => (
-              <TouchableOpacity
-                key={lang}
-                style={styles.chip}
-                onPress={() => toggleLanguage(lang)}
-              >
-                <Text style={styles.chipText}>{t(lang as any)}</Text>
-              </TouchableOpacity>
-            ))}
+            {languages.map((langCode) => {
+              const lang = getLanguageByCode(langCode);
+              if (!lang) return null;
+              return (
+                <TouchableOpacity
+                  key={langCode}
+                  style={styles.chip}
+                  onPress={() => toggleLanguage(langCode)}
+                >
+                  <Text style={styles.chipText}>
+                    {lang.flag} {t(lang.nameKey as any)}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
             <TouchableOpacity
               style={styles.addChip}
-              onPress={() => {
-                const availableLangs = LANGUAGE_OPTIONS.filter(l => !languages.includes(l));
-                if (availableLangs.length > 0) {
-                  setLanguages([...languages, availableLangs[0]]);
-                }
-              }}
+              onPress={() => setShowLanguagePicker(true)}
             >
               <Plus size={14} color={COLORS.ACCENT_ORANGE} />
-              <Text style={styles.addChipText}>Add Language</Text>
+              <Text style={styles.addChipText}>{t('addLanguage')}</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -306,6 +294,13 @@ export default function ProfileScreen() {
           style={{ marginTop: 16 }}
         />
       </ScrollView>
+
+      <LanguagePickerModal
+        visible={showLanguagePicker}
+        selectedLanguages={languages}
+        onClose={() => setShowLanguagePicker(false)}
+        onConfirm={(selectedLangs) => setLanguages(selectedLangs)}
+      />
     </KeyboardAvoidingView>
   );
 }
@@ -404,8 +399,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 6,
     backgroundColor: COLORS.ACCENT_ORANGE,
-    paddingHorizontal: CHIP_PADDING_HORIZONTAL,
-    paddingVertical: CHIP_PADDING_VERTICAL,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
     borderRadius: 16,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
@@ -423,8 +418,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 6,
     backgroundColor: 'rgba(255, 122, 0, 0.1)',
-    paddingHorizontal: CHIP_PADDING_HORIZONTAL,
-    paddingVertical: CHIP_PADDING_VERTICAL,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
     borderRadius: 16,
   },
   addChipText: {
