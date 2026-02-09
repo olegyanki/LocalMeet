@@ -19,7 +19,7 @@ import AvatarPicker from '@shared/components/AvatarPicker';
 import PrimaryButton from '@shared/components/PrimaryButton';
 import LanguagePickerModal from '@features/profile/modals/LanguagePickerModal';
 import InterestPickerModal from '@features/profile/modals/InterestPickerModal';
-import { COLORS, getLanguageByCode } from '@shared/constants';
+import { COLORS, getLanguageByCode, getInterestByKey } from '@shared/constants';
 
 const INTEREST_OPTIONS = [
   'interestSport',
@@ -227,15 +227,21 @@ export default function ProfileScreen() {
         <View style={styles.inputGroup}>
           <Text style={styles.label}>{t('interests').toUpperCase()}</Text>
           <View style={styles.chipsContainer}>
-            {interests.map((interest) => (
-              <TouchableOpacity
-                key={interest}
-                style={styles.chip}
-                onPress={() => toggleInterest(interest)}
-              >
-                <Text style={styles.chipText}>{t(interest as any)}</Text>
-              </TouchableOpacity>
-            ))}
+            {interests.map((interestKey) => {
+              const interest = getInterestByKey(interestKey);
+              if (!interest) return null;
+              return (
+                <TouchableOpacity
+                  key={interestKey}
+                  style={styles.chip}
+                  onPress={() => toggleInterest(interestKey)}
+                >
+                  <Text style={styles.chipText}>
+                    {interest.emoji} {t(interest.key as any)}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
             <TouchableOpacity
               style={styles.addChip}
               onPress={() => setShowInterestPicker(true)}
