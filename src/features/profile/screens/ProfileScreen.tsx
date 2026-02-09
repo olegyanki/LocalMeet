@@ -9,6 +9,7 @@ import {
   ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
+  Keyboard,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '@shared/contexts/AuthContext';
@@ -19,7 +20,7 @@ import AvatarPicker from '@shared/components/AvatarPicker';
 import PrimaryButton from '@shared/components/PrimaryButton';
 import LanguagePickerModal from '@features/profile/modals/LanguagePickerModal';
 import InterestPickerModal from '@features/profile/modals/InterestPickerModal';
-import { COLORS, getLanguageByCode, getInterestByKey } from '@shared/constants';
+import { COLORS, getLanguageByCode, getInterestByKey, SIZES } from '@shared/constants';
 
 const INTEREST_OPTIONS = [
   'interestSport',
@@ -59,6 +60,22 @@ export default function ProfileScreen() {
   const [telegram, setTelegram] = useState('');
   const [showLanguagePicker, setShowLanguagePicker] = useState(false);
   const [showInterestPicker, setShowInterestPicker] = useState(false);
+  const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
+
+  // Track keyboard visibility
+  useEffect(() => {
+    const keyboardDidShowListener = Keyboard.addListener('keyboardDidShow', () => {
+      setIsKeyboardVisible(true);
+    });
+    const keyboardDidHideListener = Keyboard.addListener('keyboardDidHide', () => {
+      setIsKeyboardVisible(false);
+    });
+
+    return () => {
+      keyboardDidShowListener.remove();
+      keyboardDidHideListener.remove();
+    };
+  }, []);
 
   // Track if there are any changes
   const hasChanges = React.useMemo(() => {
@@ -159,7 +176,10 @@ export default function ProfileScreen() {
         style={styles.container}
         contentContainerStyle={[
           styles.content,
-          { paddingTop: insets.top + 16, paddingBottom: 100 + insets.bottom },
+          { 
+            paddingTop: insets.top + 16, 
+            paddingBottom: isKeyboardVisible ? 20 : SIZES.TAB_BAR_HEIGHT + 20 
+          },
         ]}
         keyboardShouldPersistTaps="handled"
       >
