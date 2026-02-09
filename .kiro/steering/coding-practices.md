@@ -9,6 +9,13 @@
 - If a value is used multiple times, extract it into a constant or variable
 - Avoid code duplication
 
+## Reusability
+- All reusable UI elements must be extracted into separate components in `src/shared/components`
+- All reusable styles must be extracted into `src/shared/constants/styles.ts`
+- All reusable data (colors, sizes, constants) must be in `src/shared/constants`
+- Before creating a new component or style, check if a similar one already exists
+- When you see repeated patterns across multiple files, extract them into shared resources
+
 ## Code Organization
 - Keep related code together
 - Use meaningful variable and function names
