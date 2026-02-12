@@ -123,7 +123,6 @@ export default function CreateEventScreen() {
     try {
       const { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== 'granted') {
-        console.log(`Access to location is not granted`)
         return;
       }
 

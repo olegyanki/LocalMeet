@@ -216,7 +216,6 @@ export default function SearchScreen() {
       setIsLoadingLocation(true);
       const { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== 'granted') {
-        console.log('Location permission not granted')
         setIsLoadingLocation(false);
         return;
       }
