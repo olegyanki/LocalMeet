@@ -21,6 +21,7 @@ import { useAuth } from '@shared/contexts/AuthContext';
 import { useI18n } from '@shared/i18n';
 import { COLORS } from '@shared/constants';
 import { sendTextMessage, sendImageMessage, sendAudioMessage, Walk } from '@shared/lib/api';
+import { uploadChatImage, uploadChatAudio } from '@shared/utils/upload';
 import AudioRecorder from '@shared/components/AudioRecorder';
 import AudioPlayer from '@shared/components/AudioPlayer';
 import Avatar from '@shared/components/Avatar';
@@ -237,74 +238,14 @@ export default function ChatScreen() {
     }
   };
 
-  const uploadImage = async (
-    asset: ImagePicker.ImagePickerAsset
-  ): Promise<string | null> => {
-    try {
-      setUploading(true);
-
-      let uint8Array: Uint8Array;
-
-      // Use base64 if available (for web), otherwise fetch
-      if (asset.base64) {
-        const binaryString = atob(asset.base64);
-        const bytes = new Uint8Array(binaryString.length);
-        for (let i = 0; i < binaryString.length; i++) {
-          bytes[i] = binaryString.charCodeAt(i);
-        }
-        uint8Array = bytes;
-      } else {
-        const response = await fetch(asset.uri);
-        if (!response.ok) {
-          throw new Error(`Failed to fetch image: ${response.status}`);
-        }
-        const arrayBuffer = await response.arrayBuffer();
-        uint8Array = new Uint8Array(arrayBuffer);
-      }
-
-      const ext = asset.uri.split('.').pop()?.split('?')[0] || 'jpg';
-      const fileName = `${chatId}/${Date.now()}.${ext}`;
-
-      const { data, error } = await supabase.storage
-        .from('chat-images')
-        .upload(fileName, uint8Array, {
-          contentType: `image/${ext}`,
-          upsert: false,
-        });
-
-      if (error) {
-        console.error('Supabase upload error:', {
-          message: error.message,
-          statusCode: error.statusCode,
-          error: error,
-        });
-        throw new Error(error.message || 'Upload failed');
-      }
-
-      const { data: urlData } = supabase.storage
-        .from('chat-images')
-        .getPublicUrl(fileName);
-
-      return urlData.publicUrl;
-    } catch (error: any) {
-      console.error('Error in uploadImage:', {
-        message: error?.message,
-        error: error,
-      });
-      setError(error?.message || 'Failed to upload image');
-      return null;
-    } finally {
-      setUploading(false);
-    }
-  };
-
   const handleSendImageMessage = async (asset: ImagePicker.ImagePickerAsset) => {
     if (!user) return;
 
     setError(null);
 
     try {
-      const imageUrl = await uploadImage(asset);
+      setUploading(true);
+      const imageUrl = await uploadChatImage(chatId, asset);
 
       if (!imageUrl) {
         throw new Error('Failed to upload image');
@@ -317,6 +258,8 @@ export default function ChatScreen() {
       console.error('Error sending image:', error);
       setError(error?.message || 'Failed to send image');
       setSelectedImage(null);
+    } finally {
+      setUploading(false);
     }
   };
 
@@ -336,40 +279,6 @@ export default function ChatScreen() {
     }
   };
 
-  const uploadAudio = async (audioUri: string): Promise<string | null> => {
-    try {
-      if (!user) return null;
-
-      const response = await fetch(audioUri);
-      const arrayBuffer = await response.arrayBuffer();
-      const uint8Array = new Uint8Array(arrayBuffer);
-
-      const fileName = `${user.id}/${chatId}/${Date.now()}.m4a`;
-
-      const { data, error } = await supabase.storage
-        .from('audio-messages')
-        .upload(fileName, uint8Array, {
-          contentType: 'audio/m4a',
-          upsert: false,
-        });
-
-      if (error) {
-        console.error('Supabase audio upload error:', error);
-        throw error;
-      }
-
-      const { data: urlData } = supabase.storage
-        .from('audio-messages')
-        .getPublicUrl(fileName);
-
-      return urlData.publicUrl;
-    } catch (error: any) {
-      console.error('Error uploading audio:', error);
-      setError(error?.message || 'Failed to upload audio');
-      return null;
-    }
-  };
-
   const handleSendAudioMessage = async (audioUri: string, duration: number) => {
     if (!user) return;
 
@@ -378,7 +287,7 @@ export default function ChatScreen() {
 
     try {
       setUploading(true);
-      const audioUrl = await uploadAudio(audioUri);
+      const audioUrl = await uploadChatAudio(chatId, audioUri);
 
       if (!audioUrl) {
         throw new Error('Failed to upload audio');
@@ -389,9 +298,6 @@ export default function ChatScreen() {
       console.error('Error sending audio:', error);
       setError(error?.message || 'Failed to send audio');
     } finally {
-      setUploading(false);
-    }
-  };
       setUploading(false);
     }
   };

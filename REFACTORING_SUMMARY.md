@@ -340,6 +340,69 @@ await sendTextMessage(chatId, user.id, messageContent);
 
 ---
 
+### Phase 5: Code Organization & File Size Reduction
+
+#### 5.1. Extracted Upload Utilities ✅
+**New File:** `src/shared/utils/upload.ts`
+
+**Problem:** ChatScreen had 100+ lines of upload logic (uploadImage, uploadAudio functions)
+
+**Solution:** Created reusable upload utilities:
+```typescript
+export async function uploadChatImage(
+  chatId: string,
+  asset: ImagePicker.ImagePickerAsset
+): Promise<string | null>
+
+export async function uploadChatAudio(
+  chatId: string,
+  audioUri: string
+): Promise<string | null>
+```
+
+**Impact:**
+- ChatScreen reduced from 1061 to 967 lines (-94 lines, -9%)
+- Reusable upload logic
+- Better separation of concerns
+- Easier to test and maintain
+
+---
+
+#### 5.2. Refactored ChatScreen to Use Upload Utils ✅
+**File:** `src/features/chats/screens/ChatScreen.tsx`
+
+**Changes:**
+- Removed local `uploadImage()` function (60+ lines)
+- Removed local `uploadAudio()` function (30+ lines)
+- Updated `handleSendImageMessage()` to use `uploadChatImage()`
+- Updated `handleSendAudioMessage()` to use `uploadChatAudio()`
+- Added proper loading state management with `setUploading()`
+
+**Before:**
+```typescript
+const uploadImage = async (asset) => {
+  // 60+ lines of upload logic
+};
+const uploadAudio = async (uri) => {
+  // 30+ lines of upload logic
+};
+```
+
+**After:**
+```typescript
+import { uploadChatImage, uploadChatAudio } from '@shared/utils/upload';
+
+const imageUrl = await uploadChatImage(chatId, asset);
+const audioUrl = await uploadChatAudio(chatId, audioUri);
+```
+
+**Impact:**
+- Cleaner, more focused component
+- Upload logic can be reused in other features
+- Easier to add new upload types
+
+---
+
 ## 📝 Documentation Updates
 
 ### Updated Files:
@@ -453,12 +516,14 @@ const chatId = await createChatFromRequest(requestId, requesterId, walkerId);
 
 ## 📊 Statistics
 
-- **Files Changed:** 18+
-- **Lines Removed:** ~400
-- **Lines Added:** ~220
-- **Net Change:** -180 lines
+- **Files Changed:** 20+
+- **Lines Removed:** ~500
+- **Lines Added:** ~330
+- **Net Change:** -170 lines
 - **New Reusable Components:** 1 (Chip)
+- **New Utility Files:** 1 (upload.ts)
 - **New API Functions:** 5 (getMyChats, createChatFromRequest, sendTextMessage, sendImageMessage, sendAudioMessage)
+- **New Upload Functions:** 2 (uploadChatImage, uploadChatAudio)
 - **Documentation Files Updated:** 3
 - **Files Refactored to use Chip:** 3 (FilterBottomSheet, ProfileScreen, InterestPicker)
 - **Files Fixed for i18n:** 5 (time.ts, SearchScreen, ContactRequestBottomSheet, EventDetailsBottomSheet, ChatsListScreen)
@@ -468,6 +533,7 @@ const chatId = await createChatFromRequest(requestId, requesterId, walkerId);
 - **Duplicate Types Removed:** 1 (Walk interface)
 - **Console.log Statements Removed:** 7
 - **Direct Supabase Calls Removed:** 3 (from ChatScreen)
+- **ChatScreen Size Reduction:** 1061 → 967 lines (-94 lines, -9%)
 
 ---
 
@@ -505,27 +571,30 @@ const chatId = await createChatFromRequest(requestId, requesterId, walkerId);
 
 ## 🎉 Refactoring Complete!
 
-All 4 phases completed successfully. The codebase is now:
-- ✅ More maintainable (400+ lines removed, -180 net)
+All 5 phases completed successfully. The codebase is now:
+- ✅ More maintainable (500+ lines removed, -170 net)
 - ✅ Better organized (proper import order, structure)
 - ✅ Fully i18n compatible (all time formatting supports translations)
-- ✅ Using reusable components (Chip)
+- ✅ Using reusable components (Chip) and utilities (upload)
 - ✅ Following consistent patterns
 - ✅ No direct Supabase calls in components (all through API)
 - ✅ Using color constants instead of hardcoded values
 - ✅ No duplicate constants or types
 - ✅ Clean console output (no debug logs)
+- ✅ Smaller, more focused files (ChatScreen -9%)
 - ✅ TypeScript error-free (except pre-existing SVG Filter issue)
 
 ### Quick Summary:
-- **4 phases completed** (Critical Fixes, Component Improvements, API Centralization, Code Cleanup)
+- **5 phases completed** (Critical Fixes, Component Improvements, API Centralization, Code Cleanup, Code Organization)
 - **3 critical fixes** (hardcoded text, API duplication, constants)
 - **1 new reusable component** (Chip)
+- **1 new utility file** (upload.ts with 2 functions)
 - **3 files refactored** to use Chip component
 - **5 new API functions** (getMyChats, createChatFromRequest, sendTextMessage, sendImageMessage, sendAudioMessage)
+- **2 new upload functions** (uploadChatImage, uploadChatAudio)
 - **5 files fixed** for proper i18n support
 - **All missing imports added** (getTimeText, getTimeColor)
-- **ChatScreen refactored** - removed direct Supabase calls, cleaned debug logs
+- **ChatScreen refactored** - removed direct Supabase calls, cleaned debug logs, extracted upload logic (-94 lines)
 - **12+ hardcoded colors replaced** with constants
 - **7 new color constants added** (INSTAGRAM_BG, TELEGRAM_BG, GRAY_DIVIDER, etc.)
 - **3 duplicate constants removed** (TEXT_DARK, TEXT_LIGHT)
