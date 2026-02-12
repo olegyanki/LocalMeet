@@ -238,11 +238,32 @@ const styles = StyleSheet.create({
 
 ## Documentation
 
-### When to Update Docs
-- Adding/removing features → Update `README.md`
-- Changing architecture → Update `.kiro/steering/project-context.md`
-- Adding reusable components → Update `.kiro/steering/reusable-components.md`
-- Changing design patterns → Update `.kiro/steering/design-system.md`
+### CRITICAL: Always Update Context Files
+
+When making changes, ALWAYS update relevant context files in `.kiro/steering/`:
+
+| Change | Update File |
+|--------|-------------|
+| Add/remove features | `README.md` + `project-context.md` |
+| Change architecture, add folders | `project-context.md` + `code-structure.md` |
+| Add reusable component | `reusable-components.md` |
+| Add style constant | `reusable-components.md` + `design-system.md` |
+| Change design pattern | `design-system.md` |
+| Add API function | `project-context.md` |
+| Change code structure pattern | `code-structure.md` |
+| Add coding rule | `coding-practices.md` |
+
+### Why This Matters
+- Context files help AI understand the project
+- Keeps patterns consistent across codebase
+- Prevents duplicate code
+- Makes onboarding easier
+
+### Update Process
+1. Make code changes
+2. Identify which context files are affected
+3. Update those files immediately
+4. Commit context files WITH code changes
 
 ### Code Comments
 - Explain WHY, not WHAT
