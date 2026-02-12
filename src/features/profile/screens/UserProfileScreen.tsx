@@ -16,6 +16,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useI18n } from '@shared/i18n';
 import { COLORS } from '@shared/constants';
 import { getProfile } from '@shared/lib/api';
+import Avatar from '@shared/components/Avatar';
 import {
   ChevronLeft,
   Instagram,
@@ -125,18 +126,11 @@ export default function UserProfileScreen() {
             activeOpacity={profile.avatar_url ? 0.7 : 1}
             disabled={!profile.avatar_url}
           >
-            {profile.avatar_url ? (
-              <Image
-                source={{ uri: profile.avatar_url }}
-                style={styles.avatar}
-              />
-            ) : (
-              <View style={[styles.avatar, styles.avatarPlaceholder]}>
-                <Text style={styles.avatarText}>
-                  {profile.display_name?.charAt(0).toUpperCase() || '?'}
-                </Text>
-              </View>
-            )}
+            <Avatar 
+              uri={profile.avatar_url} 
+              name={profile.display_name || '?'} 
+              size={100}
+            />
           </TouchableOpacity>
 
           <Text style={styles.displayName}>{profile.display_name}</Text>
@@ -371,16 +365,6 @@ const styles = StyleSheet.create({
     width: 100,
     height: 100,
     borderRadius: 50,
-  },
-  avatarPlaceholder: {
-    backgroundColor: COLORS.ACCENT_ORANGE,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  avatarText: {
-    color: COLORS.WHITE,
-    fontSize: 40,
-    fontWeight: '700',
   },
   displayName: {
     fontSize: 26,

@@ -4,6 +4,9 @@ export const COLORS = {
   TEXT_DARK: '#333333',
   TEXT_LIGHT: '#999999',
   
+  // Gradient colors
+  GRADIENT_ORANGE: ['#FFB84D', '#FF8C26', '#FF5500'],
+  
   // Background colors
   BG_COLOR: '#F5F5F5',
   BG_SECONDARY: '#F2F2F7',

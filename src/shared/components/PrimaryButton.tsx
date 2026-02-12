@@ -47,7 +47,7 @@ export default function PrimaryButton({
         style={[styles.buttonWrapper, style]}
       >
         <LinearGradient
-          colors={['#FFB84D', '#FF8C26', '#FF5500']}
+          colors={COLORS.GRADIENT_ORANGE}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
           style={styles.gradient}

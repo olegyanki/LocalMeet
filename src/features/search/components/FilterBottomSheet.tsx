@@ -11,6 +11,7 @@ import {
 
 import { COLORS } from '@shared/constants';
 import { useI18n } from '@shared/i18n';
+import GradientView from '@shared/components/GradientView';
 
 export type TimeFilter = 'all' | 'started' | 'today' | 'tomorrow';
 export type SortBy = 'distance' | 'date';
@@ -103,28 +104,33 @@ export default function FilterBottomSheet({
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>{t('time')}</Text>
             <View style={styles.filtersContainer}>
-              {FILTERS.map((filter) => (
-                <Pressable
-                  key={filter.id}
-                  style={[
-                    styles.filterChip,
-                    selectedFilter === filter.id && styles.filterChipActive,
-                  ]}
-                  onPress={() => {
-                    onFilterChange(filter.id);
-                    setTimeout(onClose, 150);
-                  }}
-                >
-                  <Text
-                    style={[
-                      styles.filterChipText,
-                      selectedFilter === filter.id && styles.filterChipTextActive,
-                    ]}
+              {FILTERS.map((filter) => {
+                const isActive = selectedFilter === filter.id;
+                return (
+                  <Pressable
+                    key={filter.id}
+                    style={styles.filterChipWrapper}
+                    onPress={() => {
+                      onFilterChange(filter.id);
+                      setTimeout(onClose, 150);
+                    }}
                   >
-                    {t(filter.label as any)}
-                  </Text>
-                </Pressable>
-              ))}
+                    {isActive ? (
+                      <GradientView style={styles.filterChip}>
+                        <Text style={styles.filterChipTextActive}>
+                          {t(filter.label as any)}
+                        </Text>
+                      </GradientView>
+                    ) : (
+                      <View style={styles.filterChip}>
+                        <Text style={styles.filterChipText}>
+                          {t(filter.label as any)}
+                        </Text>
+                      </View>
+                    )}
+                  </Pressable>
+                );
+              })}
             </View>
           </View>
 
@@ -132,36 +138,40 @@ export default function FilterBottomSheet({
             <Text style={styles.sectionTitle}>{t('sorting')}</Text>
             <View style={styles.sortContainer}>
               <Pressable
-                style={[
-                  styles.sortOption,
-                  sortBy === 'distance' && styles.sortOptionActive,
-                ]}
+                style={styles.sortOptionWrapper}
                 onPress={() => onSortChange('distance')}
               >
-                <Text
-                  style={[
-                    styles.sortOptionText,
-                    sortBy === 'distance' && styles.sortOptionTextActive,
-                  ]}
-                >
-                  {t('byDistance')}
-                </Text>
+                {sortBy === 'distance' ? (
+                  <GradientView style={styles.sortOption}>
+                    <Text style={styles.sortOptionTextActive}>
+                      {t('byDistance')}
+                    </Text>
+                  </GradientView>
+                ) : (
+                  <View style={styles.sortOption}>
+                    <Text style={styles.sortOptionText}>
+                      {t('byDistance')}
+                    </Text>
+                  </View>
+                )}
               </Pressable>
               <Pressable
-                style={[
-                  styles.sortOption,
-                  sortBy === 'date' && styles.sortOptionActive,
-                ]}
+                style={styles.sortOptionWrapper}
                 onPress={() => onSortChange('date')}
               >
-                <Text
-                  style={[
-                    styles.sortOptionText,
-                    sortBy === 'date' && styles.sortOptionTextActive,
-                  ]}
-                >
-                  {t('byDate')}
-                </Text>
+                {sortBy === 'date' ? (
+                  <GradientView style={styles.sortOption}>
+                    <Text style={styles.sortOptionTextActive}>
+                      {t('byDate')}
+                    </Text>
+                  </GradientView>
+                ) : (
+                  <View style={styles.sortOption}>
+                    <Text style={styles.sortOptionText}>
+                      {t('byDate')}
+                    </Text>
+                  </View>
+                )}
               </Pressable>
             </View>
           </View>
@@ -210,6 +220,10 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     gap: 8,
   },
+  filterChipWrapper: {
+    borderRadius: 20,
+    overflow: 'hidden',
+  },
   filterChip: {
     paddingHorizontal: 20,
     paddingVertical: 12,
@@ -221,23 +235,26 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 2,
   },
-  filterChipActive: {
-    backgroundColor: COLORS.ACCENT_ORANGE,
-  },
   filterChipText: {
     fontSize: 14,
     fontWeight: '600',
     color: COLORS.TEXT_DARK,
   },
   filterChipTextActive: {
+    fontSize: 14,
+    fontWeight: '600',
     color: COLORS.WHITE,
   },
   sortContainer: {
     flexDirection: 'row',
     gap: 8,
   },
-  sortOption: {
+  sortOptionWrapper: {
     flex: 1,
+    borderRadius: 16,
+    overflow: 'hidden',
+  },
+  sortOption: {
     paddingVertical: 14,
     borderRadius: 16,
     backgroundColor: COLORS.CARD_BG,
@@ -248,15 +265,14 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 2,
   },
-  sortOptionActive: {
-    backgroundColor: COLORS.ACCENT_ORANGE,
-  },
   sortOptionText: {
     fontSize: 15,
     fontWeight: '600',
     color: COLORS.TEXT_DARK,
   },
   sortOptionTextActive: {
+    fontSize: 15,
+    fontWeight: '600',
     color: COLORS.WHITE,
   },
 });

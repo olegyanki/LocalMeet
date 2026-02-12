@@ -11,10 +11,11 @@ import {
   ScrollView,
 } from 'react-native';
 import { useRouter } from 'expo-router';
-import { useI18n } from '@shared/i18n';
 import { signUp } from '@shared/lib/auth';
 import { COLORS } from '@shared/constants';
+import { useI18n } from '@shared/i18n';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import PrimaryButton from '@shared/components/PrimaryButton';
 
 export default function RegisterScreen() {
   const [email, setEmail] = useState('');
@@ -123,17 +124,13 @@ export default function RegisterScreen() {
             />
           </View>
 
-          <TouchableOpacity
-            style={[styles.registerButton, isLoading && styles.buttonDisabled]}
+          <PrimaryButton
+            title={t('registerButton')}
             onPress={handleRegister}
             disabled={isLoading}
-          >
-            {isLoading ? (
-              <ActivityIndicator color={COLORS.WHITE} />
-            ) : (
-              <Text style={styles.registerButtonText}>{t('registerButton')}</Text>
-            )}
-          </TouchableOpacity>
+            loading={isLoading}
+            style={{ marginTop: 8 }}
+          />
 
           <View style={styles.loginSection}>
             <Text style={styles.loginText}>{t('haveAccount')}</Text>
@@ -196,20 +193,15 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 2,
   },
-  registerButton: {
-    backgroundColor: COLORS.ACCENT_ORANGE,
-    paddingVertical: 16,
+  registerButtonWrapper: {
     borderRadius: 16,
-    alignItems: 'center',
+    overflow: 'hidden',
     marginTop: 8,
-  },
-  buttonDisabled: {
-    opacity: 0.6,
-  },
-  registerButtonText: {
-    color: COLORS.WHITE,
-    fontSize: 17,
-    fontWeight: '600',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 12,
+    elevation: 4,
   },
   errorContainer: {
     backgroundColor: COLORS.ERROR_BG,

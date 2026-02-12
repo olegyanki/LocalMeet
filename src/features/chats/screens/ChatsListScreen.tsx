@@ -7,6 +7,7 @@ import { getMyWalkRequests, updateWalkRequestStatus, WalkRequestWithProfile } fr
 import { supabase } from '@shared/lib/supabase';
 import { COLORS } from '@shared/constants';
 import RequestCard from '@features/chats/components/RequestCard';
+import Avatar from '@shared/components/Avatar';
 
 type TabType = 'requests' | 'chats';
 
@@ -340,15 +341,11 @@ export default function ChatsScreen() {
           },
         })}
       >
-        {eventImageUrl ? (
-          <Image source={{ uri: eventImageUrl }} style={styles.chatAvatar} />
-        ) : (
-          <View style={[styles.chatAvatar, styles.chatAvatarPlaceholder]}>
-            <Text style={styles.chatAvatarText}>
-              {otherUser.display_name.charAt(0).toUpperCase()}
-            </Text>
-          </View>
-        )}
+        <Avatar 
+          uri={eventImageUrl} 
+          name={otherUser.display_name} 
+          size={56}
+        />
         <View style={styles.chatInfo}>
           <View style={styles.chatHeader}>
             <Text style={styles.chatName}>{displayName}</Text>
@@ -583,16 +580,6 @@ const styles = StyleSheet.create({
     height: 56,
     borderRadius: 28,
     marginRight: 12,
-  },
-  chatAvatarPlaceholder: {
-    backgroundColor: COLORS.ACCENT_ORANGE,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  chatAvatarText: {
-    color: COLORS.WHITE,
-    fontSize: 22,
-    fontWeight: '600',
   },
   chatInfo: {
     flex: 1,

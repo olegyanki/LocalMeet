@@ -18,6 +18,7 @@ import { deleteWalk, getMyRequestForWalk, WalkRequest, NearbyWalk, UserProfile }
 import { useAuth } from '@shared/contexts/AuthContext';
 import { useI18n } from '@shared/i18n';
 import { COLORS } from '@shared/constants';
+import Avatar from '@shared/components/Avatar';
 import { router } from 'expo-router';
 import PrimaryButton from '@shared/components/PrimaryButton';
 
@@ -281,13 +282,11 @@ export default function EventDetailsBottomSheet({
             activeOpacity={0.7}
           >
             <View style={styles.avatarSection}>
-              {walk.walk?.image_url ? (
-                <Image source={{ uri: walk.walk.image_url }} style={styles.avatar} />
-              ) : (
-                <View style={styles.avatarPlaceholder}>
-                  <Text style={styles.avatarText}>{userProfile.display_name[0].toUpperCase()}</Text>
-                </View>
-              )}
+              <Avatar 
+                uri={walk.walk?.image_url} 
+                name={userProfile.display_name} 
+                size={64}
+              />
             </View>
 
             <View style={styles.headerInfo}>
@@ -403,25 +402,6 @@ const styles = StyleSheet.create({
   },
   avatarSection: {
     position: 'relative',
-  },
-  avatar: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    backgroundColor: COLORS.BORDER_COLOR,
-  },
-  avatarPlaceholder: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    backgroundColor: COLORS.ACCENT_ORANGE,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  avatarText: {
-    fontSize: 24,
-    fontWeight: '700',
-    color: COLORS.WHITE,
   },
   activeIndicator: {
     position: 'absolute',

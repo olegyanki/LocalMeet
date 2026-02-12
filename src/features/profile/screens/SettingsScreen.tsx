@@ -10,6 +10,7 @@ import { useI18n } from '@shared/i18n';
 import { useRouter } from 'expo-router';
 import { signOut } from '@shared/lib/auth';
 import { COLORS, SIZES, HEADER_STYLES } from '@shared/constants';
+import GradientView from '@shared/components/GradientView';
 import PrimaryButton from '@shared/components/PrimaryButton';
 
 export default function SettingsScreen() {
@@ -46,20 +47,40 @@ export default function SettingsScreen() {
         <Text style={styles.label}>{t('appLanguage').toUpperCase()}</Text>
         <View style={styles.languageSwitcher}>
           <Pressable
-            style={[styles.langButton, language === 'uk' && styles.langButtonActive]}
+            style={styles.langButtonWrapper}
             onPress={() => setLanguage('uk')}
           >
-            <Text style={[styles.langButtonText, language === 'uk' && styles.langButtonTextActive]}>
-              🇺🇦 Українська
-            </Text>
+            {language === 'uk' ? (
+              <GradientView style={styles.langButton}>
+                <Text style={styles.langButtonTextActive}>
+                  🇺🇦 Українська
+                </Text>
+              </GradientView>
+            ) : (
+              <View style={styles.langButton}>
+                <Text style={styles.langButtonText}>
+                  🇺🇦 Українська
+                </Text>
+              </View>
+            )}
           </Pressable>
           <Pressable
-            style={[styles.langButton, language === 'en' && styles.langButtonActive]}
+            style={styles.langButtonWrapper}
             onPress={() => setLanguage('en')}
           >
-            <Text style={[styles.langButtonText, language === 'en' && styles.langButtonTextActive]}>
-              🇬🇧 English
-            </Text>
+            {language === 'en' ? (
+              <GradientView style={styles.langButton}>
+                <Text style={styles.langButtonTextActive}>
+                  🇬🇧 English
+                </Text>
+              </GradientView>
+            ) : (
+              <View style={styles.langButton}>
+                <Text style={styles.langButtonText}>
+                  🇬🇧 English
+                </Text>
+              </View>
+            )}
           </Pressable>
         </View>
       </View>
@@ -102,8 +123,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: 12,
   },
-  langButton: {
+  langButtonWrapper: {
     flex: 1,
+    borderRadius: 16,
+    overflow: 'hidden',
+  },
+  langButton: {
     paddingVertical: 14,
     borderRadius: 16,
     backgroundColor: COLORS.CARD_BG,
@@ -114,17 +139,15 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 2,
   },
-  langButtonActive: {
-    backgroundColor: COLORS.ACCENT_ORANGE,
-  },
   langButtonText: {
     fontSize: 15,
     fontWeight: '500',
     color: COLORS.TEXT_DARK,
   },
   langButtonTextActive: {
-    color: COLORS.CARD_BG,
+    fontSize: 15,
     fontWeight: '600',
+    color: COLORS.CARD_BG,
   },
   logoutButton: {
     backgroundColor: COLORS.ERROR_RED,

@@ -10,9 +10,10 @@ import {
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useAuth } from '@shared/contexts/AuthContext';
-import { useI18n } from '@shared/i18n';
 import { COLORS } from '@shared/constants';
+import { useI18n } from '@shared/i18n';
 import { updateProfile } from '@shared/lib/api';
+import PrimaryButton from '@shared/components/PrimaryButton';
 
 const BG_COLOR = '#F5F5F5';
 export default function OnboardingScreen() {
@@ -73,17 +74,13 @@ export default function OnboardingScreen() {
         editable={!isLoading}
       />
 
-      <TouchableOpacity
-        style={[styles.button, isLoading && styles.buttonDisabled]}
+      <PrimaryButton
+        title={t('continue')}
         onPress={handleContinue}
         disabled={isLoading}
-      >
-        {isLoading ? (
-          <ActivityIndicator color={COLORS.WHITE} />
-        ) : (
-          <Text style={styles.buttonText}>{t('continue')}</Text>
-        )}
-      </TouchableOpacity>
+        loading={isLoading}
+        style={{ marginTop: 24 }}
+      />
     </ScrollView>
   );
 }
@@ -129,20 +126,15 @@ const styles = StyleSheet.create({
     minHeight: 100,
     textAlignVertical: 'top',
   },
-  button: {
-    backgroundColor: COLORS.ACCENT_ORANGE,
-    paddingVertical: 14,
+  buttonWrapper: {
     borderRadius: 12,
-    alignItems: 'center',
+    overflow: 'hidden',
     marginTop: 8,
-  },
-  buttonDisabled: {
-    opacity: 0.6,
-  },
-  buttonText: {
-    color: COLORS.WHITE,
-    fontSize: 16,
-    fontWeight: '600',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 12,
+    elevation: 4,
   },
   errorText: {
     color: '#E74C3C',

@@ -22,6 +22,7 @@ import { useI18n } from '@shared/i18n';
 import { COLORS } from '@shared/constants';
 import AudioRecorder from '@shared/components/AudioRecorder';
 import AudioPlayer from '@shared/components/AudioPlayer';
+import Avatar from '@shared/components/Avatar';
 import EventDetailsBottomSheet from '@features/events/modals/EventDetailsBottomSheet';
 import PrimaryButton from '@shared/components/PrimaryButton';
 
@@ -564,17 +565,12 @@ export default function ChatScreen() {
               <ChevronLeft size={28} color={COLORS.TEXT_DARK} />
             </TouchableOpacity>
 
-            {preloadedUserAvatar ? (
-              <Image
-                source={{ uri: preloadedUserAvatar }}
-                style={styles.avatar}
+            {preloadedUserName ? (
+              <Avatar 
+                uri={preloadedUserAvatar} 
+                name={preloadedUserName} 
+                size={40}
               />
-            ) : preloadedUserName ? (
-              <View style={[styles.avatar, styles.avatarPlaceholder]}>
-                <Text style={styles.avatarText}>
-                  {preloadedUserName.charAt(0).toUpperCase()}
-                </Text>
-              </View>
             ) : (
               <View style={[styles.avatar, styles.avatarPlaceholder]}>
                 <ActivityIndicator size="small" color={COLORS.WHITE} />
@@ -624,18 +620,11 @@ export default function ChatScreen() {
               }
             }}
           >
-            {otherUser.avatar_url ? (
-              <Image
-                source={{ uri: otherUser.avatar_url }}
-                style={styles.avatar}
-              />
-            ) : (
-              <View style={[styles.avatar, styles.avatarPlaceholder]}>
-                <Text style={styles.avatarText}>
-                  {otherUser.display_name.charAt(0).toUpperCase()}
-                </Text>
-              </View>
-            )}
+            <Avatar 
+              uri={otherUser.avatar_url} 
+              name={otherUser.display_name} 
+              size={40}
+            />
 
             <Text style={styles.headerName}>
               {chat.walk_request?.walk?.title || otherUser.display_name}
@@ -878,16 +867,6 @@ const styles = StyleSheet.create({
     height: 40,
     borderRadius: 20,
     marginRight: 12,
-  },
-  avatarPlaceholder: {
-    backgroundColor: COLORS.ACCENT_ORANGE,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  avatarText: {
-    color: COLORS.WHITE,
-    fontSize: 18,
-    fontWeight: '600',
   },
   headerName: {
     fontSize: 18,

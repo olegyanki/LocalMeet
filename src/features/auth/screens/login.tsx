@@ -11,10 +11,11 @@ import {
   ScrollView,
 } from 'react-native';
 import { useRouter } from 'expo-router';
-import { useI18n } from '@shared/i18n';
 import { signIn } from '@shared/lib/auth';
 import { COLORS } from '@shared/constants';
+import { useI18n } from '@shared/i18n';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import PrimaryButton from '@shared/components/PrimaryButton';
 
 export default function LoginScreen() {
   const [email, setEmail] = useState('');
@@ -88,17 +89,13 @@ export default function LoginScreen() {
             />
           </View>
 
-          <TouchableOpacity
-            style={[styles.loginButton, isLoading && styles.buttonDisabled]}
+          <PrimaryButton
+            title={t('loginButton')}
             onPress={handleLogin}
             disabled={isLoading}
-          >
-            {isLoading ? (
-              <ActivityIndicator color={COLORS.WHITE} />
-            ) : (
-              <Text style={styles.loginButtonText}>{t('loginButton')}</Text>
-            )}
-          </TouchableOpacity>
+            loading={isLoading}
+            style={{ marginTop: 8 }}
+          />
 
           <View style={styles.registerSection}>
             <Text style={styles.registerText}>{t('noAccount')}</Text>
@@ -159,21 +156,6 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.06,
     shadowRadius: 8,
     elevation: 2,
-  },
-  loginButton: {
-    backgroundColor: COLORS.ACCENT_ORANGE,
-    paddingVertical: 16,
-    borderRadius: 16,
-    alignItems: 'center',
-    marginTop: 8,
-  },
-  buttonDisabled: {
-    opacity: 0.6,
-  },
-  loginButtonText: {
-    color: COLORS.WHITE,
-    fontSize: 17,
-    fontWeight: '600',
   },
   errorContainer: {
     backgroundColor: COLORS.ERROR_BG,

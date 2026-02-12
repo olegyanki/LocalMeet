@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Image, Text, StyleSheet, ViewStyle } from 'react-native';
 import { COLORS } from '../constants/colors';
+import GradientView from './GradientView';
 
 interface AvatarProps {
   uri?: string | null;
@@ -19,11 +20,11 @@ export default function Avatar({ uri, name, size = 60, style }: AvatarProps) {
   const initial = name && name.length > 0 ? name.charAt(0).toUpperCase() : '?';
 
   return (
-    <View style={[styles.avatar, styles.placeholder, avatarSize, style]}>
+    <GradientView style={[styles.avatar, styles.placeholder, avatarSize, style]}>
       <Text style={[styles.text, { fontSize: size / 2.5 }]}>
         {initial}
       </Text>
-    </View>
+    </GradientView>
   );
 }
 
@@ -32,7 +33,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#E8E8E8',
   },
   placeholder: {
-    backgroundColor: COLORS.ACCENT_ORANGE,
     justifyContent: 'center',
     alignItems: 'center',
   },

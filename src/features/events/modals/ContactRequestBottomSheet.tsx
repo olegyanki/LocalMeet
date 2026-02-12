@@ -15,6 +15,8 @@ import {
 import { BlurView } from 'expo-blur';
 import { Clock } from 'lucide-react-native';
 import { createWalkRequest } from '@shared/lib/api';
+import Avatar from '@shared/components/Avatar';
+import { SIZES } from '@shared/constants/styles';
 import { useI18n } from '@shared/i18n';
 import { COLORS } from '@shared/constants';
 import { Image } from 'react-native';
@@ -148,12 +150,12 @@ export default function ContactRequestBottomSheet({
                 {(() => {
                   const walk = { image_url: walkImageUrl } as any;
                   const eventImageUrl = getEventImage(walk, walkOwnerAvatar);
-                  return eventImageUrl ? (
-                    <Image source={{ uri: eventImageUrl }} style={styles.avatar} />
-                  ) : (
-                    <View style={styles.avatarPlaceholder}>
-                      <Text style={styles.avatarText}>{walkOwnerName[0]?.toUpperCase()}</Text>
-                    </View>
+                  return (
+                    <Avatar 
+                      uri={eventImageUrl} 
+                      name={walkOwnerName} 
+                      size={48}
+                    />
                   );
                 })()}
                 <View style={styles.ownerInfo}>
@@ -250,25 +252,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
-  },
-  avatar: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: COLORS.BORDER_COLOR,
-  },
-  avatarPlaceholder: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: COLORS.ACCENT_ORANGE,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  avatarText: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: COLORS.WHITE,
   },
   ownerInfo: {
     flex: 1,

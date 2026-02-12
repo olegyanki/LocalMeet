@@ -15,6 +15,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '@shared/contexts/AuthContext';
 import { useI18n } from '@shared/i18n';
 import { updateProfile } from '@shared/lib/api';
+import GradientView from '@shared/components/GradientView';
 import { Plus } from 'lucide-react-native';
 import AvatarPicker from '@shared/components/AvatarPicker';
 import PrimaryButton from '@shared/components/PrimaryButton';
@@ -244,12 +245,14 @@ export default function ProfileScreen() {
               return (
                 <TouchableOpacity
                   key={langCode}
-                  style={styles.chip}
+                  style={styles.chipWrapper}
                   onPress={() => toggleLanguage(langCode)}
                 >
-                  <Text style={styles.chipText}>
-                    {lang.flag} {t(lang.nameKey as any)}
-                  </Text>
+                  <GradientView style={styles.chip}>
+                    <Text style={styles.chipText}>
+                      {lang.flag} {t(lang.nameKey as any)}
+                    </Text>
+                  </GradientView>
                 </TouchableOpacity>
               );
             })}
@@ -272,12 +275,14 @@ export default function ProfileScreen() {
               return (
                 <TouchableOpacity
                   key={interestKey}
-                  style={styles.chip}
+                  style={styles.chipWrapper}
                   onPress={() => toggleInterest(interestKey)}
                 >
-                  <Text style={styles.chipText}>
-                    {interest.emoji} {t(interest.key as any)}
-                  </Text>
+                  <GradientView style={styles.chip}>
+                    <Text style={styles.chipText}>
+                      {interest.emoji} {t(interest.key as any)}
+                    </Text>
+                  </GradientView>
                 </TouchableOpacity>
               );
             })}
@@ -437,11 +442,14 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     gap: 8,
   },
+  chipWrapper: {
+    borderRadius: 16,
+    overflow: 'hidden',
+  },
   chip: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    backgroundColor: COLORS.ACCENT_ORANGE,
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 16,

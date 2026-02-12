@@ -3,6 +3,7 @@ import { WalkRequestWithProfile } from '../lib/api';
 import { useRef } from 'react';
 import { Check, X } from 'lucide-react-native';
 import { COLORS } from '@shared/constants';
+import Avatar from '@shared/components/Avatar';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const SWIPE_THRESHOLD = SCREEN_WIDTH * 0.3;
@@ -143,15 +144,11 @@ export default function RequestCard({ request, onReject, onAccept, onSwipeStart,
             activeOpacity={0.7}
           >
           <View style={styles.avatarContainer}>
-            {requester.avatar_url ? (
-              <Image source={{ uri: requester.avatar_url }} style={styles.avatar} />
-            ) : (
-              <View style={[styles.avatar, styles.avatarPlaceholder]}>
-                <Text style={styles.avatarText}>
-                  {requester.display_name?.charAt(0)?.toUpperCase() || '?'}
-                </Text>
-              </View>
-            )}
+            <Avatar 
+              uri={requester.avatar_url} 
+              name={requester.display_name || requester.username} 
+              size={56}
+            />
           </View>
 
           <View style={styles.infoContainer}>
@@ -244,21 +241,6 @@ const styles = StyleSheet.create({
   },
   avatarContainer: {
     marginRight: 12,
-  },
-  avatar: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-  },
-  avatarPlaceholder: {
-    backgroundColor: COLORS.ACCENT_ORANGE,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  avatarText: {
-    fontSize: 24,
-    fontWeight: '600',
-    color: COLORS.WHITE,
   },
   infoContainer: {
     flex: 1,
