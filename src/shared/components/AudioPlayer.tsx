@@ -4,8 +4,6 @@ import { Audio } from 'expo-av';
 import { Play, Pause } from 'lucide-react-native';
 import { COLORS } from '@shared/constants';
 
-const TEXT_LIGHT = '#999999';
-
 interface AudioPlayerProps {
   audioUrl: string;
   duration: number;
@@ -166,7 +164,7 @@ const styles = StyleSheet.create({
   },
   duration: {
     fontSize: 12,
-    color: TEXT_LIGHT,
+    color: COLORS.TEXT_LIGHT,
   },
   durationOwn: {
     color: 'rgba(255, 255, 255, 0.8)',

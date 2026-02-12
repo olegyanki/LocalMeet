@@ -4,9 +4,6 @@ import { Audio } from 'expo-av';
 import { Mic, X, Send } from 'lucide-react-native';
 import { COLORS } from '@shared/constants';
 
-const TEXT_DARK = '#1C1C1E';
-const TEXT_LIGHT = '#999999';
-
 interface AudioRecorderProps {
   onSend: (audioUri: string, duration: number) => void;
   onCancel: () => void;
@@ -102,7 +99,7 @@ export default function AudioRecorder({ onSend, onCancel }: AudioRecorderProps) 
         style={styles.cancelButton}
         onPress={() => stopRecording(false)}
       >
-        <X size={24} color={TEXT_LIGHT} />
+        <X size={24} color={COLORS.TEXT_LIGHT} />
       </TouchableOpacity>
 
       <View style={styles.recordingInfo}>
@@ -154,7 +151,7 @@ const styles = StyleSheet.create({
   duration: {
     fontSize: 17,
     fontWeight: '600',
-    color: TEXT_DARK,
+    color: COLORS.TEXT_DARK,
   },
   sendButton: {
     width: 40,

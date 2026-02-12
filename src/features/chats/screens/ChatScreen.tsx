@@ -20,7 +20,7 @@ import { supabase } from '@shared/lib/supabase';
 import { useAuth } from '@shared/contexts/AuthContext';
 import { useI18n } from '@shared/i18n';
 import { COLORS } from '@shared/constants';
-import { sendTextMessage, sendImageMessage, sendAudioMessage } from '@shared/lib/api';
+import { sendTextMessage, sendImageMessage, sendAudioMessage, Walk } from '@shared/lib/api';
 import AudioRecorder from '@shared/components/AudioRecorder';
 import AudioPlayer from '@shared/components/AudioPlayer';
 import Avatar from '@shared/components/Avatar';
@@ -37,17 +37,6 @@ interface Message {
   audio_duration?: number | null;
   created_at: string;
   read: boolean;
-}
-
-interface Walk {
-  id: string;
-  title: string;
-  description: string | null;
-  start_time: string | null;
-  duration: string;
-  latitude: number;
-  longitude: number;
-  user_id: string;
 }
 
 interface Chat {
@@ -253,13 +242,11 @@ export default function ChatScreen() {
   ): Promise<string | null> => {
     try {
       setUploading(true);
-      console.log('Starting upload for:', asset.uri);
 
       let uint8Array: Uint8Array;
 
       // Use base64 if available (for web), otherwise fetch
       if (asset.base64) {
-        console.log('Using base64 data');
         const binaryString = atob(asset.base64);
         const bytes = new Uint8Array(binaryString.length);
         for (let i = 0; i < binaryString.length; i++) {
@@ -267,7 +254,6 @@ export default function ChatScreen() {
         }
         uint8Array = bytes;
       } else {
-        console.log('Fetching image from URI');
         const response = await fetch(asset.uri);
         if (!response.ok) {
           throw new Error(`Failed to fetch image: ${response.status}`);
@@ -276,11 +262,8 @@ export default function ChatScreen() {
         uint8Array = new Uint8Array(arrayBuffer);
       }
 
-      console.log('Data size:', uint8Array.length);
-
       const ext = asset.uri.split('.').pop()?.split('?')[0] || 'jpg';
       const fileName = `${chatId}/${Date.now()}.${ext}`;
-      console.log('Uploading to:', fileName);
 
       const { data, error } = await supabase.storage
         .from('chat-images')
@@ -298,13 +281,10 @@ export default function ChatScreen() {
         throw new Error(error.message || 'Upload failed');
       }
 
-      console.log('Upload successful:', data);
-
       const { data: urlData } = supabase.storage
         .from('chat-images')
         .getPublicUrl(fileName);
 
-      console.log('Public URL:', urlData.publicUrl);
       return urlData.publicUrl;
     } catch (error: any) {
       console.error('Error in uploadImage:', {
