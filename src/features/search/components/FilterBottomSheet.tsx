@@ -9,9 +9,14 @@ import {
   PanResponder,
 } from 'react-native';
 
-import { COLORS } from '@shared/constants';
+// Contexts & Hooks
 import { useI18n } from '@shared/i18n';
-import GradientView from '@shared/components/GradientView';
+
+// Components
+import Chip from '@shared/components/Chip';
+
+// Constants
+import { COLORS } from '@shared/constants';
 
 export type TimeFilter = 'all' | 'started' | 'today' | 'tomorrow';
 export type SortBy = 'distance' | 'date';
@@ -104,75 +109,36 @@ export default function FilterBottomSheet({
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>{t('time')}</Text>
             <View style={styles.filtersContainer}>
-              {FILTERS.map((filter) => {
-                const isActive = selectedFilter === filter.id;
-                return (
-                  <Pressable
-                    key={filter.id}
-                    style={styles.filterChipWrapper}
-                    onPress={() => {
-                      onFilterChange(filter.id);
-                      setTimeout(onClose, 150);
-                    }}
-                  >
-                    {isActive ? (
-                      <GradientView style={styles.filterChip}>
-                        <Text style={styles.filterChipTextActive}>
-                          {t(filter.label as any)}
-                        </Text>
-                      </GradientView>
-                    ) : (
-                      <View style={styles.filterChip}>
-                        <Text style={styles.filterChipText}>
-                          {t(filter.label as any)}
-                        </Text>
-                      </View>
-                    )}
-                  </Pressable>
-                );
-              })}
+              {FILTERS.map((filter) => (
+                <Chip
+                  key={filter.id}
+                  label={t(filter.label as any)}
+                  isActive={selectedFilter === filter.id}
+                  onPress={() => {
+                    onFilterChange(filter.id);
+                    setTimeout(onClose, 150);
+                  }}
+                  style={styles.filterChip}
+                />
+              ))}
             </View>
           </View>
 
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>{t('sorting')}</Text>
             <View style={styles.sortContainer}>
-              <Pressable
-                style={styles.sortOptionWrapper}
+              <Chip
+                label={t('byDistance')}
+                isActive={sortBy === 'distance'}
                 onPress={() => onSortChange('distance')}
-              >
-                {sortBy === 'distance' ? (
-                  <GradientView style={styles.sortOption}>
-                    <Text style={styles.sortOptionTextActive}>
-                      {t('byDistance')}
-                    </Text>
-                  </GradientView>
-                ) : (
-                  <View style={styles.sortOption}>
-                    <Text style={styles.sortOptionText}>
-                      {t('byDistance')}
-                    </Text>
-                  </View>
-                )}
-              </Pressable>
-              <Pressable
-                style={styles.sortOptionWrapper}
+                style={styles.sortChip}
+              />
+              <Chip
+                label={t('byDate')}
+                isActive={sortBy === 'date'}
                 onPress={() => onSortChange('date')}
-              >
-                {sortBy === 'date' ? (
-                  <GradientView style={styles.sortOption}>
-                    <Text style={styles.sortOptionTextActive}>
-                      {t('byDate')}
-                    </Text>
-                  </GradientView>
-                ) : (
-                  <View style={styles.sortOption}>
-                    <Text style={styles.sortOptionText}>
-                      {t('byDate')}
-                    </Text>
-                  </View>
-                )}
-              </Pressable>
+                style={styles.sortChip}
+              />
             </View>
           </View>
         </Animated.View>
@@ -220,59 +186,17 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     gap: 8,
   },
-  filterChipWrapper: {
-    borderRadius: 20,
-    overflow: 'hidden',
-  },
   filterChip: {
     paddingHorizontal: 20,
     paddingVertical: 12,
-    borderRadius: 20,
-    backgroundColor: COLORS.CARD_BG,
-    shadowColor: COLORS.SHADOW_BLACK,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 8,
-    elevation: 2,
-  },
-  filterChipText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: COLORS.TEXT_DARK,
-  },
-  filterChipTextActive: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: COLORS.WHITE,
   },
   sortContainer: {
     flexDirection: 'row',
     gap: 8,
   },
-  sortOptionWrapper: {
+  sortChip: {
     flex: 1,
-    borderRadius: 16,
-    overflow: 'hidden',
-  },
-  sortOption: {
     paddingVertical: 14,
-    borderRadius: 16,
-    backgroundColor: COLORS.CARD_BG,
     alignItems: 'center',
-    shadowColor: COLORS.SHADOW_BLACK,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 8,
-    elevation: 2,
-  },
-  sortOptionText: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: COLORS.TEXT_DARK,
-  },
-  sortOptionTextActive: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: COLORS.WHITE,
   },
 });

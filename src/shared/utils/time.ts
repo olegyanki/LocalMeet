@@ -54,7 +54,7 @@ export const getTimeColor = (walkStartTime: string | null): string => {
  */
 export const formatTime = (
   walkStartTime: string | null,
-  t: (key: string, params?: Record<string, any>) => string
+  t: (key: any, params?: Record<string, any>) => string
 ): string => {
   if (!walkStartTime) return '';
 
@@ -90,7 +90,7 @@ export const formatTime = (
  */
 export const getTimeText = (
   walkStartTime: string | null,
-  t: (key: string, params?: Record<string, any>) => string
+  t: (key: any, params?: Record<string, any>) => string
 ): string => {
   if (!walkStartTime) return t('timeNotSpecified');
 

@@ -421,7 +421,7 @@ export async function getMyChats(userId: string): Promise<ChatWithLastMessage[]>
   if (error) throw error;
 
   const chatsWithMessages = await Promise.all(
-    (chatsData || []).map(async (chat) => {
+    (chatsData || []).map(async (chat: any) => {
       // Get last message
       const { data: lastMessage } = await supabase
         .from('messages')
@@ -455,7 +455,13 @@ export async function getMyChats(userId: string): Promise<ChatWithLastMessage[]>
       }
 
       return {
-        ...chat,
+        id: chat.id,
+        requester_id: chat.requester_id,
+        walker_id: chat.walker_id,
+        walk_request_id: chat.walk_request_id,
+        updated_at: chat.updated_at,
+        requester: Array.isArray(chat.requester) ? chat.requester[0] : chat.requester,
+        walker: Array.isArray(chat.walker) ? chat.walker[0] : chat.walker,
         walk_title: walkTitle,
         walk_image_url: walkImageUrl,
         lastMessage: lastMessage || undefined,

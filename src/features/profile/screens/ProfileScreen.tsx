@@ -11,35 +11,27 @@ import {
   Platform,
   Keyboard,
 } from 'react-native';
+
+// Third-party libraries
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Plus } from 'lucide-react-native';
+
+// Contexts & Hooks
 import { useAuth } from '@shared/contexts/AuthContext';
 import { useI18n } from '@shared/i18n';
+
+// API & Utils
 import { updateProfile } from '@shared/lib/api';
-import GradientView from '@shared/components/GradientView';
-import { Plus } from 'lucide-react-native';
+
+// Components
 import AvatarPicker from '@shared/components/AvatarPicker';
 import PrimaryButton from '@shared/components/PrimaryButton';
+import Chip from '@shared/components/Chip';
 import LanguagePickerModal from '@features/profile/modals/LanguagePickerModal';
 import InterestPickerModal from '@features/profile/modals/InterestPickerModal';
-import { COLORS, getLanguageByCode, getInterestByKey, SIZES, HEADER_STYLES } from '@shared/constants';
 
-const INTEREST_OPTIONS = [
-  'interestSport',
-  'interestMusic',
-  'interestMovies',
-  'interestTravel',
-  'interestFood',
-  'interestPhotography',
-  'interestArt',
-  'interestTech',
-  'interestBooks',
-  'interestGames',
-  'interestNature',
-  'interestDance',
-  'interestYoga',
-  'interestCooking',
-  'interestFashion',
-];
+// Constants
+import { COLORS, getLanguageByCode, getInterestByKey, SIZES, HEADER_STYLES } from '@shared/constants';
 
 // UI Constants
 const INPUT_MIN_HEIGHT = 56;
@@ -243,17 +235,13 @@ export default function ProfileScreen() {
               const lang = getLanguageByCode(langCode);
               if (!lang) return null;
               return (
-                <TouchableOpacity
+                <Chip
                   key={langCode}
-                  style={styles.chipWrapper}
+                  label={t(lang.nameKey as any)}
+                  emoji={lang.flag}
+                  isActive={true}
                   onPress={() => toggleLanguage(langCode)}
-                >
-                  <GradientView style={styles.chip}>
-                    <Text style={styles.chipText}>
-                      {lang.flag} {t(lang.nameKey as any)}
-                    </Text>
-                  </GradientView>
-                </TouchableOpacity>
+                />
               );
             })}
             <TouchableOpacity
@@ -273,17 +261,13 @@ export default function ProfileScreen() {
               const interest = getInterestByKey(interestKey);
               if (!interest) return null;
               return (
-                <TouchableOpacity
+                <Chip
                   key={interestKey}
-                  style={styles.chipWrapper}
+                  label={t(interest.key as any)}
+                  emoji={interest.emoji}
+                  isActive={true}
                   onPress={() => toggleInterest(interestKey)}
-                >
-                  <GradientView style={styles.chip}>
-                    <Text style={styles.chipText}>
-                      {interest.emoji} {t(interest.key as any)}
-                    </Text>
-                  </GradientView>
-                </TouchableOpacity>
+                />
               );
             })}
             <TouchableOpacity
@@ -443,27 +427,6 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   chipWrapper: {
-    borderRadius: 16,
-    overflow: 'hidden',
-  },
-  chip: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 8,
-    elevation: 2,
-  },
-  chipText: {
-    fontSize: 14,
-    color: COLORS.CARD_BG,
-    fontWeight: '500',
-  },
   addChip: {
     flexDirection: 'row',
     alignItems: 'center',

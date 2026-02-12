@@ -21,6 +21,7 @@ import { useI18n } from '@shared/i18n';
 import { COLORS } from '@shared/constants';
 import { Image } from 'react-native';
 import { getEventImage } from '@shared/utils/eventImage';
+import { getTimeText } from '@shared/utils/time';
 import PrimaryButton from '@shared/components/PrimaryButton';
 
 interface ContactRequestBottomSheetProps {
@@ -166,7 +167,7 @@ export default function ContactRequestBottomSheet({
               {walkStartTime && (
                 <View style={styles.timeRow}>
                   <Clock size={16} color={COLORS.TEXT_LIGHT} />
-                  <Text style={styles.timeText}>{getTimeText(walkStartTime)}</Text>
+                  <Text style={styles.timeText}>{getTimeText(walkStartTime, t)}</Text>
                 </View>
               )}
             </View>

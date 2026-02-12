@@ -18,6 +18,7 @@ import { deleteWalk, getMyRequestForWalk, WalkRequest, NearbyWalk, UserProfile }
 import { useAuth } from '@shared/contexts/AuthContext';
 import { useI18n } from '@shared/i18n';
 import { COLORS } from '@shared/constants';
+import { getTimeText, getTimeColor } from '@shared/utils/time';
 import Avatar from '@shared/components/Avatar';
 import { router } from 'expo-router';
 import PrimaryButton from '@shared/components/PrimaryButton';
@@ -320,7 +321,7 @@ export default function EventDetailsBottomSheet({
                   <View style={styles.timeContainer}>
                     <Clock size={18} color={getTimeColor(walk.walk.start_time)} />
                     <Text style={[styles.timeText, { color: getTimeColor(walk.walk.start_time) }]}>
-                      {getTimeText(walk.walk.start_time)}
+                      {getTimeText(walk.walk.start_time, t)}
                     </Text>
                   </View>
                 </View>
