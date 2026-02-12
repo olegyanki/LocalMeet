@@ -92,6 +92,25 @@ Audio playback for chat messages.
 <AudioPlayer uri={message.audio_url} isOwnMessage={isOwn} />
 ```
 
+## Chips
+
+### Chip
+`src/shared/components/Chip.tsx`
+
+Reusable chip/tag component with active/inactive states and gradient support.
+
+```tsx
+<Chip
+  label={t('interestSport')}
+  isActive={selected}
+  onPress={() => toggleSelection()}
+  emoji="⚽"
+/>
+```
+
+**Use for:** Filter chips, interest tags, category selection
+**Don't use for:** Buttons, large interactive elements
+
 ## Pickers
 
 ### InterestPicker

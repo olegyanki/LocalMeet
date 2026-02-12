@@ -83,7 +83,13 @@ src/
 Always use functions from `@shared/lib/api.ts`:
 
 ```tsx
-import { updateProfile, getNearbyWalks, createWalk } from '@shared/lib/api';
+import { 
+  updateProfile, 
+  getNearbyWalks, 
+  createWalk,
+  getMyChats,
+  createChatFromRequest 
+} from '@shared/lib/api';
 
 // Update profile
 await updateProfile(userId, { bio: 'New bio' });
@@ -100,6 +106,12 @@ await createWalk({
   latitude,
   longitude,
 });
+
+// Get user's chats with last messages
+const chats = await getMyChats(userId);
+
+// Create chat from accepted request
+const chatId = await createChatFromRequest(requestId, requesterId, walkerId);
 ```
 
 ### Authentication
@@ -138,6 +150,26 @@ useEffect(() => {
 - Colors: `COLORS.ACCENT_ORANGE`, `COLORS.TEXT_DARK`, etc.
 - Styles: `BUTTON_STYLES`, `INPUT_STYLES`, `CHIP_STYLES`, etc.
 - Sizes: `SIZES.AVATAR_MEDIUM`, `SIZES.TAB_BAR_HEIGHT`, etc.
+
+### Time Formatting
+Use functions from `@shared/utils/time.ts`:
+
+```tsx
+import { formatTime, getTimeColor } from '@shared/utils/time';
+import { useI18n } from '@shared/i18n';
+
+const { t } = useI18n();
+
+// Format time with i18n
+const timeText = formatTime(walk.start_time, t);
+// Returns: "Starts in 30 min" or "Починається через 30 хв"
+
+// Get color based on time
+const color = getTimeColor(walk.start_time);
+// Returns: COLORS.SUCCESS_GREEN (started), COLORS.ACCENT_ORANGE (soon), COLORS.TIME_BLUE (later)
+```
+
+**IMPORTANT:** `formatTime` and `getTimeText` require `t` function parameter for i18n support.
 
 ### Navigation
 File-based routing with Expo Router:

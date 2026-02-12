@@ -380,26 +380,120 @@ export async function takePhotoAndUploadAvatar(userId: string): Promise<string |
   return avatarUrl;
 }
 
-export async function pickAndUploadAvatar(userId: string): Promise<string | null> {
-  const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-  
-  if (status !== 'granted') {
-    throw new Error('Permission denied');
+export interface Chat {
+  id: string;
+  requester_id: string;
+  walker_id: string;
+  walk_request_id: string | null;
+  updated_at: string;
+  requester: UserProfile;
+  walker: UserProfile;
+}
+
+export interface ChatWithLastMessage extends Chat {
+  walk_title?: string;
+  walk_image_url?: string | null;
+  lastMessage?: {
+    content: string;
+    created_at: string;
+    sender_id: string;
+    read: boolean;
+  };
+}
+
+export async function getMyChats(userId: string): Promise<ChatWithLastMessage[]> {
+  const { data: chatsData, error } = await supabase
+    .from('chats')
+    .select(
+      `
+      id,
+      requester_id,
+      walker_id,
+      walk_request_id,
+      updated_at,
+      requester:profiles!chats_requester_id_fkey(id, username, display_name, avatar_url, bio, status, age, gender, languages, interests, social_instagram, social_telegram, looking_for),
+      walker:profiles!chats_walker_id_fkey(id, username, display_name, avatar_url, bio, status, age, gender, languages, interests, social_instagram, social_telegram, looking_for)
+    `
+    )
+    .or(`requester_id.eq.${userId},walker_id.eq.${userId}`)
+    .order('updated_at', { ascending: false });
+
+  if (error) throw error;
+
+  const chatsWithMessages = await Promise.all(
+    (chatsData || []).map(async (chat) => {
+      // Get last message
+      const { data: lastMessage } = await supabase
+        .from('messages')
+        .select('content, created_at, sender_id, read')
+        .eq('chat_id', chat.id)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      // Get walk info if exists
+      let walkTitle: string | undefined;
+      let walkImageUrl: string | null = null;
+      
+      if (chat.walk_request_id) {
+        const { data: walkRequest } = await supabase
+          .from('walk_requests')
+          .select('walk_id')
+          .eq('id', chat.walk_request_id)
+          .maybeSingle();
+
+        if (walkRequest?.walk_id) {
+          const { data: walk } = await supabase
+            .from('walks')
+            .select('title, image_url')
+            .eq('id', walkRequest.walk_id)
+            .maybeSingle();
+
+          walkTitle = walk?.title;
+          walkImageUrl = walk?.image_url ?? null;
+        }
+      }
+
+      return {
+        ...chat,
+        walk_title: walkTitle,
+        walk_image_url: walkImageUrl,
+        lastMessage: lastMessage || undefined,
+      } as ChatWithLastMessage;
+    })
+  );
+
+  return chatsWithMessages;
+}
+
+export async function createChatFromRequest(
+  requestId: string,
+  requesterId: string,
+  walkerId: string
+): Promise<string> {
+  // Check if chat already exists
+  const { data: existingChat } = await supabase
+    .from('chats')
+    .select('id')
+    .eq('walk_request_id', requestId)
+    .maybeSingle();
+
+  if (existingChat) {
+    return existingChat.id;
   }
 
-  const result = await ImagePicker.launchImageLibraryAsync({
-    mediaTypes: ImagePicker.MediaTypeOptions.Images,
-    allowsEditing: true,
-    aspect: [1, 1],
-    quality: 0.8,
-  });
+  // Create new chat
+  const { data: newChat, error } = await supabase
+    .from('chats')
+    .insert({
+      walk_request_id: requestId,
+      requester_id: requesterId,
+      walker_id: walkerId,
+    })
+    .select('id')
+    .single();
 
-  if (result.canceled) {
-    return null;
-  }
+  if (error) throw error;
 
-  const avatarUrl = await uploadAvatar(userId, result.assets[0].uri);
-  await updateProfile(userId, { avatar_url: avatarUrl });
-  
-  return avatarUrl;
+  return newChat.id;
 }

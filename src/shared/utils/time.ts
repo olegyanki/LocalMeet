@@ -10,9 +10,9 @@ export const parseDuration = (duration: string | null): number => {
     const value = parseInt(parts[i]);
     const unit = parts[i + 1];
 
-    if (unit?.includes('hour') || unit?.includes('год')) {
+    if (unit?.includes('hour') || unit?.includes('год') || unit?.includes('h')) {
       totalMinutes += value * 60;
-    } else if (unit?.includes('minute') || unit?.includes('хв')) {
+    } else if (unit?.includes('minute') || unit?.includes('хв') || unit?.includes('min')) {
       totalMinutes += value;
     }
   }
@@ -46,7 +46,16 @@ export const getTimeColor = (walkStartTime: string | null): string => {
   }
 };
 
-export const formatTime = (walkStartTime: string | null): string => {
+/**
+ * Format time difference for display
+ * @param walkStartTime - ISO date string
+ * @param t - Translation function from useI18n()
+ * @returns Formatted time string using i18n keys
+ */
+export const formatTime = (
+  walkStartTime: string | null,
+  t: (key: string, params?: Record<string, any>) => string
+): string => {
   if (!walkStartTime) return '';
 
   const now = new Date();
@@ -58,35 +67,44 @@ export const formatTime = (walkStartTime: string | null): string => {
   const diffMins = Math.floor(diffMs / 60000);
 
   if (diffMins < 0) {
-    return 'Вже почалась';
+    return t('alreadyStarted');
   } else if (diffMins === 0) {
-    return 'Починається зараз';
+    return t('startingNow');
   } else if (diffMins < 60) {
-    return `Через ${diffMins} хв`;
+    return t('startsInMinutes', { minutes: diffMins });
   } else {
     const hours = Math.floor(diffMins / 60);
     const mins = diffMins % 60;
     if (mins === 0) {
-      return `Через ${hours} год`;
+      return t('startsInHours', { hours });
     }
-    return `Через ${hours} год ${mins} хв`;
+    return t('startsInHoursMinutes', { hours, minutes: mins });
   }
 };
 
-export const getTimeText = (walkStartTime: string | null): string => {
-  if (!walkStartTime) return 'Час не вказано';
+/**
+ * Get detailed time text for display
+ * @param walkStartTime - ISO date string
+ * @param t - Translation function from useI18n()
+ * @returns Detailed time string using i18n keys
+ */
+export const getTimeText = (
+  walkStartTime: string | null,
+  t: (key: string, params?: Record<string, any>) => string
+): string => {
+  if (!walkStartTime) return t('timeNotSpecified');
 
   const now = new Date();
   const startTime = new Date(walkStartTime);
   const diffMs = startTime.getTime() - now.getTime();
   const diffMins = Math.floor(diffMs / 60000);
 
-  if (diffMins < 0) return 'Вже почалась';
-  if (diffMins === 0) return 'Починається зараз';
-  if (diffMins < 60) return `Починається через ${diffMins} хв`;
+  if (diffMins < 0) return t('alreadyStarted');
+  if (diffMins === 0) return t('startingNow');
+  if (diffMins < 60) return t('startsInMinutes', { minutes: diffMins });
 
   const hours = Math.floor(diffMins / 60);
   const mins = diffMins % 60;
-  if (mins === 0) return `Починається через ${hours} год`;
-  return `Починається через ${hours} год ${mins} хв`;
+  if (mins === 0) return t('startsInHours', { hours });
+  return t('startsInHoursMinutes', { hours, minutes: mins });
 };

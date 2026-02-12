@@ -8,8 +8,12 @@ import {
   Modal,
 } from 'react-native';
 import { Plus, X } from 'lucide-react-native';
+
+// Contexts & Hooks
 import { useI18n } from '@shared/i18n';
-import { COLORS } from '@shared/constants';
+
+// Constants
+import { COLORS, ALL_INTERESTS, getInterestByKey } from '@shared/constants';
 
 interface InterestPickerProps {
   selectedInterests: string[];
@@ -25,42 +29,16 @@ export default function InterestPicker({
   const { t } = useI18n();
   const [showModal, setShowModal] = useState(false);
 
-  const SUGGESTED_INTERESTS = [
-    t('interestSport'),
-    t('interestMusic'),
-    t('interestMovies'),
-    t('interestTravel'),
-    t('interestFood'),
-    t('interestPhotography'),
-    t('interestArt'),
-    t('interestTech'),
-    t('interestBooks'),
-    t('interestGames'),
-    t('interestNature'),
-    t('interestDance'),
-    t('interestYoga'),
-    t('interestCooking'),
-    t('interestFashion'),
-    t('interestVolleyball'),
-    t('interestFootball'),
-    t('interestBasketball'),
-    t('interestRunning'),
-    t('interestCycling'),
-    t('interestSwimming'),
-    t('interestFitness'),
-    t('interestMeditation'),
-  ];
-
-  const toggleInterest = (interest: string) => {
-    if (selectedInterests.includes(interest)) {
-      onInterestsChange(selectedInterests.filter((i) => i !== interest));
+  const toggleInterest = (interestKey: string) => {
+    if (selectedInterests.includes(interestKey)) {
+      onInterestsChange(selectedInterests.filter((i) => i !== interestKey));
     } else {
-      onInterestsChange([...selectedInterests, interest]);
+      onInterestsChange([...selectedInterests, interestKey]);
     }
   };
 
-  const removeInterest = (interest: string) => {
-    onInterestsChange(selectedInterests.filter((i) => i !== interest));
+  const removeInterest = (interestKey: string) => {
+    onInterestsChange(selectedInterests.filter((i) => i !== interestKey));
   };
 
   return (
@@ -69,16 +47,23 @@ export default function InterestPicker({
 
       {selectedInterests.length > 0 && (
         <View style={styles.selectedContainer}>
-          {selectedInterests.map((interest) => (
-            <View key={interest} style={styles.selectedTag}>
-              <Text style={styles.selectedTagText}>{interest}</Text>
-              {isEditing && (
-                <TouchableOpacity onPress={() => removeInterest(interest)}>
-                  <X size={14} color={COLORS.WHITE} />
-                </TouchableOpacity>
-              )}
-            </View>
-          ))}
+          {selectedInterests.map((interestKey) => {
+            const interest = getInterestByKey(interestKey);
+            if (!interest) return null;
+            
+            return (
+              <View key={interestKey} style={styles.selectedTag}>
+                <Text style={styles.selectedTagText}>
+                  {interest.emoji} {t(interest.key as any)}
+                </Text>
+                {isEditing && (
+                  <TouchableOpacity onPress={() => removeInterest(interestKey)}>
+                    <X size={14} color={COLORS.WHITE} />
+                  </TouchableOpacity>
+                )}
+              </View>
+            );
+          })}
         </View>
       )}
 
@@ -101,25 +86,28 @@ export default function InterestPicker({
 
                 <ScrollView style={styles.modalScroll}>
                   <View style={styles.tagsGrid}>
-                    {SUGGESTED_INTERESTS.map((interest) => (
-                      <TouchableOpacity
-                        key={interest}
-                        style={[
-                          styles.tag,
-                          selectedInterests.includes(interest) && styles.tagSelected,
-                        ]}
-                        onPress={() => toggleInterest(interest)}
-                      >
-                        <Text
+                    {ALL_INTERESTS.map((interest) => {
+                      const isSelected = selectedInterests.includes(interest.key);
+                      return (
+                        <TouchableOpacity
+                          key={interest.key}
                           style={[
-                            styles.tagText,
-                            selectedInterests.includes(interest) && styles.tagTextSelected,
+                            styles.tag,
+                            isSelected && styles.tagSelected,
                           ]}
+                          onPress={() => toggleInterest(interest.key)}
                         >
-                          {interest}
-                        </Text>
-                      </TouchableOpacity>
-                    ))}
+                          <Text
+                            style={[
+                              styles.tagText,
+                              isSelected && styles.tagTextSelected,
+                            ]}
+                          >
+                            {interest.emoji} {t(interest.key as any)}
+                          </Text>
+                        </TouchableOpacity>
+                      );
+                    })}
                   </View>
                 </ScrollView>
 

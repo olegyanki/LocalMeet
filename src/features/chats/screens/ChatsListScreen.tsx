@@ -1,40 +1,30 @@
-import { View, Text, StyleSheet, TouchableOpacity, FlatList, ActivityIndicator, Image, RefreshControl, ScrollView } from 'react-native';
-import { useState, useEffect, useCallback } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, FlatList, ActivityIndicator, RefreshControl, ScrollView } from 'react-native';
+import { useState, useEffect } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useRouter, useFocusEffect } from 'expo-router';
+import { useRouter } from 'expo-router';
+
+// Contexts & Hooks
 import { useAuth } from '@shared/contexts/AuthContext';
-import { getMyWalkRequests, updateWalkRequestStatus, WalkRequestWithProfile } from '@shared/lib/api';
-import { supabase } from '@shared/lib/supabase';
-import { COLORS } from '@shared/constants';
+
+// API & Utils
+import { 
+  getMyWalkRequests, 
+  updateWalkRequestStatus, 
+  getMyChats,
+  createChatFromRequest,
+  WalkRequestWithProfile,
+  ChatWithLastMessage 
+} from '@shared/lib/api';
+import { getEventImage } from '@shared/utils/eventImage';
+
+// Components
 import RequestCard from '@features/chats/components/RequestCard';
 import Avatar from '@shared/components/Avatar';
 
-type TabType = 'requests' | 'chats';
+// Constants
+import { COLORS } from '@shared/constants';
 
-interface ChatWithLastMessage {
-  id: string;
-  requester_id: string;
-  walker_id: string;
-  updated_at: string;
-  walk_title?: string;
-  walk_image_url?: string | null;
-  requester: {
-    id: string;
-    display_name: string;
-    avatar_url: string | null;
-  };
-  walker: {
-    id: string;
-    display_name: string;
-    avatar_url: string | null;
-  };
-  lastMessage?: {
-    content: string;
-    created_at: string;
-    sender_id: string;
-    read: boolean;
-  };
-}
+type TabType = 'requests' | 'chats';
 
 export default function ChatsScreen() {
   const [activeTab, setActiveTab] = useState<TabType>('chats');
@@ -43,179 +33,47 @@ export default function ChatsScreen() {
   const [loading, setLoading] = useState(true);
   const [scrollEnabled, setScrollEnabled] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { user } = useAuth();
 
+  const loadRequests = async (showLoader = true) => {
+    if (!user) return;
+
+    try {
+      if (showLoader) setLoading(true);
+      const data = await getMyWalkRequests(user.id);
+      setRequests(data);
+    } catch (error) {
+      console.error('Error loading requests:', error);
+    } finally {
+      if (showLoader) setLoading(false);
+    }
+  };
+
+  const loadChats = async (showLoader = true) => {
+    if (!user) return;
+
+    try {
+      if (showLoader) setLoading(true);
+      const data = await getMyChats(user.id);
+      setChats(data);
+    } catch (error) {
+      console.error('Error loading chats:', error);
+    } finally {
+      if (showLoader) setLoading(false);
+    }
+  };
+
   const onRefresh = async () => {
     setRefreshing(true);
     if (activeTab === 'requests') {
-      await loadRequestsWithoutLoader();
+      await loadRequests(false);
     } else {
-      await loadChatsWithoutLoader();
+      await loadChats(false);
     }
     setRefreshing(false);
-  };
-
-  const loadRequestsWithoutLoader = async () => {
-    if (!user) return;
-
-    try {
-      const data = await getMyWalkRequests(user.id);
-      setRequests(data);
-    } catch (error) {
-      console.error('Error loading requests:', error);
-    }
-  };
-
-  const loadChatsWithoutLoader = async () => {
-    if (!user) return;
-
-    try {
-      const { data: chatsData, error } = await supabase
-        .from('chats')
-        .select(
-          `
-          id,
-          requester_id,
-          walker_id,
-          walk_request_id,
-          updated_at,
-          requester:profiles!chats_requester_id_fkey(id, display_name, avatar_url),
-          walker:profiles!chats_walker_id_fkey(id, display_name, avatar_url)
-        `
-        )
-        .or(`requester_id.eq.${user.id},walker_id.eq.${user.id}`)
-        .order('updated_at', { ascending: false });
-
-      if (error) throw error;
-
-      const chatsWithMessages = await Promise.all(
-        (chatsData || []).map(async (chat) => {
-          const { data: lastMessage } = await supabase
-            .from('messages')
-            .select('content, created_at, sender_id, read')
-            .eq('chat_id', chat.id)
-            .order('created_at', { ascending: false })
-            .limit(1)
-            .maybeSingle();
-
-          let walkTitle: string | undefined;
-          let walkImageUrl: string | null = null;
-          if (chat.walk_request_id) {
-            const { data: walkRequest } = await supabase
-              .from('walk_requests')
-              .select('walk_id')
-              .eq('id', chat.walk_request_id)
-              .maybeSingle();
-
-            if (walkRequest?.walk_id) {
-              const { data: walk } = await supabase
-                .from('walks')
-                .select('title, image_url')
-                .eq('id', walkRequest.walk_id)
-                .maybeSingle();
-
-              walkTitle = walk?.title;
-              walkImageUrl = walk?.image_url;
-            }
-          }
-
-          return {
-            ...chat,
-            walk_title: walkTitle,
-            walk_image_url: walkImageUrl,
-            lastMessage: lastMessage || undefined,
-          } as ChatWithLastMessage;
-        })
-      );
-
-      setChats(chatsWithMessages);
-    } catch (error) {
-      console.error('Error loading chats:', error);
-    }
-  };
-
-  const loadRequests = async () => {
-    if (!user) return;
-
-    try {
-      setLoading(true);
-      const data = await getMyWalkRequests(user.id);
-      setRequests(data);
-    } catch (error) {
-      console.error('Error loading requests:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const loadChats = async () => {
-    if (!user) return;
-
-    try {
-      setLoading(true);
-      const { data: chatsData, error } = await supabase
-        .from('chats')
-        .select(
-          `
-          id,
-          requester_id,
-          walker_id,
-          walk_request_id,
-          updated_at,
-          requester:profiles!chats_requester_id_fkey(id, display_name, avatar_url),
-          walker:profiles!chats_walker_id_fkey(id, display_name, avatar_url)
-        `
-        )
-        .or(`requester_id.eq.${user.id},walker_id.eq.${user.id}`)
-        .order('updated_at', { ascending: false });
-
-      if (error) throw error;
-
-      const chatsWithMessages = await Promise.all(
-        (chatsData || []).map(async (chat) => {
-          const { data: lastMessage } = await supabase
-            .from('messages')
-            .select('content, created_at, sender_id, read')
-            .eq('chat_id', chat.id)
-            .order('created_at', { ascending: false })
-            .limit(1)
-            .maybeSingle();
-
-          let walkTitle: string | undefined;
-          if (chat.walk_request_id) {
-            const { data: walkRequest } = await supabase
-              .from('walk_requests')
-              .select('walk_id')
-              .eq('id', chat.walk_request_id)
-              .maybeSingle();
-
-            if (walkRequest?.walk_id) {
-              const { data: walk } = await supabase
-                .from('walks')
-                .select('title')
-                .eq('id', walkRequest.walk_id)
-                .maybeSingle();
-
-              walkTitle = walk?.title;
-            }
-          }
-
-          return {
-            ...chat,
-            walk_title: walkTitle,
-            lastMessage: lastMessage || undefined,
-          } as ChatWithLastMessage;
-        })
-      );
-
-      setChats(chatsWithMessages);
-    } catch (error) {
-      console.error('Error loading chats:', error);
-    } finally {
-      setLoading(false);
-    }
   };
 
   useEffect(() => {
@@ -230,7 +88,7 @@ export default function ChatsScreen() {
         if (data.length > 0) {
           setActiveTab('requests');
         } else {
-          await loadChats();
+          await loadChats(false);
         }
       } catch (error) {
         console.error('Error loading requests:', error);
@@ -249,30 +107,14 @@ export default function ChatsScreen() {
       const request = requests.find(r => r.id === requestId);
       if (!request) return;
 
-      const { data: existingChat } = await supabase
-        .from('chats')
-        .select('id')
-        .eq('walk_request_id', requestId)
-        .maybeSingle();
-
-      let chatId = existingChat?.id;
-
-      if (!chatId) {
-        const { data: newChat, error: chatError } = await supabase
-          .from('chats')
-          .insert({
-            walk_request_id: requestId,
-            requester_id: request.requester_id,
-            walker_id: user.id,
-          })
-          .select('id')
-          .single();
-
-        if (chatError) throw chatError;
-        chatId = newChat.id;
-      }
+      const chatId = await createChatFromRequest(
+        requestId,
+        request.requester_id,
+        user.id
+      );
 
       await updateWalkRequestStatus(requestId, 'accepted');
+      
       setRequests(prev => {
         const updated = prev.filter(r => r.id !== requestId);
         if (updated.length === 0) {
