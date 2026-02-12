@@ -10,7 +10,6 @@ import {
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useAuth } from '@shared/contexts/AuthContext';
-import { COLORS } from '@shared/constants';
 import { useI18n } from '@shared/i18n';
 import { updateProfile } from '@shared/lib/api';
 import { COLORS, SIZES, SHADOW } from '@shared/constants';

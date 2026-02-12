@@ -5,7 +5,7 @@ import { translations, Language, TranslationKey } from './translations';
 interface I18nContextType {
   language: Language;
   setLanguage: (lang: Language) => void;
-  t: (key: TranslationKey) => string;
+  t: (key: TranslationKey, params?: Record<string, any>) => string;
 }
 
 const I18nContext = createContext<I18nContextType | undefined>(undefined);
@@ -37,8 +37,20 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const t = (key: TranslationKey): string => {
-    return translations[language][key] || key;
+  const t = (key: TranslationKey, params?: Record<string, any>): string => {
+    let translation = translations[language][key] || key;
+    
+    // Replace {{param}} with actual values
+    if (params) {
+      Object.keys(params).forEach((param) => {
+        translation = translation.replace(
+          new RegExp(`{{${param}}}`, 'g'),
+          String(params[param])
+        );
+      });
+    }
+    
+    return translation;
   };
 
   return (
