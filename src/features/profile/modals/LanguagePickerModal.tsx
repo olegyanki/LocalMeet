@@ -16,7 +16,7 @@ import {
 import { BlurView } from 'expo-blur';
 import { Search } from 'lucide-react-native';
 import { useI18n } from '@shared/i18n';
-import { COLORS, LANGUAGES, type Language } from '@shared/constants';
+import { COLORS, LANGUAGES, SIZES, SHADOW, type Language } from '@shared/constants';
 
 interface LanguagePickerModalProps {
   visible: boolean;

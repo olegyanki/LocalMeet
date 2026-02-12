@@ -31,7 +31,7 @@ import LanguagePickerModal from '@features/profile/modals/LanguagePickerModal';
 import InterestPickerModal from '@features/profile/modals/InterestPickerModal';
 
 // Constants
-import { COLORS, getLanguageByCode, getInterestByKey, SIZES, HEADER_STYLES } from '@shared/constants';
+import { COLORS, getLanguageByCode, getInterestByKey, SIZES, HEADER_STYLES, SHADOW } from '@shared/constants';
 
 // UI Constants
 const INPUT_MIN_HEIGHT = 56;
@@ -372,11 +372,11 @@ const styles = StyleSheet.create({
     zIndex: 1,
   },
   errorText: {
-    color: '#FF3B30',
+    color: COLORS.ERROR_RED,
     fontSize: 14,
     marginBottom: 16,
     textAlign: 'center',
-    backgroundColor: '#FFE5E5',
+    backgroundColor: COLORS.ERROR_BG,
     padding: 12,
     borderRadius: 16,
     fontWeight: '500',
@@ -399,9 +399,7 @@ const styles = StyleSheet.create({
   inputWrapper: {
     backgroundColor: COLORS.CARD_BG,
     borderRadius: 24,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
+    ...SHADOW.standard,
     shadowRadius: 8,
     elevation: 2,
     padding: 4,
@@ -427,6 +425,9 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   chipWrapper: {
+    borderRadius: 16,
+    overflow: 'hidden',
+  },
   addChip: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -449,9 +450,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: COLORS.CARD_BG,
     borderRadius: 24,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
+    ...SHADOW.standard,
     shadowRadius: 8,
     elevation: 2,
     padding: 4,

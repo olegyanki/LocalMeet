@@ -26,7 +26,7 @@ import TimePickerModal from '@features/events/modals/TimePickerModal';
 import DatePickerModal from '@features/events/modals/DatePickerModal';
 import LocationPickerModal from '@features/events/modals/LocationPickerModal';
 import SuccessModal from '@features/events/modals/SuccessModal';
-import { COLORS, HEADER_STYLES, SIZES } from '@shared/constants';
+import { COLORS, HEADER_STYLES, SIZES, SHADOW } from '@shared/constants';
 import PrimaryButton from '@shared/components/PrimaryButton';
 
 export default function CreateEventScreen() {
@@ -529,10 +529,10 @@ const styles = StyleSheet.create({
   },
   // Cover Photo
   coverPhotoContainer: {
-    height: 192,
+    height: SIZES.COVER_IMAGE_HEIGHT,
     borderRadius: 16,
-    backgroundColor: '#F3F4F6',
-    borderWidth: 2,
+    backgroundColor: COLORS.IMAGE_PLACEHOLDER_BG,
+    borderWidth: SIZES.BORDER_WIDTH_THICK,
     borderColor: COLORS.BORDER_COLOR,
     borderStyle: 'dashed',
     overflow: 'hidden',
@@ -580,8 +580,8 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 12,
     right: 12,
-    width: 28,
-    height: 28,
+    width: SIZES.ICON_BUTTON_SIZE,
+    height: SIZES.ICON_BUTTON_SIZE,
     borderRadius: 14,
     backgroundColor: 'rgba(0,0,0,0.6)',
     justifyContent: 'center',
@@ -609,21 +609,18 @@ const styles = StyleSheet.create({
   },
   input: {
     backgroundColor: COLORS.CARD_BG,
-    borderWidth: 1,
+    borderWidth: SIZES.BORDER_WIDTH,
     borderColor: COLORS.BORDER_COLOR,
     borderRadius: 12,
     paddingHorizontal: 16,
     paddingVertical: 12,
     fontSize: 16,
     color: COLORS.TEXT_DARK,
-    shadowColor: COLORS.SHADOW_BLACK,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 8,
+    ...SHADOW.standard,
     elevation: 2,
   },
   textArea: {
-    minHeight: 96,
+    minHeight: SIZES.TEXTAREA_MIN_HEIGHT,
     textAlignVertical: 'top',
     paddingTop: 12,
   },
@@ -666,14 +663,11 @@ const styles = StyleSheet.create({
   // Location
   locationContainer: {
     backgroundColor: COLORS.CARD_BG,
-    borderWidth: 1,
+    borderWidth: SIZES.BORDER_WIDTH,
     borderColor: COLORS.BORDER_COLOR,
     borderRadius: 12,
     overflow: 'hidden',
-    shadowColor: COLORS.SHADOW_BLACK,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 8,
+    ...SHADOW.standard,
     elevation: 2,
   },
   locationHeader: {
@@ -681,9 +675,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 12,
     paddingVertical: 12,
-    borderBottomWidth: 1,
+    borderBottomWidth: SIZES.BORDER_WIDTH,
     borderBottomColor: COLORS.BORDER_COLOR,
-    backgroundColor: '#F9FAFB',
+    backgroundColor: COLORS.LOCATION_HEADER_BG,
   },
   locationPlaceholder: {
     fontSize: 14,
@@ -693,7 +687,7 @@ const styles = StyleSheet.create({
     marginLeft: 12,
   },
   mapPreview: {
-    height: 160,
+    height: SIZES.MAP_PREVIEW_HEIGHT,
     position: 'relative',
   },
   mapWebView: {
@@ -736,7 +730,7 @@ const styles = StyleSheet.create({
   // Error Banner
   errorBanner: {
     backgroundColor: COLORS.ERROR_BG,
-    borderWidth: 1,
+    borderWidth: SIZES.BORDER_WIDTH,
     borderColor: COLORS.ERROR_RED,
     borderRadius: 16,
     padding: 16,
@@ -745,8 +739,8 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   errorIconContainer: {
-    width: 32,
-    height: 32,
+    width: SIZES.ICON_BUTTON_MEDIUM,
+    height: SIZES.ICON_BUTTON_MEDIUM,
     borderRadius: 16,
     backgroundColor: COLORS.ERROR_BG_LIGHT,
     justifyContent: 'center',

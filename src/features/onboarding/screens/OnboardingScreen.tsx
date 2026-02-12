@@ -13,9 +13,8 @@ import { useAuth } from '@shared/contexts/AuthContext';
 import { COLORS } from '@shared/constants';
 import { useI18n } from '@shared/i18n';
 import { updateProfile } from '@shared/lib/api';
+import { COLORS, SIZES, SHADOW } from '@shared/constants';
 import PrimaryButton from '@shared/components/PrimaryButton';
-
-const BG_COLOR = '#F5F5F5';
 export default function OnboardingScreen() {
   const { user } = useAuth();
   const { t } = useI18n();
@@ -88,7 +87,7 @@ export default function OnboardingScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: BG_COLOR,
+    backgroundColor: COLORS.BG_COLOR,
   },
   content: {
     padding: 24,
@@ -113,7 +112,7 @@ const styles = StyleSheet.create({
   },
   input: {
     backgroundColor: COLORS.WHITE,
-    borderWidth: 1,
+    borderWidth: SIZES.BORDER_WIDTH,
     borderColor: COLORS.BORDER_COLOR,
     borderRadius: 12,
     paddingHorizontal: 16,

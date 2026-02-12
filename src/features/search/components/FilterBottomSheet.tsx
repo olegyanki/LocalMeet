@@ -16,7 +16,7 @@ import { useI18n } from '@shared/i18n';
 import Chip from '@shared/components/Chip';
 
 // Constants
-import { COLORS } from '@shared/constants';
+import { COLORS, SIZES, SHADOW } from '@shared/constants';
 
 export type TimeFilter = 'all' | 'started' | 'today' | 'tomorrow';
 export type SortBy = 'distance' | 'date';
@@ -164,8 +164,8 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
   },
   handle: {
-    width: 40,
-    height: 4,
+    width: SIZES.HANDLE_WIDTH,
+    height: SIZES.HANDLE_HEIGHT,
     backgroundColor: COLORS.BORDER_COLOR,
     borderRadius: 2,
   },

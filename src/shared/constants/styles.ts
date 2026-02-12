@@ -112,6 +112,20 @@ export const SHADOW = {
     shadowRadius: 12,
     elevation: 4,
   },
+  modal: {
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: -10 },
+    shadowOpacity: 0.2,
+    shadowRadius: 20,
+    elevation: 10,
+  },
+  button: {
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.15,
+    shadowRadius: 16,
+    elevation: 6,
+  },
 };
 
 // Common sizes
@@ -119,10 +133,23 @@ export const SIZES = {
   AVATAR_SMALL: 32,
   AVATAR_MEDIUM: 48,
   AVATAR_LARGE: 80,
+  AVATAR_XLARGE: 100,
   TAB_BAR_HEIGHT: 78,
   CARDS_COLLAPSE_DISTANCE: 250,
   HEADER_SPACER_WIDTH: 60,
   SCREEN_TOP_PADDING: 16,
+  INPUT_MIN_HEIGHT: 56,
+  TEXTAREA_MIN_HEIGHT: 96,
+  BIO_INPUT_MIN_HEIGHT: 100,
+  COVER_IMAGE_HEIGHT: 192,
+  MAP_PREVIEW_HEIGHT: 160,
+  ICON_BUTTON_SIZE: 28,
+  ICON_BUTTON_MEDIUM: 32,
+  ICON_BUTTON_LARGE: 48,
+  HANDLE_WIDTH: 40,
+  HANDLE_HEIGHT: 4,
+  BORDER_WIDTH: 1,
+  BORDER_WIDTH_THICK: 2,
 };
 
 // Common header styles
