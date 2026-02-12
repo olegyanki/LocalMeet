@@ -71,11 +71,16 @@ export default function SearchScreen() {
   const [timeFilter, setTimeFilter] = useState<TimeFilter>('all');
   const [sortBy, setSortBy] = useState<SortBy>('distance');
   const cardsTranslateY = useRef(new Animated.Value(0)).current;
+  const [cardsContainerHeight, setCardsContainerHeight] = useState(0);
 
   const screenWidth = Dimensions.get('window').width;
   const cardWidth = screenWidth - 48;
   const cardGap = 16;
   const containerTranslateY = useRef(new Animated.Value(0)).current;
+
+  const HANDLE_VISIBLE_HEIGHT = 40;
+  const DEFAULT_COLLAPSED_OFFSET = 240;
+  const collapsedOffset = cardsContainerHeight > 0 ? cardsContainerHeight - HANDLE_VISIBLE_HEIGHT : DEFAULT_COLLAPSED_OFFSET;
 
   const panResponder = useRef(
     PanResponder.create({
@@ -86,19 +91,20 @@ export default function SearchScreen() {
       onPanResponderMove: (_, gestureState) => {
         if (isCardsCollapsed) {
           if (gestureState.dy < 0) {
-            containerTranslateY.setValue(gestureState.dy);
+            const newValue = collapsedOffset + gestureState.dy;
+            containerTranslateY.setValue(Math.max(0, newValue));
           }
         } else {
           if (gestureState.dy > 0) {
-            containerTranslateY.setValue(gestureState.dy);
+            containerTranslateY.setValue(Math.min(collapsedOffset, gestureState.dy));
           }
         }
       },
       onPanResponderRelease: (_, gestureState) => {
         if (isCardsCollapsed) {
-          if (gestureState.dy < -50) {
+          if (gestureState.dy < -50 || gestureState.vy < -0.5) {
             Animated.spring(containerTranslateY, {
-              toValue: 100,
+              toValue: 0,
               useNativeDriver: true,
               tension: 50,
               friction: 8,
@@ -106,14 +112,16 @@ export default function SearchScreen() {
             setIsCardsCollapsed(false);
           } else {
             Animated.spring(containerTranslateY, {
-              toValue: 250,
+              toValue: collapsedOffset,
               useNativeDriver: true,
+              tension: 50,
+              friction: 8,
             }).start();
           }
         } else {
-          if (gestureState.dy > 50) {
+          if (gestureState.dy > 50 || gestureState.vy > 0.5) {
             Animated.spring(containerTranslateY, {
-              toValue: 250,
+              toValue: collapsedOffset,
               useNativeDriver: true,
               tension: 50,
               friction: 8,
@@ -123,6 +131,8 @@ export default function SearchScreen() {
             Animated.spring(containerTranslateY, {
               toValue: 0,
               useNativeDriver: true,
+              tension: 50,
+              friction: 8,
             }).start();
           }
         }
@@ -399,6 +409,10 @@ export default function SearchScreen() {
             transform: [{ translateY: containerTranslateY }]
           }
         ]}
+        onLayout={(event) => {
+          const { height } = event.nativeEvent.layout;
+          setCardsContainerHeight(height);
+        }}
       >
         <View style={styles.cardsBackdrop} />
         <LinearGradient
@@ -630,7 +644,7 @@ const styles = StyleSheet.create({
     gap: 16,
   },
   loadingCard: {
-    height: 180,
+    height: 220,
     backgroundColor: COLORS.CARD_BG,
     borderRadius: 20,
     justifyContent: 'center',
@@ -642,7 +656,7 @@ const styles = StyleSheet.create({
     elevation: 4,
   },
   emptyCard: {
-    height: 180,
+    height: 220,
     backgroundColor: COLORS.CARD_BG,
     borderRadius: 20,
     justifyContent: 'center',
