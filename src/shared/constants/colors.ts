@@ -34,6 +34,8 @@ export const COLORS = {
   GRAY_DARK: '#6B7280',
   GRAY_PLACEHOLDER: '#9CA3AF',
   GRAY_DISABLED: '#AAAAAA',
+  GRAY_DIVIDER: '#E5E5EA',
+  GRAY_HANDLE: '#D1D1D1',
   TEXT_SECONDARY: '#4F4F4F',
   
   // Social colors
@@ -41,12 +43,17 @@ export const COLORS = {
   TELEGRAM: '#0088cc',
   TELEGRAM_BLUE: '#229ED9',
   INSTAGRAM_PINK: '#E1306C',
+  INSTAGRAM_BG: '#FFE7F3',
+  TELEGRAM_BG: '#E0F2FE',
   
   // Special backgrounds
   ERROR_BG: '#FFE5E5',
   ERROR_BG_LIGHT: '#FFEBEE',
+  ERROR_BG_ONBOARDING: '#FADBD8',
   WARNING_BG: '#FFF3E0',
   OVERLAY: 'rgba(0, 0, 0, 0.5)',
+  IMAGE_PLACEHOLDER_BG: '#F3F4F6',
+  LOCATION_HEADER_BG: '#F9FAFB',
   
   // Additional colors
   SUCCESS_LIGHT: '#8FD89C',

@@ -177,6 +177,115 @@ ALL_INTERESTS.map((interest) => (
 
 ---
 
+### Phase 3: API Centralization & Code Quality
+
+#### 3.1. Extracted Message API Functions ✅
+**File:** `src/shared/lib/api.ts`
+
+**Problem:** ChatScreen had direct Supabase calls for sending messages
+```typescript
+// Before - in ChatScreen.tsx
+const { error } = await supabase.from('messages').insert({
+  chat_id: chatId,
+  sender_id: user.id,
+  content: messageContent,
+});
+```
+
+**Solution:** Created centralized API functions
+```typescript
+// After - in api.ts
+export async function sendTextMessage(
+  chatId: string,
+  senderId: string,
+  content: string
+): Promise<void>
+
+export async function sendImageMessage(
+  chatId: string,
+  senderId: string,
+  imageUrl: string
+): Promise<void>
+
+export async function sendAudioMessage(
+  chatId: string,
+  senderId: string,
+  audioUrl: string,
+  duration: number
+): Promise<void>
+```
+
+**Impact:**
+- Removed all direct Supabase calls from ChatScreen
+- Better separation of concerns
+- Reusable message sending logic
+- Consistent error handling
+
+---
+
+#### 3.2. Refactored ChatScreen to Use API Functions ✅
+**File:** `src/features/chats/screens/ChatScreen.tsx`
+
+**Changes:**
+- Renamed local functions to avoid conflicts: `handleSendImageMessage`, `handleSendAudioMessage`
+- Replaced direct Supabase inserts with API function calls
+- Cleaner, more maintainable code
+
+**Before:**
+```typescript
+const { error } = await supabase.from('messages').insert({...});
+if (error) throw error;
+```
+
+**After:**
+```typescript
+await sendTextMessage(chatId, user.id, messageContent);
+```
+
+---
+
+#### 3.3. Added Missing Color Constants ✅
+**File:** `src/shared/constants/colors.ts`
+
+**Problem:** Many files used hardcoded colors like `#F3F4F6`, `#9CA3AF`, `#FFE7F3`
+
+**Solution:** Added 7 new color constants:
+- `ERROR_BG_ONBOARDING: '#FADBD8'`
+- `IMAGE_PLACEHOLDER_BG: '#F3F4F6'`
+- `LOCATION_HEADER_BG: '#F9FAFB'`
+- `GRAY_DIVIDER: '#E5E5EA'`
+- `GRAY_HANDLE: '#D1D1D1'`
+- `INSTAGRAM_BG: '#FFE7F3'`
+- `TELEGRAM_BG: '#E0F2FE'`
+
+**Impact:**
+- Single source of truth for colors
+- Easier to maintain consistent design
+- Better theme support in future
+
+---
+
+#### 3.4. Replaced Hardcoded Colors with Constants ✅
+**Files:**
+- `src/features/profile/screens/ProfileScreen.tsx` - 6 replacements
+- `src/features/chats/screens/ChatScreen.tsx` - 3 replacements
+- `src/features/onboarding/screens/OnboardingScreen.tsx` - 2 replacements
+- `src/features/events/modals/LocationPickerModal.tsx` - 1 replacement
+
+**Changes:**
+- Replaced `placeholderTextColor="#9CA3AF"` with `COLORS.GRAY_PLACEHOLDER`
+- Replaced `backgroundColor: '#FFE7F3'` with `COLORS.INSTAGRAM_BG`
+- Replaced `backgroundColor: '#E0F2FE'` with `COLORS.TELEGRAM_BG`
+- Replaced `color: '#D32F2F'` with `COLORS.ERROR_RED`
+- And more...
+
+**Impact:**
+- 10+ hardcoded colors replaced
+- Consistent color usage across app
+- Follows design system guidelines
+
+---
+
 ## 📝 Documentation Updates
 
 ### Updated Files:
@@ -342,15 +451,20 @@ All phases completed successfully. The codebase is now:
 - ✅ Fully i18n compatible (all time formatting supports translations)
 - ✅ Using reusable components
 - ✅ Following consistent patterns
+- ✅ No direct Supabase calls in components (all through API)
+- ✅ Using color constants instead of hardcoded values
 - ✅ TypeScript error-free (except pre-existing SVG Filter issue)
 
 ### Quick Summary:
 - **3 critical fixes** (hardcoded text, API duplication, constants)
 - **1 new reusable component** (Chip)
 - **3 files refactored** to use Chip component
-- **2 new API functions** for better code organization
+- **5 new API functions** (getMyChats, createChatFromRequest, sendTextMessage, sendImageMessage, sendAudioMessage)
 - **5 files fixed** for proper i18n support
 - **All missing imports added** (getTimeText, getTimeColor)
+- **ChatScreen refactored** - removed direct Supabase calls
+- **10+ hardcoded colors replaced** with constants
+- **7 new color constants added** (INSTAGRAM_BG, TELEGRAM_BG, GRAY_DIVIDER, etc.)
 - **All TypeScript errors fixed** (related to refactoring)
 - **Documentation updated** (3 steering files + summary)
 

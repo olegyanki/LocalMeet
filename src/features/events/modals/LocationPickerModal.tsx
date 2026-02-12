@@ -196,7 +196,7 @@ const styles = StyleSheet.create({
   handle: {
     width: 48,
     height: 5,
-    backgroundColor: '#D1D1D1',
+    backgroundColor: COLORS.GRAY_HANDLE,
     borderRadius: 3,
   },
   locationPickerHeader: {

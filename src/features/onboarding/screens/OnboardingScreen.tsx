@@ -137,12 +137,12 @@ const styles = StyleSheet.create({
     elevation: 4,
   },
   errorText: {
-    color: '#E74C3C',
+    color: COLORS.ERROR_LIGHT,
     fontSize: 14,
     marginBottom: 16,
     paddingHorizontal: 12,
     paddingVertical: 8,
-    backgroundColor: '#FADBD8',
+    backgroundColor: COLORS.ERROR_BG_ONBOARDING,
     borderRadius: 8,
   },
 });

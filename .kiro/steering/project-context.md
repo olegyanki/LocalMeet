@@ -112,6 +112,11 @@ const chats = await getMyChats(userId);
 
 // Create chat from accepted request
 const chatId = await createChatFromRequest(requestId, requesterId, walkerId);
+
+// Send messages
+await sendTextMessage(chatId, userId, 'Hello!');
+await sendImageMessage(chatId, userId, imageUrl);
+await sendAudioMessage(chatId, userId, audioUrl, duration);
 ```
 
 ### Authentication

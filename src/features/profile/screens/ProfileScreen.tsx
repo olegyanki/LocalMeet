@@ -206,7 +206,7 @@ export default function ProfileScreen() {
             <TextInput
               style={styles.input}
               placeholder={t('namePlaceholder')}
-              placeholderTextColor="#9CA3AF"
+              placeholderTextColor={COLORS.GRAY_PLACEHOLDER}
               value={displayName}
               onChangeText={setDisplayName}
             />
@@ -219,7 +219,7 @@ export default function ProfileScreen() {
             <TextInput
               style={[styles.input, styles.textArea]}
               placeholder={t('bioPlaceholder')}
-              placeholderTextColor="#9CA3AF"
+              placeholderTextColor={COLORS.GRAY_PLACEHOLDER}
               value={bio}
               onChangeText={setBio}
               multiline
@@ -285,14 +285,14 @@ export default function ProfileScreen() {
           <View style={styles.socialInputsContainer}>
             <View style={styles.socialInputWrapper}>
               <View style={styles.socialIconContainer}>
-                <View style={[styles.socialIcon, { backgroundColor: '#FFE7F3' }]}>
+                <View style={[styles.socialIcon, { backgroundColor: COLORS.INSTAGRAM_BG }]}>
                   <Text style={{ fontSize: 18 }}>📷</Text>
                 </View>
               </View>
               <TextInput
                 style={styles.socialInput}
                 placeholder={t('instagramUsername')}
-                placeholderTextColor="#9CA3AF"
+                placeholderTextColor={COLORS.GRAY_PLACEHOLDER}
                 value={instagram}
                 onChangeText={setInstagram}
                 autoCapitalize="none"
@@ -301,14 +301,14 @@ export default function ProfileScreen() {
 
             <View style={styles.socialInputWrapper}>
               <View style={styles.socialIconContainer}>
-                <View style={[styles.socialIcon, { backgroundColor: '#E0F2FE' }]}>
+                <View style={[styles.socialIcon, { backgroundColor: COLORS.TELEGRAM_BG }]}>
                   <Text style={{ fontSize: 18 }}>✈️</Text>
                 </View>
               </View>
               <TextInput
                 style={styles.socialInput}
                 placeholder={t('telegramUsername')}
-                placeholderTextColor="#9CA3AF"
+                placeholderTextColor={COLORS.GRAY_PLACEHOLDER}
                 value={telegram}
                 onChangeText={setTelegram}
                 autoCapitalize="none"

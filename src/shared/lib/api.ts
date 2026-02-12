@@ -503,3 +503,83 @@ export async function createChatFromRequest(
 
   return newChat.id;
 }
+
+
+// ============================================
+// Message Functions
+// ============================================
+
+export interface Message {
+  id: string;
+  chat_id: string;
+  sender_id: string;
+  content: string;
+  image_url: string | null;
+  audio_url: string | null;
+  audio_duration: number | null;
+  created_at: string;
+}
+
+/**
+ * Send a text message
+ */
+export async function sendTextMessage(
+  chatId: string,
+  senderId: string,
+  content: string
+): Promise<void> {
+  const { error } = await supabase.from('messages').insert({
+    chat_id: chatId,
+    sender_id: senderId,
+    content,
+  });
+
+  if (error) {
+    console.error('Error sending text message:', error);
+    throw error;
+  }
+}
+
+/**
+ * Send an image message
+ */
+export async function sendImageMessage(
+  chatId: string,
+  senderId: string,
+  imageUrl: string
+): Promise<void> {
+  const { error } = await supabase.from('messages').insert({
+    chat_id: chatId,
+    sender_id: senderId,
+    content: '',
+    image_url: imageUrl,
+  });
+
+  if (error) {
+    console.error('Error sending image message:', error);
+    throw error;
+  }
+}
+
+/**
+ * Send an audio message
+ */
+export async function sendAudioMessage(
+  chatId: string,
+  senderId: string,
+  audioUrl: string,
+  duration: number
+): Promise<void> {
+  const { error } = await supabase.from('messages').insert({
+    chat_id: chatId,
+    sender_id: senderId,
+    content: '',
+    audio_url: audioUrl,
+    audio_duration: duration,
+  });
+
+  if (error) {
+    console.error('Error sending audio message:', error);
+    throw error;
+  }
+}

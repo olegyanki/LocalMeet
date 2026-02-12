@@ -20,6 +20,7 @@ import { supabase } from '@shared/lib/supabase';
 import { useAuth } from '@shared/contexts/AuthContext';
 import { useI18n } from '@shared/i18n';
 import { COLORS } from '@shared/constants';
+import { sendTextMessage, sendImageMessage, sendAudioMessage } from '@shared/lib/api';
 import AudioRecorder from '@shared/components/AudioRecorder';
 import AudioPlayer from '@shared/components/AudioPlayer';
 import Avatar from '@shared/components/Avatar';
@@ -243,7 +244,7 @@ export default function ChatScreen() {
 
     if (!result.canceled && result.assets[0]) {
       setSelectedImage(result.assets[0].uri);
-      await sendImageMessage(result.assets[0]);
+      await handleSendImageMessage(result.assets[0]);
     }
   };
 
@@ -317,7 +318,7 @@ export default function ChatScreen() {
     }
   };
 
-  const sendImageMessage = async (asset: ImagePicker.ImagePickerAsset) => {
+  const handleSendImageMessage = async (asset: ImagePicker.ImagePickerAsset) => {
     if (!user) return;
 
     setError(null);
@@ -329,17 +330,7 @@ export default function ChatScreen() {
         throw new Error('Failed to upload image');
       }
 
-      const { error } = await supabase.from('messages').insert({
-        chat_id: chatId,
-        sender_id: user.id,
-        content: '',
-        image_url: imageUrl,
-      });
-
-      if (error) {
-        console.error('Error sending image message:', error);
-        throw error;
-      }
+      await sendImageMessage(chatId, user.id, imageUrl);
 
       setSelectedImage(null);
     } catch (error: any) {
@@ -357,16 +348,7 @@ export default function ChatScreen() {
     setError(null);
 
     try {
-      const { error } = await supabase.from('messages').insert({
-        chat_id: chatId,
-        sender_id: user.id,
-        content: messageContent,
-      });
-
-      if (error) {
-        console.error('Error sending message:', error);
-        throw error;
-      }
+      await sendTextMessage(chatId, user.id, messageContent);
     } catch (error: any) {
       console.error('Error sending message:', error);
       setError(error?.message || 'Failed to send message');
@@ -408,7 +390,7 @@ export default function ChatScreen() {
     }
   };
 
-  const sendAudioMessage = async (audioUri: string, duration: number) => {
+  const handleSendAudioMessage = async (audioUri: string, duration: number) => {
     if (!user) return;
 
     setError(null);
@@ -422,22 +404,14 @@ export default function ChatScreen() {
         throw new Error('Failed to upload audio');
       }
 
-      const { error } = await supabase.from('messages').insert({
-        chat_id: chatId,
-        sender_id: user.id,
-        content: '',
-        audio_url: audioUrl,
-        audio_duration: duration,
-      });
-
-      if (error) {
-        console.error('Error sending audio message:', error);
-        throw error;
-      }
+      await sendAudioMessage(chatId, user.id, audioUrl, duration);
     } catch (error: any) {
       console.error('Error sending audio:', error);
       setError(error?.message || 'Failed to send audio');
     } finally {
+      setUploading(false);
+    }
+  };
       setUploading(false);
     }
   };
@@ -665,7 +639,7 @@ export default function ChatScreen() {
       <View style={[styles.inputContainer, { paddingBottom: insets.bottom }]}>
         {isRecording ? (
           <AudioRecorder
-            onSend={sendAudioMessage}
+            onSend={handleSendAudioMessage}
             onCancel={() => setIsRecording(false)}
           />
         ) : (
@@ -892,12 +866,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   errorText: {
-    color: '#D32F2F',
+    color: COLORS.ERROR_RED,
     fontSize: 14,
     flex: 1,
   },
   errorDismiss: {
-    color: '#D32F2F',
+    color: COLORS.ERROR_RED,
     fontSize: 14,
     fontWeight: '600',
     marginLeft: 8,
@@ -1102,6 +1076,6 @@ const styles = StyleSheet.create({
   },
   optionDivider: {
     height: 1,
-    backgroundColor: '#E5E5EA',
+    backgroundColor: COLORS.GRAY_DIVIDER,
   },
 });
