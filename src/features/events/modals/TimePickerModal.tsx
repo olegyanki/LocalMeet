@@ -101,17 +101,37 @@ export default function TimePickerModal({
     }
   }, [visible]);
 
-  // Map slider position (0-4) to actual duration values
+  // Map slider position (0-8) to actual duration values with intermediate steps
+  // Positions: 0=30m, 1=45m, 2=1h, 3=1.5h, 4=2h, 5=3h, 6=4h, 7=6h, 8=8h
   const sliderToDuration = (sliderPos: number): number => {
-    const durations = [0.5, 1, 2, 4, 8];
-    return durations[sliderPos];
+    const mapping: { [key: number]: number } = {
+      0: 0.5,   // 30m
+      1: 0.75,  // 45m
+      2: 1,     // 1h
+      3: 1.5,   // 1.5h
+      4: 2,     // 2h
+      5: 3,     // 3h
+      6: 4,     // 4h
+      7: 6,     // 6h
+      8: 8,     // 8h
+    };
+    return mapping[sliderPos] || 0.5;
   };
 
-  // Map duration value to slider position (0-4)
+  // Map duration value to slider position (0-8)
   const durationToSlider = (duration: number): number => {
-    const durations = [0.5, 1, 2, 4, 8];
-    const index = durations.findIndex(d => d === duration);
-    return index !== -1 ? index : 0;
+    const mapping: { [key: number]: number } = {
+      0.5: 0,   // 30m
+      0.75: 1,  // 45m
+      1: 2,     // 1h
+      1.5: 3,   // 1.5h
+      2: 4,     // 2h
+      3: 5,     // 3h
+      4: 6,     // 4h
+      6: 7,     // 6h
+      8: 8,     // 8h
+    };
+    return mapping[duration] || 0;
   };
 
   const formatDuration = (duration: number) => {
@@ -221,7 +241,7 @@ export default function TimePickerModal({
                   <Slider
                     style={styles.slider}
                     minimumValue={0}
-                    maximumValue={4}
+                    maximumValue={8}
                     step={1}
                     value={durationToSlider(sliderValue)}
                     onValueChange={handleSliderChange}
