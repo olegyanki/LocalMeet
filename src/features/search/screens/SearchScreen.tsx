@@ -143,6 +143,12 @@ export default function SearchScreen() {
   }, [params.reloadEvents]);
 
   useEffect(() => {
+    if (params.refresh && location && user) {
+      loadNearbyWalks();
+    }
+  }, [params.refresh]);
+
+  useEffect(() => {
     if (params.selectWalkId && nearbyWalks.length > 0) {
       const walkIndex = sortedWalks.findIndex((w) => w.walk?.id === params.selectWalkId);
       if (walkIndex !== -1) {

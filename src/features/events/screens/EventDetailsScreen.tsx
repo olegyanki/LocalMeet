@@ -6,12 +6,15 @@ import {
   ScrollView,
   TouchableOpacity,
   ActivityIndicator,
-  KeyboardAvoidingView,
+  Image,
+  Linking,
   Platform,
+  Alert,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams } from 'expo-router';
-import { Clock, ChevronLeft } from 'lucide-react-native';
+import { Clock, Calendar, MapPin, ChevronLeft, ChevronRight } from 'lucide-react-native';
+import * as Location from 'expo-location';
 
 // Contexts & Hooks
 import { useAuth } from '@shared/contexts';
@@ -28,13 +31,16 @@ import {
   UserProfile 
 } from '@shared/lib/api';
 import { getTimeText, getTimeColor } from '@shared/utils/time';
+import { getEventImage } from '@shared/utils/eventImage';
 
 // Components
 import Avatar from '@shared/components/Avatar';
 import PrimaryButton from '@shared/components/PrimaryButton';
 
 // Constants
-import { COLORS, SIZES } from '@shared/constants';
+import { COLORS } from '@shared/constants';
+
+const HERO_IMAGE_HEIGHT = 224;
 
 export default function EventDetailsScreen() {
   // Hooks
@@ -51,6 +57,9 @@ export default function EventDetailsScreen() {
   const [walk, setWalk] = useState<Walk | null>(null);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [showFullDescription, setShowFullDescription] = useState(false);
+  const [locationAddress, setLocationAddress] = useState<string | null>(null);
+  const [descriptionLineCount, setDescriptionLineCount] = useState(0);
 
   // Derived state
   const walkId = Array.isArray(params.id) ? params.id[0] : params.id;
@@ -85,6 +94,35 @@ export default function EventDetailsScreen() {
 
     loadWalkData();
   }, [walkId, t]);
+
+  // Load location address
+  useEffect(() => {
+    const loadAddress = async () => {
+      if (!walk) return;
+
+      try {
+        const result = await Location.reverseGeocodeAsync({
+          latitude: walk.latitude,
+          longitude: walk.longitude,
+        });
+
+        if (result && result.length > 0) {
+          const address = result[0];
+          const parts = [
+            address.street,
+            address.city || address.district,
+          ].filter(Boolean);
+          
+          setLocationAddress(parts.join(', ') || null);
+        }
+      } catch (err) {
+        console.error('Failed to load address:', err);
+        // Keep coordinates as fallback
+      }
+    };
+
+    loadAddress();
+  }, [walk]);
 
   // Load existing request
   useEffect(() => {
@@ -123,19 +161,69 @@ export default function EventDetailsScreen() {
     console.log('Connect pressed');
   };
 
+  const handleOpenMap = () => {
+    if (!walk) return;
+    
+    const scheme = Platform.select({
+      ios: 'maps:',
+      android: 'geo:',
+    });
+    const url = Platform.select({
+      ios: `${scheme}?q=${walk.latitude},${walk.longitude}`,
+      android: `${scheme}${walk.latitude},${walk.longitude}`,
+    });
+
+    if (url) {
+      Linking.openURL(url).catch((err) => {
+        console.error('Failed to open map:', err);
+      });
+    }
+  };
+
   const handleDelete = async () => {
     if (!walk?.id) return;
 
     try {
       setIsDeleting(true);
       await deleteWalk(walk.id);
+      
+      // Navigate back and trigger refresh
       router.back();
+      
+      // Trigger refresh on search screen via params
+      setTimeout(() => {
+        router.setParams({ refresh: Date.now().toString() });
+      }, 100);
     } catch (error) {
       console.error('Failed to delete walk:', error);
       setError(t('errorDeleting'));
     } finally {
       setIsDeleting(false);
     }
+  };
+
+  const confirmDelete = () => {
+    Alert.alert(
+      t('deleteEvent'),
+      t('deleteEventConfirm'),
+      [
+        {
+          text: t('cancel'),
+          style: 'cancel',
+        },
+        {
+          text: t('delete'),
+          style: 'destructive',
+          onPress: handleDelete,
+        },
+      ],
+      { cancelable: true }
+    );
+  };
+
+  const handleTextLayout = (e: any) => {
+    const { lines } = e.nativeEvent;
+    setDescriptionLineCount(lines.length);
   };
 
   // Derived state
@@ -179,6 +267,27 @@ export default function EventDetailsScreen() {
     }
   }, [isLoadingRequest, existingRequest, t]);
 
+  // Format date
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  };
+
+  // Format time
+  const formatTimeOnly = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+  };
+
+  // Format duration
+  const formatDuration = (minutes: number) => {
+    const hours = Math.floor(minutes / 60);
+    const mins = minutes % 60;
+    if (hours === 0) return `${mins}m`;
+    if (mins === 0) return `${hours}h`;
+    return `${hours}h ${mins}m`;
+  };
+
   // Loading state
   if (isLoading) {
     return (
@@ -195,7 +304,7 @@ export default function EventDetailsScreen() {
         <View style={[styles.content, { paddingTop: insets.top + 16 }]}>
           <View style={styles.header}>
             <TouchableOpacity onPress={handleBack} style={styles.backButton}>
-              <ChevronLeft size={28} color={COLORS.TEXT_DARK} />
+              <ChevronLeft size={20} color={COLORS.TEXT_DARK} />
             </TouchableOpacity>
           </View>
           <View style={styles.centerContainer}>
@@ -206,97 +315,140 @@ export default function EventDetailsScreen() {
     );
   }
 
+  const heroImage = walk.image_url || getEventImage(walk.title);
+
   // Render
   return (
-    <KeyboardAvoidingView
-      style={{ flex: 1 }}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-    >
+    <View style={styles.container}>
+      {/* Fixed Header */}
+      <View style={[styles.fixedHeader, { paddingTop: insets.top + 8 }]}>
+        <View style={styles.headerContent}>
+          <View style={styles.headerLeft}>
+            <TouchableOpacity onPress={handleBack} style={styles.backButton}>
+              <ChevronLeft size={20} color={COLORS.TEXT_DARK} />
+            </TouchableOpacity>
+            <Text style={styles.headerTitle} numberOfLines={1}>
+              {walk.title}
+            </Text>
+          </View>
+          {!isOwnEvent && (
+            <TouchableOpacity
+              style={[styles.joinButton, buttonConfig.disabled && styles.joinButtonDisabled]}
+              onPress={handleConnect}
+              disabled={buttonConfig.disabled}
+            >
+              <Text style={styles.joinButtonText}>{buttonConfig.text}</Text>
+            </TouchableOpacity>
+          )}
+        </View>
+      </View>
+
       <ScrollView
-        style={styles.container}
-        contentContainerStyle={[
-          styles.content,
-          {
-            paddingTop: insets.top + 16,
-            paddingBottom: 24,
-          },
-        ]}
+        style={styles.scrollView}
+        contentContainerStyle={{ paddingTop: insets.top + 56 }}
         showsVerticalScrollIndicator={false}
       >
-        {/* Header */}
-        <View style={styles.header}>
-          <TouchableOpacity onPress={handleBack} style={styles.backButton}>
-            <ChevronLeft size={28} color={COLORS.TEXT_DARK} />
-          </TouchableOpacity>
+        {/* Hero Image */}
+        <View style={styles.heroContainer}>
+          <Image source={{ uri: heroImage }} style={styles.heroImage} />
+          <View style={styles.heroGradient} />
         </View>
 
-        {/* User Info Card */}
-        <TouchableOpacity
-          style={styles.userCard}
-          onPress={handleUserPress}
-          activeOpacity={0.7}
-        >
-          <Avatar 
-            uri={walk.image_url} 
-            name={userProfile.display_name} 
-            size={64}
-          />
-          
-          <View style={styles.userInfo}>
-            <Text style={styles.userName}>{userProfile.display_name}</Text>
-          </View>
-        </TouchableOpacity>
-
-        {/* Event Details Card */}
-        {walk.title && (
-          <View style={styles.detailsCard}>
-            <View>
-              <Text style={styles.label}>{t('eventTitleLabel')}</Text>
-              <Text style={styles.eventTitle}>{walk.title}</Text>
+        {/* Content */}
+        <View style={styles.contentContainer}>
+          {/* Info Card */}
+          <View style={styles.infoCard}>
+            <View style={styles.infoGrid}>
+              <View style={styles.infoItem}>
+                <Calendar size={20} color={COLORS.ACCENT_ORANGE} />
+                <Text style={styles.infoLabel}>{t('date')}</Text>
+                <Text style={styles.infoValue}>{formatDate(walk.start_time)}</Text>
+              </View>
+              <View style={styles.infoDivider} />
+              <View style={styles.infoItem}>
+                <Clock size={20} color={COLORS.ACCENT_ORANGE} />
+                <Text style={styles.infoLabel}>{t('time')}</Text>
+                <Text style={styles.infoValue}>{formatTimeOnly(walk.start_time)}</Text>
+              </View>
+              <View style={styles.infoDivider} />
+              <View style={styles.infoItem}>
+                <Clock size={20} color={COLORS.ACCENT_ORANGE} />
+                <Text style={styles.infoLabel}>{t('duration')}</Text>
+                <Text style={styles.infoValue}>{formatDuration(walk.duration)}</Text>
+              </View>
             </View>
-            
-            {walk.description && (
-              <View>
-                <Text style={styles.label}>{t('walkDescription')}</Text>
-                <Text style={styles.description}>{walk.description}</Text>
+            <View style={styles.locationSection}>
+              <View style={styles.locationLeft}>
+                <MapPin size={16} color={COLORS.ACCENT_ORANGE} />
+                <Text style={styles.locationText} numberOfLines={1}>
+                  {locationAddress || `${walk.latitude.toFixed(4)}, ${walk.longitude.toFixed(4)}`}
+                </Text>
               </View>
-            )}
-            
-            {walk.start_time && (
-              <View style={styles.timeSection}>
-                <Text style={styles.label}>{t('startTimeLabel')}</Text>
-                <View style={styles.timeContainer}>
-                  <Clock size={18} color={getTimeColor(walk.start_time)} />
-                  <Text style={[styles.timeText, { color: getTimeColor(walk.start_time) }]}>
-                    {getTimeText(walk.start_time, t)}
-                  </Text>
-                </View>
-              </View>
-            )}
+              <TouchableOpacity style={styles.mapButton} onPress={handleOpenMap}>
+                <Text style={styles.mapButtonText}>{t('map')}</Text>
+                <ChevronRight size={14} color={COLORS.ACCENT_ORANGE} />
+              </TouchableOpacity>
+            </View>
           </View>
-        )}
 
-        {/* Action Button */}
-        {!isOwnEvent && (
-          <PrimaryButton
-            title={buttonConfig.text}
-            onPress={handleConnect}
-            disabled={buttonConfig.disabled}
-            style={{ backgroundColor: buttonConfig.color }}
-          />
-        )}
+          {/* User Card */}
+          <TouchableOpacity style={styles.userCard} onPress={handleUserPress} activeOpacity={0.7}>
+            <Avatar 
+              uri={userProfile.avatar_url} 
+              name={userProfile.display_name} 
+              size={40}
+            />
+            <View style={styles.userInfo}>
+              <Text style={styles.userName}>{userProfile.display_name}</Text>
+              <Text style={styles.userStats}>Local Expert</Text>
+            </View>
+            <ChevronRight size={20} color={COLORS.TEXT_LIGHT} />
+          </TouchableOpacity>
 
-        {isOwnEvent && (
-          <PrimaryButton
-            title={t('deleteEvent')}
-            onPress={handleDelete}
-            disabled={isDeleting}
-            loading={isDeleting}
-            style={styles.deleteButton}
-          />
-        )}
+          {/* About Section */}
+          {walk.description && (
+            <View style={styles.aboutCard}>
+              <Text style={styles.aboutLabel}>{t('aboutEvent')}</Text>
+              
+              {/* Hidden text to measure full line count */}
+              <Text 
+                style={[styles.aboutText, { position: 'absolute', opacity: 0 }]}
+                onTextLayout={handleTextLayout}
+              >
+                {walk.description}
+              </Text>
+              
+              {/* Visible text with truncation */}
+              <Text 
+                style={styles.aboutText}
+                numberOfLines={showFullDescription ? undefined : 3}
+              >
+                {walk.description}
+              </Text>
+              
+              {descriptionLineCount > 3 && (
+                <TouchableOpacity onPress={() => setShowFullDescription(!showFullDescription)}>
+                  <Text style={styles.readMoreButton}>
+                    {showFullDescription ? t('showLess') : t('readMore')}
+                  </Text>
+                </TouchableOpacity>
+              )}
+            </View>
+          )}
+
+          {/* Delete Button for Own Events */}
+          {isOwnEvent && (
+            <PrimaryButton
+              title={t('deleteEvent')}
+              onPress={confirmDelete}
+              disabled={isDeleting}
+              loading={isDeleting}
+              style={styles.deleteButton}
+            />
+          )}
+        </View>
       </ScrollView>
-    </KeyboardAvoidingView>
+    </View>
   );
 }
 
@@ -305,90 +457,222 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: COLORS.BG_SECONDARY,
   },
-  content: {
-    paddingHorizontal: 24,
-  },
   centerContainer: {
+    flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  header: {
-    marginBottom: 20,
+  fixedHeader: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    zIndex: 50,
+    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.BORDER_COLOR,
+    paddingHorizontal: 16,
+    paddingBottom: 8,
   },
-  backButton: {
-    width: 44,
-    height: 44,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  userCard: {
+  headerContent: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: COLORS.CARD_BG,
-    padding: 16,
-    borderRadius: 20,
-    marginBottom: 16,
-    gap: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 8,
-    elevation: 2,
+    justifyContent: 'space-between',
   },
-  userInfo: {
+  headerLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
     flex: 1,
     gap: 4,
   },
-  userName: {
-    fontSize: 20,
+  backButton: {
+    width: 32,
+    height: 32,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  headerTitle: {
+    fontSize: 16,
     fontWeight: '700',
     color: COLORS.TEXT_DARK,
+    flex: 1,
   },
-  detailsCard: {
-    backgroundColor: COLORS.CARD_BG,
+  joinButton: {
+    backgroundColor: COLORS.ACCENT_ORANGE,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
     borderRadius: 20,
-    padding: 20,
-    marginBottom: 16,
-    gap: 16,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
     elevation: 2,
   },
-  label: {
-    fontSize: 12,
-    fontWeight: '600',
+  joinButtonDisabled: {
+    backgroundColor: COLORS.BORDER_COLOR,
+  },
+  joinButtonText: {
+    color: '#FFFFFF',
+    fontSize: 11,
+    fontWeight: '700',
+  },
+  scrollView: {
+    flex: 1,
+  },
+  heroContainer: {
+    width: '100%',
+    height: HERO_IMAGE_HEIGHT,
+    position: 'relative',
+  },
+  heroImage: {
+    width: '100%',
+    height: '100%',
+  },
+  heroGradient: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: '60%',
+    backgroundColor: 'transparent',
+  },
+  contentContainer: {
+    paddingHorizontal: 20,
+    paddingTop: 16,
+    paddingBottom: 32,
+    gap: 12,
+    marginTop: -16,
+    zIndex: 10,
+  },
+  infoCard: {
+    backgroundColor: COLORS.CARD_BG,
+    borderRadius: 16,
+    padding: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 3,
+    elevation: 2,
+    borderWidth: 1,
+    borderColor: COLORS.BORDER_COLOR,
+  },
+  infoGrid: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  infoItem: {
+    flex: 1,
+    alignItems: 'center',
+    gap: 4,
+  },
+  infoDivider: {
+    width: 1,
+    height: 40,
+    backgroundColor: COLORS.BORDER_COLOR,
+  },
+  infoLabel: {
+    fontSize: 10,
+    fontWeight: '700',
     color: COLORS.TEXT_LIGHT,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
-    marginBottom: 6,
   },
-  eventTitle: {
-    fontSize: 22,
+  infoValue: {
+    fontSize: 12,
     fontWeight: '700',
-    lineHeight: 28,
     color: COLORS.TEXT_DARK,
   },
-  description: {
-    fontSize: 16,
-    lineHeight: 24,
-    color: COLORS.TEXT_DARK,
-    opacity: 0.8,
-  },
-  timeSection: {
-    paddingTop: 16,
+  locationSection: {
+    marginTop: 12,
+    paddingTop: 12,
     borderTopWidth: 1,
     borderTopColor: COLORS.BORDER_COLOR,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
   },
-  timeContainer: {
+  locationLeft: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
+    flex: 1,
   },
-  timeText: {
-    fontSize: 15,
+  locationText: {
+    fontSize: 12,
     fontWeight: '600',
+    color: COLORS.TEXT_DARK,
+    flex: 1,
+  },
+  mapButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  mapButtonText: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: COLORS.ACCENT_ORANGE,
+    textTransform: 'uppercase',
+  },
+  userCard: {
+    backgroundColor: COLORS.CARD_BG,
+    borderRadius: 16,
+    padding: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 3,
+    elevation: 2,
+    borderWidth: 1,
+    borderColor: COLORS.BORDER_COLOR,
+  },
+  userInfo: {
+    flex: 1,
+  },
+  userName: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: COLORS.TEXT_DARK,
+  },
+  userStats: {
+    fontSize: 11,
+    fontWeight: '500',
+    color: COLORS.TEXT_LIGHT,
+    marginTop: 2,
+  },
+  aboutCard: {
+    backgroundColor: COLORS.CARD_BG,
+    borderRadius: 16,
+    padding: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 3,
+    elevation: 2,
+    borderWidth: 1,
+    borderColor: COLORS.BORDER_COLOR,
+  },
+  aboutLabel: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: COLORS.TEXT_LIGHT,
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+    marginBottom: 8,
+  },
+  aboutText: {
+    fontSize: 14,
+    lineHeight: 21,
+    color: COLORS.TEXT_DARK,
+  },
+  readMoreButton: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: COLORS.ACCENT_ORANGE,
+    marginTop: 8,
   },
   errorText: {
     fontSize: 16,
@@ -397,5 +681,12 @@ const styles = StyleSheet.create({
   },
   deleteButton: {
     backgroundColor: COLORS.ERROR_RED,
+    marginTop: 8,
+  },
+  content: {
+    paddingHorizontal: 24,
+  },
+  header: {
+    marginBottom: 20,
   },
 });

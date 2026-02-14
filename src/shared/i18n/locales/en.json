@@ -241,5 +241,10 @@
   "bioPlaceholder": "Tell us a bit about yourself...",
   "walkNotFound": "Event not found",
   "errorLoading": "Failed to load event",
-  "errorDeleting": "Failed to delete event"
+  "errorDeleting": "Failed to delete event",
+  "aboutEvent": "About Event",
+  "readMore": "Read More",
+  "showLess": "Show Less",
+  "map": "Map",
+  "deleteEventConfirm": "Are you sure you want to delete this event? This action cannot be undone."
 }
