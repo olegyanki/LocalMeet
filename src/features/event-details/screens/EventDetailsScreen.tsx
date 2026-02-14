@@ -36,7 +36,7 @@ import { getEventImage } from '@shared/utils/eventImage';
 import Avatar from '@shared/components/Avatar';
 import PrimaryButton from '@shared/components/PrimaryButton';
 import DeleteConfirmModal from '../modals/DeleteConfirmModal';
-import LocationPickerModal from '../modals/LocationPickerModal';
+import LocationPickerModal from '@features/events/modals/LocationPickerModal';
 
 // Constants
 import { COLORS, NAVBAR_STYLES } from '@shared/constants';

@@ -15,7 +15,8 @@ src/
 ├── features/          # Feature-based modules
 │   ├── auth/         # Login, register screens
 │   ├── chats/        # Chat list, chat screen
-│   ├── events/       # Create event, event details
+│   ├── events/       # Create event screen
+│   ├── event-details/# Event details screen
 │   ├── onboarding/   # Onboarding flow
 │   ├── profile/      # Profile, settings screens
 │   └── search/       # Map search screen

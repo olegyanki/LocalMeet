@@ -1,3 +1,3 @@
-import EventDetailsScreen from '@features/events/screens/EventDetailsScreen';
+import EventDetailsScreen from '@features/event-details/screens/EventDetailsScreen';
 
 export default EventDetailsScreen;
