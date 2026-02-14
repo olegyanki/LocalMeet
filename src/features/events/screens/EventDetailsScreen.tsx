@@ -520,7 +520,7 @@ const styles = StyleSheet.create({
     paddingTop: 16,
     paddingBottom: 32,
     gap: 12,
-    marginTop: -16,
+    marginTop: -32,
     zIndex: 10,
   },
   infoCard: {

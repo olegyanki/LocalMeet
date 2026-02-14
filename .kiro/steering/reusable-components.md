@@ -240,7 +240,7 @@ import { ChevronLeft } from 'lucide-react-native';
 // With back button
 <View style={styles.navbar}>
   <TouchableOpacity onPress={handleBack} style={NAVBAR_STYLES.backButton}>
-    <ChevronLeft size={20} color={COLORS.TEXT_DARK} />
+    <ChevronLeft size={24} color={COLORS.TEXT_DARK} />
   </TouchableOpacity>
   <Text style={NAVBAR_STYLES.title} numberOfLines={1}>
     {title}
@@ -260,7 +260,7 @@ import { ChevronLeft } from 'lucide-react-native';
 // With action button
 <View style={styles.navbar}>
   <TouchableOpacity onPress={handleBack} style={NAVBAR_STYLES.backButton}>
-    <ChevronLeft size={20} color={COLORS.TEXT_DARK} />
+    <ChevronLeft size={24} color={COLORS.TEXT_DARK} />
   </TouchableOpacity>
   <Text style={NAVBAR_STYLES.title} numberOfLines={1}>
     {title}
