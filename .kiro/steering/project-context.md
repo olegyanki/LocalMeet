@@ -43,6 +43,14 @@ src/
 - `chats` - Chat rooms
 - `messages` - Chat messages
 
+### Key Types
+- `UserProfile` - User profile data (id, username, display_name, bio, avatar_url, etc.)
+- `Walk` - Event/walk data (id, user_id, title, start_time, location, etc.)
+- `NearbyWalk` - Walk with distance (distance, walk)
+- `WalkRequest` - Join request (id, walk_id, requester_id, status, message)
+- `Chat` - Chat room with participants
+- `Message` - Chat message (text, image, or audio)
+
 ### Storage Buckets
 - `avatars` - User avatar images
 - `event-images` - Event cover images

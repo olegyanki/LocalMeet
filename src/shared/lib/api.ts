@@ -30,7 +30,7 @@ export interface Walk {
   deleted: boolean;
 }
 
-export interface NearbyWalk extends UserProfile {
+export interface NearbyWalk {
   distance: number; // in meters
   walk: Walk | null;
 }
