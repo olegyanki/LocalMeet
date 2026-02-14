@@ -319,8 +319,8 @@ export default function EventDetailsScreen() {
       <View style={styles.container}>
         <View style={[styles.content, { paddingTop: insets.top + 16 }]}>
           <View style={styles.header}>
-            <TouchableOpacity onPress={handleBack} style={styles.backButton}>
-              <ChevronLeft size={20} color={COLORS.TEXT_DARK} />
+            <TouchableOpacity onPress={handleBack} style={NAVBAR_STYLES.backButton}>
+              <ChevronLeft size={24} color={COLORS.TEXT_DARK} />
             </TouchableOpacity>
           </View>
           <View style={styles.centerContainer}>
@@ -331,7 +331,7 @@ export default function EventDetailsScreen() {
     );
   }
 
-  const heroImage = walk.image_url || getEventImage(walk.title);
+  const heroImage = getEventImage(walk, userProfile?.avatar_url) || walk.image_url;
 
   // Render
   return (
@@ -366,7 +366,7 @@ export default function EventDetailsScreen() {
       >
         {/* Hero Image */}
         <View style={styles.heroContainer}>
-          <Image source={{ uri: heroImage }} style={styles.heroImage} />
+          {heroImage && <Image source={{ uri: heroImage }} style={styles.heroImage} />}
           <View style={styles.heroGradient} />
         </View>
 
