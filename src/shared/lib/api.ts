@@ -156,6 +156,21 @@ export async function getWalksByUserId(userId: string): Promise<Walk[]> {
   return data || [];
 }
 
+export async function getWalkById(walkId: string): Promise<Walk | null> {
+  const { data, error } = await supabase
+    .from('walks')
+    .select('*')
+    .eq('id', walkId)
+    .eq('deleted', false)
+    .maybeSingle();
+
+  if (error) {
+    throw error;
+  }
+
+  return data;
+}
+
 export interface WalkRequest {
   id: string;
   walk_id: string;

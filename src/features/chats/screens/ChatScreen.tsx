@@ -25,7 +25,6 @@ import { uploadChatImage, uploadChatAudio } from '@shared/utils/upload';
 import AudioRecorder from '@shared/components/AudioRecorder';
 import AudioPlayer from '@shared/components/AudioPlayer';
 import Avatar from '@shared/components/Avatar';
-import EventDetailsBottomSheet from '@features/events/modals/EventDetailsBottomSheet';
 import PrimaryButton from '@shared/components/PrimaryButton';
 
 interface Message {
@@ -83,7 +82,6 @@ export default function ChatScreen() {
   const [showOptionsMenu, setShowOptionsMenu] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
-  const [showEventDetails, setShowEventDetails] = useState(false);
 
   const preloadedUserName = Array.isArray(otherUserName) ? otherUserName[0] : otherUserName;
   const preloadedUserAvatar = Array.isArray(otherUserAvatar) ? otherUserAvatar[0] : otherUserAvatar;
@@ -473,8 +471,8 @@ export default function ChatScreen() {
           <TouchableOpacity
             style={styles.userInfoContainer}
             onPress={() => {
-              if (chat.walk_request?.walk) {
-                setShowEventDetails(true);
+              if (chat.walk_request?.walk?.id) {
+                router.push(`/event/${chat.walk_request.walk.id}`);
               } else {
                 router.push(`/user/${otherUser.id}`);
               }
@@ -658,35 +656,6 @@ export default function ChatScreen() {
         </View>
       </Modal>
 
-      {chat?.walk_request?.walk && otherUser && (
-        <EventDetailsBottomSheet
-          visible={showEventDetails}
-          onClose={() => setShowEventDetails(false)}
-          user={{
-            id: otherUser.id,
-            username: otherUser.display_name,
-            display_name: otherUser.display_name,
-            bio: null,
-            avatar_url: otherUser.avatar_url,
-            status: null,
-            distance: 0,
-            location: null,
-            walk: {
-              id: chat.walk_request.walk.id,
-              user_id: chat.walk_request.walk.user_id,
-              title: chat.walk_request.walk.title,
-              start_time: chat.walk_request.walk.start_time || '',
-              duration: chat.walk_request.walk.duration,
-              description: chat.walk_request.walk.description,
-              latitude: chat.walk_request.walk.latitude,
-              longitude: chat.walk_request.walk.longitude,
-            },
-            interests: [],
-            isActive: true,
-          }}
-          isOwnEvent={false}
-        />
-      )}
     </KeyboardAvoidingView>
   );
 }

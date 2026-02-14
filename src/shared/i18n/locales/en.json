@@ -238,5 +238,8 @@
   "instagramUsername": "Instagram Username",
   "telegramUsername": "Telegram Username",
   "namePlaceholder": "e.g. Jessica Smith",
-  "bioPlaceholder": "Tell us a bit about yourself..."
+  "bioPlaceholder": "Tell us a bit about yourself...",
+  "walkNotFound": "Event not found",
+  "errorLoading": "Failed to load event",
+  "errorDeleting": "Failed to delete event"
 }

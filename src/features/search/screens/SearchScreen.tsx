@@ -30,7 +30,6 @@ import Avatar from '@shared/components/Avatar';
 import LocationPin from '@shared/components/LocationPin';
 import FilterBottomSheet, { TimeFilter, SortBy } from '@features/search/components/FilterBottomSheet';
 import NativeMap from '@features/search/maps/NativeMap';
-import EventDetailsBottomSheet from '@features/events/modals/EventDetailsBottomSheet';
 import ContactRequestBottomSheet from '@features/events/modals/ContactRequestBottomSheet';
 import { useFocusEffect } from '@react-navigation/native';
 import { router, useLocalSearchParams } from 'expo-router';
@@ -54,9 +53,6 @@ export default function SearchScreen() {
   const [currentCardIndex, setCurrentCardIndex] = useState(0);
   const [mapCenter, setMapCenter] = useState<{latitude: number; longitude: number; paddingBottom?: number} | null>(null);
   const previousMarkerIdRef = useRef<string | null>(null);
-  const [detailsVisible, setDetailsVisible] = useState(false);
-  const [selectedWalk, setSelectedWalk] = useState<NearbyWalk | null>(null);
-  const [selectedUserProfile, setSelectedUserProfile] = useState<UserProfile | null>(null);
   const [contactRequestVisible, setContactRequestVisible] = useState(false);
   const [contactRequestData, setContactRequestData] = useState<{
     walkId: string;
@@ -475,12 +471,9 @@ export default function SearchScreen() {
                     styles.userCard,
                     { width: cardWidth }
                   ]}
-                  onPress={async () => {
-                    if (item.walk) {
-                      setSelectedWalk(item);
-                      const profile = await getProfile(item.walk.user_id);
-                      setSelectedUserProfile(profile);
-                      setDetailsVisible(true);
+                  onPress={() => {
+                    if (item.walk?.id) {
+                      router.push(`/event/${item.walk.id}`);
                     }
                   }}
                 >
@@ -537,34 +530,6 @@ export default function SearchScreen() {
           )}
           </ScrollView>
       </Animated.View>
-
-      <EventDetailsBottomSheet
-        visible={detailsVisible}
-        onClose={() => {
-          setDetailsVisible(false);
-        }}
-        walk={selectedWalk}
-        userProfile={selectedUserProfile}
-        isOwnEvent={selectedWalk?.walk?.user_id === user?.id}
-        onDelete={() => {
-          loadNearbyWalks();
-        }}
-        onConnectPress={(walkId, walkOwnerName) => {
-          const walkData = selectedWalk?.walk;
-          setContactRequestData({
-            walkId,
-            walkOwnerName,
-            walkOwnerAvatar: selectedUserProfile?.avatar_url,
-            walkTitle: walkData?.title || '',
-            walkStartTime: walkData?.start_time,
-            walkImageUrl: walkData?.image_url,
-          });
-          setDetailsVisible(false);
-          setTimeout(() => {
-            setContactRequestVisible(true);
-          }, 300);
-        }}
-      />
 
       {user && contactRequestData && (
         <ContactRequestBottomSheet

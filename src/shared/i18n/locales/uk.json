@@ -238,5 +238,8 @@
   "instagramUsername": "Instagram Username",
   "telegramUsername": "Telegram Username",
   "namePlaceholder": "наприклад, Олена Коваленко",
-  "bioPlaceholder": "Розкажіть трохи про себе..."
+  "bioPlaceholder": "Розкажіть трохи про себе...",
+  "walkNotFound": "Подію не знайдено",
+  "errorLoading": "Не вдалося завантажити подію",
+  "errorDeleting": "Не вдалося видалити подію"
 }
