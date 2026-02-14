@@ -37,6 +37,7 @@ import Avatar from '@shared/components/Avatar';
 import PrimaryButton from '@shared/components/PrimaryButton';
 import DeleteConfirmModal from '../modals/DeleteConfirmModal';
 import LocationPickerModal from '@features/events/modals/LocationPickerModal';
+import ContactRequestBottomSheet from '@features/events/modals/ContactRequestBottomSheet';
 
 // Constants
 import { COLORS, NAVBAR_STYLES } from '@shared/constants';
@@ -63,6 +64,7 @@ export default function EventDetailsScreen() {
   const [descriptionLineCount, setDescriptionLineCount] = useState(0);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showLocationModal, setShowLocationModal] = useState(false);
+  const [showContactRequestModal, setShowContactRequestModal] = useState(false);
   const [userLocation, setUserLocation] = useState<Location.LocationObject | null>(null);
 
   // Derived state
@@ -178,8 +180,22 @@ export default function EventDetailsScreen() {
   };
 
   const handleConnect = () => {
-    // TODO: Implement connect logic
-    console.log('Connect pressed');
+    if (!existingRequest) {
+      setShowContactRequestModal(true);
+    }
+  };
+
+  const handleRequestSent = async () => {
+    setShowContactRequestModal(false);
+    // Reload existing request
+    if (currentUser && walk?.id) {
+      try {
+        const request = await getMyRequestForWalk(walk.id, currentUser.id);
+        setExistingRequest(request);
+      } catch (error) {
+        console.error('Failed to reload request:', error);
+      }
+    }
   };
 
   const handleOpenMap = () => {
@@ -253,7 +269,7 @@ export default function EventDetailsScreen() {
 
     if (!existingRequest) {
       return {
-        text: t('connecting'),
+        text: t('joinEvent'),
         color: COLORS.ACCENT_ORANGE,
         disabled: false,
       };
@@ -275,7 +291,7 @@ export default function EventDetailsScreen() {
         };
       default:
         return {
-          text: t('connecting'),
+          text: t('joinEvent'),
           color: COLORS.ACCENT_ORANGE,
           disabled: false,
         };
@@ -345,17 +361,7 @@ export default function EventDetailsScreen() {
           <Text style={NAVBAR_STYLES.title} numberOfLines={1}>
             {walk.title}
           </Text>
-          {!isOwnEvent ? (
-            <TouchableOpacity
-              style={[styles.joinButton, buttonConfig.disabled && styles.joinButtonDisabled]}
-              onPress={handleConnect}
-              disabled={buttonConfig.disabled}
-            >
-              <Text style={styles.joinButtonText}>{buttonConfig.text}</Text>
-            </TouchableOpacity>
-          ) : (
-            <View style={NAVBAR_STYLES.spacer} />
-          )}
+          <View style={NAVBAR_STYLES.spacer} />
         </View>
       </View>
 
@@ -452,6 +458,17 @@ export default function EventDetailsScreen() {
             </View>
           )}
 
+          {/* Join Button for Other's Events */}
+          {!isOwnEvent && (
+            <PrimaryButton
+              title={buttonConfig.text}
+              onPress={handleConnect}
+              disabled={buttonConfig.disabled}
+              loading={isLoadingRequest}
+              style={buttonConfig.disabled ? styles.disabledButton : undefined}
+            />
+          )}
+
           {/* Delete Button for Own Events */}
           {isOwnEvent && (
             <PrimaryButton
@@ -487,6 +504,22 @@ export default function EventDetailsScreen() {
           onOpenInMaps={handleOpenInNativeMaps}
         />
       )}
+
+      {/* Contact Request Modal */}
+      {walk && userProfile && currentUser && (
+        <ContactRequestBottomSheet
+          visible={showContactRequestModal}
+          onClose={() => setShowContactRequestModal(false)}
+          walkId={walk.id}
+          requesterId={currentUser.id}
+          walkOwnerName={userProfile.display_name}
+          walkOwnerAvatar={userProfile.avatar_url}
+          walkTitle={walk.title}
+          walkStartTime={walk.start_time}
+          walkImageUrl={walk.image_url}
+          onRequestSent={handleRequestSent}
+        />
+      )}
     </View>
   );
 }
@@ -517,25 +550,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-  },
-  joinButton: {
-    backgroundColor: COLORS.ACCENT_ORANGE,
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 2,
-  },
-  joinButtonDisabled: {
-    backgroundColor: COLORS.BORDER_COLOR,
-  },
-  joinButtonText: {
-    color: '#FFFFFF',
-    fontSize: 11,
-    fontWeight: '700',
   },
   scrollView: {
     flex: 1,
@@ -702,6 +716,10 @@ const styles = StyleSheet.create({
   },
   deleteButton: {
     backgroundColor: COLORS.ERROR_RED,
+    marginTop: 8,
+  },
+  disabledButton: {
+    backgroundColor: COLORS.BORDER_COLOR,
     marginTop: 8,
   },
   content: {
