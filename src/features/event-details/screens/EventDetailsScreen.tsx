@@ -56,6 +56,7 @@ export default function EventDetailsScreen() {
   const [isDeleting, setIsDeleting] = useState(false);
   const [existingRequest, setExistingRequest] = useState<WalkRequest | null>(null);
   const [isLoadingRequest, setIsLoadingRequest] = useState(false);
+  const [hasLoadedRequest, setHasLoadedRequest] = useState(false);
   const [walk, setWalk] = useState<Walk | null>(null);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -150,7 +151,10 @@ export default function EventDetailsScreen() {
   // Load existing request
   useEffect(() => {
     const loadExistingRequest = async () => {
-      if (!currentUser || !walk?.id || isOwnEvent) return;
+      if (!currentUser || !walk?.id || isOwnEvent) {
+        setHasLoadedRequest(true);
+        return;
+      }
 
       try {
         setIsLoadingRequest(true);
@@ -160,6 +164,7 @@ export default function EventDetailsScreen() {
         console.error('Failed to load request:', error);
       } finally {
         setIsLoadingRequest(false);
+        setHasLoadedRequest(true);
       }
     };
 
@@ -459,13 +464,13 @@ export default function EventDetailsScreen() {
           )}
 
           {/* Join Button for Other's Events */}
-          {!isOwnEvent && (
+          {!isOwnEvent && hasLoadedRequest && (
             <PrimaryButton
               title={buttonConfig.text}
               onPress={handleConnect}
               disabled={buttonConfig.disabled}
-              loading={isLoadingRequest}
               style={buttonConfig.disabled ? styles.disabledButton : undefined}
+              textStyle={buttonConfig.disabled ? styles.disabledButtonText : undefined}
             />
           )}
 
@@ -719,8 +724,13 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   disabledButton: {
-    backgroundColor: COLORS.BORDER_COLOR,
+    backgroundColor: COLORS.CARD_BG,
+    borderWidth: 2,
+    borderColor: COLORS.BORDER_COLOR,
     marginTop: 8,
+  },
+  disabledButtonText: {
+    color: COLORS.TEXT_LIGHT,
   },
   content: {
     paddingHorizontal: 24,
