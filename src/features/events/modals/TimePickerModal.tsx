@@ -43,7 +43,8 @@ export default function TimePickerModal({
   const [tempTime, setTempTime] = useState(selectedTime);
 
   useEffect(() => {
-    setSliderValue(parseFloat(selectedDuration));
+    const duration = parseFloat(selectedDuration);
+    setSliderValue(duration);
   }, [selectedDuration]);
 
   useEffect(() => {
@@ -100,9 +101,22 @@ export default function TimePickerModal({
     }
   }, [visible]);
 
-  const formatDuration = (value: number) => {
-    const hours = Math.floor(value);
-    const minutes = Math.round((value - hours) * 60);
+  // Map slider position (0-4) to actual duration values
+  const sliderToDuration = (sliderPos: number): number => {
+    const durations = [0.5, 1, 2, 4, 8];
+    return durations[sliderPos];
+  };
+
+  // Map duration value to slider position (0-4)
+  const durationToSlider = (duration: number): number => {
+    const durations = [0.5, 1, 2, 4, 8];
+    const index = durations.findIndex(d => d === duration);
+    return index !== -1 ? index : 0;
+  };
+
+  const formatDuration = (duration: number) => {
+    const hours = Math.floor(duration);
+    const minutes = Math.round((duration - hours) * 60);
     
     if (minutes === 0) {
       return `${hours}h`;
@@ -110,9 +124,10 @@ export default function TimePickerModal({
     return `${hours}h ${minutes}m`;
   };
 
-  const handleSliderChange = (value: number) => {
-    setSliderValue(value);
-    onDurationChange(value.toString());
+  const handleSliderChange = (sliderPos: number) => {
+    const duration = sliderToDuration(sliderPos);
+    setSliderValue(duration);
+    onDurationChange(duration.toString());
   };
 
   const handleConfirm = () => {
@@ -205,10 +220,10 @@ export default function TimePickerModal({
                 <View style={styles.sliderWrapper}>
                   <Slider
                     style={styles.slider}
-                    minimumValue={0.5}
-                    maximumValue={8}
-                    step={0.5}
-                    value={sliderValue}
+                    minimumValue={0}
+                    maximumValue={4}
+                    step={1}
+                    value={durationToSlider(sliderValue)}
                     onValueChange={handleSliderChange}
                     minimumTrackTintColor={COLORS.ACCENT_ORANGE}
                     maximumTrackTintColor={COLORS.BORDER_COLOR}
