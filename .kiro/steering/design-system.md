@@ -119,11 +119,63 @@ CHIP_STYLES.inactiveText // Orange text for inactive chips
 
 ### Headers
 ```typescript
-HEADER_STYLES.container // Header container
-HEADER_STYLES.title // Centered title
+HEADER_STYLES.container // Header container (with padding)
+HEADER_STYLES.title // Centered title (24px, for full-screen headers)
 HEADER_STYLES.headerTextButton // Action button (right side)
-HEADER_STYLES.spacer // Left spacer for centering
+HEADER_STYLES.spacer // Spacer for centering (60px)
 ```
+
+### Navigation Bar
+```typescript
+NAVBAR_STYLES.backButton // Back button (40x40px) - use for left side when needed
+NAVBAR_STYLES.title // Centered title (24px) - universal for all navbars
+NAVBAR_STYLES.spacer // Spacer for centering (40px) - use when no action on side
+```
+
+**Universal Pattern (works with or without back button):**
+```tsx
+import { NAVBAR_STYLES } from '@shared/constants';
+
+// With back button
+<View style={styles.navbar}>
+  <TouchableOpacity onPress={handleBack} style={NAVBAR_STYLES.backButton}>
+    <ChevronLeft size={24} color={COLORS.TEXT_DARK} />
+  </TouchableOpacity>
+  <Text style={NAVBAR_STYLES.title} numberOfLines={1}>
+    {title}
+  </Text>
+  <View style={NAVBAR_STYLES.spacer} />
+</View>
+
+// Without back button (centered title)
+<View style={styles.navbar}>
+  <View style={NAVBAR_STYLES.spacer} />
+  <Text style={NAVBAR_STYLES.title} numberOfLines={1}>
+    {title}
+  </Text>
+  <View style={NAVBAR_STYLES.spacer} />
+</View>
+
+// With action button on right
+<View style={styles.navbar}>
+  <TouchableOpacity onPress={handleBack} style={NAVBAR_STYLES.backButton}>
+    <ChevronLeft size={24} color={COLORS.TEXT_DARK} />
+  </TouchableOpacity>
+  <Text style={NAVBAR_STYLES.title} numberOfLines={1}>
+    {title}
+  </Text>
+  <TouchableOpacity onPress={handleAction}>
+    <Text style={styles.actionButton}>{actionText}</Text>
+  </TouchableOpacity>
+</View>
+```
+
+**Rules:**
+- Always use `NAVBAR_STYLES.title` for navbar titles (17px, centered)
+- Use `NAVBAR_STYLES.spacer` (32px) when no element on left/right side
+- Use `NAVBAR_STYLES.backButton` (32x32px) for back buttons
+- Title always has `flex: 1` and `textAlign: 'center'` for centering
+- Title uses `numberOfLines={1}` to prevent overflow
 
 ## Layout Rules
 

@@ -178,3 +178,23 @@ export const HEADER_STYLES = {
     textAlign: 'right' as const,
   },
 };
+
+// Navigation bar styles (with back button)
+export const NAVBAR_STYLES = {
+  backButton: {
+    width: 40,
+    height: 40,
+    justifyContent: 'center' as const,
+    alignItems: 'center' as const,
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: '700' as const,
+    color: COLORS.TEXT_DARK,
+    flex: 1,
+    textAlign: 'center' as const,
+  },
+  spacer: {
+    width: 40,
+  },
+};

@@ -174,6 +174,11 @@ HEADER_STYLES.title
 HEADER_STYLES.headerTextButton
 HEADER_STYLES.spacer
 
+// Navigation Bar
+NAVBAR_STYLES.backButton
+NAVBAR_STYLES.title
+NAVBAR_STYLES.spacer
+
 // Shadows
 SHADOW.standard
 SHADOW.elevated
@@ -223,6 +228,46 @@ import GradientView from '@shared/components/GradientView';
       onChangeText={setValue}
     />
   </View>
+</View>
+```
+
+### Navigation Bar
+
+```tsx
+import { NAVBAR_STYLES } from '@shared/constants';
+import { ChevronLeft } from 'lucide-react-native';
+
+// With back button
+<View style={styles.navbar}>
+  <TouchableOpacity onPress={handleBack} style={NAVBAR_STYLES.backButton}>
+    <ChevronLeft size={20} color={COLORS.TEXT_DARK} />
+  </TouchableOpacity>
+  <Text style={NAVBAR_STYLES.title} numberOfLines={1}>
+    {title}
+  </Text>
+  <View style={NAVBAR_STYLES.spacer} />
+</View>
+
+// Without back button (centered)
+<View style={styles.navbar}>
+  <View style={NAVBAR_STYLES.spacer} />
+  <Text style={NAVBAR_STYLES.title} numberOfLines={1}>
+    {title}
+  </Text>
+  <View style={NAVBAR_STYLES.spacer} />
+</View>
+
+// With action button
+<View style={styles.navbar}>
+  <TouchableOpacity onPress={handleBack} style={NAVBAR_STYLES.backButton}>
+    <ChevronLeft size={20} color={COLORS.TEXT_DARK} />
+  </TouchableOpacity>
+  <Text style={NAVBAR_STYLES.title} numberOfLines={1}>
+    {title}
+  </Text>
+  <TouchableOpacity onPress={handleSave}>
+    <Text style={styles.actionButton}>{t('save')}</Text>
+  </TouchableOpacity>
 </View>
 ```
 

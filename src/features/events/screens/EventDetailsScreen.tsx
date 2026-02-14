@@ -38,7 +38,7 @@ import PrimaryButton from '@shared/components/PrimaryButton';
 import DeleteConfirmModal from '../modals/DeleteConfirmModal';
 
 // Constants
-import { COLORS } from '@shared/constants';
+import { COLORS, NAVBAR_STYLES } from '@shared/constants';
 
 const HERO_IMAGE_HEIGHT = 224;
 
@@ -312,15 +312,13 @@ export default function EventDetailsScreen() {
       {/* Fixed Header */}
       <View style={[styles.fixedHeader, { paddingTop: insets.top + 8 }]}>
         <View style={styles.headerContent}>
-          <View style={styles.headerLeft}>
-            <TouchableOpacity onPress={handleBack} style={styles.backButton}>
-              <ChevronLeft size={20} color={COLORS.TEXT_DARK} />
-            </TouchableOpacity>
-            <Text style={styles.headerTitle} numberOfLines={1}>
-              {walk.title}
-            </Text>
-          </View>
-          {!isOwnEvent && (
+          <TouchableOpacity onPress={handleBack} style={NAVBAR_STYLES.backButton}>
+            <ChevronLeft size={24} color={COLORS.TEXT_DARK} />
+          </TouchableOpacity>
+          <Text style={NAVBAR_STYLES.title} numberOfLines={1}>
+            {walk.title}
+          </Text>
+          {!isOwnEvent ? (
             <TouchableOpacity
               style={[styles.joinButton, buttonConfig.disabled && styles.joinButtonDisabled]}
               onPress={handleConnect}
@@ -328,6 +326,8 @@ export default function EventDetailsScreen() {
             >
               <Text style={styles.joinButtonText}>{buttonConfig.text}</Text>
             </TouchableOpacity>
+          ) : (
+            <View style={NAVBAR_STYLES.spacer} />
           )}
         </View>
       </View>
@@ -475,24 +475,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-  },
-  headerLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flex: 1,
-    gap: 4,
-  },
-  backButton: {
-    width: 32,
-    height: 32,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  headerTitle: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: COLORS.TEXT_DARK,
-    flex: 1,
   },
   joinButton: {
     backgroundColor: COLORS.ACCENT_ORANGE,

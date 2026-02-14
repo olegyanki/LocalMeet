@@ -207,7 +207,7 @@ import Avatar from '@shared/components/Avatar';
 import FeatureCard from '../components/FeatureCard';
 
 // 6. Constants (grouped import)
-import { COLORS, SIZES, HEADER_STYLES } from '@shared/constants';
+import { COLORS, SIZES, HEADER_STYLES, NAVBAR_STYLES } from '@shared/constants';
 ```
 
 ## State Management Patterns
@@ -305,6 +305,60 @@ useEffect(() => {
 ```
 
 ## Conditional Rendering Patterns
+
+### Navigation Bar Patterns
+
+```tsx
+// Navbar with back button (left) and spacer (right)
+<View style={styles.navbar}>
+  <TouchableOpacity onPress={handleBack} style={NAVBAR_STYLES.backButton}>
+    <ChevronLeft size={24} color={COLORS.TEXT_DARK} />
+  </TouchableOpacity>
+  <Text style={NAVBAR_STYLES.title} numberOfLines={1}>
+    {title}
+  </Text>
+  <View style={NAVBAR_STYLES.spacer} />
+</View>
+
+// Navbar with back button (left) and action button (right)
+<View style={styles.navbar}>
+  <TouchableOpacity onPress={handleBack} style={NAVBAR_STYLES.backButton}>
+    <ChevronLeft size={24} color={COLORS.TEXT_DARK} />
+  </TouchableOpacity>
+  <Text style={NAVBAR_STYLES.title} numberOfLines={1}>
+    {title}
+  </Text>
+  <TouchableOpacity onPress={handleAction}>
+    <Text style={styles.actionButton}>{t('save')}</Text>
+  </TouchableOpacity>
+</View>
+
+// Navbar without back button (centered title)
+<View style={styles.navbar}>
+  <View style={NAVBAR_STYLES.spacer} />
+  <Text style={NAVBAR_STYLES.title} numberOfLines={1}>
+    {title}
+  </Text>
+  <View style={NAVBAR_STYLES.spacer} />
+</View>
+
+// Navbar with conditional action button
+<View style={styles.navbar}>
+  <TouchableOpacity onPress={handleBack} style={NAVBAR_STYLES.backButton}>
+    <ChevronLeft size={24} color={COLORS.TEXT_DARK} />
+  </TouchableOpacity>
+  <Text style={NAVBAR_STYLES.title} numberOfLines={1}>
+    {title}
+  </Text>
+  {hasChanges ? (
+    <TouchableOpacity onPress={handleSave}>
+      <Text style={styles.actionButton}>{t('save')}</Text>
+    </TouchableOpacity>
+  ) : (
+    <View style={NAVBAR_STYLES.spacer} />
+  )}
+</View>
+```
 
 ### Conditional Buttons
 ```tsx
