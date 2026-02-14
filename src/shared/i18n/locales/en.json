@@ -246,5 +246,7 @@
   "readMore": "Read More",
   "showLess": "Show Less",
   "map": "Map",
-  "deleteEventConfirm": "Are you sure you want to delete this event? This action cannot be undone."
+  "deleteEventConfirm": "Are you sure you want to delete this event? This action cannot be undone.",
+  "eventLocation": "Event Location",
+  "openInMaps": "Open in Maps"
 }

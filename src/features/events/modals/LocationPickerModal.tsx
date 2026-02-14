@@ -29,6 +29,8 @@ interface LocationPickerModalProps {
   onMapMove: (lat: number, lng: number) => void;
   onConfirm: () => void;
   onClose: () => void;
+  viewOnly?: boolean;
+  onOpenInMaps?: () => void;
 }
 
 export default function LocationPickerModal({
@@ -39,6 +41,8 @@ export default function LocationPickerModal({
   onMapMove,
   onConfirm,
   onClose,
+  viewOnly = false,
+  onOpenInMaps,
 }: LocationPickerModalProps) {
   const { t } = useI18n();
   const translateY = useRef(new Animated.Value(0)).current;
@@ -121,7 +125,9 @@ export default function LocationPickerModal({
             <View style={styles.handle} />
           </Animated.View>
           <Animated.View {...panResponder.panHandlers} style={styles.locationPickerHeader}>
-            <Text style={styles.pickerTitle}>{t('selectWalkLocation')}</Text>
+            <Text style={styles.pickerTitle}>
+              {viewOnly ? t('eventLocation') : t('selectWalkLocation')}
+            </Text>
           </Animated.View>
 
           {userLocation && initialMapCenter ? (
@@ -129,19 +135,27 @@ export default function LocationPickerModal({
               <NativeMap
                 latitude={initialMapCenter.latitude}
                 longitude={initialMapCenter.longitude}
-                markers={[]}
-                selectedMarkerId={null}
+                markers={viewOnly && selectedLocation ? [{
+                  id: 'event-location',
+                  latitude: selectedLocation.latitude,
+                  longitude: selectedLocation.longitude,
+                  title: '',
+                  user_id: '',
+                }] : []}
+                selectedMarkerId={viewOnly ? 'event-location' : null}
                 onMarkerPress={() => {}}
-                onMapMove={onMapMove}
+                onMapMove={viewOnly ? () => {} : onMapMove}
                 radiusKm={RADIUS_FOR_CREATING_EVENT_KM}
                 centerLat={userLocation.coords.latitude}
                 centerLng={userLocation.coords.longitude}
                 userLatitude={userLocation.coords.latitude}
                 userLongitude={userLocation.coords.longitude}
               />
-              <View style={styles.centerMarker}>
-                <LocationPin size={32} />
-              </View>
+              {!viewOnly && (
+                <View style={styles.centerMarker}>
+                  <LocationPin size={32} />
+                </View>
+              )}
             </View>
           ) : (
             <View style={styles.loadingContainer}>
@@ -149,18 +163,29 @@ export default function LocationPickerModal({
             </View>
           )}
 
-          <Animated.View {...panResponder.panHandlers} style={styles.locationPickerFooter}>
-            <View style={styles.hintCard}>
-              <Text style={styles.locationHint}>
-                {t('tapMapToSelectLocation')}
-              </Text>
-            </View>
-            <PrimaryButton
-              title={t('confirm')}
-              onPress={onConfirm}
-              disabled={!isLocationValid}
-            />
-          </Animated.View>
+          {!viewOnly && (
+            <Animated.View {...panResponder.panHandlers} style={styles.locationPickerFooter}>
+              <View style={styles.hintCard}>
+                <Text style={styles.locationHint}>
+                  {t('tapMapToSelectLocation')}
+                </Text>
+              </View>
+              <PrimaryButton
+                title={t('confirm')}
+                onPress={onConfirm}
+                disabled={!isLocationValid}
+              />
+            </Animated.View>
+          )}
+
+          {viewOnly && onOpenInMaps && (
+            <Animated.View {...panResponder.panHandlers} style={styles.locationPickerFooter}>
+              <PrimaryButton
+                title={t('openInMaps')}
+                onPress={onOpenInMaps}
+              />
+            </Animated.View>
+          )}
         </Animated.View>
       </View>
     </Modal>

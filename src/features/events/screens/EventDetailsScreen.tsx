@@ -36,6 +36,7 @@ import { getEventImage } from '@shared/utils/eventImage';
 import Avatar from '@shared/components/Avatar';
 import PrimaryButton from '@shared/components/PrimaryButton';
 import DeleteConfirmModal from '../modals/DeleteConfirmModal';
+import LocationPickerModal from '../modals/LocationPickerModal';
 
 // Constants
 import { COLORS, NAVBAR_STYLES } from '@shared/constants';
@@ -61,6 +62,8 @@ export default function EventDetailsScreen() {
   const [locationAddress, setLocationAddress] = useState<string | null>(null);
   const [descriptionLineCount, setDescriptionLineCount] = useState(0);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showLocationModal, setShowLocationModal] = useState(false);
+  const [userLocation, setUserLocation] = useState<Location.LocationObject | null>(null);
 
   // Derived state
   const walkId = Array.isArray(params.id) ? params.id[0] : params.id;
@@ -95,6 +98,23 @@ export default function EventDetailsScreen() {
 
     loadWalkData();
   }, [walkId, t]);
+
+  // Load user location
+  useEffect(() => {
+    const loadUserLocation = async () => {
+      try {
+        const { status } = await Location.requestForegroundPermissionsAsync();
+        if (status === 'granted') {
+          const location = await Location.getCurrentPositionAsync({});
+          setUserLocation(location);
+        }
+      } catch (err) {
+        console.error('Failed to get user location:', err);
+      }
+    };
+
+    loadUserLocation();
+  }, []);
 
   // Load location address
   useEffect(() => {
@@ -163,6 +183,10 @@ export default function EventDetailsScreen() {
   };
 
   const handleOpenMap = () => {
+    setShowLocationModal(true);
+  };
+
+  const handleOpenInNativeMaps = () => {
     if (!walk) return;
     
     const scheme = Platform.select({
@@ -179,6 +203,8 @@ export default function EventDetailsScreen() {
         console.error('Failed to open map:', err);
       });
     }
+    
+    setShowLocationModal(false);
   };
 
   const handleDelete = async () => {
@@ -446,6 +472,21 @@ export default function EventDetailsScreen() {
         onCancel={() => setShowDeleteModal(false)}
         isDeleting={isDeleting}
       />
+
+      {/* Location Picker Modal */}
+      {walk && (
+        <LocationPickerModal
+          visible={showLocationModal}
+          userLocation={userLocation}
+          selectedLocation={{ latitude: walk.latitude, longitude: walk.longitude }}
+          tempLocation={{ latitude: walk.latitude, longitude: walk.longitude }}
+          onMapMove={() => {}}
+          onConfirm={() => setShowLocationModal(false)}
+          onClose={() => setShowLocationModal(false)}
+          viewOnly
+          onOpenInMaps={handleOpenInNativeMaps}
+        />
+      )}
     </View>
   );
 }
