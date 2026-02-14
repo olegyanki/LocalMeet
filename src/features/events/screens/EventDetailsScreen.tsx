@@ -9,7 +9,6 @@ import {
   Image,
   Linking,
   Platform,
-  Alert,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams } from 'expo-router';
@@ -36,6 +35,7 @@ import { getEventImage } from '@shared/utils/eventImage';
 // Components
 import Avatar from '@shared/components/Avatar';
 import PrimaryButton from '@shared/components/PrimaryButton';
+import DeleteConfirmModal from '../modals/DeleteConfirmModal';
 
 // Constants
 import { COLORS } from '@shared/constants';
@@ -60,6 +60,7 @@ export default function EventDetailsScreen() {
   const [showFullDescription, setShowFullDescription] = useState(false);
   const [locationAddress, setLocationAddress] = useState<string | null>(null);
   const [descriptionLineCount, setDescriptionLineCount] = useState(0);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   // Derived state
   const walkId = Array.isArray(params.id) ? params.id[0] : params.id;
@@ -187,6 +188,8 @@ export default function EventDetailsScreen() {
       setIsDeleting(true);
       await deleteWalk(walk.id);
       
+      setShowDeleteModal(false);
+      
       // Navigate back and trigger refresh
       router.back();
       
@@ -197,28 +200,14 @@ export default function EventDetailsScreen() {
     } catch (error) {
       console.error('Failed to delete walk:', error);
       setError(t('errorDeleting'));
+      setShowDeleteModal(false);
     } finally {
       setIsDeleting(false);
     }
   };
 
   const confirmDelete = () => {
-    Alert.alert(
-      t('deleteEvent'),
-      t('deleteEventConfirm'),
-      [
-        {
-          text: t('cancel'),
-          style: 'cancel',
-        },
-        {
-          text: t('delete'),
-          style: 'destructive',
-          onPress: handleDelete,
-        },
-      ],
-      { cancelable: true }
-    );
+    setShowDeleteModal(true);
   };
 
   const handleTextLayout = (e: any) => {
@@ -448,6 +437,14 @@ export default function EventDetailsScreen() {
           )}
         </View>
       </ScrollView>
+
+      {/* Delete Confirmation Modal */}
+      <DeleteConfirmModal
+        visible={showDeleteModal}
+        onConfirm={handleDelete}
+        onCancel={() => setShowDeleteModal(false)}
+        isDeleting={isDeleting}
+      />
     </View>
   );
 }
