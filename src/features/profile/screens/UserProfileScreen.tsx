@@ -11,23 +11,24 @@ import {
   Dimensions,
   Linking,
 } from 'react-native';
+
+// Third-party libraries
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
+import { ChevronLeft, X } from 'lucide-react-native';
+
+// Contexts & Hooks
 import { useI18n } from '@shared/i18n';
-import { COLORS } from '@shared/constants';
+
+// API & Utils
 import { getProfile } from '@shared/lib/api';
+
+// Components
 import Avatar from '@shared/components/Avatar';
-import {
-  ChevronLeft,
-  Instagram,
-  Send,
-  User,
-  Calendar,
-  Languages,
-  Heart,
-  MessageCircle,
-  X
-} from 'lucide-react-native';
+import Chip from '@shared/components/Chip';
+
+// Constants
+import { COLORS, SIZES, SHADOW, getLanguageByCode, getInterestByKey } from '@shared/constants';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
@@ -89,7 +90,7 @@ export default function UserProfileScreen() {
       <View style={styles.centerContainer}>
         <Text style={styles.errorText}>{error || 'Profile not found'}</Text>
         <TouchableOpacity
-          style={styles.backButton}
+          style={styles.backButtonError}
           onPress={() => router.back()}
         >
           <Text style={styles.backButtonText}>Go Back</Text>
@@ -100,28 +101,30 @@ export default function UserProfileScreen() {
 
   return (
     <View style={styles.container}>
-      <View style={[styles.header, { paddingTop: insets.top + 8 }]}>
-        <TouchableOpacity
-          onPress={() => router.back()}
-          style={styles.headerBackButton}
-        >
-          <ChevronLeft size={28} color={COLORS.TEXT_DARK} />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>{t('profile')}</Text>
-        <View style={{ width: 28 }} />
-      </View>
-
       <ScrollView
         style={styles.scrollView}
         contentContainerStyle={[
           styles.content,
-          { paddingBottom: 40 + insets.bottom },
+          { 
+            paddingTop: insets.top + SIZES.SCREEN_TOP_PADDING,
+            paddingBottom: 40 + insets.bottom 
+          },
         ]}
         showsVerticalScrollIndicator={false}
       >
-        <View style={styles.profileHeader}>
+        <View style={styles.header}>
           <TouchableOpacity
-            style={styles.avatarContainer}
+            onPress={() => router.back()}
+            style={styles.backButton}
+          >
+            <ChevronLeft size={24} color={COLORS.TEXT_DARK} />
+          </TouchableOpacity>
+          <Text style={styles.title}>{t('profile')}</Text>
+          <View style={{ width: 40 }} />
+        </View>
+
+        <View style={styles.avatarSection}>
+          <TouchableOpacity
             onPress={() => profile.avatar_url && setIsImageModalVisible(true)}
             activeOpacity={profile.avatar_url ? 0.7 : 1}
             disabled={!profile.avatar_url}
@@ -130,147 +133,97 @@ export default function UserProfileScreen() {
               uri={profile.avatar_url} 
               name={profile.display_name || '?'} 
               size={100}
+              shape={'square' as 'square'}
             />
           </TouchableOpacity>
-
-          <Text style={styles.displayName}>{profile.display_name}</Text>
-
-          {profile.bio && (
-            <Text style={styles.bio}>{profile.bio}</Text>
-          )}
-
-          {(profile.age || profile.gender) && (
-            <View style={styles.statsGrid}>
-              {profile.age && (
-                <View style={styles.statCard}>
-                  <View style={styles.statIconContainer}>
-                    <Calendar size={18} color={COLORS.ACCENT_ORANGE} />
-                  </View>
-                  <Text style={styles.statLabel}>{t('ageLabel')}</Text>
-                  <Text style={styles.statValue}>{profile.age}</Text>
-                </View>
-              )}
-
-              {profile.gender && (
-                <View style={styles.statCard}>
-                  <View style={styles.statIconContainer}>
-                    <User size={18} color={COLORS.ACCENT_ORANGE} />
-                  </View>
-                  <Text style={styles.statLabel}>{t('genderLabel')}</Text>
-                  <Text style={styles.statValue} numberOfLines={1} adjustsFontSizeToFit>
-                    {profile.gender}
-                  </Text>
-                </View>
-              )}
-            </View>
-          )}
         </View>
+
+        {profile.display_name && (
+          <Text style={styles.displayName}>{profile.display_name}</Text>
+        )}
+
+        {profile.bio && (
+          <View style={styles.bioSection}>
+            <Text style={styles.label}>{t('aboutMe').toUpperCase()}</Text>
+            <View style={styles.bioCard}>
+              <Text style={styles.bio}>{profile.bio}</Text>
+            </View>
+          </View>
+        )}
 
         {profile.languages && profile.languages.length > 0 && (
           <View style={styles.section}>
-            <View style={styles.sectionHeader}>
-              <View style={styles.sectionIconContainer}>
-                <Languages size={18} color={COLORS.ACCENT_ORANGE} />
-              </View>
-              <View style={styles.sectionTitleContainer}>
-                <Text style={styles.sectionTitle}>{t('languagesLabel')}</Text>
-                <View style={styles.countBadge}>
-                  <Text style={styles.countBadgeText}>{profile.languages.length}</Text>
-                </View>
-              </View>
-            </View>
-            <View style={styles.languagesList}>
-              {profile.languages.map((lang: string) => (
-                <View key={lang} style={styles.languageItem}>
-                  <View style={styles.languageIconDot} />
-                  <Text style={styles.languageText}>{lang}</Text>
-                </View>
-              ))}
+            <Text style={styles.label}>{t('languages').toUpperCase()}</Text>
+            <View style={styles.chipsContainer}>
+              {profile.languages.map((langCode: string) => {
+                const lang = getLanguageByCode(langCode);
+                if (!lang) return null;
+                return (
+                  <Chip
+                    key={langCode}
+                    label={t(lang.nameKey as any)}
+                    emoji={lang.flag}
+                    isActive={true}
+                    onPress={() => {}}
+                  />
+                );
+              })}
             </View>
           </View>
         )}
 
         {profile.interests && profile.interests.length > 0 && (
           <View style={styles.section}>
-            <View style={styles.sectionHeader}>
-              <View style={styles.sectionIconContainer}>
-                <Heart size={18} color={COLORS.ACCENT_ORANGE} />
-              </View>
-              <View style={styles.sectionTitleContainer}>
-                <Text style={styles.sectionTitle}>{t('interestsLabel')}</Text>
-                <View style={styles.countBadge}>
-                  <Text style={styles.countBadgeText}>{profile.interests.length}</Text>
-                </View>
-              </View>
-            </View>
+            <Text style={styles.label}>{t('interests').toUpperCase()}</Text>
             <View style={styles.chipsContainer}>
-              {profile.interests.map((interest: string, index: number) => (
-                <View key={interest} style={[
-                  styles.interestChip,
-                  index % 3 === 0 && styles.interestChipVariant1,
-                  index % 3 === 1 && styles.interestChipVariant2,
-                  index % 3 === 2 && styles.interestChipVariant3,
-                ]}>
-                  <Text style={styles.chipText}>{interest}</Text>
-                </View>
-              ))}
-            </View>
-          </View>
-        )}
-
-        {profile.looking_for && (
-          <View style={styles.section}>
-            <View style={styles.sectionHeader}>
-              <View style={styles.sectionIconContainer}>
-                <MessageCircle size={18} color={COLORS.ACCENT_ORANGE} />
-              </View>
-              <Text style={styles.sectionTitle}>{t('lookingForLabel')}</Text>
-            </View>
-            <View style={styles.lookingForCard}>
-              <View style={styles.quoteIcon}>
-                <Text style={styles.quoteText}>"</Text>
-              </View>
-              <Text style={styles.lookingForText}>{profile.looking_for}</Text>
+              {profile.interests.map((interestKey: string) => {
+                const interest = getInterestByKey(interestKey);
+                if (!interest) return null;
+                return (
+                  <Chip
+                    key={interestKey}
+                    label={t(interest.key as any)}
+                    emoji={interest.emoji}
+                    isActive={true}
+                    onPress={() => {}}
+                  />
+                );
+              })}
             </View>
           </View>
         )}
 
         {(profile.social_instagram || profile.social_telegram) && (
           <View style={styles.section}>
-            <View style={styles.sectionHeader}>
-              <View style={styles.sectionIconContainer}>
-                <Send size={18} color={COLORS.ACCENT_ORANGE} />
-              </View>
-              <Text style={styles.sectionTitle}>{t('socialNetworksLabel')}</Text>
-            </View>
-            <View style={styles.socialLinksContainer}>
+            <Text style={styles.label}>{t('socialMedia').toUpperCase()}</Text>
+            <View style={styles.socialContainer}>
               {profile.social_instagram && (
                 <TouchableOpacity
-                  style={styles.socialLinkCard}
+                  style={styles.socialItem}
                   activeOpacity={0.7}
                   onPress={() => openSocialLink('instagram', profile.social_instagram)}
                 >
-                  <View style={[styles.socialIconContainer, styles.instagramIcon]}>
-                    <Instagram size={24} color={COLORS.WHITE} />
+                  <View style={[styles.socialIcon, { backgroundColor: COLORS.INSTAGRAM_BG }]}>
+                    <Text style={{ fontSize: 18 }}>📷</Text>
                   </View>
-                  <View style={styles.socialLinkInfo}>
-                    <Text style={styles.socialLinkLabel}>Instagram</Text>
-                    <Text style={styles.socialLinkValue}>@{profile.social_instagram}</Text>
+                  <View style={styles.socialInfo}>
+                    <Text style={styles.socialLabel}>Instagram</Text>
+                    <Text style={styles.socialValue}>@{profile.social_instagram}</Text>
                   </View>
                 </TouchableOpacity>
               )}
               {profile.social_telegram && (
                 <TouchableOpacity
-                  style={styles.socialLinkCard}
+                  style={styles.socialItem}
                   activeOpacity={0.7}
                   onPress={() => openSocialLink('telegram', profile.social_telegram)}
                 >
-                  <View style={[styles.socialIconContainer, styles.telegramIcon]}>
-                    <Send size={24} color={COLORS.WHITE} />
+                  <View style={[styles.socialIcon, { backgroundColor: COLORS.TELEGRAM_BG }]}>
+                    <Text style={{ fontSize: 18 }}>✈️</Text>
                   </View>
-                  <View style={styles.socialLinkInfo}>
-                    <Text style={styles.socialLinkLabel}>Telegram</Text>
-                    <Text style={styles.socialLinkValue}>{profile.social_telegram}</Text>
+                  <View style={styles.socialInfo}>
+                    <Text style={styles.socialLabel}>Telegram</Text>
+                    <Text style={styles.socialValue}>{profile.social_telegram}</Text>
                   </View>
                 </TouchableOpacity>
               )}
@@ -323,7 +276,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   content: {
-    paddingHorizontal: 20,
+    paddingHorizontal: 24,
   },
   centerContainer: {
     flex: 1,
@@ -336,218 +289,86 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingBottom: 12,
-    backgroundColor: COLORS.CARD_BG,
-    shadowColor: COLORS.SHADOW_BLACK,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 4,
-    elevation: 2,
+    marginBottom: 16,
   },
-  headerBackButton: {
-    padding: 8,
+  backButton: {
+    width: 40,
+    height: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
-  headerTitle: {
-    fontSize: 18,
+  title: {
+    fontSize: 22,
     fontWeight: '700',
     color: COLORS.TEXT_DARK,
   },
-  profileHeader: {
+  avatarSection: {
     alignItems: 'center',
-    paddingTop: 32,
-    paddingBottom: 24,
-  },
-  avatarContainer: {
-    marginBottom: 20,
-  },
-  avatar: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
+    marginBottom: 16,
   },
   displayName: {
-    fontSize: 26,
+    fontSize: 28,
     fontWeight: '700',
     color: COLORS.TEXT_DARK,
     textAlign: 'center',
-    marginBottom: 8,
+    marginBottom: 24,
+  },
+  bioSection: {
+    marginBottom: 24,
+  },
+  bioCard: {
+    backgroundColor: COLORS.CARD_BG,
+    borderRadius: 24,
+    ...SHADOW.standard,
+    padding: 20,
   },
   bio: {
     fontSize: 15,
     color: COLORS.TEXT_DARK,
     lineHeight: 22,
-    textAlign: 'center',
-    opacity: 0.7,
-    paddingHorizontal: 32,
-  },
-  statsGrid: {
-    flexDirection: 'row',
-    gap: 12,
-    marginTop: 24,
-    paddingHorizontal: 20,
-  },
-  statCard: {
-    backgroundColor: COLORS.CARD_BG,
-    borderRadius: 16,
-    padding: 16,
-    alignItems: 'center',
-    flex: 1,
-    shadowColor: COLORS.SHADOW_BLACK,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  statIconContainer: {
-    marginBottom: 8,
-  },
-  statLabel: {
-    fontSize: 11,
-    color: COLORS.TEXT_LIGHT,
-    marginBottom: 4,
-    fontWeight: '600',
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
-  },
-  statValue: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: COLORS.TEXT_DARK,
   },
   section: {
-    backgroundColor: COLORS.CARD_BG,
-    borderRadius: 20,
-    padding: 20,
-    marginHorizontal: 20,
-    marginBottom: 12,
-    shadowColor: COLORS.SHADOW_BLACK,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 4,
-    elevation: 2,
+    marginBottom: 24,
   },
-  sectionHeader: {
-    marginBottom: 16,
-  },
-  sectionIconContainer: {
-    marginBottom: 8,
-  },
-  sectionTitleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  sectionTitle: {
+  label: {
     fontSize: 12,
-    fontWeight: '600',
-    color: COLORS.TEXT_LIGHT,
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
-  },
-  countBadge: {
-    backgroundColor: COLORS.ACCENT_ORANGE,
-    borderRadius: 10,
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    marginLeft: 8,
-    minWidth: 20,
-  },
-  countBadgeText: {
-    fontSize: 11,
     fontWeight: '700',
-    color: COLORS.WHITE,
+    color: COLORS.TEXT_LIGHT,
+    marginBottom: 8,
+    letterSpacing: 0.5,
   },
   chipsContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 8,
   },
-  languagesList: {
-    gap: 8,
+  socialContainer: {
+    gap: 12,
   },
-  languageItem: {
+  socialItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 8,
+    backgroundColor: COLORS.CARD_BG,
+    borderRadius: 24,
+    ...SHADOW.standard,
+    padding: 4,
+    minHeight: 56,
   },
-  languageIconDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: COLORS.ACCENT_ORANGE,
-    marginRight: 12,
-  },
-  languageText: {
-    fontSize: 16,
-    color: COLORS.TEXT_DARK,
-    fontWeight: '500',
-  },
-  interestChip: {
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderRadius: 20,
-    backgroundColor: COLORS.ACCENT_ORANGE,
-  },
-  interestChipVariant1: {
-    backgroundColor: COLORS.ACCENT_ORANGE,
-  },
-  interestChipVariant2: {
-    backgroundColor: COLORS.ACCENT_ORANGE,
-    opacity: 0.9,
-  },
-  interestChipVariant3: {
-    backgroundColor: COLORS.ACCENT_ORANGE,
-    opacity: 0.8,
-  },
-  chipText: {
-    fontSize: 14,
-    color: COLORS.WHITE,
-    fontWeight: '600',
-  },
-  lookingForCard: {
-    paddingVertical: 4,
-  },
-  quoteIcon: {
-    display: 'none',
-  },
-  quoteText: {
-    fontSize: 72,
-    fontWeight: '900',
-    color: COLORS.ACCENT_ORANGE,
-    lineHeight: 72,
-  },
-  lookingForText: {
-    fontSize: 16,
-    color: COLORS.TEXT_DARK,
-    lineHeight: 24,
-  },
-  socialLinksContainer: {
-    gap: 8,
-  },
-  socialLinkCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 12,
-  },
-  socialIconContainer: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+  socialIcon: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 12,
+    marginLeft: 16,
+    marginRight: 8,
   },
-  instagramIcon: {
-    background: 'linear-gradient(45deg, #f09433 0%,#e6683c 25%,#dc2743 50%,#cc2366 75%,#bc1888 100%)',
-    backgroundColor: COLORS.INSTAGRAM_PINK,
-  },
-  telegramIcon: {
-    backgroundColor: COLORS.TELEGRAM_BLUE,
-  },
-  socialLinkInfo: {
+  socialInfo: {
     flex: 1,
+    paddingVertical: 8,
+    paddingRight: 16,
   },
-  socialLinkLabel: {
+  socialLabel: {
     fontSize: 11,
     color: COLORS.TEXT_LIGHT,
     marginBottom: 2,
@@ -555,22 +376,22 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
     letterSpacing: 0.5,
   },
-  socialLinkValue: {
-    fontSize: 16,
+  socialValue: {
+    fontSize: 14,
     color: COLORS.TEXT_DARK,
-    fontWeight: '600',
+    fontWeight: '500',
   },
   errorText: {
-    color: COLORS.ERROR_LIGHT,
+    color: COLORS.ERROR_RED,
     fontSize: 16,
     textAlign: 'center',
     marginBottom: 16,
   },
-  backButton: {
+  backButtonError: {
     paddingHorizontal: 24,
     paddingVertical: 12,
     backgroundColor: COLORS.ACCENT_ORANGE,
-    borderRadius: 12,
+    borderRadius: 24,
   },
   backButtonText: {
     color: COLORS.WHITE,
@@ -596,11 +417,6 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255, 255, 255, 0.2)',
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: COLORS.SHADOW_BLACK,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-    elevation: 5,
   },
   modalImageContainer: {
     width: SCREEN_WIDTH,

@@ -8,10 +8,12 @@ interface AvatarProps {
   name: string;
   size?: number;
   style?: ViewStyle;
+  shape?: 'circle' | 'square';
 }
 
-export default function Avatar({ uri, name, size = 60, style }: AvatarProps) {
-  const avatarSize = { width: size, height: size, borderRadius: size / 2 };
+export default function Avatar({ uri, name, size = 60, style, shape = 'circle' }: AvatarProps) {
+  const borderRadius = shape === 'square' ? size * 0.2 : size / 2;
+  const avatarSize = { width: size, height: size, borderRadius };
 
   if (uri) {
     return <Image source={{ uri }} style={[styles.avatar, avatarSize, style]} />;
