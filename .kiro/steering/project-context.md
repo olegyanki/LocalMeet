@@ -30,6 +30,42 @@ src/
     └── utils/        # Helper functions
 ```
 
+### Navigation Structure
+```
+app/
+├── _layout.tsx              # Root Stack Navigator
+├── (tabs)/                  # Tab Navigator (with tab bar)
+│   ├── (search)/           # Search tab with nested stack
+│   │   ├── _layout.tsx     # Stack navigator for search
+│   │   ├── index.tsx       # Search screen (map + events)
+│   │   └── event/[id].tsx  # Event details (within search context)
+│   ├── (profile)/          # Profile tab with nested stack
+│   │   ├── _layout.tsx     # Stack navigator for profile
+│   │   ├── index.tsx       # Profile screen
+│   │   └── event/[id].tsx  # Event details (within profile context)
+│   ├── create-event.tsx    # Create event screen
+│   ├── chats.tsx           # Chats list screen
+│   ├── settings.tsx        # Settings screen
+│   └── onboarding.tsx      # Onboarding (hidden from tabs)
+├── chat/                    # Chat screens (outside tabs)
+│   └── [id].tsx            # Individual chat screen
+├── user/                    # User profile screens (outside tabs)
+│   └── [id].tsx            # Other user's profile screen
+└── auth/                    # Auth screens (outside tabs)
+    ├── login.tsx
+    └── register.tsx
+```
+
+**Navigation Rules:**
+- Screens inside `(tabs)/` show the tab bar at the bottom
+- Screens outside `(tabs)/` (chat, user, auth) hide the tab bar
+- `(search)` and `(profile)` are route groups with nested stacks
+- Event details exist in both search and profile stacks to keep tab bar visible
+- Groups with parentheses `(folder)` don't add URL segments
+- Use `router.push('/event/[id]')` to navigate to event details (works from any context)
+- Use `router.push('/chat/[id]')` for chat (hides tab bar)
+- Use `router.push('/user/[id]')` for user profile (hides tab bar)
+
 ### Path Aliases
 - `@features/*` → `src/features/*`
 - `@shared/*` → `src/shared/*`

@@ -1,1 +1,5 @@
-export { default } from '../../src/features/search/screens/SearchScreen';
+import { Redirect } from 'expo-router';
+
+export default function TabsIndex() {
+  return <Redirect href="/(search)" />;
+}

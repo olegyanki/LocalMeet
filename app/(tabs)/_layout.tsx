@@ -42,7 +42,7 @@ export default function TabLayout() {
       }}
     >
       <Tabs.Screen
-        name="index"
+        name="(search)"
         options={{
           title: 'SEARCH',
           tabBarIcon: ({ size, color }) => <Search size={20} color={color} />,
@@ -66,7 +66,7 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="profile"
+        name="(profile)"
         options={{
           title: 'PROFILE',
           tabBarIcon: ({ size, color }) => <User size={20} color={color} />,
@@ -83,6 +83,12 @@ export default function TabLayout() {
       />
       <Tabs.Screen
         name="onboarding"
+        options={{
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="index"
         options={{
           href: null,
         }}
