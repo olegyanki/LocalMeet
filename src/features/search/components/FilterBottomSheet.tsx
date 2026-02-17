@@ -16,7 +16,7 @@ import { useI18n } from '@shared/i18n';
 import Chip from '@shared/components/Chip';
 
 // Constants
-import { COLORS, SIZES, SHADOW } from '@shared/constants';
+import { COLORS, SIZES } from '@shared/constants';
 
 export type TimeFilter = 'all' | 'started' | 'today' | 'tomorrow';
 export type SortBy = 'distance' | 'date';
@@ -45,7 +45,7 @@ export default function FilterBottomSheet({
   onSortChange,
   onClose,
 }: FilterBottomSheetProps) {
-  const translateY = useRef(new Animated.Value(300)).current;
+  const translateY = useRef(new Animated.Value(400)).current;
   const { t } = useI18n();
 
   const panResponder = useRef(
@@ -60,10 +60,10 @@ export default function FilterBottomSheet({
         }
       },
       onPanResponderRelease: (_, gestureState) => {
-        if (gestureState.dy > 80 || gestureState.vy > 0.5) {
+        if (gestureState.dy > 100 || gestureState.vy > 0.5) {
           Animated.timing(translateY, {
-            toValue: 300,
-            duration: 200,
+            toValue: 400,
+            duration: 250,
             useNativeDriver: true,
           }).start(() => onClose());
         } else {
@@ -88,8 +88,8 @@ export default function FilterBottomSheet({
       }).start();
     } else {
       Animated.timing(translateY, {
-        toValue: 300,
-        duration: 200,
+        toValue: 400,
+        duration: 250,
         useNativeDriver: true,
       }).start();
     }
@@ -118,11 +118,12 @@ export default function FilterBottomSheet({
                     onFilterChange(filter.id);
                     setTimeout(onClose, 150);
                   }}
-                  style={styles.filterChip}
                 />
               ))}
             </View>
           </View>
+
+          <View style={styles.divider} />
 
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>{t('sorting')}</Text>
@@ -131,13 +132,11 @@ export default function FilterBottomSheet({
                 label={t('byDistance')}
                 isActive={sortBy === 'distance'}
                 onPress={() => onSortChange('distance')}
-                style={styles.sortChip}
               />
               <Chip
                 label={t('byDate')}
                 isActive={sortBy === 'date'}
                 onPress={() => onSortChange('date')}
-                style={styles.sortChip}
               />
             </View>
           </View>
@@ -150,11 +149,11 @@ export default function FilterBottomSheet({
 const styles = StyleSheet.create({
   backdrop: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.4)',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
     justifyContent: 'flex-end',
   },
   bottomSheet: {
-    backgroundColor: COLORS.BG_SECONDARY,
+    backgroundColor: COLORS.CARD_BG,
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     paddingBottom: 40,
@@ -170,8 +169,7 @@ const styles = StyleSheet.create({
     borderRadius: 2,
   },
   section: {
-    paddingHorizontal: 20,
-    marginBottom: 20,
+    paddingHorizontal: 24,
   },
   sectionTitle: {
     fontSize: 11,
@@ -186,17 +184,14 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     gap: 8,
   },
-  filterChip: {
-    paddingHorizontal: 20,
-    paddingVertical: 12,
+  divider: {
+    height: 1,
+    backgroundColor: COLORS.BORDER_COLOR,
+    marginVertical: 24,
+    marginHorizontal: 24,
   },
   sortContainer: {
     flexDirection: 'row',
     gap: 8,
-  },
-  sortChip: {
-    flex: 1,
-    paddingVertical: 14,
-    alignItems: 'center',
   },
 });
