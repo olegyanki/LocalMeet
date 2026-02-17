@@ -9,19 +9,18 @@ import {
   Dimensions,
   Platform,
   TextInput,
-  ActivityIndicator,
   KeyboardAvoidingView,
+  Keyboard,
+  TouchableWithoutFeedback,
 } from 'react-native';
 import { BlurView } from 'expo-blur';
 import { Clock } from 'lucide-react-native';
 import { createWalkRequest } from '@shared/lib/api';
 import Avatar from '@shared/components/Avatar';
-import { SIZES } from '@shared/constants/styles';
 import { useI18n } from '@shared/i18n';
 import { COLORS } from '@shared/constants';
-import { Image } from 'react-native';
 import { getEventImage } from '@shared/utils/eventImage';
-import { getTimeText } from '@shared/utils/time';
+import { formatTime } from '@shared/utils/time';
 import PrimaryButton from '@shared/components/PrimaryButton';
 
 interface ContactRequestBottomSheetProps {
@@ -55,20 +54,9 @@ export default function ContactRequestBottomSheet({
   const [error, setError] = useState<string | null>(null);
   const { t } = useI18n();
 
-  const getTimeText = (walkStartTime: string) => {
-    const now = new Date();
-    const startTime = new Date(walkStartTime);
-    const diffMs = startTime.getTime() - now.getTime();
-    const diffMins = Math.floor(diffMs / 60000);
-
-    if (diffMins < 0) return t('alreadyStarted');
-    if (diffMins === 0) return t('startingNow');
-    if (diffMins < 60) return t('startsInMinutes').replace('{{minutes}}', diffMins.toString());
-
-    const hours = Math.floor(diffMins / 60);
-    const mins = diffMins % 60;
-    if (mins === 0) return t('startsInHours').replace('{{hours}}', hours.toString());
-    return t('startsInHoursMinutes').replace('{{hours}}', hours.toString()).replace('{{minutes}}', mins.toString());
+  const handleClose = () => {
+    Keyboard.dismiss();
+    onClose();
   };
 
   React.useEffect(() => {
@@ -122,12 +110,12 @@ export default function ContactRequestBottomSheet({
   };
 
   return (
-    <Modal visible={visible} transparent animationType="none" onRequestClose={onClose}>
+    <Modal visible={visible} transparent animationType="none" onRequestClose={handleClose}>
       <KeyboardAvoidingView
         style={styles.modalContainer}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       >
-        <TouchableOpacity style={styles.backdrop} activeOpacity={1} onPress={onClose}>
+        <TouchableOpacity style={styles.backdrop} activeOpacity={1} onPress={handleClose}>
           {Platform.OS === 'ios' ? (
             <BlurView intensity={20} style={StyleSheet.absoluteFill} tint="dark" />
           ) : (
@@ -143,9 +131,11 @@ export default function ContactRequestBottomSheet({
             },
           ]}
         >
-          <View style={styles.handle} />
+          <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+            <View>
+              <View style={styles.handle} />
 
-          <View style={styles.content}>
+              <View style={styles.content}>
             <View style={styles.eventCard}>
               <View style={styles.ownerSection}>
                 {(() => {
@@ -167,7 +157,7 @@ export default function ContactRequestBottomSheet({
               {walkStartTime && (
                 <View style={styles.timeRow}>
                   <Clock size={16} color={COLORS.TEXT_LIGHT} />
-                  <Text style={styles.timeText}>{getTimeText(walkStartTime, t)}</Text>
+                  <Text style={styles.timeText}>{formatTime(walkStartTime, t)}</Text>
                 </View>
               )}
             </View>
@@ -194,13 +184,15 @@ export default function ContactRequestBottomSheet({
               </View>
             )}
 
-            <PrimaryButton
-              title={t('sendRequestButton')}
-              onPress={handleSubmit}
-              disabled={isSubmitting}
-              loading={isSubmitting}
-            />
-          </View>
+                <PrimaryButton
+                  title={t('sendRequestButton')}
+                  onPress={handleSubmit}
+                  disabled={isSubmitting}
+                  loading={isSubmitting}
+                />
+              </View>
+            </View>
+          </TouchableWithoutFeedback>
         </Animated.View>
       </KeyboardAvoidingView>
     </Modal>
