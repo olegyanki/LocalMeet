@@ -5,13 +5,11 @@ import {
   StyleSheet,
   Pressable,
   ActivityIndicator,
-  Image,
   ScrollView,
   Platform,
   Dimensions,
   NativeScrollEvent,
   NativeSyntheticEvent,
-  AppState,
   Animated,
   PanResponder,
 } from 'react-native';
@@ -20,18 +18,16 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Location from 'expo-location';
 import { useAuth } from '@shared/contexts/AuthContext';
 import { useI18n } from '@shared/i18n';
-import { getNearbyWalks, NearbyWalk, getProfile, UserProfile } from '@shared/lib/api';
+import { getNearbyWalks, NearbyWalk } from '@shared/lib/api';
 import { Clock } from 'lucide-react-native';
 import Svg, { Rect, Defs, Filter, FeFlood, FeColorMatrix, FeOffset, FeGaussianBlur, FeBlend, G } from 'react-native-svg';
 import { COLORS, SIZES } from '@shared/constants';
-import { parseDuration, isWalkActive, getTimeColor, formatTime } from '@shared/utils/time';
-import { getEventImage } from '@shared/utils/eventImage';
+import { isWalkActive, getTimeColor, formatTime } from '@shared/utils/time';
 import Avatar from '@shared/components/Avatar';
 import LocationPin from '@shared/components/LocationPin';
 import FilterBottomSheet, { TimeFilter, SortBy } from '@features/search/components/FilterBottomSheet';
 import NativeMap from '@features/search/maps/NativeMap';
 import ContactRequestBottomSheet from '@features/events/modals/ContactRequestBottomSheet';
-import { useFocusEffect } from '@react-navigation/native';
 import { router, useLocalSearchParams } from 'expo-router';
 
 
@@ -66,7 +62,6 @@ export default function SearchScreen() {
   const [showFilterSheet, setShowFilterSheet] = useState(false);
   const [timeFilter, setTimeFilter] = useState<TimeFilter>('all');
   const [sortBy, setSortBy] = useState<SortBy>('distance');
-  const cardsTranslateY = useRef(new Animated.Value(0)).current;
   const [cardsContainerHeight, setCardsContainerHeight] = useState(0);
 
   const screenWidth = Dimensions.get('window').width;
@@ -74,9 +69,9 @@ export default function SearchScreen() {
   const cardGap = 16;
   const containerTranslateY = useRef(new Animated.Value(0)).current;
 
-  const HANDLE_VISIBLE_HEIGHT = 40;
-  const DEFAULT_COLLAPSED_OFFSET = 240;
-  const collapsedOffset = cardsContainerHeight > 0 ? cardsContainerHeight - HANDLE_VISIBLE_HEIGHT : DEFAULT_COLLAPSED_OFFSET;
+  const HANDLE_HEIGHT = 40;
+  const COLLAPSED_VISIBLE_HEIGHT = 60;
+  const collapsedOffset = cardsContainerHeight > 0 ? cardsContainerHeight - COLLAPSED_VISIBLE_HEIGHT : 220;
 
   const panResponder = useRef(
     PanResponder.create({
