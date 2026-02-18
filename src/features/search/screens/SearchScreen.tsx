@@ -19,12 +19,11 @@ import * as Location from 'expo-location';
 import { useAuth } from '@shared/contexts/AuthContext';
 import { useI18n } from '@shared/i18n';
 import { getNearbyWalks, NearbyWalk } from '@shared/lib/api';
-import { Clock } from 'lucide-react-native';
 import Svg, { Rect, Defs, Filter, FeFlood, FeColorMatrix, FeOffset, FeGaussianBlur, FeBlend, G } from 'react-native-svg';
 import { COLORS, SIZES } from '@shared/constants';
 import { isWalkActive, getTimeColor, formatTime } from '@shared/utils/time';
-import Avatar from '@shared/components/Avatar';
 import LocationPin from '@shared/components/LocationPin';
+import EventCard from '@shared/components/EventCard';
 import FilterBottomSheet, { TimeFilter, SortBy } from '@features/search/components/FilterBottomSheet';
 import NativeMap from '@features/search/maps/NativeMap';
 import ContactRequestBottomSheet from '@features/events/modals/ContactRequestBottomSheet';
@@ -69,7 +68,6 @@ export default function SearchScreen() {
   const cardGap = 16;
   const containerTranslateY = useRef(new Animated.Value(0)).current;
 
-  const HANDLE_HEIGHT = 40;
   const COLLAPSED_VISIBLE_HEIGHT = 60;
   const collapsedOffset = cardsContainerHeight > 0 ? cardsContainerHeight - COLLAPSED_VISIBLE_HEIGHT : 220;
 
@@ -350,7 +348,7 @@ export default function SearchScreen() {
             <Rect x="30" y="20" width="6" height="6" rx="3" fill={COLORS.ORANGE_ICON}/>
             <Rect x="18" y="28" width="6" height="6" rx="3" fill={COLORS.ORANGE_ICON}/>
             <Defs>
-              <Filter id="filter0_d_3223_2156" x="0" y="0" width="54" height="54" filterUnits="userSpaceOnUse" colorInterpolationFilters="sRGB">
+              <Filter id="filter0_d_3223_2156" x="0" y="0" width="54" height="54" filterUnits="userSpaceOnUse">
                 <FeFlood floodOpacity="0" result="BackgroundImageFix"/>
                 <FeColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
                 <FeOffset/>
@@ -466,66 +464,23 @@ export default function SearchScreen() {
           ) : (
             <>
               {sortedWalks.map((item) => (
-                <Pressable
+                <EventCard
                   key={`walk-${item.walk?.id}`}
-                  style={[
-                    styles.userCard,
-                    { width: cardWidth }
-                  ]}
+                  item={item}
+                  currentUserId={user?.id || ''}
+                  width={cardWidth}
+                  t={(key, params) => t(key as any, params)}
                   onPress={() => {
                     if (item.walk?.id) {
                       router.push(`/event/${item.walk.id}`);
                     }
                   }}
-                >
-                  <View style={styles.cardContent}>
-                    <View style={styles.cardHeader}>
-                      <Pressable
-                        style={styles.avatarContainer}
-                        onPress={(e) => {
-                          e.stopPropagation();
-                          if (item.walk) {
-                            router.push(`/user/${item.walk.user_id}`);
-                          }
-                        }}
-                      >
-                        <Avatar uri={item.walk?.image_url} name="" size={SIZES.AVATAR_MEDIUM} />
-                      </Pressable>
-
-                      <View style={styles.cardHeaderInfo}>
-                        <Text style={styles.userName} numberOfLines={1}>
-                          {item.walk?.title || ''}
-                        </Text>
-                      </View>
-                    </View>
-
-                    {item.walk?.title && (
-                      <Text style={styles.walkTitle} numberOfLines={1}>
-                        {item.walk.title}
-                      </Text>
-                    )}
-
-                    {item.walk?.description && (
-                      <Text style={styles.walkDescription} numberOfLines={2}>
-                        {item.walk.description}
-                      </Text>
-                    )}
-                  </View>
-
-                  <View style={styles.cardFooter}>
-                    <Text style={[styles.distance, item.walk?.user_id === user?.id && styles.ownEventText]}>
-                      {item.walk?.user_id === user?.id ? t('yourEvent') : `${(item.distance / 1000).toFixed(1)} ${t('kmFromYou')}`}
-                    </Text>
-                    {item.walk?.start_time && (
-                      <View style={styles.timeInfo}>
-                        <Clock size={14} color={getTimeColor(item.walk.start_time)} />
-                        <Text style={[styles.timeText, { color: getTimeColor(item.walk.start_time) }]}>
-                          {formatTime(item.walk.start_time, t)}
-                        </Text>
-                      </View>
-                    )}
-                  </View>
-                </Pressable>
+                  onAvatarPress={() => {
+                    if (item.walk) {
+                      router.push(`/user/${item.walk.user_id}`);
+                    }
+                  }}
+                />
               ))}
             </>
           )}
@@ -637,77 +592,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: COLORS.TEXT_LIGHT,
     textAlign: 'center',
-  },
-  userCard: {
-    backgroundColor: COLORS.WHITE,
-    borderRadius: 24,
-    padding: 20,
-    shadowColor: COLORS.SHADOW_BLACK,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 8,
-    elevation: 3,
-    overflow: 'hidden',
-  },
-  cardContent: {
-    flex: 1,
-  },
-  cardHeader: {
-    flexDirection: 'row',
-    gap: 16,
-    marginBottom: 16,
-  },
-  avatarContainer: {
-    position: 'relative',
-  },
-  cardHeaderInfo: {
-    flex: 1,
-    justifyContent: 'center',
-  },
-  userName: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: COLORS.TEXT_DARK,
-    marginBottom: 6,
-  },
-  walkTitle: {
-    fontSize: 16,
-    color: COLORS.TEXT_DARK,
-    fontWeight: '700',
-    lineHeight: 22,
-    marginBottom: 4,
-  },
-  timeInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-  },
-  timeText: {
-    fontSize: 13,
-    color: 'rgba(60, 60, 67, 0.6)',
-    fontWeight: '500',
-  },
-  walkDescription: {
-    fontSize: 14,
-    color: COLORS.TEXT_SECONDARY,
-    lineHeight: 20,
-  },
-  cardFooter: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginTop: 16,
-    paddingTop: 16,
-    borderTopWidth: 1,
-    borderTopColor: COLORS.BORDER_COLOR,
-  },
-  distance: {
-    fontSize: 12,
-    color: 'rgba(60, 60, 67, 0.6)',
-  },
-  ownEventText: {
-    color: COLORS.ACCENT_ORANGE,
-    fontWeight: '600',
   },
   mapButtons: {
     position: 'absolute',
