@@ -40,8 +40,19 @@ export default React.memo(function EventCard({
   const hostName = item.host?.display_name || item.host?.username || t('unknownHost');
   
   // Time formatting
-  const getTimeRange = (startTime: string, duration: number) => {
+  const getTimeDisplay = (startTime: string, duration: number) => {
     const start = new Date(startTime);
+    const now = new Date();
+    const diffMs = start.getTime() - now.getTime();
+    const diffHours = diffMs / (1000 * 60 * 60);
+    const isToday = now.toDateString() === start.toDateString();
+    
+    // If event is not today AND not within 6 hours, show date + start time only
+    if (!isToday && diffHours > 6) {
+      return formatDateAndTime(start);
+    }
+    
+    // Otherwise show time range
     const end = new Date(start.getTime() + duration * 1000); // duration in seconds
     return `${formatHHMM(start)} - ${formatHHMM(end)}`;
   };
@@ -52,6 +63,13 @@ export default React.memo(function EventCard({
       minute: '2-digit',
       hour12: false,
     });
+  };
+  
+  const formatDateAndTime = (date: Date) => {
+    const day = date.getDate().toString().padStart(2, '0');
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const time = formatHHMM(date);
+    return `${day}.${month} ${time}`;
   };
   
   // Get time color based on event start time
@@ -182,7 +200,7 @@ export default React.memo(function EventCard({
             <View style={styles.metadataItem}>
               <Clock size={14} color={getTimeColor(item.walk.start_time)} />
               <Text style={[styles.metadataText, { color: getTimeColor(item.walk.start_time) }]}>
-                {getTimeRange(item.walk.start_time, item.walk.duration)}
+                {getTimeDisplay(item.walk.start_time, item.walk.duration)}
               </Text>
             </View>
           )}
