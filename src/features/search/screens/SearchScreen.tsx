@@ -18,10 +18,10 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Location from 'expo-location';
 import { useAuth } from '@shared/contexts/AuthContext';
 import { useI18n } from '@shared/i18n';
-import { getNearbyWalks, NearbyWalk } from '@shared/lib/api';
+import { getNearbyWalks, NearbyWalk, getProfiles } from '@shared/lib/api';
 import Svg, { Rect, Defs, Filter, FeFlood, FeColorMatrix, FeOffset, FeGaussianBlur, FeBlend, G } from 'react-native-svg';
 import { COLORS, SIZES } from '@shared/constants';
-import { isWalkActive, getTimeColor, formatTime } from '@shared/utils/time';
+import { isWalkActive } from '@shared/utils/time';
 import LocationPin from '@shared/components/LocationPin';
 import EventCard from '@shared/components/EventCard';
 import FilterBottomSheet, { TimeFilter, SortBy } from '@features/search/components/FilterBottomSheet';
@@ -233,8 +233,28 @@ export default function SearchScreen() {
       setIsLoadingWalks(true);
       const walks = await getNearbyWalks(location.coords.latitude, location.coords.longitude);
 
-      const otherWalks = walks.filter((w) => w.walk?.user_id !== user.id);
-      const ownWalks = walks.filter((w) => w.walk?.user_id === user.id);
+      // Get unique user IDs from walks
+      const userIds = [...new Set(walks.map(w => w.walk?.user_id).filter(Boolean) as string[])];
+      
+      // Fetch profiles for all users
+      const profilesMap = await getProfiles(userIds);
+      
+      // Attach hosts to walks
+      const walksWithHosts = walks.map(walk => {
+        if (walk.walk && walk.walk.user_id) {
+          const host = profilesMap.get(walk.walk.user_id);
+          if (host) {
+            return {
+              ...walk,
+              host,
+            };
+          }
+        }
+        return walk;
+      });
+
+      const otherWalks = walksWithHosts.filter((w) => w.walk?.user_id !== user.id);
+      const ownWalks = walksWithHosts.filter((w) => w.walk?.user_id === user.id);
       const sortedWalks = [...ownWalks, ...otherWalks];
 
       setNearbyWalks(sortedWalks);
@@ -478,6 +498,20 @@ export default function SearchScreen() {
                   onAvatarPress={() => {
                     if (item.walk) {
                       router.push(`/user/${item.walk.user_id}`);
+                    }
+                  }}
+                  onJoinPress={(eventId) => {
+                    const walk = sortedWalks.find(w => w.walk?.id === eventId);
+                    if (walk && walk.walk) {
+                      setContactRequestData({
+                        walkId: walk.walk.id,
+                        walkOwnerName: walk.host?.display_name || walk.host?.username || 'Unknown',
+                        walkOwnerAvatar: walk.host?.avatar_url,
+                        walkTitle: walk.walk.title,
+                        walkStartTime: walk.walk.start_time,
+                        walkImageUrl: walk.walk.image_url,
+                      });
+                      setContactRequestVisible(true);
                     }
                   }}
                 />

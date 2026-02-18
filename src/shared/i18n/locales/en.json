@@ -249,5 +249,8 @@
   "deleteEventConfirm": "Are you sure you want to delete this event? This action cannot be undone.",
   "eventLocation": "Event Location",
   "openInMaps": "Open in Maps",
-  "joinEvent": "Join"
+  "joinEvent": "Join",
+  "unknownHost": "Unknown",
+  "hostedBy": "Hosted by",
+  "join": "Join"
 }

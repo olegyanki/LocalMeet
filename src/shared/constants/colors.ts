@@ -38,6 +38,21 @@ export const COLORS = {
   GRAY_HANDLE: '#D1D1D1',
   TEXT_SECONDARY: '#4F4F4F',
   
+  // Subtext colors (for EventCard redesign)
+  SUBTEXT_LIGHT: '#6B7280',
+  SUBTEXT_DARK: '#9CA3AF',
+  
+  // Time badge colors
+  TIME_BADGE_BG: '#EFF6FF',
+  TIME_BADGE_TEXT: '#3B82F6',
+  
+  // Online indicator
+  ONLINE_INDICATOR: '#10B981',
+  
+  // Card colors (light/dark mode)
+  CARD_LIGHT: '#FFFFFF',
+  CARD_DARK: '#1E1E1E',
+  
   // Social colors
   INSTAGRAM: '#E4405F',
   TELEGRAM: '#0088cc',

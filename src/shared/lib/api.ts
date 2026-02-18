@@ -27,12 +27,18 @@ export interface Walk {
   latitude: number;
   longitude: number;
   image_url: string | null;
-  deleted: boolean;
+}
+
+export interface WalkHost {
+  username: string;
+  display_name: string | null;
+  avatar_url: string | null;
 }
 
 export interface NearbyWalk {
   distance: number; // in meters
   walk: Walk | null;
+  host?: WalkHost;
 }
 
 export async function updateProfile(userId: string, data: Partial<UserProfile>) {
@@ -93,6 +99,35 @@ export async function getProfile(userId: string): Promise<UserProfile | null> {
   }
 
   return data;
+}
+
+// Get multiple profiles by user IDs
+export async function getProfiles(userIds: string[]): Promise<Map<string, WalkHost>> {
+  if (userIds.length === 0) {
+    return new Map();
+  }
+
+  const { data, error } = await supabase
+    .from('profiles')
+    .select('id, username, display_name, avatar_url')
+    .in('id', userIds);
+
+  if (error) {
+    throw error;
+  }
+
+  const profilesMap = new Map();
+  if (data) {
+    data.forEach((profile) => {
+      profilesMap.set(profile.id, {
+        username: profile.username,
+        display_name: profile.display_name,
+        avatar_url: profile.avatar_url,
+      });
+    });
+  }
+
+  return profilesMap;
 }
 
 export async function createWalk(data: {

@@ -126,6 +126,20 @@ export const SHADOW = {
     shadowRadius: 16,
     elevation: 6,
   },
+  xl: {
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.25,
+    shadowRadius: 24,
+    elevation: 8,
+  },
+  md: {
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
+    elevation: 3,
+  },
 };
 
 // Common sizes
@@ -150,6 +164,11 @@ export const SIZES = {
   HANDLE_HEIGHT: 4,
   BORDER_WIDTH: 1,
   BORDER_WIDTH_THICK: 2,
+  
+  // EventCard redesign sizes
+  EVENT_IMAGE_SIZE: 96,
+  HOST_AVATAR_SIZE: 40,
+  ONLINE_INDICATOR_SIZE: 12,
 };
 
 // Common header styles
@@ -196,5 +215,25 @@ export const NAVBAR_STYLES = {
   },
   spacer: {
     width: 40,
+  },
+};
+
+// EventCard styles (redesign)
+export const CARD_STYLES = {
+  eventCard: {
+    backgroundColor: COLORS.CARD_BG,
+    borderRadius: 34,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: COLORS.BORDER_COLOR,
+    ...SHADOW.xl,
+  },
+  dragHandle: {
+    width: 12,
+    height: 1.5,
+    backgroundColor: COLORS.GRAY_HANDLE,
+    borderRadius: 1,
+    alignSelf: 'center' as const,
+    marginBottom: 12,
   },
 };
