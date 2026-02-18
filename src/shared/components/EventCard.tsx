@@ -173,7 +173,7 @@ export default React.memo(function EventCard({
 const styles = StyleSheet.create({
   card: {
     backgroundColor: COLORS.CARD_BG,
-    borderRadius: 20,
+    borderRadius: 26,
     borderWidth: 1,
     borderColor: COLORS.BORDER_COLOR,
     ...SHADOW.standard,
@@ -191,7 +191,7 @@ const styles = StyleSheet.create({
   imageContainer: {
     width: 96,
     height: 96,
-    borderRadius: 40,
+    borderRadius: 34,
     overflow: 'hidden',
   },
   eventImage: {
