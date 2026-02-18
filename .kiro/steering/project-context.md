@@ -75,6 +75,7 @@ app/
 ### Tables
 - `profiles` - User profiles (username, bio, avatar, interests, languages)
 - `walks` - Events/walks (title, time, location, description)
+  - **IMPORTANT**: `duration` field is stored in **seconds**, not minutes
 - `user_locations` - Real-time user locations
 - `walk_requests` - Walk join requests (pending/accepted/rejected)
 - `chats` - Chat rooms
@@ -83,6 +84,7 @@ app/
 ### Key Types
 - `UserProfile` - User profile data (id, username, display_name, bio, avatar_url, etc.)
 - `Walk` - Event/walk data (id, user_id, title, start_time, location, etc.)
+  - **duration**: number (in seconds)
 - `NearbyWalk` - Walk with distance (distance, walk)
 - `WalkRequest` - Join request (id, walk_id, requester_id, status, message)
 - `Chat` - Chat room with participants

@@ -34,6 +34,7 @@ export default React.memo(function EventCard({
   const [imageError, setImageError] = useState(false);
   
   // Derived state
+  const isOwnEvent = item.walk?.user_id === currentUserId;
   const eventImageUrl = item.walk?.image_url;
   const hostAvatarUrl = item.host?.avatar_url;
   const hostName = item.host?.display_name || item.host?.username || t('unknownHost');
@@ -41,7 +42,7 @@ export default React.memo(function EventCard({
   // Time formatting
   const getTimeRange = (startTime: string, duration: number) => {
     const start = new Date(startTime);
-    const end = new Date(start.getTime() + duration * 60000);
+    const end = new Date(start.getTime() + duration * 1000); // duration in seconds
     return `${formatHHMM(start)} - ${formatHHMM(end)}`;
   };
   
@@ -51,6 +52,28 @@ export default React.memo(function EventCard({
       minute: '2-digit',
       hour12: false,
     });
+  };
+  
+  // Get time color based on event start time
+  const getTimeColor = (startTime: string) => {
+    const now = new Date();
+    const start = new Date(startTime);
+    const diffMs = start.getTime() - now.getTime();
+    const diffHours = diffMs / (1000 * 60 * 60);
+    
+    // Check if event is today
+    const isToday = now.toDateString() === start.toDateString();
+    
+    if (diffMs < 0) {
+      // Event already started - green
+      return COLORS.SUCCESS_GREEN;
+    } else if (isToday || diffHours <= 6) {
+      // Event starts today OR within 6 hours - blue
+      return COLORS.TIME_BLUE;
+    } else {
+      // Event starts later - gray
+      return COLORS.TEXT_LIGHT;
+    }
   };
   
   // Handlers
@@ -103,7 +126,7 @@ export default React.memo(function EventCard({
           
           {/* Description */}
           {item.walk?.description && (
-            <Text style={styles.description} numberOfLines={2}>
+            <Text style={styles.description} numberOfLines={4} ellipsizeMode="tail">
               {item.walk.description}
             </Text>
           )}
@@ -115,27 +138,31 @@ export default React.memo(function EventCard({
       
       {/* Metadata Bar */}
       <View style={styles.metadataBar}>
-        {/* Host Info */}
-        <Pressable
-          onPress={handleAvatarPress}
-          style={styles.hostInfo}
-          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-          accessible={true}
-          accessibilityLabel={`View ${hostName}'s profile`}
-          accessibilityRole="button"
-        >
-          <Avatar
-            uri={hostAvatarUrl}
-            name={hostName}
-            size={24}
-          />
-          <View style={styles.hostTextContainer}>
-            <Text style={styles.hostLabel}>{t('host').toUpperCase()}</Text>
-            <Text style={styles.hostName} numberOfLines={1}>
-              {hostName}
-            </Text>
-          </View>
-        </Pressable>
+        {/* Host Info or Own Event */}
+        {isOwnEvent ? (
+          <Text style={styles.ownEventText}>{t('yourEvent')}</Text>
+        ) : (
+          <Pressable
+            onPress={handleAvatarPress}
+            style={styles.hostInfo}
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            accessible={true}
+            accessibilityLabel={`View ${hostName}'s profile`}
+            accessibilityRole="button"
+          >
+            <Avatar
+              uri={hostAvatarUrl}
+              name={hostName}
+              size={24}
+            />
+            <View style={styles.hostTextContainer}>
+              <Text style={styles.hostLabel}>{t('host').toUpperCase()}</Text>
+              <Text style={styles.hostName} numberOfLines={1}>
+                {hostName}
+              </Text>
+            </View>
+          </Pressable>
+        )}
         
         {/* Event Metadata */}
         <View style={styles.eventMetadata}>
@@ -153,8 +180,8 @@ export default React.memo(function EventCard({
           {/* Time */}
           {item.walk?.start_time && item.walk?.duration && (
             <View style={styles.metadataItem}>
-              <Clock size={14} color={COLORS.TEXT_LIGHT} />
-              <Text style={styles.metadataText}>
+              <Clock size={14} color={getTimeColor(item.walk.start_time)} />
+              <Text style={[styles.metadataText, { color: getTimeColor(item.walk.start_time) }]}>
                 {getTimeRange(item.walk.start_time, item.walk.duration)}
               </Text>
             </View>
@@ -206,6 +233,8 @@ const styles = StyleSheet.create({
   detailsContainer: {
     flex: 1,
     gap: 4,
+    maxHeight: 96,
+    overflow: 'hidden',
   },
   eventTitle: {
     fontSize: 18,
@@ -267,5 +296,10 @@ const styles = StyleSheet.create({
     width: 1,
     height: 12,
     backgroundColor: COLORS.BORDER_COLOR,
+  },
+  ownEventText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: COLORS.ACCENT_ORANGE,
   },
 });
