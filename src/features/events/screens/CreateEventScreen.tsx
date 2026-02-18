@@ -48,6 +48,7 @@ export default function CreateEventScreen() {
     description?: string;
     date?: string;
     time?: string;
+    coverImage?: string;
   }>({});
   const [showTimePicker, setShowTimePicker] = useState(false);
   const [showDatePicker, setShowDatePicker] = useState(false);
@@ -68,6 +69,14 @@ export default function CreateEventScreen() {
     return durationSeconds / 60;
   };
 
+  // Round minutes to nearest 10-minute interval (0, 10, 20, 30, 40, 50)
+  const roundMinutesToInterval = (minutes: number): number => {
+    const intervals = [0, 10, 20, 30, 40, 50];
+    const rounded = Math.round(minutes / 10) * 10;
+    // If rounded to 60, return 50
+    return rounded >= 60 ? 50 : rounded;
+  };
+
   useEffect(() => {
     loadCurrentLocation();
     setCurrentDateTime();
@@ -75,9 +84,13 @@ export default function CreateEventScreen() {
 
   const setCurrentDateTime = () => {
     const now = new Date();
-    setSelectedTime(now);
-    const hours = now.getHours().toString().padStart(2, '0');
-    const minutes = now.getMinutes().toString().padStart(2, '0');
+    const roundedMinutes = roundMinutesToInterval(now.getMinutes());
+    const roundedTime = new Date(now);
+    roundedTime.setMinutes(roundedMinutes);
+    
+    setSelectedTime(roundedTime);
+    const hours = roundedTime.getHours().toString().padStart(2, '0');
+    const minutes = roundedMinutes.toString().padStart(2, '0');
     setTime(`${hours}:${minutes}`);
     
     const year = now.getFullYear();
@@ -96,6 +109,10 @@ export default function CreateEventScreen() {
 
     if (!result.canceled) {
       setCoverImage(result.assets[0].uri);
+      if (error) setError('');
+      if (fieldErrors.coverImage) {
+        setFieldErrors({ ...fieldErrors, coverImage: undefined });
+      }
     }
   };
 
@@ -151,6 +168,10 @@ export default function CreateEventScreen() {
       errors.title = t('eventTitleRequired');
     }
     
+    if (!coverImage) {
+      errors.coverImage = t('coverImageRequired');
+    }
+    
     if (!date || !time.trim()) {
       if (!date) errors.date = t('dateRequired');
       if (!time.trim()) errors.time = t('timeRequired');
@@ -186,10 +207,7 @@ export default function CreateEventScreen() {
         }
       }
 
-      let walkImageUrl: string | undefined;
-      if (coverImage) {
-        walkImageUrl = await uploadEventImage(user.id, coverImage);
-      }
+      const walkImageUrl = await uploadEventImage(user.id, coverImage!);
 
       const newWalk = await createWalk({
         userId: user.id,
@@ -217,10 +235,15 @@ export default function CreateEventScreen() {
   };
 
   const confirmTime = (finalTime: Date) => {
-    const hours = finalTime.getHours().toString().padStart(2, '0');
-    const minutes = finalTime.getMinutes().toString().padStart(2, '0');
+    // Round minutes to nearest 10-minute interval
+    const roundedMinutes = roundMinutesToInterval(finalTime.getMinutes());
+    const roundedTime = new Date(finalTime);
+    roundedTime.setMinutes(roundedMinutes);
+    
+    const hours = roundedTime.getHours().toString().padStart(2, '0');
+    const minutes = roundedMinutes.toString().padStart(2, '0');
     setTime(`${hours}:${minutes}`);
-    setSelectedTime(finalTime);
+    setSelectedTime(roundedTime);
     setShowTimePicker(false);
     if (error) setError('');
   };
@@ -229,6 +252,27 @@ export default function CreateEventScreen() {
     if (date) {
       setSelectedTime(date);
     }
+  };
+
+  // Check if all required fields are filled
+  const isFormValid = () => {
+    return (
+      title.trim() !== '' &&
+      coverImage !== null &&
+      date !== '' &&
+      time.trim() !== '' &&
+      description.trim() !== '' &&
+      selectedLocation !== null
+    );
+  };
+
+  const handleOpenTimePicker = () => {
+    // Round current time to nearest 10-minute interval before opening picker
+    const roundedMinutes = roundMinutesToInterval(selectedTime.getMinutes());
+    const roundedTime = new Date(selectedTime);
+    roundedTime.setMinutes(roundedMinutes);
+    setSelectedTime(roundedTime);
+    setShowTimePicker(true);
   };
 
   const handleMapMove = (lat: number, lng: number) => {
@@ -272,7 +316,10 @@ export default function CreateEventScreen() {
         >
           {/* Cover Photo Section */}
           <View style={styles.section}>
-            <Pressable style={styles.coverPhotoContainer} onPress={pickCoverImage}>
+            <Pressable style={[
+              styles.coverPhotoContainer,
+              fieldErrors.coverImage && styles.coverPhotoError
+            ]} onPress={pickCoverImage}>
               {coverImage ? (
                 <>
                   <Image source={{ uri: coverImage }} style={styles.coverImage} />
@@ -288,9 +335,14 @@ export default function CreateEventScreen() {
                   />
                   <View style={styles.coverPhotoOverlay}>
                     <View style={styles.coverPhotoIcon}>
-                      <Camera size={24} color={COLORS.ACCENT_ORANGE} />
+                      <Camera size={24} color={fieldErrors.coverImage ? COLORS.ERROR_RED : COLORS.ACCENT_ORANGE} />
                     </View>
-                    <Text style={styles.coverPhotoText}>{t('addCoverPhoto')}</Text>
+                    <Text style={[
+                      styles.coverPhotoText,
+                      fieldErrors.coverImage && { color: COLORS.ERROR_RED }
+                    ]}>
+                      {fieldErrors.coverImage ? t('coverImageRequired') : t('addCoverPhoto')}
+                    </Text>
                   </View>
                 </>
               )}
@@ -369,7 +421,7 @@ export default function CreateEventScreen() {
                 <Pressable style={[
                   styles.dateTimeInput,
                   fieldErrors.time && styles.inputError
-                ]} onPress={() => setShowTimePicker(true)}>
+                ]} onPress={handleOpenTimePicker}>
                   <Clock size={18} color={fieldErrors.time ? COLORS.ERROR_RED : COLORS.ACCENT_ORANGE} style={styles.inputIcon} />
                   <Text style={[
                     styles.dateTimeInputText,
@@ -426,7 +478,7 @@ export default function CreateEventScreen() {
             <PrimaryButton
               title={t('publishEvent')}
               onPress={handleSubmit}
-              disabled={isSubmitting}
+              disabled={isSubmitting || !isFormValid()}
               loading={isSubmitting}
             />
           </View>
@@ -537,6 +589,9 @@ const styles = StyleSheet.create({
     borderStyle: 'dashed',
     overflow: 'hidden',
     position: 'relative',
+  },
+  coverPhotoError: {
+    borderColor: COLORS.ERROR_RED,
   },
   backgroundImage: {
     position: 'absolute',

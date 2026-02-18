@@ -228,6 +228,7 @@
   "actionRequired": "Action Required",
   "dateRequired": "Date is required",
   "timeRequired": "Time is required",
+  "coverImageRequired": "Cover photo is required",
   "timeDuration": "Time & Duration",
   "startTime": "Start Time",
   "selectEventDate": "Select Event Date",
