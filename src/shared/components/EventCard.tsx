@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, Pressable, Image } from 'react-native';
-import { MapPin, ImageIcon } from 'lucide-react-native';
+import { MapPin, ImageIcon, Clock } from 'lucide-react-native';
 import Avatar from '@shared/components/Avatar';
-import { COLORS, SIZES, CARD_STYLES, SHADOW } from '@shared/constants';
+import { COLORS, SIZES, SHADOW } from '@shared/constants';
 import { NearbyWalk } from '@shared/lib/api';
 import { TranslationKey } from '@shared/i18n/translations';
 
@@ -14,7 +14,6 @@ interface EventCardProps {
   // Callbacks
   onPress: () => void;
   onAvatarPress: () => void;
-  onJoinPress?: (eventId: string) => void;
   
   // Optional customization
   width?: number;
@@ -28,7 +27,6 @@ export default React.memo(function EventCard({
   currentUserId,
   onPress,
   onAvatarPress,
-  onJoinPress,
   width,
   t,
 }: EventCardProps) {
@@ -36,7 +34,6 @@ export default React.memo(function EventCard({
   const [imageError, setImageError] = useState(false);
   
   // Derived state
-  const isOwnEvent = item.walk?.user_id === currentUserId;
   const eventImageUrl = item.walk?.image_url;
   const hostAvatarUrl = item.host?.avatar_url;
   const hostName = item.host?.display_name || item.host?.username || t('unknownHost');
@@ -62,13 +59,6 @@ export default React.memo(function EventCard({
     onAvatarPress();
   };
   
-  const handleJoinPress = (e: any) => {
-    e.stopPropagation();
-    if (onJoinPress && item.walk?.id) {
-      onJoinPress(item.walk.id);
-    }
-  };
-  
   // Dynamic styles
   const cardStyle = [
     styles.card,
@@ -87,70 +77,44 @@ export default React.memo(function EventCard({
       accessibilityRole="button"
       accessibilityHint="Tap to view event details"
     >
-      {/* Top Content - takes remaining space */}
-      <View style={styles.topContent}>
-        {/* Event Title - inside card at top */}
-        <Text style={styles.eventTitle} numberOfLines={2}>
-          {item.walk?.title || ''}
-        </Text>
-        
-        {/* Content Container */}
-        <View style={styles.contentContainer}>
-          {/* Event Image */}
-          <View style={styles.imageContainer}>
-            {eventImageUrl && !imageError ? (
-              <Image
-                source={{ uri: eventImageUrl }}
-                style={styles.eventImage}
-                onError={() => setImageError(true)}
-              />
-            ) : (
-              <View style={[styles.eventImage, styles.imagePlaceholder]}>
-                <ImageIcon size={32} color={COLORS.GRAY_PLACEHOLDER} />
-              </View>
-            )}
-          </View>
-          
-          {/* Info Container */}
-          <View style={styles.infoContainer}>
-            {/* Description */}
-            {item.walk?.description && (
-              <Text style={styles.description} numberOfLines={4}>
-                {item.walk.description}
-              </Text>
-            )}
-            
-            {/* Location & Time Row */}
-            <View style={styles.locationTimeRow}>
-              {/* Location - always show distance */}
-              <View style={styles.locationInfo}>
-                <MapPin size={14} color={COLORS.TEXT_DARK} />
-                <Text style={styles.locationText}>
-                  {(item.distance / 1000).toFixed(1)} km
-                </Text>
-              </View>
-              
-              {/* Time Badge */}
-              {item.walk?.start_time && item.walk?.duration && (
-                <View style={styles.timeBadge}>
-                  <View style={styles.blueDot} />
-                  <Text style={styles.timeText}>
-                    {getTimeRange(item.walk.start_time, item.walk.duration)}
-                  </Text>
-                </View>
-              )}
+      {/* Main Content Area */}
+      <View style={styles.mainContent}>
+        {/* Event Image */}
+        <View style={styles.imageContainer}>
+          {eventImageUrl && !imageError ? (
+            <Image
+              source={{ uri: eventImageUrl }}
+              style={styles.eventImage}
+              onError={() => setImageError(true)}
+            />
+          ) : (
+            <View style={[styles.eventImage, styles.imagePlaceholder]}>
+              <ImageIcon size={32} color={COLORS.GRAY_PLACEHOLDER} />
             </View>
-          </View>
+          )}
+        </View>
+        
+        {/* Event Details Container */}
+        <View style={styles.detailsContainer}>
+          {/* Event Title */}
+          <Text style={styles.eventTitle} numberOfLines={2}>
+            {item.walk?.title || ''}
+          </Text>
+          
+          {/* Description */}
+          {item.walk?.description && (
+            <Text style={styles.description} numberOfLines={2}>
+              {item.walk.description}
+            </Text>
+          )}
         </View>
       </View>
       
-      {/* Bottom Section - pinned to bottom */}
-      <View style={styles.bottomSection}>
-        {/* Divider */}
-        <View style={styles.divider} />
-        
-        {/* Footer */}
-        <View style={styles.footer}>
+      {/* Divider */}
+      <View style={styles.divider} />
+      
+      {/* Metadata Bar */}
+      <View style={styles.metadataBar}>
         {/* Host Info */}
         <Pressable
           onPress={handleAvatarPress}
@@ -160,36 +124,42 @@ export default React.memo(function EventCard({
           accessibilityLabel={`View ${hostName}'s profile`}
           accessibilityRole="button"
         >
-          <View style={styles.avatarWrapper}>
-            <Avatar
-              uri={hostAvatarUrl}
-              name={hostName}
-              size={SIZES.HOST_AVATAR_SIZE}
-            />
-          </View>
+          <Avatar
+            uri={hostAvatarUrl}
+            name={hostName}
+            size={24}
+          />
           <View style={styles.hostTextContainer}>
-            <Text style={styles.hostedByLabel}>{t('hostedBy')}</Text>
+            <Text style={styles.hostLabel}>{t('host').toUpperCase()}</Text>
             <Text style={styles.hostName} numberOfLines={1}>
               {hostName}
             </Text>
           </View>
         </Pressable>
         
-        {/* Join Button or Own Event Text */}
-        {isOwnEvent ? (
-          <Text style={styles.ownEventText}>{t('yourEvent')}</Text>
-        ) : (
-          <Pressable
-            onPress={handleJoinPress}
-            style={styles.joinButton}
-            accessible={true}
-            accessibilityLabel="Join event"
-            accessibilityRole="button"
-          >
-            <Text style={styles.joinButtonText}>{t('join')}</Text>
-          </Pressable>
-        )}
-      </View>
+        {/* Event Metadata */}
+        <View style={styles.eventMetadata}>
+          {/* Distance */}
+          <View style={styles.metadataItem}>
+            <MapPin size={14} color={COLORS.TEXT_LIGHT} />
+            <Text style={styles.metadataText}>
+              {(item.distance / 1000).toFixed(1)} km
+            </Text>
+          </View>
+          
+          {/* Vertical Divider */}
+          <View style={styles.verticalDivider} />
+          
+          {/* Time */}
+          {item.walk?.start_time && item.walk?.duration && (
+            <View style={styles.metadataItem}>
+              <Clock size={14} color={COLORS.TEXT_LIGHT} />
+              <Text style={styles.metadataText}>
+                {getTimeRange(item.walk.start_time, item.walk.duration)}
+              </Text>
+            </View>
+          )}
+        </View>
       </View>
     </Pressable>
   );
@@ -201,37 +171,28 @@ export default React.memo(function EventCard({
 });
 
 const styles = StyleSheet.create({
-  eventTitle: {
-    fontSize: 22,
-    fontWeight: '700',
-    color: COLORS.TEXT_DARK,
-    marginBottom: 12,
-  },
   card: {
-    ...CARD_STYLES.eventCard,
     backgroundColor: COLORS.CARD_BG,
-    flexDirection: 'column',
-    justifyContent: 'space-between',
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: COLORS.BORDER_COLOR,
+    ...SHADOW.standard,
+    overflow: 'hidden',
   },
   cardPressed: {
     opacity: 0.9,
     transform: [{ scale: 0.98 }],
   },
-  topContent: {
-    flex: 1,
-  },
-  contentContainer: {
+  mainContent: {
     flexDirection: 'row',
-    gap: 12,
+    padding: 16,
+    gap: 16,
   },
   imageContainer: {
-    width: SIZES.EVENT_IMAGE_SIZE,
-    height: SIZES.EVENT_IMAGE_SIZE,
-    borderRadius: 32,
+    width: 96,
+    height: 96,
+    borderRadius: 40,
     overflow: 'hidden',
-    borderWidth: 1,
-    borderColor: COLORS.BORDER_COLOR,
-    ...SHADOW.md,
   },
   eventImage: {
     width: '100%',
@@ -242,102 +203,69 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  infoContainer: {
+  detailsContainer: {
     flex: 1,
-    gap: 8,
-  },
-  description: {
-    fontSize: 14,
-    lineHeight: 20,
-    color: COLORS.SUBTEXT_LIGHT,
-  },
-  locationTimeRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    gap: 8,
-  },
-  locationInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
     gap: 4,
   },
-  locationText: {
-    fontSize: 14,
-    fontWeight: '500',
-    color: COLORS.TEXT_DARK,
-  },
-  timeBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    backgroundColor: COLORS.TIME_BADGE_BG,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 12,
-  },
-  blueDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: COLORS.TIME_BADGE_TEXT,
-  },
-  timeText: {
-    fontSize: 12,
+  eventTitle: {
+    fontSize: 18,
     fontWeight: '600',
-    color: COLORS.TIME_BADGE_TEXT,
+    color: COLORS.TEXT_DARK,
+    lineHeight: 24,
+  },
+  description: {
+    fontSize: 12,
+    color: COLORS.TEXT_LIGHT,
+    lineHeight: 16,
   },
   divider: {
     height: 1,
-    marginVertical: 12,
-    backgroundColor: COLORS.GRAY_DIVIDER,
+    backgroundColor: COLORS.BORDER_COLOR,
   },
-  bottomSection: {
-    // Footer section pinned to bottom
-  },
-  footer: {
+  metadataBar: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    gap: 12,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
   },
   hostInfo: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
+    gap: 8,
     flex: 1,
-  },
-  avatarWrapper: {
-    position: 'relative',
   },
   hostTextContainer: {
-    flex: 1,
+    gap: 2,
   },
-  hostedByLabel: {
-    fontSize: 12,
+  hostLabel: {
+    fontSize: 10,
+    fontWeight: '600',
     color: COLORS.TEXT_LIGHT,
-    marginBottom: 2,
+    letterSpacing: 0.5,
   },
   hostName: {
-    fontSize: 14,
-    fontWeight: '700',
+    fontSize: 12,
+    fontWeight: '500',
     color: COLORS.TEXT_DARK,
   },
-  joinButton: {
-    backgroundColor: COLORS.ACCENT_ORANGE,
-    paddingHorizontal: 24,
-    paddingVertical: 10,
-    borderRadius: 16,
-    ...SHADOW.elevated,
+  eventMetadata: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
   },
-  joinButtonText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: COLORS.CARD_BG,
+  metadataItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
   },
-  ownEventText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: COLORS.ACCENT_ORANGE,
+  metadataText: {
+    fontSize: 12,
+    color: COLORS.TEXT_LIGHT,
+  },
+  verticalDivider: {
+    width: 1,
+    height: 12,
+    backgroundColor: COLORS.BORDER_COLOR,
   },
 });
