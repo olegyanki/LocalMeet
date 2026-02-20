@@ -363,7 +363,12 @@ export default function EventDetailsScreen() {
           <TouchableOpacity onPress={handleBack} style={NAVBAR_STYLES.backButton}>
             <ChevronLeft size={24} color={COLORS.TEXT_DARK} />
           </TouchableOpacity>
-          <Text style={NAVBAR_STYLES.title} numberOfLines={1}>
+          <Text 
+            style={NAVBAR_STYLES.title} 
+            numberOfLines={1}
+            adjustsFontSizeToFit
+            minimumFontScale={0.7}
+          >
             {walk.title}
           </Text>
           <View style={NAVBAR_STYLES.spacer} />
