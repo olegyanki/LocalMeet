@@ -293,9 +293,9 @@ export default function CreateEventScreen() {
     <View style={styles.container}>
       {/* Header */}
       <View style={[styles.header, { paddingTop: insets.top + SIZES.SCREEN_TOP_PADDING }]}>
-        <Text style={styles.headerTitle}>{t('createEvent')}</Text>
+        <Text style={styles.headerTitle} numberOfLines={1}>{t('createEvent')}</Text>
         <TouchableOpacity onPress={clearForm} activeOpacity={0.6}>
-          <Text style={styles.clearButton}>{t('clear')}</Text>
+          <Text style={styles.clearButton} numberOfLines={1}>{t('clear')}</Text>
         </TouchableOpacity>
       </View>
 

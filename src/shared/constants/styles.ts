@@ -190,11 +190,9 @@ export const HEADER_STYLES = {
     textAlign: 'center' as const,
   },
   headerTextButton: {
-    fontSize: 16,
+    fontSize: 17,
     fontWeight: '600' as const,
     color: COLORS.ACCENT_ORANGE,
-    width: 60,
-    textAlign: 'right' as const,
   },
 };
 

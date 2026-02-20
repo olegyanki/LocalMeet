@@ -177,10 +177,10 @@ export default function ProfileScreen() {
         keyboardShouldPersistTaps="handled"
       >
         <View style={styles.header}>
-          <Text style={styles.title}>{t('profile')}</Text>
+          <Text style={styles.title} numberOfLines={1}>{t('profile')}</Text>
           {hasChanges && (
             <TouchableOpacity onPress={handleCancel}>
-              <Text style={styles.cancelButton}>{t('cancel')}</Text>
+              <Text style={styles.cancelButton} numberOfLines={1}>{t('cancel')}</Text>
             </TouchableOpacity>
           )}
         </View>
