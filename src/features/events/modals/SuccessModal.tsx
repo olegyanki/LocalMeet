@@ -57,7 +57,7 @@ export default function SuccessModal({ visible, walkId, onClose }: SuccessModalP
   const handleButtonPress = () => {
     onClose();
     router.push({
-      pathname: '/(tabs)',
+      pathname: '/(tabs)/(search)',
       params: { 
         reloadEvents: 'true',
         selectWalkId: walkId || undefined,

@@ -44,10 +44,10 @@ export default function SearchScreen() {
   const [isLoadingLocation, setIsLoadingLocation] = useState(true);
   const [nearbyWalks, setNearbyWalks] = useState<NearbyWalk[]>([]);
   const [isLoadingWalks, setIsLoadingWalks] = useState(false);
+  const [isReloadingForSelection, setIsReloadingForSelection] = useState(false);
   const [selectedMarkerId, setSelectedMarkerId] = useState<string | null>(null);
   const [currentCardIndex, setCurrentCardIndex] = useState(0);
   const [mapCenter, setMapCenter] = useState<{latitude: number; longitude: number; paddingBottom?: number} | null>(null);
-  const previousMarkerIdRef = useRef<string | null>(null);
   const [contactRequestVisible, setContactRequestVisible] = useState(false);
   const [contactRequestData, setContactRequestData] = useState<{
     walkId: string;
@@ -61,7 +61,6 @@ export default function SearchScreen() {
   const [showFilterSheet, setShowFilterSheet] = useState(false);
   const [timeFilter, setTimeFilter] = useState<TimeFilter>('all');
   const [sortBy, setSortBy] = useState<SortBy>('distance');
-  const [cardsContainerHeight, setCardsContainerHeight] = useState(0);
 
   const screenWidth = Dimensions.get('window').width;
   const cardWidth = screenWidth - 48;
@@ -128,47 +127,28 @@ export default function SearchScreen() {
     })
   ).current;
 
+  // Consolidated useEffect for reload and selection
   useEffect(() => {
-    if (params.reloadEvents === 'true' && location && user) {
+    // Guard: need location and user
+    if (!location || !user) return;
+    
+    // Priority 1: selectWalkId - reload and select
+    if (params.selectWalkId && !isReloadingForSelection) {
+      setIsReloadingForSelection(true);
+      loadNearbyWalksAndSelect(params.selectWalkId as string);
+      // Clear the param to prevent re-triggering
+      router.setParams({ selectWalkId: undefined });
+      return;
+    }
+    
+    // Priority 2: reloadEvents or refresh - just reload
+    if (params.reloadEvents === 'true' || params.refresh) {
       loadNearbyWalks();
+      // Clear the params to prevent re-triggering
+      router.setParams({ reloadEvents: undefined, refresh: undefined });
+      return;
     }
-  }, [params.reloadEvents]);
-
-  useEffect(() => {
-    if (params.refresh && location && user) {
-      loadNearbyWalks();
-    }
-  }, [params.refresh]);
-
-  useEffect(() => {
-    if (params.selectWalkId && nearbyWalks.length > 0) {
-      const walkIndex = sortedWalks.findIndex((w) => w.walk?.id === params.selectWalkId);
-      if (walkIndex !== -1) {
-        const walk = sortedWalks[walkIndex];
-        setSelectedMarkerId(walk.walk!.id);
-        setCurrentCardIndex(walkIndex);
-        
-        if (scrollViewRef.current) {
-          isScrollingProgrammatically.current = true;
-          scrollViewRef.current.scrollTo({
-            x: walkIndex * (cardWidth + cardGap),
-            animated: true,
-          });
-          setTimeout(() => {
-            isScrollingProgrammatically.current = false;
-          }, 500);
-        }
-
-        if (walk.walk) {
-          setMapCenter({
-            latitude: walk.walk.latitude,
-            longitude: walk.walk.longitude,
-            paddingBottom: 150,
-          });
-        }
-      }
-    }
-  }, [params.selectWalkId, nearbyWalks]);
+  }, [params.selectWalkId, params.reloadEvents, params.refresh, location, user, isReloadingForSelection]);
 
   useEffect(() => {
     if (user) {
@@ -181,29 +161,6 @@ export default function SearchScreen() {
       loadNearbyWalks();
     }
   }, [location, user]);
-
-  useEffect(() => {
-    if (nearbyWalks.length > 0 && user && location) {
-      const myWalk = nearbyWalks.find(w => w.walk?.user_id === user.id);
-      
-      if (myWalk && myWalk.walk) {
-        const myIndex = 0;
-        previousMarkerIdRef.current = myWalk.walk.id;
-        setSelectedMarkerId(myWalk.walk.id);
-        setCurrentCardIndex(myIndex);
-        if (scrollViewRef.current) {
-          isScrollingProgrammatically.current = true;
-          scrollViewRef.current.scrollTo({
-            x: myIndex * (cardWidth + cardGap),
-            animated: true,
-          });
-          setTimeout(() => {
-            isScrollingProgrammatically.current = false;
-          }, 500);
-        }
-      }
-    }
-  }, [nearbyWalks, user, location]);
 
   const loadLocation = async () => {
     try {
@@ -261,6 +218,99 @@ export default function SearchScreen() {
       console.error('Failed to load nearby walks:', err);
     } finally {
       setIsLoadingWalks(false);
+    }
+  };
+
+  const loadNearbyWalksAndSelect = async (walkId: string) => {
+    if (!location || !user) return;
+
+    try {
+      setIsLoadingWalks(true);
+      
+      // Reload events
+      const walks = await getNearbyWalks(
+        location.coords.latitude, 
+        location.coords.longitude
+      );
+
+      // Get profiles for all users
+      const userIds = [...new Set(walks.map(w => w.walk?.user_id).filter(Boolean) as string[])];
+      const profilesMap = await getProfiles(userIds);
+      
+      // Attach hosts to walks
+      const walksWithHosts = walks.map(walk => {
+        if (walk.walk && walk.walk.user_id) {
+          const host = profilesMap.get(walk.walk.user_id);
+          if (host) {
+            return { ...walk, host };
+          }
+        }
+        return walk;
+      });
+
+      // Sort walks (own walks first)
+      const otherWalks = walksWithHosts.filter((w) => w.walk?.user_id !== user.id);
+      const ownWalks = walksWithHosts.filter((w) => w.walk?.user_id === user.id);
+      const sortedWalks = [...ownWalks, ...otherWalks];
+
+      setNearbyWalks(sortedWalks);
+      
+      // After state is updated, select the event
+      // Use setTimeout to ensure state update has propagated
+      setTimeout(() => {
+        selectWalkById(walkId, sortedWalks);
+      }, 100);
+      
+    } catch (err) {
+      console.error('Failed to load and select walk:', err);
+    } finally {
+      setIsLoadingWalks(false);
+      setIsReloadingForSelection(false);
+    }
+  };
+
+  const selectWalkById = (walkId: string, walks: NearbyWalk[]) => {
+    // Apply current filters and sorting
+    const filtered = filterWalks(walks);
+    const sorted = [...filtered].sort((a, b) => {
+      if (sortBy === 'distance') {
+        return a.distance - b.distance;
+      } else {
+        const timeA = a.walk?.start_time ? new Date(a.walk.start_time).getTime() : 0;
+        const timeB = b.walk?.start_time ? new Date(b.walk.start_time).getTime() : 0;
+        return timeA - timeB;
+      }
+    });
+    
+    const walkIndex = sorted.findIndex((w) => w.walk?.id === walkId);
+    
+    if (walkIndex !== -1) {
+      const walk = sorted[walkIndex];
+      setSelectedMarkerId(walk.walk!.id);
+      setCurrentCardIndex(walkIndex);
+      
+      // Scroll to card
+      if (scrollViewRef.current) {
+        isScrollingProgrammatically.current = true;
+        scrollViewRef.current.scrollTo({
+          x: walkIndex * (cardWidth + cardGap),
+          animated: true,
+        });
+        setTimeout(() => {
+          isScrollingProgrammatically.current = false;
+        }, 500);
+      }
+
+      // Center map on event
+      if (walk.walk) {
+        setMapCenter({
+          latitude: walk.walk.latitude,
+          longitude: walk.walk.longitude,
+          paddingBottom: 150,
+        });
+      }
+    } else {
+      console.warn(`Walk with ID ${walkId} not found after reload`);
     }
   };
 
@@ -422,10 +472,6 @@ export default function SearchScreen() {
             transform: [{ translateY: containerTranslateY }]
           }
         ]}
-        onLayout={(event) => {
-          const { height } = event.nativeEvent.layout;
-          setCardsContainerHeight(height);
-        }}
       >
         <View style={styles.cardsBackdrop} />
         <LinearGradient
@@ -466,7 +512,6 @@ export default function SearchScreen() {
                 });
               }
 
-              previousMarkerIdRef.current = item.walk!.id;
               setSelectedMarkerId(item.walk!.id);
             }
           }}
