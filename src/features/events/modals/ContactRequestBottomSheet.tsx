@@ -20,7 +20,7 @@ import Avatar from '@shared/components/Avatar';
 import { useI18n } from '@shared/i18n';
 import { COLORS } from '@shared/constants';
 import { getEventImage } from '@shared/utils/eventImage';
-import { formatTime } from '@shared/utils/time';
+import { formatTime, getTimeColor, getSmartTimeDisplay } from '@shared/utils/time';
 import PrimaryButton from '@shared/components/PrimaryButton';
 
 interface ContactRequestBottomSheetProps {
@@ -156,8 +156,10 @@ export default function ContactRequestBottomSheet({
               </View>
               {walkStartTime && (
                 <View style={styles.timeRow}>
-                  <Clock size={16} color={COLORS.TEXT_LIGHT} />
-                  <Text style={styles.timeText}>{formatTime(walkStartTime, t)}</Text>
+                  <Clock size={16} color={getTimeColor(walkStartTime)} />
+                  <Text style={[styles.timeText, { color: getTimeColor(walkStartTime) }]}>
+                    {getSmartTimeDisplay(walkStartTime, t)}
+                  </Text>
                 </View>
               )}
             </View>

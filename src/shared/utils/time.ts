@@ -1,5 +1,57 @@
 import { COLORS } from '../constants/colors';
 
+/**
+ * Format time as HH:MM in 24-hour format
+ * @param date - Date object
+ * @returns Time string in HH:MM format
+ */
+export const formatHHMM = (date: Date): string => {
+  return date.toLocaleTimeString('en-US', {
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+  });
+};
+
+/**
+ * Format date and time as DD.MM HH:MM
+ * @param date - Date object
+ * @returns Formatted string like "25.02 14:30"
+ */
+export const formatDateAndTime = (date: Date): string => {
+  const day = date.getDate().toString().padStart(2, '0');
+  const month = (date.getMonth() + 1).toString().padStart(2, '0');
+  const time = formatHHMM(date);
+  return `${day}.${month} ${time}`;
+};
+
+/**
+ * Get smart time display - shows relative time for near events, date+time for far events
+ * @param walkStartTime - ISO date string
+ * @param t - Translation function from useI18n()
+ * @returns Formatted time string
+ */
+export const getSmartTimeDisplay = (
+  walkStartTime: string | null,
+  t: (key: any, params?: Record<string, any>) => string
+): string => {
+  if (!walkStartTime) return '';
+
+  const start = new Date(walkStartTime);
+  const now = new Date();
+  const diffMs = start.getTime() - now.getTime();
+  const diffHours = diffMs / (1000 * 60 * 60);
+  const isToday = now.toDateString() === start.toDateString();
+  
+  // If event is not today AND more than 6 hours away, show date + time
+  if (!isToday && diffHours > 6) {
+    return formatDateAndTime(start);
+  }
+  
+  // Otherwise show relative time
+  return formatTime(walkStartTime, t);
+};
+
 export const parseDuration = (duration: string | null): number => {
   if (!duration) return 0;
 
@@ -29,20 +81,31 @@ export const isWalkActive = (walkStartTime: string | null): boolean => {
   return now >= startTime;
 };
 
+/**
+ * Get color for time display based on event proximity
+ * @param walkStartTime - ISO date string
+ * @returns Color constant from COLORS
+ */
 export const getTimeColor = (walkStartTime: string | null): string => {
   if (!walkStartTime) return COLORS.TIME_BLUE;
 
   const now = new Date();
   const startTime = new Date(walkStartTime);
   const diffMs = startTime.getTime() - now.getTime();
-  const diffMins = Math.floor(diffMs / 60000);
-
-  if (diffMins < 0) {
+  const diffHours = diffMs / (1000 * 60 * 60);
+  
+  // Check if event is today
+  const isToday = now.toDateString() === startTime.toDateString();
+  
+  if (diffMs < 0) {
+    // Event already started - green
     return COLORS.SUCCESS_GREEN;
-  } else if (diffMins <= 15) {
-    return COLORS.ACCENT_ORANGE;
-  } else {
+  } else if (isToday || diffHours <= 6) {
+    // Event starts today OR within 6 hours - blue
     return COLORS.TIME_BLUE;
+  } else {
+    // Event starts later - gray
+    return COLORS.TEXT_LIGHT;
   }
 };
 

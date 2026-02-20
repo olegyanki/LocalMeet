@@ -2,9 +2,10 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, Pressable, Image } from 'react-native';
 import { MapPin, ImageIcon, Clock } from 'lucide-react-native';
 import Avatar from '@shared/components/Avatar';
-import { COLORS, SIZES, SHADOW } from '@shared/constants';
+import { COLORS, SHADOW } from '@shared/constants';
 import { NearbyWalk } from '@shared/lib/api';
 import { TranslationKey } from '@shared/i18n/translations';
+import { formatHHMM, formatDateAndTime, getTimeColor } from '@shared/utils/time';
 
 interface EventCardProps {
   // Data
@@ -55,43 +56,6 @@ export default React.memo(function EventCard({
     // Otherwise show time range
     const end = new Date(start.getTime() + duration * 1000); // duration in seconds
     return `${formatHHMM(start)} - ${formatHHMM(end)}`;
-  };
-  
-  const formatHHMM = (date: Date) => {
-    return date.toLocaleTimeString('en-US', {
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: false,
-    });
-  };
-  
-  const formatDateAndTime = (date: Date) => {
-    const day = date.getDate().toString().padStart(2, '0');
-    const month = (date.getMonth() + 1).toString().padStart(2, '0');
-    const time = formatHHMM(date);
-    return `${day}.${month} ${time}`;
-  };
-  
-  // Get time color based on event start time
-  const getTimeColor = (startTime: string) => {
-    const now = new Date();
-    const start = new Date(startTime);
-    const diffMs = start.getTime() - now.getTime();
-    const diffHours = diffMs / (1000 * 60 * 60);
-    
-    // Check if event is today
-    const isToday = now.toDateString() === start.toDateString();
-    
-    if (diffMs < 0) {
-      // Event already started - green
-      return COLORS.SUCCESS_GREEN;
-    } else if (isToday || diffHours <= 6) {
-      // Event starts today OR within 6 hours - blue
-      return COLORS.TIME_BLUE;
-    } else {
-      // Event starts later - gray
-      return COLORS.TEXT_LIGHT;
-    }
   };
   
   // Handlers
