@@ -68,8 +68,7 @@ export default function SearchScreen() {
   const cardGap = 16;
   const containerTranslateY = useRef(new Animated.Value(0)).current;
 
-  const COLLAPSED_VISIBLE_HEIGHT = 60;
-  const collapsedOffset = cardsContainerHeight > 0 ? cardsContainerHeight - COLLAPSED_VISIBLE_HEIGHT : 220;
+  const collapsedOffset = 196;
 
   const panResponder = useRef(
     PanResponder.create({
@@ -598,9 +597,11 @@ const styles = StyleSheet.create({
     gap: 16,
   },
   loadingCard: {
-    height: 220,
+    height: 174,
     backgroundColor: COLORS.CARD_BG,
-    borderRadius: 20,
+    borderRadius: 26,
+    borderWidth: 1,
+    borderColor: COLORS.BORDER_COLOR,
     justifyContent: 'center',
     alignItems: 'center',
     shadowColor: COLORS.SHADOW_BLACK,
@@ -610,9 +611,11 @@ const styles = StyleSheet.create({
     elevation: 4,
   },
   emptyCard: {
-    height: 220,
+    height: 174,
     backgroundColor: COLORS.CARD_BG,
-    borderRadius: 20,
+    borderRadius: 26,
+    borderWidth: 1,
+    borderColor: COLORS.BORDER_COLOR,
     justifyContent: 'center',
     alignItems: 'center',
     padding: 20,
