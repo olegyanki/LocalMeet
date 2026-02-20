@@ -555,10 +555,6 @@ export async function createChatFromRequest(
 }
 
 
-// ============================================
-// Message Functions
-// ============================================
-
 export interface Message {
   id: string;
   chat_id: string;
@@ -568,6 +564,133 @@ export interface Message {
   audio_url: string | null;
   audio_duration: number | null;
   created_at: string;
+  read: boolean;
+}
+
+export interface WalkRequestInfo {
+  message: string;
+  created_at: string;
+  walk_id: string;
+  walk?: Walk;
+}
+
+export interface ChatDetails {
+  id: string;
+  requester_id: string;
+  walker_id: string;
+  walk_request_id: string | null;
+  requester: {
+    id: string;
+    display_name: string;
+    avatar_url: string | null;
+  };
+  walker: {
+    id: string;
+    display_name: string;
+    avatar_url: string | null;
+  };
+  walk_request?: WalkRequestInfo;
+}
+
+/**
+ * Get chat details with participants and walk request info
+ */
+export async function getChatById(chatId: string): Promise<ChatDetails | null> {
+  const { data: chatData, error: chatError } = await supabase
+    .from('chats')
+    .select(
+      `
+      id,
+      requester_id,
+      walker_id,
+      walk_request_id,
+      requester:profiles!chats_requester_id_fkey(id, display_name, avatar_url),
+      walker:profiles!chats_walker_id_fkey(id, display_name, avatar_url),
+      walk_request:walk_requests!chats_walk_request_id_fkey(message, created_at, walk_id)
+    `
+    )
+    .eq('id', chatId)
+    .maybeSingle();
+
+  if (chatError) throw chatError;
+  if (!chatData) return null;
+
+  // Handle walk_request - it might be an array or single object
+  const walkRequest: any = Array.isArray(chatData.walk_request) 
+    ? chatData.walk_request[0] 
+    : chatData.walk_request;
+
+  if (walkRequest?.walk_id) {
+    const { data: walkData } = await supabase
+      .from('walks')
+      .select('id, title, description, start_time, duration, latitude, longitude, user_id')
+      .eq('id', walkRequest.walk_id)
+      .maybeSingle();
+
+    if (walkData) {
+      walkRequest.walk = walkData;
+    }
+  }
+
+  // Normalize the data structure
+  return {
+    ...chatData,
+    requester: Array.isArray(chatData.requester) ? chatData.requester[0] : chatData.requester,
+    walker: Array.isArray(chatData.walker) ? chatData.walker[0] : chatData.walker,
+    walk_request: walkRequest as WalkRequestInfo | undefined,
+  } as ChatDetails;
+}
+
+/**
+ * Get all messages for a chat
+ */
+export async function getChatMessages(chatId: string): Promise<Message[]> {
+  const { data, error } = await supabase
+    .from('messages')
+    .select('*')
+    .eq('chat_id', chatId)
+    .order('created_at', { ascending: true });
+
+  if (error) throw error;
+  return data || [];
+}
+
+/**
+ * Mark messages as read
+ */
+export async function markMessagesAsRead(chatId: string, userId: string): Promise<void> {
+  const { error } = await supabase
+    .from('messages')
+    .update({ read: true })
+    .eq('chat_id', chatId)
+    .neq('sender_id', userId)
+    .eq('read', false);
+
+  if (error) {
+    console.error('Error marking messages as read:', error);
+    throw error;
+  }
+}
+
+/**
+ * Delete a chat and all its messages
+ */
+export async function deleteChat(chatId: string): Promise<void> {
+  // Delete messages first
+  const { error: messagesError } = await supabase
+    .from('messages')
+    .delete()
+    .eq('chat_id', chatId);
+
+  if (messagesError) throw messagesError;
+
+  // Delete chat
+  const { error: chatError } = await supabase
+    .from('chats')
+    .delete()
+    .eq('id', chatId);
+
+  if (chatError) throw chatError;
 }
 
 /**

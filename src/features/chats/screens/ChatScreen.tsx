@@ -1,3 +1,4 @@
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
   View,
   Text,
@@ -11,59 +12,38 @@ import {
   ActivityIndicator,
   Modal,
 } from 'react-native';
-import { useState, useEffect, useRef } from 'react';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as ImagePicker from 'expo-image-picker';
 import { ChevronLeft, MoreVertical, Mic, Image as ImageIcon, Trash2 } from 'lucide-react-native';
-import { supabase } from '@shared/lib/supabase';
+
 import { useAuth } from '@shared/contexts/AuthContext';
 import { useI18n } from '@shared/i18n';
-import { COLORS } from '@shared/constants';
-import { sendTextMessage, sendImageMessage, sendAudioMessage, Walk } from '@shared/lib/api';
+import { 
+  sendTextMessage, 
+  sendImageMessage, 
+  sendAudioMessage,
+  getChatById,
+  getChatMessages,
+  markMessagesAsRead,
+  deleteChat as deleteChatApi,
+  Message,
+  ChatDetails,
+} from '@shared/lib/api';
+import { supabase } from '@shared/lib/supabase';
 import { uploadChatImage, uploadChatAudio } from '@shared/utils/upload';
+
 import AudioRecorder from '@shared/components/AudioRecorder';
 import AudioPlayer from '@shared/components/AudioPlayer';
-import Avatar from '@shared/components/Avatar';
 import PrimaryButton from '@shared/components/PrimaryButton';
 
-interface Message {
-  id: string;
-  chat_id: string;
-  sender_id: string;
-  content: string;
-  image_url?: string | null;
-  audio_url?: string | null;
-  audio_duration?: number | null;
-  created_at: string;
-  read: boolean;
-}
+import { COLORS } from '@shared/constants';
 
-interface Chat {
-  id: string;
-  requester_id: string;
-  walker_id: string;
-  walk_request_id: string | null;
-  requester: {
-    id: string;
-    display_name: string;
-    avatar_url: string | null;
-  };
-  walker: {
-    id: string;
-    display_name: string;
-    avatar_url: string | null;
-  };
-  walk_request?: {
-    message: string;
-    created_at: string;
-    walk_id: string;
-    walk?: Walk;
-  };
-}
+const SCROLL_DELAY = 100;
+const MAX_MESSAGE_LENGTH = 1000;
 
 export default function ChatScreen() {
-  const { id, otherUserName, otherUserAvatar } = useLocalSearchParams();
+  const { id, otherUserName } = useLocalSearchParams();
   const chatId = Array.isArray(id) ? id[0] : id;
   const router = useRouter();
   const insets = useSafeAreaInsets();
@@ -71,12 +51,11 @@ export default function ChatScreen() {
   const { t } = useI18n();
   const flatListRef = useRef<FlatList>(null);
 
-  const [chat, setChat] = useState<Chat | null>(null);
+  const [chat, setChat] = useState<ChatDetails | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showOptionsMenu, setShowOptionsMenu] = useState(false);
@@ -84,7 +63,6 @@ export default function ChatScreen() {
   const [isRecording, setIsRecording] = useState(false);
 
   const preloadedUserName = Array.isArray(otherUserName) ? otherUserName[0] : otherUserName;
-  const preloadedUserAvatar = Array.isArray(otherUserAvatar) ? otherUserAvatar[0] : otherUserAvatar;
 
   const otherUser =
     chat && user
@@ -95,80 +73,39 @@ export default function ChatScreen() {
 
   useEffect(() => {
     loadChatData();
-    subscribeToMessages();
+    const unsubscribe = subscribeToMessages();
+    return unsubscribe;
   }, [chatId]);
 
   useEffect(() => {
     if (!loading && messages.length > 0) {
       setTimeout(() => {
         flatListRef.current?.scrollToEnd({ animated: false });
-      }, 100);
+      }, SCROLL_DELAY);
     }
   }, [loading, messages.length]);
 
   const loadChatData = async () => {
     try {
-      const { data: chatData, error: chatError } = await supabase
-        .from('chats')
-        .select(
-          `
-          id,
-          requester_id,
-          walker_id,
-          walk_request_id,
-          requester:profiles!chats_requester_id_fkey(id, display_name, avatar_url),
-          walker:profiles!chats_walker_id_fkey(id, display_name, avatar_url),
-          walk_request:walk_requests!chats_walk_request_id_fkey(message, created_at, walk_id)
-        `
-        )
-        .eq('id', chatId)
-        .maybeSingle();
+      const [chatData, messagesData] = await Promise.all([
+        getChatById(chatId),
+        getChatMessages(chatId),
+      ]);
 
-      if (chatError) throw chatError;
       if (chatData) {
-        if (chatData.walk_request?.walk_id) {
-          const { data: walkData } = await supabase
-            .from('walks')
-            .select('id, title, description, start_time, duration, latitude, longitude, user_id')
-            .eq('id', chatData.walk_request.walk_id)
-            .maybeSingle();
-
-          if (walkData) {
-            chatData.walk_request.walk = walkData;
-          }
-        }
-        setChat(chatData as unknown as Chat);
+        setChat(chatData);
       }
 
-      const { data: messagesData, error: messagesError } = await supabase
-        .from('messages')
-        .select('*')
-        .eq('chat_id', chatId)
-        .order('created_at', { ascending: true });
+      setMessages(messagesData);
 
-      if (messagesError) throw messagesError;
-      setMessages(messagesData || []);
-
-      await markMessagesAsRead();
+      if (user) {
+        await markMessagesAsRead(chatId, user.id);
+      }
     } catch (error) {
       console.error('Error loading chat:', error);
+      setError(t('error'));
     } finally {
       setLoading(false);
-    }
-  };
-
-  const markMessagesAsRead = async () => {
-    if (!user) return;
-
-    try {
-      await supabase
-        .from('messages')
-        .update({ read: true })
-        .eq('chat_id', chatId)
-        .neq('sender_id', user.id)
-        .eq('read', false);
-    } catch (error) {
-      console.error('Error marking messages as read:', error);
     }
   };
 
@@ -200,10 +137,10 @@ export default function ChatScreen() {
 
           setTimeout(() => {
             flatListRef.current?.scrollToEnd({ animated: true });
-          }, 100);
+          }, SCROLL_DELAY);
 
-          if (newMsg.sender_id !== user?.id) {
-            markMessagesAsRead();
+          if (newMsg.sender_id !== user?.id && user) {
+            markMessagesAsRead(chatId, user.id);
           }
         }
       )
@@ -214,29 +151,27 @@ export default function ChatScreen() {
     };
   };
 
-  const pickImage = async () => {
+  const pickImage = useCallback(async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
 
     if (status !== 'granted') {
-      setError('Need permission to access photos');
+      setError(t('error'));
       return;
     }
 
     const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      mediaTypes: 'images' as any,
       allowsEditing: true,
       aspect: [4, 3],
       quality: 0.8,
-      base64: true,
     });
 
     if (!result.canceled && result.assets[0]) {
-      setSelectedImage(result.assets[0].uri);
       await handleSendImageMessage(result.assets[0]);
     }
-  };
+  }, [t]);
 
-  const handleSendImageMessage = async (asset: ImagePicker.ImagePickerAsset) => {
+  const handleSendImageMessage = useCallback(async (asset: ImagePicker.ImagePickerAsset) => {
     if (!user) return;
 
     setError(null);
@@ -246,22 +181,19 @@ export default function ChatScreen() {
       const imageUrl = await uploadChatImage(chatId, asset);
 
       if (!imageUrl) {
-        throw new Error('Failed to upload image');
+        throw new Error(t('error'));
       }
 
       await sendImageMessage(chatId, user.id, imageUrl);
-
-      setSelectedImage(null);
     } catch (error: any) {
       console.error('Error sending image:', error);
-      setError(error?.message || 'Failed to send image');
-      setSelectedImage(null);
+      setError(error?.message || t('error'));
     } finally {
       setUploading(false);
     }
-  };
+  }, [user, chatId, t]);
 
-  const sendMessage = async () => {
+  const sendMessage = useCallback(async () => {
     if (!newMessage.trim() || !user) return;
 
     const messageContent = newMessage.trim();
@@ -272,12 +204,12 @@ export default function ChatScreen() {
       await sendTextMessage(chatId, user.id, messageContent);
     } catch (error: any) {
       console.error('Error sending message:', error);
-      setError(error?.message || 'Failed to send message');
+      setError(error?.message || t('error'));
       setNewMessage(messageContent);
     }
-  };
+  }, [newMessage, user, chatId, t]);
 
-  const handleSendAudioMessage = async (audioUri: string, duration: number) => {
+  const handleSendAudioMessage = useCallback(async (audioUri: string, duration: number) => {
     if (!user) return;
 
     setError(null);
@@ -288,55 +220,36 @@ export default function ChatScreen() {
       const audioUrl = await uploadChatAudio(chatId, audioUri);
 
       if (!audioUrl) {
-        throw new Error('Failed to upload audio');
+        throw new Error(t('error'));
       }
 
       await sendAudioMessage(chatId, user.id, audioUrl, duration);
     } catch (error: any) {
       console.error('Error sending audio:', error);
-      setError(error?.message || 'Failed to send audio');
+      setError(error?.message || t('error'));
     } finally {
       setUploading(false);
     }
-  };
+  }, [user, chatId, t]);
 
-  const deleteChat = async () => {
+  const handleDeleteChat = useCallback(async () => {
     if (!chatId || deleting) return;
 
     setDeleting(true);
     setError(null);
 
     try {
-      const { error: messagesError } = await supabase
-        .from('messages')
-        .delete()
-        .eq('chat_id', chatId);
-
-      if (messagesError) {
-        console.error('Error deleting messages:', messagesError);
-        throw messagesError;
-      }
-
-      const { error: chatError } = await supabase
-        .from('chats')
-        .delete()
-        .eq('id', chatId);
-
-      if (chatError) {
-        console.error('Error deleting chat:', chatError);
-        throw chatError;
-      }
-
+      await deleteChatApi(chatId);
       setShowDeleteModal(false);
       router.back();
     } catch (error: any) {
       console.error('Error deleting chat:', error);
-      setError(error?.message || 'Failed to delete chat');
+      setError(error?.message || t('error'));
       setDeleting(false);
     }
-  };
+  }, [chatId, deleting, router, t]);
 
-  const renderMessage = ({ item, index }: { item: Message | { id: string; isInitial: true }; index: number }) => {
+  const renderMessage = useCallback(({ item }: { item: Message | { id: string; isInitial: true } }) => {
     if ('isInitial' in item && item.isInitial && chat?.walk_request) {
       const requestDate = new Date(chat.walk_request.created_at);
       const dateString = requestDate.toLocaleDateString('en-US', {
@@ -401,7 +314,7 @@ export default function ChatScreen() {
         )}
       </View>
     );
-  };
+  }, [user, chat]);
 
   const allMessages = chat?.walk_request
     ? [{ id: 'initial-message', isInitial: true as const }, ...messages]
@@ -523,7 +436,7 @@ export default function ChatScreen() {
                 value={newMessage}
                 onChangeText={setNewMessage}
                 multiline
-                maxLength={1000}
+                maxLength={MAX_MESSAGE_LENGTH}
                 editable={!uploading}
               />
             </View>
@@ -617,7 +530,7 @@ export default function ChatScreen() {
 
               <TouchableOpacity
                 style={[styles.modalButton, styles.modalButtonDelete]}
-                onPress={deleteChat}
+                onPress={handleDeleteChat}
                 disabled={deleting}
               >
                 {deleting ? (
