@@ -375,17 +375,55 @@ useEffect(() => {
 
 ### Conditional Header Actions
 ```tsx
+// Header with title only (root tab screens)
 <View style={styles.header}>
-  <View style={HEADER_STYLES.spacer} />
   <Text style={styles.title}>{t('title')}</Text>
-  {hasChanges ? (
+</View>
+
+// Header with title and conditional action button
+<View style={styles.header}>
+  <Text style={styles.title}>{t('title')}</Text>
+  {hasChanges && (
     <TouchableOpacity onPress={handleCancel}>
       <Text style={styles.cancelButton}>{t('cancel')}</Text>
     </TouchableOpacity>
-  ) : (
-    <View style={HEADER_STYLES.spacer} />
   )}
 </View>
+
+// Header with back button, title, and action
+<View style={styles.header}>
+  <TouchableOpacity onPress={handleBack} style={styles.backButton}>
+    <ChevronLeft size={28} color={COLORS.TEXT_DARK} />
+  </TouchableOpacity>
+  <Text style={styles.title}>{t('title')}</Text>
+  <TouchableOpacity onPress={handleAction}>
+    <Text style={styles.actionButton}>{t('action')}</Text>
+  </TouchableOpacity>
+</View>
+
+const styles = StyleSheet.create({
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 24,
+    paddingBottom: 16,
+  },
+  title: {
+    fontSize: 28,
+    fontWeight: '700',
+    color: COLORS.TEXT_DARK,
+    flex: 1,
+  },
+  backButton: {
+    marginRight: 16,
+    padding: 4,
+  },
+  actionButton: {
+    fontSize: 17,
+    fontWeight: '600',
+    color: COLORS.ACCENT_ORANGE,
+  },
+});
 ```
 
 ### Loading States

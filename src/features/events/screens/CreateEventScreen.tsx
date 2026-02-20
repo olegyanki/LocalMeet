@@ -293,7 +293,6 @@ export default function CreateEventScreen() {
     <View style={styles.container}>
       {/* Header */}
       <View style={[styles.header, { paddingTop: insets.top + SIZES.SCREEN_TOP_PADDING }]}>
-        <View style={styles.headerSpacer} />
         <Text style={styles.headerTitle}>{t('createEvent')}</Text>
         <TouchableOpacity onPress={clearForm} activeOpacity={0.6}>
           <Text style={styles.clearButton}>{t('clear')}</Text>
@@ -559,7 +558,10 @@ const styles = StyleSheet.create({
     ...HEADER_STYLES.spacer,
   },
   headerTitle: {
-    ...HEADER_STYLES.title,
+    fontSize: 28,
+    fontWeight: '700',
+    color: COLORS.TEXT_DARK,
+    flex: 1,
   },
   clearButton: {
     ...HEADER_STYLES.headerTextButton,

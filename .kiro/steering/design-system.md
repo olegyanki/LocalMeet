@@ -120,61 +120,60 @@ CHIP_STYLES.inactiveText // Orange text for inactive chips
 ### Headers
 ```typescript
 HEADER_STYLES.container // Header container (with padding)
-HEADER_STYLES.title // Centered title (24px, for full-screen headers)
+HEADER_STYLES.title // Left-aligned title (28px, for screen headers)
 HEADER_STYLES.headerTextButton // Action button (right side)
-HEADER_STYLES.spacer // Spacer for centering (60px)
+HEADER_STYLES.spacer // Spacer for layout (60px)
 ```
 
-### Navigation Bar
-```typescript
-NAVBAR_STYLES.backButton // Back button (40x40px) - use for left side when needed
-NAVBAR_STYLES.title // Centered title (24px) - universal for all navbars
-NAVBAR_STYLES.spacer // Spacer for centering (40px) - use when no action on side
-```
-
-**Universal Pattern (works with or without back button):**
+**Universal Header Pattern (left-aligned titles):**
 ```tsx
-import { NAVBAR_STYLES } from '@shared/constants';
+import { HEADER_STYLES } from '@shared/constants';
 
-// With back button
-<View style={styles.navbar}>
-  <TouchableOpacity onPress={handleBack} style={NAVBAR_STYLES.backButton}>
-    <ChevronLeft size={24} color={COLORS.TEXT_DARK} />
-  </TouchableOpacity>
-  <Text style={NAVBAR_STYLES.title} numberOfLines={1}>
-    {title}
-  </Text>
-  <View style={NAVBAR_STYLES.spacer} />
+// Screen header with title only
+<View style={styles.header}>
+  <Text style={styles.title}>{t('screenTitle')}</Text>
 </View>
 
-// Without back button (centered title)
-<View style={styles.navbar}>
-  <View style={NAVBAR_STYLES.spacer} />
-  <Text style={NAVBAR_STYLES.title} numberOfLines={1}>
-    {title}
-  </Text>
-  <View style={NAVBAR_STYLES.spacer} />
-</View>
+const styles = StyleSheet.create({
+  header: {
+    ...HEADER_STYLES.container,
+  },
+  title: {
+    fontSize: 28,
+    fontWeight: '700',
+    color: COLORS.TEXT_DARK,
+    flex: 1,
+  },
+});
 
-// With action button on right
-<View style={styles.navbar}>
-  <TouchableOpacity onPress={handleBack} style={NAVBAR_STYLES.backButton}>
-    <ChevronLeft size={24} color={COLORS.TEXT_DARK} />
-  </TouchableOpacity>
-  <Text style={NAVBAR_STYLES.title} numberOfLines={1}>
-    {title}
-  </Text>
+// Screen header with title and action button
+<View style={styles.header}>
+  <Text style={styles.title}>{t('screenTitle')}</Text>
   <TouchableOpacity onPress={handleAction}>
-    <Text style={styles.actionButton}>{actionText}</Text>
+    <Text style={styles.actionButton}>{t('action')}</Text>
   </TouchableOpacity>
+</View>
+
+// Screen header with back button, title, and optional action
+<View style={styles.header}>
+  <TouchableOpacity onPress={handleBack} style={styles.backButton}>
+    <ChevronLeft size={28} color={COLORS.TEXT_DARK} />
+  </TouchableOpacity>
+  <Text style={styles.title}>{t('screenTitle')}</Text>
+  {showAction && (
+    <TouchableOpacity onPress={handleAction}>
+      <Text style={styles.actionButton}>{t('action')}</Text>
+    </TouchableOpacity>
+  )}
 </View>
 ```
 
 **Rules:**
-- Always use `NAVBAR_STYLES.title` for navbar titles (17px, centered)
-- Use `NAVBAR_STYLES.spacer` (32px) when no element on left/right side
-- Use `NAVBAR_STYLES.backButton` (32x32px) for back buttons
-- Title always has `flex: 1` and `textAlign: 'center'` for centering
+- All screen titles are left-aligned (28px, fontWeight 700)
+- Use flexDirection: 'row' for headers with multiple elements
+- Back buttons are 28px icons with padding
+- Action buttons are text buttons on the right side
+- Title uses `flex: 1` to take available space
 - Title uses `numberOfLines={1}` to prevent overflow
 
 ## Layout Rules

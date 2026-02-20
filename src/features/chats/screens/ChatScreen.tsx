@@ -414,39 +414,24 @@ export default function ChatScreen() {
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         keyboardVerticalOffset={0}
       >
-        <View style={[styles.header, { paddingTop: insets.top + 8 }]}>
-          <View style={styles.headerLeft}>
-            <TouchableOpacity
-              onPress={() => router.back()}
-              style={styles.backButton}
-            >
-              <ChevronLeft size={28} color={COLORS.TEXT_DARK} />
-            </TouchableOpacity>
+        <View style={[styles.header, { paddingTop: insets.top + 16 }]}>
+          <TouchableOpacity
+            onPress={() => router.back()}
+            style={styles.backButton}
+          >
+            <ChevronLeft size={28} color={COLORS.TEXT_DARK} />
+          </TouchableOpacity>
 
-            {preloadedUserName ? (
-              <Avatar 
-                uri={preloadedUserAvatar} 
-                name={preloadedUserName} 
-                size={40}
-              />
-            ) : (
-              <View style={[styles.avatar, styles.avatarPlaceholder]}>
-                <ActivityIndicator size="small" color={COLORS.WHITE} />
-              </View>
-            )}
-
-            {preloadedUserName ? (
-              <Text style={styles.headerName}>{preloadedUserName}</Text>
-            ) : (
-              <View style={{ flex: 1, marginLeft: 12 }}>
-                <ActivityIndicator size="small" color={COLORS.ACCENT_ORANGE} />
-              </View>
-            )}
-          </View>
-          <View style={styles.headerRight}>
-            <View style={styles.iconButton}>
-              <MoreVertical size={24} color="transparent" />
+          {preloadedUserName ? (
+            <Text style={styles.headerTitle}>{preloadedUserName}</Text>
+          ) : (
+            <View style={{ flex: 1 }}>
+              <ActivityIndicator size="small" color={COLORS.ACCENT_ORANGE} />
             </View>
+          )}
+
+          <View style={styles.iconButton}>
+            <MoreVertical size={24} color="transparent" />
           </View>
         </View>
       </KeyboardAvoidingView>
@@ -459,45 +444,35 @@ export default function ChatScreen() {
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       keyboardVerticalOffset={0}
     >
-      <View style={[styles.header, { paddingTop: insets.top + 8 }]}>
-        <View style={styles.headerLeft}>
-          <TouchableOpacity
-            onPress={() => router.back()}
-            style={styles.backButton}
-          >
-            <ChevronLeft size={28} color={COLORS.TEXT_DARK} />
-          </TouchableOpacity>
+      <View style={[styles.header, { paddingTop: insets.top + 16 }]}>
+        <TouchableOpacity
+          onPress={() => router.back()}
+          style={styles.backButton}
+        >
+          <ChevronLeft size={28} color={COLORS.TEXT_DARK} />
+        </TouchableOpacity>
 
-          <TouchableOpacity
-            style={styles.userInfoContainer}
-            onPress={() => {
-              if (chat.walk_request?.walk?.id) {
-                router.push(`/event/${chat.walk_request.walk.id}`);
-              } else {
-                router.push(`/user/${otherUser.id}`);
-              }
-            }}
-          >
-            <Avatar 
-              uri={otherUser.avatar_url} 
-              name={otherUser.display_name} 
-              size={40}
-            />
+        <TouchableOpacity
+          style={styles.headerTitleContainer}
+          onPress={() => {
+            if (chat.walk_request?.walk?.id) {
+              router.push(`/event/${chat.walk_request.walk.id}`);
+            } else {
+              router.push(`/user/${otherUser.id}`);
+            }
+          }}
+        >
+          <Text style={styles.headerTitle} numberOfLines={1}>
+            {chat.walk_request?.walk?.title || otherUser.display_name}
+          </Text>
+        </TouchableOpacity>
 
-            <Text style={styles.headerName}>
-              {chat.walk_request?.walk?.title || otherUser.display_name}
-            </Text>
-          </TouchableOpacity>
-        </View>
-
-        <View style={styles.headerRight}>
-          <TouchableOpacity
-            style={styles.iconButton}
-            onPress={() => setShowOptionsMenu(true)}
-          >
-            <MoreVertical size={24} color={COLORS.TEXT_DARK} />
-          </TouchableOpacity>
-        </View>
+        <TouchableOpacity
+          style={styles.iconButton}
+          onPress={() => setShowOptionsMenu(true)}
+        >
+          <MoreVertical size={24} color={COLORS.TEXT_DARK} />
+        </TouchableOpacity>
       </View>
 
       {error && (
@@ -668,47 +643,25 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingBottom: 12,
-    backgroundColor: COLORS.CARD_BG,
-    shadowColor: COLORS.SHADOW_BLACK,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  headerLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flex: 1,
+    paddingHorizontal: 24,
+    paddingBottom: 16,
+    backgroundColor: COLORS.BG_SECONDARY,
   },
   backButton: {
-    marginRight: 8,
+    marginRight: 16,
+    padding: 4,
   },
-  userInfoContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+  headerTitleContainer: {
     flex: 1,
   },
-  avatar: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    marginRight: 12,
-  },
-  headerName: {
-    fontSize: 18,
-    fontWeight: '600',
+  headerTitle: {
+    fontSize: 28,
+    fontWeight: '700',
     color: COLORS.TEXT_DARK,
   },
-  headerRight: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
   iconButton: {
-    padding: 8,
-    marginLeft: 4,
+    padding: 4,
+    marginLeft: 8,
   },
   errorContainer: {
     backgroundColor: COLORS.ERROR_BG,

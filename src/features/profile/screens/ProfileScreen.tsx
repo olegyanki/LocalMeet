@@ -177,14 +177,11 @@ export default function ProfileScreen() {
         keyboardShouldPersistTaps="handled"
       >
         <View style={styles.header}>
-          <View style={{ width: 60 }} />
           <Text style={styles.title}>{t('profile')}</Text>
-          {hasChanges ? (
+          {hasChanges && (
             <TouchableOpacity onPress={handleCancel}>
               <Text style={styles.cancelButton}>{t('cancel')}</Text>
             </TouchableOpacity>
-          ) : (
-            <View style={{ width: 60 }} />
           )}
         </View>
 
@@ -359,13 +356,12 @@ const styles = StyleSheet.create({
   },
   header: {
     ...HEADER_STYLES.container,
-    position: 'relative',
   },
   title: {
-    ...HEADER_STYLES.title,
-    position: 'absolute',
-    left: 0,
-    right: 0,
+    fontSize: 28,
+    fontWeight: '700',
+    color: COLORS.TEXT_DARK,
+    flex: 1,
   },
   cancelButton: {
     ...HEADER_STYLES.headerTextButton,

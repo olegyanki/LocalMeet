@@ -38,9 +38,7 @@ export default function SettingsScreen() {
       ]}
     >
       <View style={styles.header}>
-        <View style={styles.headerSpacer} />
         <Text style={styles.title}>{t('settings')}</Text>
-        <View style={styles.headerSpacer} />
       </View>
 
       <View style={styles.inputGroup}>
@@ -103,11 +101,11 @@ const styles = StyleSheet.create({
   header: {
     ...HEADER_STYLES.container,
   },
-  headerSpacer: {
-    ...HEADER_STYLES.spacer,
-  },
   title: {
-    ...HEADER_STYLES.title,
+    fontSize: 28,
+    fontWeight: '700',
+    color: COLORS.TEXT_DARK,
+    flex: 1,
   },
   inputGroup: {
     marginBottom: 24,
