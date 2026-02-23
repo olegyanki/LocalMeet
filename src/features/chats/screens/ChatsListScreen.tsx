@@ -5,6 +5,7 @@ import { useRouter } from 'expo-router';
 
 // Contexts & Hooks
 import { useAuth } from '@shared/contexts/AuthContext';
+import { useI18n } from '@shared/i18n';
 
 // API & Utils
 import { 
@@ -40,6 +41,7 @@ export default function ChatsScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { user } = useAuth();
+  const { t } = useI18n();
 
   // Sort pending requests by created_at DESC (newest first)
   const sortedPendingRequests = useMemo(() => {
@@ -237,7 +239,7 @@ export default function ChatsScreen() {
             <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={COLORS.ACCENT_ORANGE} />
           }
         >
-          <Text style={styles.emptyText}>No requests yet</Text>
+          <Text style={styles.emptyText}>{t('noRequestsYet')}</Text>
         </ScrollView>
       );
     }
@@ -251,7 +253,7 @@ export default function ChatsScreen() {
       >
         {sortedPendingRequests.length > 0 && (
           <View style={styles.section}>
-            <Text style={styles.sectionHeader}>Pending</Text>
+            <Text style={styles.sectionHeader}>{t('pending')}</Text>
             {sortedPendingRequests.map((request) => (
               <RequestCard
                 key={request.id}
@@ -266,7 +268,7 @@ export default function ChatsScreen() {
 
         {sortedPastRequests.length > 0 && (
           <View style={styles.section}>
-            <Text style={styles.sectionHeader}>Past</Text>
+            <Text style={styles.sectionHeader}>{t('past')}</Text>
             {sortedPastRequests.map((request) => (
               <RequestCard
                 key={request.id}
@@ -303,7 +305,7 @@ export default function ChatsScreen() {
             <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={COLORS.ACCENT_ORANGE} />
           }
         >
-          <Text style={styles.emptyText}>No chats yet</Text>
+          <Text style={styles.emptyText}>{t('noChatsYet')}</Text>
         </ScrollView>
       );
     }
@@ -323,10 +325,10 @@ export default function ChatsScreen() {
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
-      <Text style={styles.title}>Messages</Text>
+      <Text style={styles.title}>{t('messages')}</Text>
 
       <SegmentedControl
-        segments={['Messages', 'Requests']}
+        segments={[t('messages'), t('requests')]}
         activeIndex={activeTab === 'messages' ? 0 : 1}
         onChange={(index) => setActiveTab(index === 0 ? 'messages' : 'requests')}
         style={styles.segmentedControl}

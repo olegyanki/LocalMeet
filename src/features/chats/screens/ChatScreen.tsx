@@ -322,7 +322,7 @@ export default function ChatScreen() {
         </View>
         {isOwnMessage && (
           <Text style={styles.messageStatus}>
-            {message.read ? 'Read' : 'Sent'}
+            {message.read ? t('read') : t('sent')}
           </Text>
         )}
       </View>
@@ -406,11 +406,11 @@ export default function ChatScreen() {
         </TouchableOpacity>
       </View>
 
-      {error && (
+        {error && (
         <View style={styles.errorContainer}>
           <Text style={styles.errorText}>{error}</Text>
           <TouchableOpacity onPress={() => setError(null)}>
-            <Text style={styles.errorDismiss}>Dismiss</Text>
+            <Text style={styles.errorDismiss}>{t('dismiss')}</Text>
           </TouchableOpacity>
         </View>
       )}
@@ -449,7 +449,7 @@ export default function ChatScreen() {
             <View style={styles.inputWrapper}>
               <TextInput
                 style={styles.input}
-                placeholder="Message..."
+                placeholder={t('message')}
                 placeholderTextColor={COLORS.TEXT_LIGHT}
                 value={newMessage}
                 onChangeText={setNewMessage}

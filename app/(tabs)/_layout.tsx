@@ -1,6 +1,7 @@
 import { Tabs } from 'expo-router';
 import { Search, Plus, User, MessageCircle, Settings } from 'lucide-react-native';
 import { useAuth } from '@shared/contexts/AuthContext';
+import { useI18n } from '@shared/i18n';
 import { useRouter } from 'expo-router';
 import { useEffect } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -9,6 +10,7 @@ import { COLORS } from '@shared/constants';
 
 export default function TabLayout() {
   const { user, isLoading } = useAuth();
+  const { t } = useI18n();
   const router = useRouter();
   const insets = useSafeAreaInsets();
 
@@ -44,7 +46,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="(search)"
         options={{
-          title: 'SEARCH',
+          title: t('tabSearch').toUpperCase(),
           tabBarIcon: ({ size, color }) => <Search size={20} color={color} />,
           tabBarLabelStyle: { fontSize: 9, fontWeight: '600' },
         }}
@@ -52,7 +54,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="create-event"
         options={{
-          title: 'GO ONLINE',
+          title: t('tabGoOnline').toUpperCase(),
           tabBarIcon: ({ size, color }) => <Plus size={20} color={color} />,
           tabBarLabelStyle: { fontSize: 9, fontWeight: '600' },
         }}
@@ -60,7 +62,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="chats"
         options={{
-          title: 'CHATS',
+          title: t('tabChats').toUpperCase(),
           tabBarIcon: ({ size, color }) => <MessageCircle size={20} color={color} />,
           tabBarLabelStyle: { fontSize: 9, fontWeight: '600' },
         }}
@@ -68,7 +70,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="(profile)"
         options={{
-          title: 'PROFILE',
+          title: t('tabProfile').toUpperCase(),
           tabBarIcon: ({ size, color }) => <User size={20} color={color} />,
           tabBarLabelStyle: { fontSize: 9, fontWeight: '600' },
         }}
@@ -76,7 +78,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="settings"
         options={{
-          title: 'SETTINGS',
+          title: t('tabSettings').toUpperCase(),
           tabBarIcon: ({ size, color }) => <Settings size={20} color={color} />,
           tabBarLabelStyle: { fontSize: 9, fontWeight: '600' },
         }}
