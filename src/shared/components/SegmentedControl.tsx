@@ -48,28 +48,35 @@ export default function SegmentedControl({
 const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
-    backgroundColor: COLORS.BG_SECONDARY,
+    backgroundColor: COLORS.CARD_BG,
     borderRadius: 12,
-    padding: 3,
+    padding: 4,
     height: 44,
+    borderWidth: 1,
+    borderColor: COLORS.BORDER_COLOR,
+    ...SHADOW.standard,
   },
   segment: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    borderRadius: 10,
+    borderRadius: 8,
     backgroundColor: 'transparent',
   },
   segmentActive: {
     backgroundColor: COLORS.CARD_BG,
-    ...SHADOW.standard,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 1,
   },
   segmentText: {
-    fontSize: 15,
+    fontSize: 14,
     fontWeight: '600',
   },
   segmentTextActive: {
-    color: COLORS.TEXT_DARK,
+    color: COLORS.ACCENT_ORANGE,
   },
   segmentTextInactive: {
     color: COLORS.TEXT_LIGHT,

@@ -25,7 +25,7 @@ import Avatar from '@shared/components/Avatar';
 import SegmentedControl from '@shared/components/SegmentedControl';
 
 // Constants
-import { COLORS } from '@shared/constants';
+import { COLORS, SHADOW } from '@shared/constants';
 
 type TabType = 'messages' | 'requests';
 
@@ -35,7 +35,6 @@ export default function ChatsScreen() {
   const [pastRequests, setPastRequests] = useState<WalkRequestWithProfile[]>([]);
   const [chats, setChats] = useState<ChatWithLastMessage[]>([]);
   const [loading, setLoading] = useState(true);
-  const [scrollEnabled, setScrollEnabled] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   
   const insets = useSafeAreaInsets();
@@ -246,7 +245,6 @@ export default function ChatsScreen() {
     return (
       <ScrollView
         contentContainerStyle={{ paddingBottom: insets.bottom + 80 }}
-        scrollEnabled={scrollEnabled}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={COLORS.ACCENT_ORANGE} />
         }
@@ -260,8 +258,6 @@ export default function ChatsScreen() {
                 request={request}
                 onReject={handleReject}
                 onAccept={handleAccept}
-                onSwipeStart={() => setScrollEnabled(false)}
-                onSwipeEnd={() => setScrollEnabled(true)}
                 onCardPress={(userId) => router.push(`/user/${userId}`)}
               />
             ))}
@@ -371,11 +367,14 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   sectionHeader: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: COLORS.TEXT_DARK,
+    fontSize: 11,
+    fontWeight: '700',
+    color: COLORS.TEXT_LIGHT,
     paddingHorizontal: 24,
-    marginBottom: 12,
+    marginBottom: 16,
+    marginTop: 8,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
   },
   emptyState: {
     flex: 1,
@@ -391,11 +390,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     marginHorizontal: 20,
     marginBottom: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 8,
-    elevation: 2,
+    ...SHADOW.standard,
   },
   chatContent: {
     flexDirection: 'row',

@@ -1,113 +1,21 @@
-import { View, Text, StyleSheet, Dimensions, Animated, PanResponder, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { WalkRequestWithProfile } from '@shared/lib/api';
-import { useRef } from 'react';
-import { Check, X, Calendar } from 'lucide-react-native';
+import { Calendar } from 'lucide-react-native';
 import { COLORS, SIZES, SHADOW } from '@shared/constants';
 import { formatRelativeTime } from '@shared/utils/time';
 import Avatar from '@shared/components/Avatar';
-
-const { width: SCREEN_WIDTH } = Dimensions.get('window');
-const SWIPE_THRESHOLD = SCREEN_WIDTH * 0.3;
+import GradientView from '@shared/components/GradientView';
 
 interface RequestCardProps {
   request: WalkRequestWithProfile;
   isPast?: boolean;
   onReject?: (requestId: string) => void;
   onAccept?: (requestId: string) => void;
-  onSwipeStart?: () => void;
-  onSwipeEnd?: () => void;
   onCardPress?: (userId: string) => void;
 }
 
-export default function RequestCard({ request, isPast = false, onReject, onAccept, onSwipeStart, onSwipeEnd, onCardPress }: RequestCardProps) {
+export default function RequestCard({ request, isPast = false, onReject, onAccept, onCardPress }: RequestCardProps) {
   const { requester, walk } = request;
-  const translateX = useRef(new Animated.Value(0)).current;
-  const opacity = useRef(new Animated.Value(1)).current;
-
-  const handleDismiss = (direction: number) => {
-    if (direction > 0) {
-      onAccept?.(request.id);
-    } else {
-      onReject?.(request.id);
-    }
-  };
-
-  const panResponder = useRef(
-    PanResponder.create({
-      onStartShouldSetPanResponder: () => false,
-      onMoveShouldSetPanResponder: (_, gestureState) => {
-        // Disable swipe for past requests
-        if (isPast) return false;
-        
-        const isHorizontal = Math.abs(gestureState.dx) > Math.abs(gestureState.dy * 1.5);
-        const hasMovedEnough = Math.abs(gestureState.dx) > 3;
-        if (isHorizontal && hasMovedEnough) {
-          onSwipeStart?.();
-          return true;
-        }
-        return false;
-      },
-      onPanResponderTerminationRequest: () => false,
-      onPanResponderTerminate: () => {
-        onSwipeEnd?.();
-        Animated.spring(translateX, {
-          toValue: 0,
-          useNativeDriver: true,
-          tension: 40,
-          friction: 8,
-        }).start();
-      },
-      onPanResponderMove: (_, gestureState) => {
-        const isHorizontal = Math.abs(gestureState.dx) > Math.abs(gestureState.dy);
-        if (isHorizontal) {
-          translateX.setValue(gestureState.dx);
-        }
-      },
-      onPanResponderRelease: (_, gestureState) => {
-        onSwipeEnd?.();
-        const shouldDismiss =
-          Math.abs(gestureState.dx) > SWIPE_THRESHOLD ||
-          Math.abs(gestureState.vx) > 0.5;
-
-        if (shouldDismiss) {
-          const direction = gestureState.dx > 0 ? 1 : -1;
-          Animated.parallel([
-            Animated.timing(translateX, {
-              toValue: direction * SCREEN_WIDTH * 1.5,
-              duration: 250,
-              useNativeDriver: true,
-            }),
-            Animated.timing(opacity, {
-              toValue: 0,
-              duration: 250,
-              useNativeDriver: true,
-            }),
-          ]).start(() => {
-            handleDismiss(direction);
-          });
-        } else {
-          Animated.spring(translateX, {
-            toValue: 0,
-            useNativeDriver: true,
-            tension: 40,
-            friction: 8,
-          }).start();
-        }
-      },
-    })
-  ).current;
-
-  const acceptOpacity = translateX.interpolate({
-    inputRange: [0, 100],
-    outputRange: [0, 1],
-    extrapolate: 'clamp',
-  });
-
-  const rejectOpacity = translateX.interpolate({
-    inputRange: [-100, 0],
-    outputRange: [1, 0],
-    extrapolate: 'clamp',
-  });
 
   const handleCardPress = () => {
     onCardPress?.(requester.id);
@@ -129,32 +37,10 @@ export default function RequestCard({ request, isPast = false, onReject, onAccep
 
   return (
     <View style={styles.container}>
-      {!isPast && (
-        <>
-          <Animated.View style={[styles.acceptBackground, { opacity: acceptOpacity }]}>
-            <Check size={28} color={COLORS.WHITE} strokeWidth={3} />
-          </Animated.View>
-
-          <Animated.View style={[styles.rejectBackground, { opacity: rejectOpacity }]}>
-            <X size={28} color={COLORS.WHITE} strokeWidth={3} />
-          </Animated.View>
-        </>
-      )}
-
-      <Animated.View
-        {...(!isPast ? panResponder.panHandlers : {})}
-        style={[
-          styles.card,
-          isPast && styles.pastCard,
-          !isPast && {
-            transform: [{ translateX: translateX }],
-            opacity: opacity,
-          },
-        ]}
-      >
+      <View style={[styles.card, isPast && styles.pastCard]}>
         <TouchableOpacity
           onPress={handleCardPress}
-          activeOpacity={0.7}
+          activeOpacity={1}
           style={styles.cardContent}
         >
           <View style={styles.header}>
@@ -209,16 +95,18 @@ export default function RequestCard({ request, isPast = false, onReject, onAccep
               </TouchableOpacity>
 
               <TouchableOpacity
-                style={styles.acceptButton}
+                style={styles.acceptButtonWrapper}
                 onPress={handleAcceptPress}
                 activeOpacity={0.7}
               >
-                <Text style={styles.acceptButtonText}>Accept</Text>
+                <GradientView style={styles.acceptButton}>
+                  <Text style={styles.acceptButtonText}>Accept</Text>
+                </GradientView>
               </TouchableOpacity>
             </View>
           )}
         </TouchableOpacity>
-      </Animated.View>
+      </View>
     </View>
   );
 }
@@ -227,30 +115,6 @@ const styles = StyleSheet.create({
   container: {
     marginHorizontal: 20,
     marginBottom: 12,
-    borderRadius: 20,
-    overflow: 'hidden',
-  },
-  acceptBackground: {
-    position: 'absolute',
-    left: 0,
-    top: 0,
-    bottom: 0,
-    right: 0,
-    backgroundColor: COLORS.SUCCESS_GREEN,
-    justifyContent: 'center',
-    alignItems: 'flex-start',
-    paddingLeft: 30,
-  },
-  rejectBackground: {
-    position: 'absolute',
-    left: 0,
-    top: 0,
-    bottom: 0,
-    right: 0,
-    backgroundColor: COLORS.ERROR_RED,
-    justifyContent: 'center',
-    alignItems: 'flex-end',
-    paddingRight: 30,
   },
   card: {
     backgroundColor: COLORS.CARD_BG,
@@ -333,22 +197,23 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#F2F2F7',
     paddingVertical: 12,
-    paddingHorizontal: 24,
     borderRadius: 16,
     alignItems: 'center',
+    justifyContent: 'center',
   },
   declineButtonText: {
     fontSize: 15,
     fontWeight: '600',
     color: COLORS.TEXT_DARK,
   },
-  acceptButton: {
+  acceptButtonWrapper: {
     flex: 1,
-    backgroundColor: COLORS.ACCENT_ORANGE,
+  },
+  acceptButton: {
     paddingVertical: 12,
-    paddingHorizontal: 24,
     borderRadius: 16,
     alignItems: 'center',
+    justifyContent: 'center',
     ...SHADOW.elevated,
   },
   acceptButtonText: {
