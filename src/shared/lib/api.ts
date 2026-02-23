@@ -325,6 +325,116 @@ export async function getMyWalkRequests(userId: string): Promise<WalkRequestWith
   return requestsWithProfiles;
 }
 
+export async function getPendingWalkRequests(
+  userId: string
+): Promise<WalkRequestWithProfile[]> {
+  // Get user's walks
+  const myWalks = await getWalksByUserId(userId);
+
+  if (!myWalks || myWalks.length === 0) {
+    return [];
+  }
+
+  const walkIds = myWalks.map(w => w.id);
+
+  // Query walk_requests with joins
+  const { data: requests, error: requestsError } = await supabase
+    .from('walk_requests')
+    .select('*')
+    .in('walk_id', walkIds)
+    .eq('status', 'pending')
+    .order('created_at', { ascending: false });
+
+  if (requestsError) {
+    throw requestsError;
+  }
+
+  if (!requests || requests.length === 0) {
+    return [];
+  }
+
+  // Get requester profiles
+  const requesterIds = [...new Set(requests.map(r => r.requester_id))];
+
+  const { data: profiles, error: profilesError } = await supabase
+    .from('profiles')
+    .select('*')
+    .in('id', requesterIds);
+
+  if (profilesError) {
+    throw profilesError;
+  }
+
+  // Combine data
+  const requestsWithProfiles = requests.map(request => {
+    const requester = profiles?.find(p => p.id === request.requester_id);
+    const walk = myWalks.find(w => w.id === request.walk_id);
+
+    return {
+      ...request,
+      requester: requester!,
+      walk: walk!,
+    };
+  }).filter(r => r.requester && r.walk);
+
+  return requestsWithProfiles;
+}
+
+export async function getPastWalkRequests(
+  userId: string
+): Promise<WalkRequestWithProfile[]> {
+  // Get user's walks
+  const myWalks = await getWalksByUserId(userId);
+
+  if (!myWalks || myWalks.length === 0) {
+    return [];
+  }
+
+  const walkIds = myWalks.map(w => w.id);
+
+  // Query walk_requests with status 'accepted' or 'rejected'
+  const { data: requests, error: requestsError } = await supabase
+    .from('walk_requests')
+    .select('*')
+    .in('walk_id', walkIds)
+    .in('status', ['accepted', 'rejected'])
+    .order('updated_at', { ascending: false });
+
+  if (requestsError) {
+    throw requestsError;
+  }
+
+  if (!requests || requests.length === 0) {
+    return [];
+  }
+
+  // Get requester profiles
+  const requesterIds = [...new Set(requests.map(r => r.requester_id))];
+
+  const { data: profiles, error: profilesError } = await supabase
+    .from('profiles')
+    .select('*')
+    .in('id', requesterIds);
+
+  if (profilesError) {
+    throw profilesError;
+  }
+
+  // Combine data
+  const requestsWithProfiles = requests.map(request => {
+    const requester = profiles?.find(p => p.id === request.requester_id);
+    const walk = myWalks.find(w => w.id === request.walk_id);
+
+    return {
+      ...request,
+      requester: requester!,
+      walk: walk!,
+    };
+  }).filter(r => r.requester && r.walk);
+
+  return requestsWithProfiles;
+}
+
 export async function uploadEventImage(userId: string, imageUri: string): Promise<string> {
   try {
     const response = await fetch(imageUri);

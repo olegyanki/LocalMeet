@@ -1,5 +1,5 @@
 import { View, Text, StyleSheet, TouchableOpacity, FlatList, ActivityIndicator, RefreshControl, ScrollView } from 'react-native';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 
@@ -8,7 +8,8 @@ import { useAuth } from '@shared/contexts/AuthContext';
 
 // API & Utils
 import { 
-  getMyWalkRequests, 
+  getPendingWalkRequests,
+  getPastWalkRequests,
   updateWalkRequestStatus, 
   getMyChats,
   createChatFromRequest,
@@ -16,19 +17,22 @@ import {
   ChatWithLastMessage 
 } from '@shared/lib/api';
 import { getEventImage } from '@shared/utils/eventImage';
+import { formatRelativeTime } from '@shared/utils/time';
 
 // Components
 import RequestCard from '@features/chats/components/RequestCard';
 import Avatar from '@shared/components/Avatar';
+import SegmentedControl from '@shared/components/SegmentedControl';
 
 // Constants
 import { COLORS } from '@shared/constants';
 
-type TabType = 'requests' | 'chats';
+type TabType = 'messages' | 'requests';
 
 export default function ChatsScreen() {
-  const [activeTab, setActiveTab] = useState<TabType>('chats');
-  const [requests, setRequests] = useState<WalkRequestWithProfile[]>([]);
+  const [activeTab, setActiveTab] = useState<TabType>('messages');
+  const [pendingRequests, setPendingRequests] = useState<WalkRequestWithProfile[]>([]);
+  const [pastRequests, setPastRequests] = useState<WalkRequestWithProfile[]>([]);
   const [chats, setChats] = useState<ChatWithLastMessage[]>([]);
   const [loading, setLoading] = useState(true);
   const [scrollEnabled, setScrollEnabled] = useState(true);
@@ -38,13 +42,35 @@ export default function ChatsScreen() {
   const router = useRouter();
   const { user } = useAuth();
 
+  // Sort pending requests by created_at DESC (newest first)
+  const sortedPendingRequests = useMemo(() => {
+    return [...pendingRequests].sort((a, b) => {
+      const dateA = new Date(a.created_at).getTime();
+      const dateB = new Date(b.created_at).getTime();
+      return dateB - dateA;
+    });
+  }, [pendingRequests]);
+
+  // Sort past requests by updated_at DESC (most recently processed first)
+  const sortedPastRequests = useMemo(() => {
+    return [...pastRequests].sort((a, b) => {
+      const dateA = new Date(a.updated_at).getTime();
+      const dateB = new Date(b.updated_at).getTime();
+      return dateB - dateA;
+    });
+  }, [pastRequests]);
+
   const loadRequests = async (showLoader = true) => {
     if (!user) return;
 
     try {
       if (showLoader) setLoading(true);
-      const data = await getMyWalkRequests(user.id);
-      setRequests(data);
+      const [pending, past] = await Promise.all([
+        getPendingWalkRequests(user.id),
+        getPastWalkRequests(user.id)
+      ]);
+      setPendingRequests(pending);
+      setPastRequests(past);
     } catch (error) {
       console.error('Error loading requests:', error);
     } finally {
@@ -77,34 +103,30 @@ export default function ChatsScreen() {
   };
 
   useEffect(() => {
-    const checkRequestsAndLoad = async () => {
+    const loadInitialData = async () => {
       if (!user) return;
 
       try {
         setLoading(true);
-        const data = await getMyWalkRequests(user.id);
-        setRequests(data);
-
-        if (data.length > 0) {
-          setActiveTab('requests');
-        } else {
-          await loadChats(false);
-        }
+        await Promise.all([
+          loadRequests(false),
+          loadChats(false)
+        ]);
       } catch (error) {
-        console.error('Error loading requests:', error);
+        console.error('Error loading initial data:', error);
       } finally {
         setLoading(false);
       }
     };
 
-    checkRequestsAndLoad();
+    loadInitialData();
   }, [user]);
 
   const handleAccept = async (requestId: string) => {
     if (!user) return;
 
     try {
-      const request = requests.find(r => r.id === requestId);
+      const request = pendingRequests.find(r => r.id === requestId);
       if (!request) return;
 
       const chatId = await createChatFromRequest(
@@ -115,16 +137,14 @@ export default function ChatsScreen() {
 
       await updateWalkRequestStatus(requestId, 'accepted');
       
-      setRequests(prev => {
-        const updated = prev.filter(r => r.id !== requestId);
-        if (updated.length === 0) {
-          setActiveTab('chats');
-        }
-        return updated;
-      });
+      // Move request from pending to past
+      setPendingRequests(prev => prev.filter(r => r.id !== requestId));
+      
+      // Reload past requests to get the updated one
+      await loadRequests(false);
 
       router.push({
-        pathname: `/chat/${chatId}`,
+        pathname: `/chat/${chatId}` as any,
         params: {
           otherUserName: request.requester.display_name,
           otherUserAvatar: request.requester.avatar_url || '',
@@ -138,13 +158,12 @@ export default function ChatsScreen() {
   const handleReject = async (requestId: string) => {
     try {
       await updateWalkRequestStatus(requestId, 'rejected');
-      setRequests(prev => {
-        const updated = prev.filter(r => r.id !== requestId);
-        if (updated.length === 0) {
-          setActiveTab('chats');
-        }
-        return updated;
-      });
+      
+      // Move request from pending to past
+      setPendingRequests(prev => prev.filter(r => r.id !== requestId));
+      
+      // Reload past requests to get the updated one
+      await loadRequests(false);
     } catch (error) {
       console.error('Error rejecting request:', error);
     }
@@ -159,48 +178,40 @@ export default function ChatsScreen() {
     const walk = { image_url: item.walk_image_url } as any;
     const eventImageUrl = getEventImage(walk, otherUser.avatar_url);
 
-    const timeAgo = item.lastMessage ? (() => {
-      const date = new Date(item.lastMessage.created_at);
-      const now = new Date();
-      const diffMs = now.getTime() - date.getTime();
-      const diffMins = Math.floor(diffMs / 60000);
-      const diffHours = Math.floor(diffMins / 60);
-      const diffDays = Math.floor(diffHours / 24);
-
-      if (diffMins < 60) return `${diffMins}m`;
-      if (diffHours < 24) return `${diffHours}h`;
-      return `${diffDays}d`;
-    })() : '';
+    const timeAgo = item.lastMessage ? formatRelativeTime(item.lastMessage.created_at) : '';
 
     return (
       <TouchableOpacity
         style={styles.chatItem}
         onPress={() => router.push({
-          pathname: `/chat/${item.id}`,
+          pathname: `/chat/${item.id}` as any,
           params: {
             otherUserName: otherUser.display_name,
             otherUserAvatar: otherUser.avatar_url || '',
           },
         })}
+        activeOpacity={0.7}
       >
-        <Avatar 
-          uri={eventImageUrl} 
-          name={otherUser.display_name} 
-          size={56}
-        />
-        <View style={styles.chatInfo}>
-          <View style={styles.chatHeader}>
-            <Text style={styles.chatName}>{displayName}</Text>
-            {timeAgo && <Text style={styles.chatTime}>{timeAgo}</Text>}
+        <View style={styles.chatContent}>
+          <Avatar 
+            uri={eventImageUrl} 
+            name={otherUser.display_name} 
+            size={48}
+          />
+          <View style={styles.chatInfo}>
+            <View style={styles.chatHeader}>
+              <Text style={styles.chatName} numberOfLines={1}>{displayName}</Text>
+              {timeAgo && <Text style={styles.chatTime}>{timeAgo}</Text>}
+            </View>
+            <Text
+              style={[styles.chatMessage, isUnread && styles.chatMessageUnread]}
+              numberOfLines={1}
+            >
+              {lastMessageText}
+            </Text>
           </View>
-          <Text
-            style={[styles.chatMessage, isUnread && styles.chatMessageUnread]}
-            numberOfLines={1}
-          >
-            {lastMessageText}
-          </Text>
+          {isUnread && <View style={styles.unreadBadge} />}
         </View>
-        {isUnread && <View style={styles.unreadBadge} />}
       </TouchableOpacity>
     );
   };
@@ -219,7 +230,7 @@ export default function ChatsScreen() {
       );
     }
 
-    if (requests.length === 0) {
+    if (sortedPendingRequests.length === 0 && sortedPastRequests.length === 0) {
       return (
         <ScrollView
           contentContainerStyle={styles.emptyState}
@@ -233,25 +244,44 @@ export default function ChatsScreen() {
     }
 
     return (
-      <FlatList
-        data={requests}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
-          <RequestCard
-            request={item}
-            onReject={handleReject}
-            onAccept={handleAccept}
-            onSwipeStart={() => setScrollEnabled(false)}
-            onSwipeEnd={() => setScrollEnabled(true)}
-            onCardPress={(userId) => router.push(`/user/${userId}`)}
-          />
-        )}
-        scrollEnabled={scrollEnabled}
+      <ScrollView
         contentContainerStyle={{ paddingBottom: insets.bottom + 80 }}
+        scrollEnabled={scrollEnabled}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={COLORS.ACCENT_ORANGE} />
         }
-      />
+      >
+        {sortedPendingRequests.length > 0 && (
+          <View style={styles.section}>
+            <Text style={styles.sectionHeader}>Pending</Text>
+            {sortedPendingRequests.map((request) => (
+              <RequestCard
+                key={request.id}
+                request={request}
+                onReject={handleReject}
+                onAccept={handleAccept}
+                onSwipeStart={() => setScrollEnabled(false)}
+                onSwipeEnd={() => setScrollEnabled(true)}
+                onCardPress={(userId) => router.push(`/user/${userId}`)}
+              />
+            ))}
+          </View>
+        )}
+
+        {sortedPastRequests.length > 0 && (
+          <View style={styles.section}>
+            <Text style={styles.sectionHeader}>Past</Text>
+            {sortedPastRequests.map((request) => (
+              <RequestCard
+                key={request.id}
+                request={request}
+                isPast={true}
+                onCardPress={(userId) => router.push(`/user/${userId}`)}
+              />
+            ))}
+          </View>
+        )}
+      </ScrollView>
     );
   };
 
@@ -287,7 +317,7 @@ export default function ChatsScreen() {
         data={chats}
         keyExtractor={(item) => item.id}
         renderItem={renderChatItem}
-        contentContainerStyle={{ paddingBottom: insets.bottom + 80 }}
+        contentContainerStyle={{ paddingTop: 4, paddingBottom: insets.bottom + 80 }}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={COLORS.ACCENT_ORANGE} />
         }
@@ -299,41 +329,12 @@ export default function ChatsScreen() {
     <View style={[styles.container, { paddingTop: insets.top }]}>
       <Text style={styles.title}>Messages</Text>
 
-      <View style={styles.switchContainer}>
-        <TouchableOpacity
-          style={[
-            styles.switchButton,
-            activeTab === 'chats' && styles.switchButtonActive,
-          ]}
-          onPress={() => setActiveTab('chats')}
-        >
-          <Text
-            style={[
-              styles.switchText,
-              activeTab === 'chats' && styles.switchTextActive,
-            ]}
-          >
-            Chats
-          </Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={[
-            styles.switchButton,
-            activeTab === 'requests' && styles.switchButtonActive,
-          ]}
-          onPress={() => setActiveTab('requests')}
-        >
-          <Text
-            style={[
-              styles.switchText,
-              activeTab === 'requests' && styles.switchTextActive,
-            ]}
-          >
-            Requests
-          </Text>
-        </TouchableOpacity>
-      </View>
+      <SegmentedControl
+        segments={['Messages', 'Requests']}
+        activeIndex={activeTab === 'messages' ? 0 : 1}
+        onChange={(index) => setActiveTab(index === 0 ? 'messages' : 'requests')}
+        style={styles.segmentedControl}
+      />
 
       <View style={styles.content}>
         {activeTab === 'requests' ? (
@@ -359,39 +360,22 @@ const styles = StyleSheet.create({
     paddingTop: 20,
     paddingBottom: 16,
   },
-  switchContainer: {
-    flexDirection: 'row',
+  segmentedControl: {
     marginHorizontal: 24,
     marginBottom: 16,
-    backgroundColor: COLORS.INPUT_BG,
-    borderRadius: 12,
-    padding: 3,
-  },
-  switchButton: {
-    flex: 1,
-    paddingVertical: 10,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: 10,
-  },
-  switchButtonActive: {
-    backgroundColor: COLORS.CARD_BG,
-    shadowColor: COLORS.SHADOW_BLACK,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  switchText: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: COLORS.TEXT_LIGHT,
-  },
-  switchTextActive: {
-    color: COLORS.TEXT_DARK,
   },
   content: {
     flex: 1,
+  },
+  section: {
+    marginBottom: 24,
+  },
+  sectionHeader: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: COLORS.TEXT_DARK,
+    paddingHorizontal: 24,
+    marginBottom: 12,
   },
   emptyState: {
     flex: 1,
@@ -403,59 +387,62 @@ const styles = StyleSheet.create({
     color: COLORS.TEXT_LIGHT,
   },
   chatItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 14,
     backgroundColor: COLORS.CARD_BG,
-    marginHorizontal: 24,
-    marginBottom: 8,
-    borderRadius: 16,
-    shadowColor: COLORS.SHADOW_BLACK,
+    borderRadius: 20,
+    marginHorizontal: 20,
+    marginBottom: 16,
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.06,
-    shadowRadius: 4,
+    shadowRadius: 8,
     elevation: 2,
   },
-  chatAvatar: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    marginRight: 12,
+  chatContent: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    padding: 16,
+    gap: 16,
   },
   chatInfo: {
     flex: 1,
     justifyContent: 'center',
+    minWidth: 0,
   },
   chatHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     marginBottom: 4,
+    gap: 8,
   },
   chatName: {
-    fontSize: 17,
-    fontWeight: '600',
+    fontSize: 16,
+    fontWeight: '700',
     color: COLORS.TEXT_DARK,
+    flex: 1,
   },
   chatTime: {
-    fontSize: 14,
+    fontSize: 12,
     color: COLORS.TEXT_LIGHT,
+    flexShrink: 0,
   },
   chatMessage: {
-    fontSize: 15,
+    fontSize: 14,
     color: COLORS.TEXT_LIGHT,
-    lineHeight: 20,
+    lineHeight: 18,
   },
   chatMessageUnread: {
     fontWeight: '600',
     color: COLORS.TEXT_DARK,
   },
   unreadBadge: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
+    width: 10,
+    height: 10,
+    borderRadius: 5,
     backgroundColor: COLORS.ACCENT_ORANGE,
-    marginLeft: 8,
+    position: 'absolute',
+    right: 16,
+    top: '50%',
+    marginTop: 8,
   },
 });

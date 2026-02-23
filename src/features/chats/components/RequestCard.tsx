@@ -1,8 +1,9 @@
-import { View, Text, StyleSheet, Image, Dimensions, Animated, PanResponder, TouchableOpacity } from 'react-native';
-import { WalkRequestWithProfile } from '../lib/api';
+import { View, Text, StyleSheet, Dimensions, Animated, PanResponder, TouchableOpacity } from 'react-native';
+import { WalkRequestWithProfile } from '@shared/lib/api';
 import { useRef } from 'react';
-import { Check, X } from 'lucide-react-native';
-import { COLORS } from '@shared/constants';
+import { Check, X, Calendar } from 'lucide-react-native';
+import { COLORS, SIZES, SHADOW } from '@shared/constants';
+import { formatRelativeTime } from '@shared/utils/time';
 import Avatar from '@shared/components/Avatar';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
@@ -10,37 +11,24 @@ const SWIPE_THRESHOLD = SCREEN_WIDTH * 0.3;
 
 interface RequestCardProps {
   request: WalkRequestWithProfile;
-  onReject: (requestId: string) => void;
-  onAccept: (requestId: string) => void;
+  isPast?: boolean;
+  onReject?: (requestId: string) => void;
+  onAccept?: (requestId: string) => void;
   onSwipeStart?: () => void;
   onSwipeEnd?: () => void;
   onCardPress?: (userId: string) => void;
 }
 
-export default function RequestCard({ request, onReject, onAccept, onSwipeStart, onSwipeEnd, onCardPress }: RequestCardProps) {
-  const { requester } = request;
+export default function RequestCard({ request, isPast = false, onReject, onAccept, onSwipeStart, onSwipeEnd, onCardPress }: RequestCardProps) {
+  const { requester, walk } = request;
   const translateX = useRef(new Animated.Value(0)).current;
   const opacity = useRef(new Animated.Value(1)).current;
 
-  const formatTimeAgo = (dateString: string) => {
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffMs = now.getTime() - date.getTime();
-    const diffMins = Math.floor(diffMs / 60000);
-    const diffHours = Math.floor(diffMins / 60);
-    const diffDays = Math.floor(diffHours / 24);
-
-    if (diffMins < 1) return 'Just now';
-    if (diffMins < 60) return `${diffMins}m ago`;
-    if (diffHours < 24) return `${diffHours}h ago`;
-    return `${diffDays}d ago`;
-  };
-
   const handleDismiss = (direction: number) => {
     if (direction > 0) {
-      onAccept(request.id);
+      onAccept?.(request.id);
     } else {
-      onReject(request.id);
+      onReject?.(request.id);
     }
   };
 
@@ -48,6 +36,9 @@ export default function RequestCard({ request, onReject, onAccept, onSwipeStart,
     PanResponder.create({
       onStartShouldSetPanResponder: () => false,
       onMoveShouldSetPanResponder: (_, gestureState) => {
+        // Disable swipe for past requests
+        if (isPast) return false;
+        
         const isHorizontal = Math.abs(gestureState.dx) > Math.abs(gestureState.dy * 1.5);
         const hasMovedEnough = Math.abs(gestureState.dx) > 3;
         if (isHorizontal && hasMovedEnough) {
@@ -118,79 +109,115 @@ export default function RequestCard({ request, onReject, onAccept, onSwipeStart,
     extrapolate: 'clamp',
   });
 
+  const handleCardPress = () => {
+    onCardPress?.(requester.id);
+  };
+
+  const handleAcceptPress = (e: any) => {
+    e.stopPropagation();
+    onAccept?.(request.id);
+  };
+
+  const handleDeclinePress = (e: any) => {
+    e.stopPropagation();
+    onReject?.(request.id);
+  };
+
+  const avatarSize = isPast ? 40 : SIZES.AVATAR_MEDIUM;
+  const statusBadgeText = request.status === 'accepted' ? 'Joined' : 'Declined';
+  const statusBadgeStyle = request.status === 'accepted' ? styles.joinedBadge : styles.declinedBadge;
+
   return (
     <View style={styles.container}>
-      <Animated.View style={[styles.acceptBackground, { opacity: acceptOpacity }]}>
-        <Check size={28} color={COLORS.WHITE} strokeWidth={3} />
-      </Animated.View>
+      {!isPast && (
+        <>
+          <Animated.View style={[styles.acceptBackground, { opacity: acceptOpacity }]}>
+            <Check size={28} color={COLORS.WHITE} strokeWidth={3} />
+          </Animated.View>
 
-      <Animated.View style={[styles.rejectBackground, { opacity: rejectOpacity }]}>
-        <X size={28} color={COLORS.WHITE} strokeWidth={3} />
-      </Animated.View>
+          <Animated.View style={[styles.rejectBackground, { opacity: rejectOpacity }]}>
+            <X size={28} color={COLORS.WHITE} strokeWidth={3} />
+          </Animated.View>
+        </>
+      )}
 
       <Animated.View
-        {...panResponder.panHandlers}
+        {...(!isPast ? panResponder.panHandlers : {})}
         style={[
           styles.card,
-          {
+          isPast && styles.pastCard,
+          !isPast && {
             transform: [{ translateX: translateX }],
             opacity: opacity,
           },
         ]}
       >
-          <TouchableOpacity
-            style={styles.header}
-            onPress={() => onCardPress?.(requester.id)}
-            activeOpacity={0.7}
-          >
-          <View style={styles.avatarContainer}>
-            <Avatar 
-              uri={requester.avatar_url} 
-              name={requester.display_name || requester.username} 
-              size={56}
-            />
-          </View>
+        <TouchableOpacity
+          onPress={handleCardPress}
+          activeOpacity={0.7}
+          style={styles.cardContent}
+        >
+          <View style={styles.header}>
+            <View style={[styles.avatarContainer, isPast && styles.pastAvatar]}>
+              <Avatar 
+                uri={requester.avatar_url} 
+                name={requester.display_name || requester.username} 
+                size={avatarSize}
+              />
+            </View>
 
-          <View style={styles.infoContainer}>
-            <View style={styles.nameRow}>
+            <View style={styles.infoContainer}>
               <Text style={styles.name}>
                 {requester.display_name || requester.username}
               </Text>
-              {requester.age && (
-                <Text style={styles.age}>, {requester.age}</Text>
-              )}
-            </View>
 
-            {requester.interests && requester.interests.length > 0 && (
-              <View style={styles.interestsContainer}>
-                {requester.interests.slice(0, 3).map((interest, index) => (
-                  <View key={index} style={styles.interestTag}>
-                    <Text style={styles.interestText}>{interest}</Text>
+              {!isPast && (
+                <Text style={styles.subtitle}>Wants to join your event</Text>
+              )}
+
+              <View style={styles.eventRow}>
+                <Calendar size={16} color={COLORS.TEXT_DARK} />
+                <Text style={styles.eventName} numberOfLines={1}>
+                  {walk.title}
+                </Text>
+                {isPast && (
+                  <View style={[styles.statusBadge, statusBadgeStyle]}>
+                    <Text style={[
+                      styles.statusBadgeText,
+                      request.status === 'accepted' ? styles.joinedBadgeText : styles.declinedBadgeText
+                    ]}>
+                      {statusBadgeText}
+                    </Text>
                   </View>
-                ))}
-                {requester.interests.length > 3 && (
-                  <Text style={styles.moreInterests}>
-                    +{requester.interests.length - 3}
-                  </Text>
                 )}
               </View>
-            )}
+            </View>
 
-            {requester.bio && (
-              <Text style={styles.bio} numberOfLines={2}>
-                {requester.bio}
-              </Text>
-            )}
+            <Text style={styles.timestamp}>
+              {formatRelativeTime(request.created_at)}
+            </Text>
           </View>
 
-          <Text style={styles.time}>{formatTimeAgo(request.created_at)}</Text>
-        </TouchableOpacity>
+          {!isPast && (
+            <View style={styles.actionsContainer}>
+              <TouchableOpacity
+                style={styles.declineButton}
+                onPress={handleDeclinePress}
+                activeOpacity={0.7}
+              >
+                <Text style={styles.declineButtonText}>Decline</Text>
+              </TouchableOpacity>
 
-          {request.message && (
-            <Text style={styles.message} numberOfLines={2}>
-              {request.message}
-            </Text>
+              <TouchableOpacity
+                style={styles.acceptButton}
+                onPress={handleAcceptPress}
+                activeOpacity={0.7}
+              >
+                <Text style={styles.acceptButtonText}>Accept</Text>
+              </TouchableOpacity>
+            </View>
           )}
+        </TouchableOpacity>
       </Animated.View>
     </View>
   );
@@ -199,8 +226,8 @@ export default function RequestCard({ request, onReject, onAccept, onSwipeStart,
 const styles = StyleSheet.create({
   container: {
     marginHorizontal: 20,
-    marginBottom: 8,
-    borderRadius: 16,
+    marginBottom: 12,
+    borderRadius: 20,
     overflow: 'hidden',
   },
   acceptBackground: {
@@ -227,13 +254,14 @@ const styles = StyleSheet.create({
   },
   card: {
     backgroundColor: COLORS.CARD_BG,
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    shadowColor: COLORS.SHADOW_BLACK,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 4,
-    elevation: 2,
+    borderRadius: 20,
+    ...SHADOW.standard,
+  },
+  pastCard: {
+    opacity: 0.6,
+  },
+  cardContent: {
+    padding: 20,
   },
   header: {
     flexDirection: 'row',
@@ -242,61 +270,90 @@ const styles = StyleSheet.create({
   avatarContainer: {
     marginRight: 12,
   },
+  pastAvatar: {
+    opacity: 0.5, // Grayscale effect approximation
+  },
   infoContainer: {
     flex: 1,
     marginRight: 8,
-  },
-  nameRow: {
-    flexDirection: 'row',
-    alignItems: 'baseline',
-    marginBottom: 6,
   },
   name: {
     fontSize: 17,
     fontWeight: '600',
     color: COLORS.TEXT_DARK,
+    marginBottom: 2,
   },
-  age: {
-    fontSize: 17,
-    fontWeight: '400',
-    color: COLORS.TEXT_DARK,
+  subtitle: {
+    fontSize: 15,
+    color: COLORS.TEXT_LIGHT,
+    marginBottom: 4,
   },
-  interestsContainer: {
+  eventRow: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
     alignItems: 'center',
     gap: 6,
   },
-  interestTag: {
-    backgroundColor: COLORS.INPUT_BG,
+  eventName: {
+    fontSize: 15,
+    fontWeight: '500',
+    color: COLORS.TEXT_DARK,
+    flex: 1,
+  },
+  timestamp: {
+    fontSize: 13,
+    color: COLORS.TEXT_LIGHT,
+  },
+  statusBadge: {
+    paddingVertical: 6,
     paddingHorizontal: 10,
-    paddingVertical: 4,
     borderRadius: 12,
   },
-  interestText: {
-    fontSize: 13,
-    color: COLORS.TEXT_DARK,
-    fontWeight: '500',
+  joinedBadge: {
+    backgroundColor: COLORS.SUCCESS_GREEN,
   },
-  moreInterests: {
-    fontSize: 13,
-    color: COLORS.TEXT_LIGHT,
-    fontWeight: '500',
+  declinedBadge: {
+    backgroundColor: '#E8E8E8',
   },
-  bio: {
-    fontSize: 14,
-    lineHeight: 18,
-    color: COLORS.TEXT_LIGHT,
-    marginTop: 6,
+  statusBadgeText: {
+    fontSize: 12,
+    fontWeight: '600',
   },
-  time: {
-    fontSize: 13,
+  joinedBadgeText: {
+    color: COLORS.WHITE,
+  },
+  declinedBadgeText: {
     color: COLORS.TEXT_LIGHT,
   },
-  message: {
-    marginTop: 12,
+  actionsContainer: {
+    flexDirection: 'row',
+    gap: 8,
+    marginTop: 16,
+  },
+  declineButton: {
+    flex: 1,
+    backgroundColor: '#F2F2F7',
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 16,
+    alignItems: 'center',
+  },
+  declineButtonText: {
     fontSize: 15,
-    lineHeight: 20,
+    fontWeight: '600',
     color: COLORS.TEXT_DARK,
+  },
+  acceptButton: {
+    flex: 1,
+    backgroundColor: COLORS.ACCENT_ORANGE,
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 16,
+    alignItems: 'center',
+    ...SHADOW.elevated,
+  },
+  acceptButtonText: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: COLORS.WHITE,
   },
 });
