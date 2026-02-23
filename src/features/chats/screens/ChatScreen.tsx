@@ -35,7 +35,6 @@ import { uploadChatImage, uploadChatAudio } from '@shared/utils/upload';
 
 import AudioRecorder from '@shared/components/AudioRecorder';
 import AudioPlayer from '@shared/components/AudioPlayer';
-import PrimaryButton from '@shared/components/PrimaryButton';
 
 import { COLORS } from '@shared/constants';
 
@@ -261,11 +260,15 @@ export default function ChatScreen() {
       return (
         <>
           <View style={styles.dateContainer}>
-            <Text style={styles.dateText}>{dateString}</Text>
+            <View style={styles.dateBadge}>
+              <Text style={styles.dateText}>{dateString}</Text>
+            </View>
           </View>
           <View style={[styles.messageContainer, styles.otherMessage]}>
             <View style={[styles.messageBubble, styles.otherBubble]}>
-              <Text style={styles.messageText}>{chat.walk_request.message}</Text>
+              <Text style={[styles.messageText, styles.otherMessageText]}>
+                {chat.walk_request.message}
+              </Text>
             </View>
           </View>
         </>
@@ -274,6 +277,11 @@ export default function ChatScreen() {
 
     const message = item as Message;
     const isOwnMessage = message.sender_id === user?.id;
+    const messageTime = new Date(message.created_at).toLocaleTimeString('en-US', {
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false,
+    });
 
     return (
       <View
@@ -304,17 +312,22 @@ export default function ChatScreen() {
             />
           ) : null}
           {message.content ? (
-            <Text style={styles.messageText}>{message.content}</Text>
+            <Text style={[styles.messageText, isOwnMessage ? styles.ownMessageText : styles.otherMessageText]}>
+              {message.content}
+            </Text>
           ) : null}
+          <Text style={[styles.messageTime, isOwnMessage && styles.ownMessageTime]}>
+            {messageTime}
+          </Text>
         </View>
         {isOwnMessage && (
           <Text style={styles.messageStatus}>
-            {message.read ? 'Read' : 'Delivered'}
+            {message.read ? 'Read' : 'Sent'}
           </Text>
         )}
       </View>
     );
-  }, [user, chat]);
+  }, [user, chat, t]);
 
   const allMessages = chat?.walk_request
     ? [{ id: 'initial-message', isInitial: true as const }, ...messages]
@@ -357,12 +370,12 @@ export default function ChatScreen() {
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       keyboardVerticalOffset={0}
     >
-      <View style={[styles.header, { paddingTop: insets.top + 16 }]}>
+      <View style={[styles.header, { paddingTop: insets.top + 12 }]}>
         <TouchableOpacity
           onPress={() => router.back()}
           style={styles.backButton}
         >
-          <ChevronLeft size={28} color={COLORS.TEXT_DARK} />
+          <ChevronLeft size={24} color={COLORS.TEXT_DARK} />
         </TouchableOpacity>
 
         <TouchableOpacity
@@ -378,13 +391,18 @@ export default function ChatScreen() {
           <Text style={styles.headerTitle} numberOfLines={1}>
             {chat.walk_request?.walk?.title || otherUser.display_name}
           </Text>
+          {chat.walk_request?.walk && (
+            <Text style={styles.headerSubtitle} numberOfLines={1}>
+              {otherUser.display_name}
+            </Text>
+          )}
         </TouchableOpacity>
 
         <TouchableOpacity
           style={styles.iconButton}
           onPress={() => setShowOptionsMenu(true)}
         >
-          <MoreVertical size={24} color={COLORS.TEXT_DARK} />
+          <MoreVertical size={20} color={COLORS.TEXT_DARK} />
         </TouchableOpacity>
       </View>
 
@@ -424,7 +442,7 @@ export default function ChatScreen() {
               {uploading ? (
                 <ActivityIndicator size="small" color={COLORS.ACCENT_ORANGE} />
               ) : (
-                <ImageIcon size={24} color={COLORS.TEXT_LIGHT} />
+                <ImageIcon size={22} color={COLORS.TEXT_LIGHT} />
               )}
             </TouchableOpacity>
 
@@ -442,22 +460,26 @@ export default function ChatScreen() {
             </View>
 
             {newMessage.trim() ? (
-              <View style={styles.sendButtonWrapper}>
-                <PrimaryButton
-                  title="Send"
-                  onPress={sendMessage}
-                  disabled={uploading}
-                  style={styles.sendButton}
-                  textStyle={styles.sendButtonText}
-                />
-              </View>
+              <TouchableOpacity
+                style={styles.sendIconButton}
+                onPress={sendMessage}
+                disabled={uploading}
+              >
+                <View style={styles.sendIconCircle}>
+                  <ChevronLeft 
+                    size={20} 
+                    color={COLORS.WHITE} 
+                    style={{ transform: [{ rotate: '180deg' }] }}
+                  />
+                </View>
+              </TouchableOpacity>
             ) : (
               <TouchableOpacity
                 style={styles.inputIconButton}
                 onPress={() => setIsRecording(true)}
                 disabled={uploading}
               >
-                <Mic size={24} color={COLORS.TEXT_LIGHT} />
+                <Mic size={22} color={COLORS.TEXT_LIGHT} />
               </TouchableOpacity>
             )}
           </>
@@ -551,29 +573,37 @@ export default function ChatScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.BG_SECONDARY,
+    backgroundColor: COLORS.WHITE,
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 24,
-    paddingBottom: 16,
-    backgroundColor: COLORS.BG_SECONDARY,
+    paddingHorizontal: 16,
+    paddingBottom: 12,
+    backgroundColor: COLORS.WHITE,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.BORDER_COLOR,
   },
   backButton: {
-    marginRight: 16,
-    padding: 4,
+    marginRight: 12,
+    padding: 8,
   },
   headerTitleContainer: {
     flex: 1,
   },
   headerTitle: {
-    fontSize: 28,
-    fontWeight: '700',
+    fontSize: 17,
+    fontWeight: '600',
     color: COLORS.TEXT_DARK,
   },
+  headerSubtitle: {
+    fontSize: 13,
+    fontWeight: '400',
+    color: COLORS.TEXT_LIGHT,
+    marginTop: 2,
+  },
   iconButton: {
-    padding: 4,
+    padding: 8,
     marginLeft: 8,
   },
   errorContainer: {
@@ -581,7 +611,7 @@ const styles = StyleSheet.create({
     padding: 12,
     marginHorizontal: 16,
     marginVertical: 8,
-    borderRadius: 8,
+    borderRadius: 12,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
@@ -599,21 +629,27 @@ const styles = StyleSheet.create({
   },
   messagesList: {
     paddingHorizontal: 16,
-    paddingVertical: 16,
-    backgroundColor: COLORS.BG_SECONDARY,
+    paddingVertical: 12,
+    backgroundColor: COLORS.WHITE,
   },
   dateContainer: {
     alignItems: 'center',
-    marginVertical: 16,
+    marginVertical: 20,
+  },
+  dateBadge: {
+    backgroundColor: COLORS.BG_SECONDARY,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 12,
   },
   dateText: {
-    fontSize: 13,
+    fontSize: 12,
     color: COLORS.TEXT_LIGHT,
     fontWeight: '500',
   },
   messageContainer: {
-    marginBottom: 12,
-    maxWidth: '80%',
+    marginBottom: 8,
+    maxWidth: '75%',
   },
   ownMessage: {
     alignSelf: 'flex-end',
@@ -624,8 +660,9 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
   },
   messageBubble: {
-    padding: 12,
-    borderRadius: 20,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderRadius: 18,
     overflow: 'hidden',
   },
   audioBubble: {
@@ -637,28 +674,36 @@ const styles = StyleSheet.create({
     borderBottomRightRadius: 4,
   },
   otherBubble: {
-    backgroundColor: COLORS.CARD_BG,
+    backgroundColor: COLORS.BG_SECONDARY,
     borderBottomLeftRadius: 4,
-    shadowColor: COLORS.SHADOW_BLACK,
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.06,
-    shadowRadius: 2,
-    elevation: 1,
   },
   messageText: {
-    fontSize: 16,
+    fontSize: 15,
+    lineHeight: 20,
+    marginBottom: 4,
+  },
+  ownMessageText: {
+    color: COLORS.WHITE,
+  },
+  otherMessageText: {
     color: COLORS.TEXT_DARK,
-    lineHeight: 22,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
+  },
+  messageTime: {
+    fontSize: 11,
+    color: COLORS.TEXT_LIGHT,
+    marginTop: 2,
+  },
+  ownMessageTime: {
+    color: 'rgba(255, 255, 255, 0.7)',
   },
   messageImage: {
-    width: 200,
-    height: 200,
+    width: 220,
+    height: 220,
     borderRadius: 12,
+    marginBottom: 4,
   },
   messageStatus: {
-    fontSize: 12,
+    fontSize: 11,
     color: COLORS.TEXT_LIGHT,
     marginTop: 4,
     marginRight: 4,
@@ -666,38 +711,45 @@ const styles = StyleSheet.create({
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'flex-end',
-    paddingHorizontal: 16,
-    paddingTop: 12,
-    paddingBottom: 8,
-    backgroundColor: COLORS.CARD_BG,
-    shadowColor: COLORS.SHADOW_BLACK,
-    shadowOffset: { width: 0, height: -2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 4,
-    elevation: 2,
+    paddingHorizontal: 12,
+    paddingTop: 10,
+    paddingBottom: 10,
+    backgroundColor: COLORS.WHITE,
+    borderTopWidth: 1,
+    borderTopColor: COLORS.BORDER_COLOR,
   },
   inputWrapper: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: COLORS.INPUT_BG,
+    backgroundColor: COLORS.BG_SECONDARY,
     borderRadius: 20,
-    paddingHorizontal: 12,
+    paddingHorizontal: 14,
     marginHorizontal: 8,
     minHeight: 40,
     maxHeight: 100,
-    borderWidth: 1,
-    borderColor: COLORS.BORDER_COLOR,
   },
   input: {
     flex: 1,
-    fontSize: 16,
+    fontSize: 15,
     color: COLORS.TEXT_DARK,
-    paddingVertical: 8,
+    paddingVertical: 10,
   },
   inputIconButton: {
+    padding: 8,
+    alignSelf: 'center',
+  },
+  sendIconButton: {
     padding: 4,
     alignSelf: 'center',
+  },
+  sendIconCircle: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: COLORS.ACCENT_ORANGE,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   sendButtonWrapper: {
     alignSelf: 'center',
@@ -720,7 +772,7 @@ const styles = StyleSheet.create({
   },
   modalContent: {
     backgroundColor: COLORS.CARD_BG,
-    borderRadius: 16,
+    borderRadius: 20,
     padding: 24,
     width: '100%',
     maxWidth: 400,
@@ -733,14 +785,15 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: '600',
     color: COLORS.TEXT_DARK,
-    marginBottom: 12,
+    marginBottom: 8,
     textAlign: 'center',
   },
   modalMessage: {
-    fontSize: 16,
+    fontSize: 15,
     color: COLORS.TEXT_LIGHT,
     marginBottom: 24,
     textAlign: 'center',
+    lineHeight: 22,
   },
   modalButtons: {
     flexDirection: 'row',
@@ -754,7 +807,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   modalButtonCancel: {
-    backgroundColor: COLORS.INPUT_BG,
+    backgroundColor: COLORS.BG_SECONDARY,
   },
   modalButtonDelete: {
     backgroundColor: COLORS.ERROR_RED,
@@ -771,19 +824,19 @@ const styles = StyleSheet.create({
   },
   optionsMenu: {
     backgroundColor: COLORS.CARD_BG,
-    borderRadius: 12,
+    borderRadius: 16,
     marginHorizontal: 20,
     marginTop: 'auto',
     marginBottom: 'auto',
     overflow: 'hidden',
     shadowColor: COLORS.SHADOW_BLACK,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 8,
-    elevation: 5,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 12,
+    elevation: 8,
   },
   optionButton: {
-    paddingVertical: 16,
+    paddingVertical: 18,
     paddingHorizontal: 20,
     alignItems: 'center',
   },
@@ -797,6 +850,6 @@ const styles = StyleSheet.create({
   },
   optionDivider: {
     height: 1,
-    backgroundColor: COLORS.GRAY_DIVIDER,
+    backgroundColor: COLORS.BORDER_COLOR,
   },
 });
