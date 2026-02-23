@@ -1,7 +1,7 @@
 import { View, Text, StyleSheet, TouchableOpacity, FlatList, ActivityIndicator, RefreshControl, ScrollView } from 'react-native';
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useRouter } from 'expo-router';
+import { useRouter, useFocusEffect } from 'expo-router';
 
 // Contexts & Hooks
 import { useAuth } from '@shared/contexts/AuthContext';
@@ -122,6 +122,15 @@ export default function ChatsScreen() {
 
     loadInitialData();
   }, [user]);
+
+  // Reload chats when screen comes into focus (e.g., after deleting a chat)
+  useFocusEffect(
+    useCallback(() => {
+      if (user && !loading) {
+        loadChats(false);
+      }
+    }, [user])
+  );
 
   const handleAccept = async (requestId: string) => {
     if (!user) return;
