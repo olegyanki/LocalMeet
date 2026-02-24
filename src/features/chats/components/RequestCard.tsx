@@ -39,14 +39,14 @@ export default function RequestCard({ request, isPast = false, onReject, onAccep
 
   return (
     <View style={styles.container}>
-      <View style={[styles.card, isPast && styles.pastCard]}>
+      <View style={styles.card}>
         <TouchableOpacity
           onPress={handleCardPress}
           activeOpacity={1}
-          style={styles.cardContent}
+          style={[styles.cardContent, isPast && styles.pastCardContent]}
         >
-          <View style={styles.header}>
-            <View style={[styles.avatarContainer, isPast && styles.pastAvatar]}>
+          <View style={[styles.header, isPast && styles.pastHeader]}>
+            <View style={styles.avatarContainer}>
               <Avatar 
                 uri={requester.avatar_url} 
                 name={requester.display_name || requester.username} 
@@ -55,21 +55,29 @@ export default function RequestCard({ request, isPast = false, onReject, onAccep
             </View>
 
             <View style={styles.infoContainer}>
-              <View style={styles.nameRow}>
-                <Text style={styles.name} numberOfLines={1}>
+              {!isPast && (
+                <View style={styles.nameRow}>
+                  <Text style={styles.name} numberOfLines={1}>
+                    {requester.display_name || requester.username}
+                  </Text>
+                  <Text style={styles.timestamp}>
+                    {formatRelativeTime(request.created_at).toUpperCase()}
+                  </Text>
+                </View>
+              )}
+
+              {isPast && (
+                <Text style={styles.pastName} numberOfLines={1}>
                   {requester.display_name || requester.username}
                 </Text>
-                <Text style={styles.timestamp}>
-                  {formatRelativeTime(request.created_at).toUpperCase()}
-                </Text>
-              </View>
+              )}
 
               {!isPast && (
                 <Text style={styles.subtitle}>{t('wantsToJoinEvent')}</Text>
               )}
               
               {isPast && (
-                <Text style={styles.pastSubtitle}>
+                <Text style={styles.pastSubtitle} numberOfLines={1}>
                   {t('acceptedFor')} "{walk.title}"
                 </Text>
               )}
@@ -141,22 +149,23 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(0, 0, 0, 0.05)',
     ...SHADOW.standard,
   },
-  pastCard: {
-    opacity: 0.6,
-  },
   cardContent: {
     padding: 20,
+  },
+  pastCardContent: {
+    padding: 16,
   },
   header: {
     flexDirection: 'row',
     alignItems: 'flex-start',
     marginBottom: 12,
   },
+  pastHeader: {
+    alignItems: 'center',
+    marginBottom: 0,
+  },
   avatarContainer: {
     marginRight: 12,
-  },
-  pastAvatar: {
-    opacity: 0.5,
   },
   infoContainer: {
     flex: 1,
@@ -175,6 +184,11 @@ const styles = StyleSheet.create({
     flex: 1,
     marginRight: 8,
   },
+  pastName: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: COLORS.TEXT_DARK,
+  },
   timestamp: {
     fontSize: 10,
     fontWeight: '600',
@@ -189,6 +203,7 @@ const styles = StyleSheet.create({
   pastSubtitle: {
     fontSize: 12,
     color: COLORS.TEXT_LIGHT,
+    marginTop: 2,
   },
   messageBox: {
     backgroundColor: 'rgba(242, 242, 247, 0.6)',
@@ -215,20 +230,21 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   statusBadge: {
-    paddingVertical: 4,
-    paddingHorizontal: 8,
+    paddingVertical: 6,
+    paddingHorizontal: 10,
     borderRadius: 8,
     marginLeft: 8,
+    flexShrink: 0,
   },
   joinedBadge: {
-    backgroundColor: 'rgba(52, 199, 89, 0.15)',
+    backgroundColor: 'rgba(52, 199, 89, 0.1)',
   },
   declinedBadge: {
-    backgroundColor: '#E8E8E8',
+    backgroundColor: 'rgba(153, 153, 153, 0.1)',
   },
   statusBadgeText: {
     fontSize: 12,
-    fontWeight: '700',
+    fontWeight: '600',
   },
   joinedBadgeText: {
     color: '#34C759',
