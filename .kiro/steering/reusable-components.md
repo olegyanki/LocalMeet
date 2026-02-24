@@ -111,6 +111,31 @@ Reusable chip/tag component with active/inactive states and gradient support.
 **Use for:** Filter chips, interest tags, category selection
 **Don't use for:** Buttons, large interactive elements
 
+## Segmented Control
+
+### SegmentedControl
+`src/shared/components/SegmentedControl.tsx`
+
+Tab switcher with optional badges for counts.
+
+```tsx
+<SegmentedControl
+  segments={[t('messages'), t('requests')]}
+  activeIndex={activeTab === 'messages' ? 0 : 1}
+  onChange={(index) => setActiveTab(index === 0 ? 'messages' : 'requests')}
+  badges={[unreadCount, pendingCount]}
+/>
+```
+
+**Props:**
+- `segments`: Array of tab labels
+- `activeIndex`: Currently active tab index
+- `onChange`: Callback when tab changes
+- `badges`: Optional array of numbers to show as badges (null/0 = hidden)
+
+**Use for:** Tab switching, view mode selection
+**Don't use for:** Navigation between screens (use tabs), more than 3 segments
+
 ## Pickers
 
 ### InterestPicker

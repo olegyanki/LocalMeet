@@ -7,6 +7,7 @@ interface SegmentedControlProps {
   activeIndex: number;
   onChange: (index: number) => void;
   style?: ViewStyle;
+  badges?: (number | null)[];
 }
 
 export default function SegmentedControl({
@@ -14,11 +15,14 @@ export default function SegmentedControl({
   activeIndex,
   onChange,
   style,
+  badges,
 }: SegmentedControlProps) {
   return (
     <View style={[styles.container, style]}>
       {segments.map((segment, index) => {
         const isActive = index === activeIndex;
+        const badgeCount = badges?.[index];
+        const showBadge = badgeCount !== null && badgeCount !== undefined && badgeCount > 0;
         
         return (
           <TouchableOpacity
@@ -30,14 +34,23 @@ export default function SegmentedControl({
             onPress={() => onChange(index)}
             activeOpacity={0.7}
           >
-            <Text
-              style={[
-                styles.segmentText,
-                isActive ? styles.segmentTextActive : styles.segmentTextInactive,
-              ]}
-            >
-              {segment}
-            </Text>
+            <View style={styles.segmentContent}>
+              <Text
+                style={[
+                  styles.segmentText,
+                  isActive ? styles.segmentTextActive : styles.segmentTextInactive,
+                ]}
+              >
+                {segment}
+              </Text>
+              {showBadge && (
+                <View style={[styles.badge, isActive && styles.badgeActive]}>
+                  <Text style={[styles.badgeText, isActive && styles.badgeTextActive]}>
+                    {badgeCount > 99 ? '99+' : badgeCount}
+                  </Text>
+                </View>
+              )}
+            </View>
           </TouchableOpacity>
         );
       })}
@@ -71,6 +84,11 @@ const styles = StyleSheet.create({
     shadowRadius: 2,
     elevation: 1,
   },
+  segmentContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
   segmentText: {
     fontSize: 14,
     fontWeight: '600',
@@ -80,5 +98,25 @@ const styles = StyleSheet.create({
   },
   segmentTextInactive: {
     color: COLORS.TEXT_LIGHT,
+  },
+  badge: {
+    backgroundColor: 'rgba(255, 122, 0, 0.1)',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 10,
+    minWidth: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  badgeActive: {
+    backgroundColor: COLORS.ACCENT_ORANGE,
+  },
+  badgeText: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: COLORS.ACCENT_ORANGE,
+  },
+  badgeTextActive: {
+    color: COLORS.WHITE,
   },
 });
