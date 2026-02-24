@@ -733,7 +733,7 @@ export async function getChatById(chatId: string): Promise<ChatDetails | null> {
   if (walkRequest?.walk_id) {
     const { data: walkData } = await supabase
       .from('walks')
-      .select('id, title, description, start_time, duration, latitude, longitude, user_id')
+      .select('id, title, description, start_time, duration, latitude, longitude, user_id, image_url')
       .eq('id', walkRequest.walk_id)
       .maybeSingle();
 

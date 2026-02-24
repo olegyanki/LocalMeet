@@ -335,32 +335,11 @@ export default function ChatScreen() {
 
   if (loading || !chat || !otherUser) {
     return (
-      <KeyboardAvoidingView
-        style={styles.container}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        keyboardVerticalOffset={0}
-      >
-        <View style={[styles.header, { paddingTop: insets.top + 16 }]}>
-          <TouchableOpacity
-            onPress={() => router.back()}
-            style={styles.backButton}
-          >
-            <ChevronLeft size={28} color={COLORS.TEXT_DARK} />
-          </TouchableOpacity>
-
-          {preloadedUserName ? (
-            <Text style={styles.headerTitle}>{preloadedUserName}</Text>
-          ) : (
-            <View style={{ flex: 1 }}>
-              <ActivityIndicator size="small" color={COLORS.ACCENT_ORANGE} />
-            </View>
-          )}
-
-          <View style={styles.iconButton}>
-            <MoreVertical size={24} color="transparent" />
-          </View>
+      <View style={styles.container}>
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color={COLORS.ACCENT_ORANGE} />
         </View>
-      </KeyboardAvoidingView>
+      </View>
     );
   }
 
@@ -378,25 +357,33 @@ export default function ChatScreen() {
           <ChevronLeft size={24} color={COLORS.TEXT_DARK} />
         </TouchableOpacity>
 
-        <TouchableOpacity
-          style={styles.headerTitleContainer}
-          onPress={() => {
-            if (chat.walk_request?.walk?.id) {
-              router.push(`/event/${chat.walk_request.walk.id}`);
-            } else {
-              router.push(`/user/${otherUser.id}`);
-            }
-          }}
-        >
-          <Text style={styles.headerTitle} numberOfLines={1}>
-            {chat.walk_request?.walk?.title || otherUser.display_name}
-          </Text>
-          {chat.walk_request?.walk && (
-            <Text style={styles.headerSubtitle} numberOfLines={1}>
+        {chat.walk_request?.walk ? (
+          <>
+            {chat.walk_request.walk.image_url && (
+              <Image
+                source={{ uri: chat.walk_request.walk.image_url }}
+                style={styles.headerEventImage}
+              />
+            )}
+            <TouchableOpacity
+              style={styles.headerTitleContainer}
+              onPress={() => router.push(`/event/${chat.walk_request.walk.id}`)}
+            >
+              <Text style={styles.headerTitle} numberOfLines={1}>
+                {chat.walk_request.walk.title}
+              </Text>
+            </TouchableOpacity>
+          </>
+        ) : (
+          <TouchableOpacity
+            style={styles.headerTitleContainer}
+            onPress={() => router.push(`/user/${otherUser.id}`)}
+          >
+            <Text style={styles.headerTitle} numberOfLines={1}>
               {otherUser.display_name}
             </Text>
-          )}
-        </TouchableOpacity>
+          </TouchableOpacity>
+        )}
 
         <TouchableOpacity
           style={styles.iconButton}
@@ -575,6 +562,11 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: COLORS.WHITE,
   },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -588,6 +580,12 @@ const styles = StyleSheet.create({
     marginRight: 12,
     padding: 8,
   },
+  headerEventImage: {
+    width: 36,
+    height: 36,
+    borderRadius: 8,
+    marginRight: 12,
+  },
   headerTitleContainer: {
     flex: 1,
   },
@@ -595,12 +593,6 @@ const styles = StyleSheet.create({
     fontSize: 17,
     fontWeight: '600',
     color: COLORS.TEXT_DARK,
-  },
-  headerSubtitle: {
-    fontSize: 13,
-    fontWeight: '400',
-    color: COLORS.TEXT_LIGHT,
-    marginTop: 2,
   },
   iconButton: {
     padding: 8,
