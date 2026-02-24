@@ -61,6 +61,20 @@ export default function ChatsScreen() {
     });
   }, [pastRequests]);
 
+  // Count unread messages
+  const unreadCount = useMemo(() => {
+    return chats.filter(chat => 
+      chat.lastMessage && 
+      !chat.lastMessage.read && 
+      chat.lastMessage.sender_id !== user?.id
+    ).length;
+  }, [chats, user]);
+
+  // Count pending requests
+  const pendingCount = useMemo(() => {
+    return pendingRequests.length;
+  }, [pendingRequests]);
+
   const loadRequests = async (showLoader = true) => {
     if (!user) return;
 
@@ -217,26 +231,24 @@ export default function ChatsScreen() {
         })}
         activeOpacity={0.7}
       >
-        <View style={styles.chatContent}>
-          <Avatar 
-            uri={eventImageUrl} 
-            name={otherUser.display_name} 
-            size={48}
-          />
-          <View style={styles.chatInfo}>
-            <View style={styles.chatHeader}>
-              <Text style={styles.chatName} numberOfLines={1}>{displayName}</Text>
-              {timeAgo && <Text style={styles.chatTime}>{timeAgo}</Text>}
-            </View>
-            <Text
-              style={[styles.chatMessage, isUnread && styles.chatMessageUnread]}
-              numberOfLines={1}
-            >
-              {lastMessageText}
-            </Text>
+        <Avatar 
+          uri={eventImageUrl} 
+          name={otherUser.display_name} 
+          size={52}
+        />
+        <View style={styles.chatInfo}>
+          <View style={styles.chatHeader}>
+            <Text style={styles.chatName} numberOfLines={1}>{displayName}</Text>
+            {timeAgo && <Text style={styles.chatTime}>{timeAgo}</Text>}
           </View>
-          {isUnread && <View style={styles.unreadBadge} />}
+          <Text
+            style={[styles.chatMessage, isUnread && styles.chatMessageUnread]}
+            numberOfLines={1}
+          >
+            {lastMessageText}
+          </Text>
         </View>
+        {isUnread && <View style={styles.unreadBadge} />}
       </TouchableOpacity>
     );
   };
@@ -355,6 +367,7 @@ export default function ChatsScreen() {
         segments={[t('messages'), t('requests')]}
         activeIndex={activeTab === 'messages' ? 0 : 1}
         onChange={(index) => setActiveTab(index === 0 ? 'messages' : 'requests')}
+        badges={[unreadCount, pendingCount]}
         style={styles.segmentedControl}
       />
 
@@ -412,22 +425,21 @@ const styles = StyleSheet.create({
     color: COLORS.TEXT_LIGHT,
   },
   chatItem: {
-    backgroundColor: COLORS.CARD_BG,
-    borderRadius: 20,
-    marginHorizontal: 20,
-    marginBottom: 16,
-    ...SHADOW.standard,
-  },
-  chatContent: {
     flexDirection: 'row',
     alignItems: 'flex-start',
+    backgroundColor: COLORS.CARD_BG,
+    borderRadius: 20,
+    marginHorizontal: 24,
+    marginBottom: 16,
     padding: 16,
     gap: 16,
+    ...SHADOW.standard,
   },
   chatInfo: {
     flex: 1,
     justifyContent: 'center',
     minWidth: 0,
+    paddingTop: 2,
   },
   chatHeader: {
     flexDirection: 'row',
@@ -451,9 +463,10 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: COLORS.TEXT_LIGHT,
     lineHeight: 18,
+    paddingRight: 16,
   },
   chatMessageUnread: {
-    fontWeight: '600',
+    fontWeight: '700',
     color: COLORS.TEXT_DARK,
   },
   unreadBadge: {
@@ -464,6 +477,8 @@ const styles = StyleSheet.create({
     position: 'absolute',
     right: 16,
     top: '50%',
-    marginTop: 8,
+    marginTop: 16,
+    borderWidth: 2,
+    borderColor: COLORS.CARD_BG,
   },
 });
