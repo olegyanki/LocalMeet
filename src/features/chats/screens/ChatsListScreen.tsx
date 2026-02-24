@@ -123,14 +123,29 @@ export default function ChatsScreen() {
     loadInitialData();
   }, [user]);
 
-  // Reload chats when screen comes into focus (e.g., after deleting a chat)
+  // Reload data when screen comes into focus
   useFocusEffect(
     useCallback(() => {
       if (user && !loading) {
-        loadChats(false);
+        if (activeTab === 'messages') {
+          loadChats(false);
+        } else {
+          loadRequests(false);
+        }
       }
-    }, [user])
+    }, [user, activeTab])
   );
+
+  // Reload data when switching tabs (background refresh without spinner)
+  useEffect(() => {
+    if (user && !loading) {
+      if (activeTab === 'messages') {
+        loadChats(false);
+      } else {
+        loadRequests(false);
+      }
+    }
+  }, [activeTab]);
 
   const handleAccept = async (requestId: string) => {
     if (!user) return;
