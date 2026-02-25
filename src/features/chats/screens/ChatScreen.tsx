@@ -15,7 +15,7 @@ import {
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as ImagePicker from 'expo-image-picker';
-import { ChevronLeft, MoreVertical, Mic, Image as ImageIcon, Trash2 } from 'lucide-react-native';
+import { ChevronLeft, MoreVertical, Mic, Plus, Users, Trash2 } from 'lucide-react-native';
 
 import { useAuth } from '@shared/contexts/AuthContext';
 import { useI18n } from '@shared/i18n';
@@ -35,8 +35,9 @@ import { uploadChatImage, uploadChatAudio } from '@shared/utils/upload';
 
 import AudioRecorder from '@shared/components/AudioRecorder';
 import AudioPlayer from '@shared/components/AudioPlayer';
+import Avatar from '@shared/components/Avatar';
 
-import { COLORS } from '@shared/constants';
+import { COLORS, SHADOW } from '@shared/constants';
 
 const SCROLL_DELAY = 100;
 const MAX_MESSAGE_LENGTH = 1000;
@@ -60,8 +61,6 @@ export default function ChatScreen() {
   const [showOptionsMenu, setShowOptionsMenu] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
-
-  const preloadedUserName = Array.isArray(otherUserName) ? otherUserName[0] : otherUserName;
 
   const otherUser =
     chat && user
@@ -248,7 +247,11 @@ export default function ChatScreen() {
     }
   }, [chatId, deleting, router, t]);
 
-  const renderMessage = useCallback(({ item }: { item: Message | { id: string; isInitial: true } }) => {
+  const allMessages = chat?.walk_request
+    ? [{ id: 'initial-message', isInitial: true as const }, ...messages]
+    : messages;
+
+  const renderMessage = useCallback(({ item, index }: { item: Message | { id: string; isInitial: true }, index: number }) => {
     if ('isInitial' in item && item.isInitial && chat?.walk_request) {
       const requestDate = new Date(chat.walk_request.created_at);
       const dateString = requestDate.toLocaleDateString('en-US', {
@@ -261,13 +264,30 @@ export default function ChatScreen() {
         <>
           <View style={styles.dateContainer}>
             <View style={styles.dateBadge}>
-              <Text style={styles.dateText}>{dateString}</Text>
+              <Text style={styles.dateText}>{dateString.toUpperCase()}</Text>
             </View>
           </View>
           <View style={[styles.messageContainer, styles.otherMessage]}>
-            <View style={[styles.messageBubble, styles.otherBubble]}>
-              <Text style={[styles.messageText, styles.otherMessageText]}>
-                {chat.walk_request.message}
+            <View style={styles.avatarContainer}>
+              <Avatar
+                uri={otherUser?.avatar_url}
+                size={32}
+                name={otherUser?.display_name || ''}
+              />
+            </View>
+            <View style={styles.messageContent}>
+              <Text style={styles.senderName}>{otherUser?.display_name}</Text>
+              <View style={[styles.messageBubble, styles.otherBubble]}>
+                <Text style={[styles.messageText, styles.otherMessageText]}>
+                  {chat.walk_request.message}
+                </Text>
+              </View>
+              <Text style={styles.messageTime}>
+                {new Date(chat.walk_request.created_at).toLocaleTimeString('en-US', {
+                  hour: '2-digit',
+                  minute: '2-digit',
+                  hour12: false,
+                })}
               </Text>
             </View>
           </View>
@@ -283,55 +303,87 @@ export default function ChatScreen() {
       hour12: false,
     });
 
+    // Show date separator for first message or when date changes
+    const showDateSeparator = index === 0 || (index > 0 && allMessages[index - 1] && 
+      new Date(message.created_at).toDateString() !== 
+      new Date((allMessages[index - 1] as Message).created_at).toDateString());
+
+    const senderName = isOwnMessage 
+      ? (user?.id === chat?.requester_id ? chat?.requester.display_name : chat?.walker.display_name)
+      : (message.sender_id === chat?.requester_id ? chat?.requester.display_name : chat?.walker.display_name);
+
+    const senderAvatar = isOwnMessage
+      ? (user?.id === chat?.requester_id ? chat?.requester.avatar_url : chat?.walker.avatar_url)
+      : (message.sender_id === chat?.requester_id ? chat?.requester.avatar_url : chat?.walker.avatar_url);
+
     return (
-      <View
-        style={[
-          styles.messageContainer,
-          isOwnMessage ? styles.ownMessage : styles.otherMessage,
-        ]}
-      >
+      <>
+        {showDateSeparator && (
+          <View style={styles.dateContainer}>
+            <View style={styles.dateBadge}>
+              <Text style={styles.dateText}>TODAY</Text>
+            </View>
+          </View>
+        )}
         <View
           style={[
-            styles.messageBubble,
-            isOwnMessage ? styles.ownBubble : styles.otherBubble,
-            message.audio_url && styles.audioBubble,
+            styles.messageContainer,
+            isOwnMessage ? styles.ownMessage : styles.otherMessage,
           ]}
         >
-          {message.image_url && (
-            <Image
-              source={{ uri: message.image_url }}
-              style={styles.messageImage}
-              resizeMode="cover"
-            />
+          {!isOwnMessage && (
+            <View style={styles.avatarContainer}>
+              <Avatar
+                uri={senderAvatar}
+                size={32}
+                name={senderName || ''}
+              />
+            </View>
           )}
-          {message.audio_url && message.audio_duration ? (
-            <AudioPlayer
-              audioUrl={message.audio_url}
-              duration={message.audio_duration}
-              isOwnMessage={isOwnMessage}
-            />
-          ) : null}
-          {message.content ? (
-            <Text style={[styles.messageText, isOwnMessage ? styles.ownMessageText : styles.otherMessageText]}>
-              {message.content}
-            </Text>
-          ) : null}
-          <Text style={[styles.messageTime, isOwnMessage && styles.ownMessageTime]}>
-            {messageTime}
-          </Text>
+          <View style={[styles.messageContent, isOwnMessage && styles.ownMessageContent]}>
+            {!isOwnMessage && (
+              <Text style={styles.senderName}>{senderName}</Text>
+            )}
+            <View
+              style={[
+                styles.messageBubble,
+                isOwnMessage ? styles.ownBubble : styles.otherBubble,
+                message.audio_url && styles.audioBubble,
+              ]}
+            >
+              {message.image_url && (
+                <Image
+                  source={{ uri: message.image_url }}
+                  style={styles.messageImage}
+                  resizeMode="cover"
+                />
+              )}
+              {message.audio_url && message.audio_duration ? (
+                <AudioPlayer
+                  audioUrl={message.audio_url}
+                  duration={message.audio_duration}
+                  isOwnMessage={isOwnMessage}
+                />
+              ) : null}
+              {message.content ? (
+                <Text style={[styles.messageText, isOwnMessage ? styles.ownMessageText : styles.otherMessageText]}>
+                  {message.content}
+                </Text>
+              ) : null}
+            </View>
+            <View style={[styles.messageTimeContainer, isOwnMessage && styles.ownMessageTimeContainer]}>
+              <Text style={styles.messageTime}>{messageTime}</Text>
+              {isOwnMessage && (
+                <Text style={styles.messageStatus}>
+                  {message.read ? '✓✓' : '✓'}
+                </Text>
+              )}
+            </View>
+          </View>
         </View>
-        {isOwnMessage && (
-          <Text style={styles.messageStatus}>
-            {message.read ? t('read') : t('sent')}
-          </Text>
-        )}
-      </View>
+      </>
     );
-  }, [user, chat, t]);
-
-  const allMessages = chat?.walk_request
-    ? [{ id: 'initial-message', isInitial: true as const }, ...messages]
-    : messages;
+  }, [user, chat, otherUser, allMessages]);
 
   if (loading || !chat || !otherUser) {
     return (
@@ -354,42 +406,56 @@ export default function ChatScreen() {
           onPress={() => router.back()}
           style={styles.backButton}
         >
-          <ChevronLeft size={24} color={COLORS.TEXT_DARK} />
+          <ChevronLeft size={28} color={COLORS.TEXT_DARK} />
         </TouchableOpacity>
 
-        {chat.walk_request?.walk ? (
-          <>
-            {chat.walk_request.walk.image_url && (
+        <View style={styles.headerAvatarContainer}>
+          {chat.walk_request?.walk ? (
+            chat.walk_request.walk.image_url ? (
               <Image
                 source={{ uri: chat.walk_request.walk.image_url }}
                 style={styles.headerEventImage}
               />
-            )}
-            <TouchableOpacity
-              style={styles.headerTitleContainer}
-              onPress={() => router.push(`/event/${chat.walk_request.walk.id}`)}
-            >
-              <Text style={styles.headerTitle} numberOfLines={1}>
-                {chat.walk_request.walk.title}
-              </Text>
-            </TouchableOpacity>
-          </>
-        ) : (
-          <TouchableOpacity
-            style={styles.headerTitleContainer}
-            onPress={() => router.push(`/user/${otherUser.id}`)}
-          >
-            <Text style={styles.headerTitle} numberOfLines={1}>
-              {otherUser.display_name}
+            ) : (
+              <View style={styles.headerGroupIcon}>
+                <Users size={20} color={COLORS.ACCENT_ORANGE} />
+              </View>
+            )
+          ) : (
+            <Avatar
+              uri={otherUser.avatar_url}
+              size={40}
+              name={otherUser.display_name}
+            />
+          )}
+        </View>
+
+        <TouchableOpacity
+          style={styles.headerTitleContainer}
+          onPress={() => {
+            if (chat.walk_request?.walk) {
+              router.push(`/event/${chat.walk_request.walk.id}`);
+            } else {
+              router.push(`/user/${otherUser.id}`);
+            }
+          }}
+        >
+          <Text style={styles.headerTitle} numberOfLines={1}>
+            {chat.walk_request?.walk ? chat.walk_request.walk.title : otherUser.display_name}
+          </Text>
+          {chat.walk_request?.walk && (
+            <Text style={styles.headerSubtitle}>
+              {/* TODO: Get actual participant count */}
+              8 PARTICIPANTS
             </Text>
-          </TouchableOpacity>
-        )}
+          )}
+        </TouchableOpacity>
 
         <TouchableOpacity
           style={styles.iconButton}
           onPress={() => setShowOptionsMenu(true)}
         >
-          <MoreVertical size={20} color={COLORS.TEXT_DARK} />
+          <MoreVertical size={24} color={COLORS.TEXT_DARK} />
         </TouchableOpacity>
       </View>
 
@@ -413,7 +479,7 @@ export default function ChatScreen() {
         }
       />
 
-      <View style={[styles.inputContainer, { paddingBottom: insets.bottom }]}>
+      <View style={[styles.inputContainer, { paddingBottom: insets.bottom + 8 }]}>
         {isRecording ? (
           <AudioRecorder
             onSend={handleSendAudioMessage}
@@ -427,9 +493,9 @@ export default function ChatScreen() {
               disabled={uploading}
             >
               {uploading ? (
-                <ActivityIndicator size="small" color={COLORS.ACCENT_ORANGE} />
+                <ActivityIndicator size="small" color={COLORS.TEXT_LIGHT} />
               ) : (
-                <ImageIcon size={22} color={COLORS.TEXT_LIGHT} />
+                <Plus size={30} color={COLORS.TEXT_LIGHT} strokeWidth={1.5} />
               )}
             </TouchableOpacity>
 
@@ -437,7 +503,7 @@ export default function ChatScreen() {
               <TextInput
                 style={styles.input}
                 placeholder={t('message')}
-                placeholderTextColor={COLORS.TEXT_LIGHT}
+                placeholderTextColor={COLORS.TEXT_LIGHT + '80'}
                 value={newMessage}
                 onChangeText={setNewMessage}
                 multiline
@@ -446,29 +512,22 @@ export default function ChatScreen() {
               />
             </View>
 
-            {newMessage.trim() ? (
-              <TouchableOpacity
-                style={styles.sendIconButton}
-                onPress={sendMessage}
-                disabled={uploading}
-              >
-                <View style={styles.sendIconCircle}>
-                  <ChevronLeft 
-                    size={20} 
-                    color={COLORS.WHITE} 
-                    style={{ transform: [{ rotate: '180deg' }] }}
-                  />
-                </View>
-              </TouchableOpacity>
-            ) : (
-              <TouchableOpacity
-                style={styles.inputIconButton}
-                onPress={() => setIsRecording(true)}
-                disabled={uploading}
-              >
-                <Mic size={22} color={COLORS.TEXT_LIGHT} />
-              </TouchableOpacity>
-            )}
+            <TouchableOpacity
+              style={styles.sendIconButton}
+              onPress={newMessage.trim() ? sendMessage : () => setIsRecording(true)}
+              disabled={uploading}
+            >
+              {newMessage.trim() ? (
+                <ChevronLeft 
+                  size={30} 
+                  color={COLORS.ACCENT_ORANGE} 
+                  strokeWidth={2}
+                  style={{ transform: [{ rotate: '180deg' }] }}
+                />
+              ) : (
+                <Mic size={24} color={COLORS.TEXT_LIGHT} />
+              )}
+            </TouchableOpacity>
           </>
         )}
       </View>
@@ -560,43 +619,63 @@ export default function ChatScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.WHITE,
+    backgroundColor: COLORS.BG_SECONDARY,
   },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: COLORS.BG_SECONDARY,
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 16,
     paddingBottom: 12,
-    backgroundColor: COLORS.WHITE,
+    backgroundColor: COLORS.BG_SECONDARY,
     borderBottomWidth: 1,
     borderBottomColor: COLORS.BORDER_COLOR,
   },
   backButton: {
-    marginRight: 12,
     padding: 8,
+    marginRight: 4,
+    marginLeft: -8,
+  },
+  headerAvatarContainer: {
+    marginRight: 12,
   },
   headerEventImage: {
-    width: 36,
-    height: 36,
-    borderRadius: 8,
-    marginRight: 12,
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+  },
+  headerGroupIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    backgroundColor: COLORS.ACCENT_ORANGE + '20',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   headerTitleContainer: {
     flex: 1,
   },
   headerTitle: {
-    fontSize: 17,
-    fontWeight: '600',
+    fontSize: 16,
+    fontWeight: '700',
     color: COLORS.TEXT_DARK,
+    lineHeight: 20,
+  },
+  headerSubtitle: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: COLORS.TEXT_LIGHT,
+    letterSpacing: 0.5,
+    marginTop: 2,
   },
   iconButton: {
     padding: 8,
-    marginLeft: 8,
+    marginLeft: 4,
   },
   errorContainer: {
     backgroundColor: COLORS.ERROR_BG,
@@ -620,42 +699,63 @@ const styles = StyleSheet.create({
     marginLeft: 8,
   },
   messagesList: {
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    backgroundColor: COLORS.WHITE,
+    paddingHorizontal: 24,
+    paddingVertical: 24,
+    backgroundColor: COLORS.BG_SECONDARY,
   },
   dateContainer: {
     alignItems: 'center',
-    marginVertical: 20,
+    marginVertical: 12,
   },
   dateBadge: {
-    backgroundColor: COLORS.BG_SECONDARY,
+    backgroundColor: COLORS.TEXT_LIGHT + '20',
     paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 12,
+    paddingVertical: 4,
+    borderRadius: 20,
   },
   dateText: {
-    fontSize: 12,
+    fontSize: 11,
     color: COLORS.TEXT_LIGHT,
-    fontWeight: '500',
+    fontWeight: '700',
+    letterSpacing: 1,
   },
   messageContainer: {
-    marginBottom: 8,
-    maxWidth: '75%',
+    flexDirection: 'row',
+    marginBottom: 24,
+    maxWidth: '90%',
   },
   ownMessage: {
     alignSelf: 'flex-end',
-    alignItems: 'flex-end',
+    flexDirection: 'row-reverse',
   },
   otherMessage: {
     alignSelf: 'flex-start',
-    alignItems: 'flex-start',
+  },
+  avatarContainer: {
+    alignSelf: 'flex-end',
+    marginBottom: 20,
+  },
+  messageContent: {
+    flex: 1,
+    marginLeft: 12,
+  },
+  ownMessageContent: {
+    marginLeft: 0,
+    marginRight: 0,
+    alignItems: 'flex-end',
+  },
+  senderName: {
+    fontSize: 11,
+    fontWeight: '500',
+    color: COLORS.TEXT_LIGHT,
+    marginBottom: 4,
+    marginLeft: 4,
   },
   messageBubble: {
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    borderRadius: 18,
-    overflow: 'hidden',
+    paddingHorizontal: 16,
+    paddingVertical: 16,
+    borderRadius: 24,
+    ...SHADOW.standard,
   },
   audioBubble: {
     paddingHorizontal: 12,
@@ -664,15 +764,18 @@ const styles = StyleSheet.create({
   ownBubble: {
     backgroundColor: COLORS.ACCENT_ORANGE,
     borderBottomRightRadius: 4,
+    shadowColor: COLORS.ACCENT_ORANGE,
+    shadowOpacity: 0.2,
   },
   otherBubble: {
-    backgroundColor: COLORS.BG_SECONDARY,
+    backgroundColor: COLORS.CARD_BG,
     borderBottomLeftRadius: 4,
+    borderWidth: 1,
+    borderColor: COLORS.BORDER_COLOR + '80',
   },
   messageText: {
-    fontSize: 15,
-    lineHeight: 20,
-    marginBottom: 4,
+    fontSize: 14,
+    lineHeight: 21,
   },
   ownMessageText: {
     color: COLORS.WHITE,
@@ -680,80 +783,70 @@ const styles = StyleSheet.create({
   otherMessageText: {
     color: COLORS.TEXT_DARK,
   },
-  messageTime: {
-    fontSize: 11,
-    color: COLORS.TEXT_LIGHT,
-    marginTop: 2,
+  messageTimeContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    marginTop: 6,
+    marginLeft: 4,
   },
-  ownMessageTime: {
-    color: 'rgba(255, 255, 255, 0.7)',
+  ownMessageTimeContainer: {
+    marginLeft: 0,
+    marginRight: 4,
+    justifyContent: 'flex-end',
+  },
+  messageTime: {
+    fontSize: 10,
+    color: COLORS.TEXT_LIGHT,
+  },
+  messageStatus: {
+    fontSize: 12,
+    color: COLORS.ACCENT_ORANGE,
+    fontWeight: '600',
   },
   messageImage: {
     width: 220,
     height: 220,
     borderRadius: 12,
-    marginBottom: 4,
-  },
-  messageStatus: {
-    fontSize: 11,
-    color: COLORS.TEXT_LIGHT,
-    marginTop: 4,
-    marginRight: 4,
+    marginBottom: 8,
   },
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'flex-end',
-    paddingHorizontal: 12,
-    paddingTop: 10,
-    paddingBottom: 10,
-    backgroundColor: COLORS.WHITE,
-    borderTopWidth: 1,
-    borderTopColor: COLORS.BORDER_COLOR,
+    paddingHorizontal: 24,
+    paddingTop: 8,
+    backgroundColor: COLORS.BG_SECONDARY,
+    gap: 8,
   },
   inputWrapper: {
     flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: COLORS.BG_SECONDARY,
-    borderRadius: 20,
-    paddingHorizontal: 14,
-    marginHorizontal: 8,
+    backgroundColor: COLORS.CARD_BG,
+    borderRadius: 24,
+    paddingHorizontal: 16,
     minHeight: 40,
     maxHeight: 100,
+    justifyContent: 'center',
+    ...SHADOW.standard,
   },
   input: {
     flex: 1,
-    fontSize: 15,
+    fontSize: 14,
     color: COLORS.TEXT_DARK,
-    paddingVertical: 10,
+    paddingVertical: 12,
   },
   inputIconButton: {
-    padding: 8,
+    width: 40,
+    height: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
     alignSelf: 'center',
   },
   sendIconButton: {
-    padding: 4,
-    alignSelf: 'center',
-  },
-  sendIconCircle: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: COLORS.ACCENT_ORANGE,
+    width: 40,
+    height: 40,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  sendButtonWrapper: {
     alignSelf: 'center',
-  },
-  sendButton: {
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderRadius: 20,
-    minWidth: 80,
-  },
-  sendButtonText: {
-    fontSize: 15,
   },
   modalOverlay: {
     flex: 1,
@@ -821,11 +914,7 @@ const styles = StyleSheet.create({
     marginTop: 'auto',
     marginBottom: 'auto',
     overflow: 'hidden',
-    shadowColor: COLORS.SHADOW_BLACK,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 12,
-    elevation: 8,
+    ...SHADOW.elevated,
   },
   optionButton: {
     paddingVertical: 18,
