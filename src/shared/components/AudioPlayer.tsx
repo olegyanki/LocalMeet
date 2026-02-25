@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { useState, useEffect, useRef } from 'react';
+import { View, Text, TouchableOpacity, StyleSheet, Animated } from 'react-native';
 import { Audio } from 'expo-av';
 import { Play, Pause } from 'lucide-react-native';
 import { COLORS } from '@shared/constants';
@@ -15,14 +15,71 @@ export default function AudioPlayer({ audioUrl, duration, isOwnMessage }: AudioP
   const [isPlaying, setIsPlaying] = useState(false);
   const [position, setPosition] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
+  const progressAnim = useRef(new Animated.Value(0)).current;
+  const animationRef = useRef<Animated.CompositeAnimation | null>(null);
 
   useEffect(() => {
     return () => {
       if (sound) {
         sound.unloadAsync();
       }
+      if (animationRef.current) {
+        animationRef.current.stop();
+      }
     };
   }, [sound]);
+
+  // Animate progress smoothly
+  useEffect(() => {
+    if (isPlaying && sound) {
+      const startAnimation = async () => {
+        const status = await sound.getStatusAsync();
+        if (status.isLoaded) {
+          const currentPosition = status.positionMillis;
+          const totalDuration = duration * 1000;
+          const remainingTime = totalDuration - currentPosition;
+
+          // Stop any existing animation
+          if (animationRef.current) {
+            animationRef.current.stop();
+          }
+
+          // Animate from current position to end
+          animationRef.current = Animated.timing(progressAnim, {
+            toValue: totalDuration,
+            duration: remainingTime,
+            useNativeDriver: false,
+          });
+
+          animationRef.current.start();
+        }
+      };
+
+      startAnimation();
+    } else {
+      // Pause animation
+      if (animationRef.current) {
+        animationRef.current.stop();
+      }
+    }
+
+    return () => {
+      if (animationRef.current) {
+        animationRef.current.stop();
+      }
+    };
+  }, [isPlaying, sound, duration, progressAnim]);
+
+  // Update position for display
+  useEffect(() => {
+    const listener = progressAnim.addListener(({ value }) => {
+      setPosition(value);
+    });
+
+    return () => {
+      progressAnim.removeListener(listener);
+    };
+  }, [progressAnim]);
 
   const loadAndPlayAudio = async () => {
     try {
@@ -35,6 +92,8 @@ export default function AudioPlayer({ audioUrl, duration, isOwnMessage }: AudioP
           } else {
             if (status.positionMillis >= status.durationMillis! - 100) {
               await sound.setPositionAsync(0);
+              setPosition(0);
+              progressAnim.setValue(0);
             }
             await sound.playAsync();
             setIsPlaying(true);
@@ -67,16 +126,16 @@ export default function AudioPlayer({ audioUrl, duration, isOwnMessage }: AudioP
     }
   };
 
-  const onPlaybackStatusUpdate = (status: any) => {
+  const onPlaybackStatusUpdate = async (status: any) => {
     if (status.isLoaded) {
-      setPosition(status.positionMillis);
       setIsPlaying(status.isPlaying);
 
       if (status.didJustFinish) {
         setIsPlaying(false);
         setPosition(0);
+        progressAnim.setValue(0);
         if (sound) {
-          sound.setPositionAsync(0);
+          await sound.setPositionAsync(0);
         }
       }
     }
@@ -89,7 +148,11 @@ export default function AudioPlayer({ audioUrl, duration, isOwnMessage }: AudioP
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
-  const progress = duration > 0 ? position / (duration * 1000) : 0;
+  const progressWidth = progressAnim.interpolate({
+    inputRange: [0, duration * 1000],
+    outputRange: ['0%', '100%'],
+    extrapolate: 'clamp',
+  });
 
   return (
     <View style={styles.container}>
@@ -110,11 +173,11 @@ export default function AudioPlayer({ audioUrl, duration, isOwnMessage }: AudioP
 
       <View style={styles.waveformContainer}>
         <View style={styles.waveformBackground}>
-          <View
+          <Animated.View
             style={[
               styles.waveformProgress,
               {
-                width: `${progress * 100}%`,
+                width: progressWidth,
                 backgroundColor: isOwnMessage ? 'rgba(255, 255, 255, 0.5)' : COLORS.ACCENT_ORANGE,
               },
             ]}
