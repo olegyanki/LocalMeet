@@ -215,16 +215,22 @@ export default function ChatScreen() {
 
     try {
       setUploading(true);
-      const audioUrl = await uploadChatAudio(chatId, audioUri);
+      const audioUrl = await uploadChatAudio(chatId, audioUri, user.id);
 
       if (!audioUrl) {
-        throw new Error(t('error'));
+        throw new Error(t('errorUploadingAudio'));
       }
 
       await sendAudioMessage(chatId, user.id, audioUrl, duration);
     } catch (error: any) {
       console.error('Error sending audio:', error);
-      setError(error?.message || t('error'));
+      
+      // Check if it's a bucket not found error
+      if (error?.message?.includes('Bucket not found')) {
+        setError('Audio bucket not configured. Please contact support.');
+      } else {
+        setError(error?.message || t('error'));
+      }
     } finally {
       setUploading(false);
     }

@@ -271,6 +271,7 @@
   "read": "Read",
   "sent": "Sent",
   "dismiss": "Dismiss",
+  "errorUploadingAudio": "Failed to upload audio",
   "tabSearch": "Search",
   "tabGoOnline": "Go Online",
   "tabChats": "Chats",

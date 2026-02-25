@@ -271,6 +271,7 @@
   "read": "Прочитано",
   "sent": "Відправлено",
   "dismiss": "Закрити",
+  "errorUploadingAudio": "Не вдалося завантажити аудіо",
   "tabSearch": "Пошук",
   "tabGoOnline": "Створити",
   "tabChats": "Чати",

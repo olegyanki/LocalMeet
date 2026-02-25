@@ -58,29 +58,40 @@ export async function uploadChatImage(
 }
 
 /**
- * Upload audio to Supabase storage (chat-audio bucket)
+ * Upload audio to Supabase storage (audio-messages bucket)
  * @param chatId - Chat ID for organizing files
  * @param audioUri - Local URI of audio file
+ * @param userId - User ID for folder structure (required by RLS policy)
  * @returns Public URL of uploaded audio or null on error
  */
 export async function uploadChatAudio(
   chatId: string,
-  audioUri: string
+  audioUri: string,
+  userId: string
 ): Promise<string | null> {
   try {
-    const response = await fetch(audioUri);
-    if (!response.ok) {
-      throw new Error('Failed to fetch audio file');
-    }
+    // For React Native, we need to use XMLHttpRequest to read the file as ArrayBuffer
+    const uint8Array = await new Promise<Uint8Array>((resolve, reject) => {
+      const xhr = new XMLHttpRequest();
+      xhr.onload = function () {
+        if (xhr.status === 200) {
+          const arrayBuffer = xhr.response;
+          resolve(new Uint8Array(arrayBuffer));
+        } else {
+          reject(new Error(`Failed to fetch audio: ${xhr.status}`));
+        }
+      };
+      xhr.onerror = () => reject(new Error('Network error'));
+      xhr.responseType = 'arraybuffer';
+      xhr.open('GET', audioUri, true);
+      xhr.send();
+    });
 
-    const blob = await response.blob();
-    const arrayBuffer = await blob.arrayBuffer();
-    const uint8Array = new Uint8Array(arrayBuffer);
-
-    const fileName = `${chatId}/${Date.now()}.m4a`;
+    // Use userId as first folder to match RLS policy
+    const fileName = `${userId}/${chatId}_${Date.now()}.m4a`;
 
     const { data, error } = await supabase.storage
-      .from('chat-audio')
+      .from('audio-messages')
       .upload(fileName, uint8Array, {
         contentType: 'audio/m4a',
         upsert: false,
@@ -92,7 +103,7 @@ export async function uploadChatAudio(
     }
 
     const { data: urlData } = supabase.storage
-      .from('chat-audio')
+      .from('audio-messages')
       .getPublicUrl(fileName);
 
     return urlData.publicUrl;
