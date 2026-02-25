@@ -43,6 +43,7 @@
   "all": "All",
   "started": "Already started",
   "today": "Today",
+  "yesterday": "Yesterday",
   "tomorrow": "Tomorrow",
   "byDistance": "By Distance",
   "byDate": "By Date",

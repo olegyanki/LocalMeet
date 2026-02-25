@@ -251,20 +251,41 @@ export default function ChatScreen() {
     ? [{ id: 'initial-message', isInitial: true as const }, ...messages]
     : messages;
 
+  const getDateLabel = useCallback((date: Date) => {
+    const today = new Date();
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+
+    const messageDate = new Date(date);
+    
+    // Reset time to compare only dates
+    today.setHours(0, 0, 0, 0);
+    yesterday.setHours(0, 0, 0, 0);
+    messageDate.setHours(0, 0, 0, 0);
+
+    if (messageDate.getTime() === today.getTime()) {
+      return t('today').toUpperCase();
+    } else if (messageDate.getTime() === yesterday.getTime()) {
+      return t('yesterday').toUpperCase();
+    } else {
+      return new Date(date).toLocaleDateString('en-US', {
+        day: 'numeric',
+        month: 'short',
+        year: messageDate.getFullYear() !== today.getFullYear() ? 'numeric' : undefined,
+      }).toUpperCase();
+    }
+  }, [t]);
+
   const renderMessage = useCallback(({ item, index }: { item: Message | { id: string; isInitial: true }, index: number }) => {
     if ('isInitial' in item && item.isInitial && chat?.walk_request) {
       const requestDate = new Date(chat.walk_request.created_at);
-      const dateString = requestDate.toLocaleDateString('en-US', {
-        day: 'numeric',
-        month: 'short',
-        year: 'numeric',
-      });
+      const dateLabel = getDateLabel(requestDate);
 
       return (
         <>
           <View style={styles.dateContainer}>
             <View style={styles.dateBadge}>
-              <Text style={styles.dateText}>{dateString.toUpperCase()}</Text>
+              <Text style={styles.dateText}>{dateLabel}</Text>
             </View>
           </View>
           <View style={[styles.messageContainer, styles.otherMessage]}>
@@ -304,9 +325,26 @@ export default function ChatScreen() {
     });
 
     // Show date separator for first message or when date changes
-    const showDateSeparator = index === 0 || (index > 0 && allMessages[index - 1] && 
-      new Date(message.created_at).toDateString() !== 
-      new Date((allMessages[index - 1] as Message).created_at).toDateString());
+    // Skip if previous item is initial message with same date
+    let showDateSeparator = false;
+    if (index === 0) {
+      showDateSeparator = false; // Never show for first item (initial message already has date)
+    } else if (allMessages[index - 1]) {
+      const prevItem = allMessages[index - 1];
+      if ('isInitial' in prevItem && prevItem.isInitial) {
+        // Previous is initial message - check if dates are different
+        const prevDate = chat?.walk_request?.created_at;
+        if (prevDate) {
+          showDateSeparator = new Date(message.created_at).toDateString() !== new Date(prevDate).toDateString();
+        }
+      } else {
+        // Previous is regular message
+        showDateSeparator = new Date(message.created_at).toDateString() !== 
+          new Date((prevItem as Message).created_at).toDateString();
+      }
+    }
+
+    const dateLabel = showDateSeparator ? getDateLabel(new Date(message.created_at)) : '';
 
     const senderName = isOwnMessage 
       ? (user?.id === chat?.requester_id ? chat?.requester.display_name : chat?.walker.display_name)
@@ -321,7 +359,7 @@ export default function ChatScreen() {
         {showDateSeparator && (
           <View style={styles.dateContainer}>
             <View style={styles.dateBadge}>
-              <Text style={styles.dateText}>TODAY</Text>
+              <Text style={styles.dateText}>{dateLabel}</Text>
             </View>
           </View>
         )}
@@ -383,7 +421,7 @@ export default function ChatScreen() {
         </View>
       </>
     );
-  }, [user, chat, otherUser, allMessages]);
+  }, [user, chat, otherUser, allMessages, getDateLabel]);
 
   if (loading || !chat || !otherUser) {
     return (
