@@ -15,7 +15,7 @@ import {
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as ImagePicker from 'expo-image-picker';
-import { ChevronLeft, MoreVertical, Mic, Plus, Users, Trash2 } from 'lucide-react-native';
+import { ChevronLeft, MoreVertical, Mic, Plus, Users, Trash2, User, Info } from 'lucide-react-native';
 
 import { useAuth } from '@shared/contexts/AuthContext';
 import { useI18n } from '@shared/i18n';
@@ -43,7 +43,7 @@ const SCROLL_DELAY = 100;
 const MAX_MESSAGE_LENGTH = 1000;
 
 export default function ChatScreen() {
-  const { id, otherUserName } = useLocalSearchParams();
+  const { id } = useLocalSearchParams();
   const chatId = Array.isArray(id) ? id[0] : id;
   const router = useRouter();
   const insets = useSafeAreaInsets();
@@ -495,15 +495,73 @@ export default function ChatScreen() {
           )}
         </TouchableOpacity>
 
-        <TouchableOpacity
-          style={styles.iconButton}
-          onPress={() => setShowOptionsMenu(true)}
-        >
-          <MoreVertical size={24} color={COLORS.TEXT_DARK} />
-        </TouchableOpacity>
+        <View style={styles.headerRight}>
+          <TouchableOpacity
+            style={styles.iconButton}
+            onPress={() => setShowOptionsMenu(!showOptionsMenu)}
+          >
+            <MoreVertical size={24} color={COLORS.TEXT_DARK} />
+          </TouchableOpacity>
+
+          {showOptionsMenu && (
+            <View style={styles.dropdownMenu}>
+              {chat.walk_request?.walk && (
+                <>
+                  <TouchableOpacity
+                    style={styles.dropdownOption}
+                    onPress={() => {
+                      setShowOptionsMenu(false);
+                      if (chat.walk_request?.walk) {
+                        router.push(`/event/${chat.walk_request.walk.id}`);
+                      }
+                    }}
+                  >
+                    <Info size={20} color={COLORS.TEXT_LIGHT} />
+                    <Text style={styles.dropdownOptionText}>{t('eventInfo')}</Text>
+                  </TouchableOpacity>
+                  <View style={styles.dropdownDivider} />
+                </>
+              )}
+
+              <TouchableOpacity
+                style={styles.dropdownOption}
+                onPress={() => {
+                  setShowOptionsMenu(false);
+                  router.push(`/user/${otherUser.id}`);
+                }}
+              >
+                <User size={20} color={COLORS.TEXT_LIGHT} />
+                <Text style={styles.dropdownOptionText}>{t('showProfile')}</Text>
+              </TouchableOpacity>
+
+              <View style={styles.dropdownDivider} />
+
+              <TouchableOpacity
+                style={styles.dropdownOption}
+                onPress={() => {
+                  setShowOptionsMenu(false);
+                  setShowDeleteModal(true);
+                }}
+              >
+                <Trash2 size={20} color={COLORS.ERROR_RED} />
+                <Text style={[styles.dropdownOptionText, styles.dropdownOptionTextDelete]}>
+                  {t('deleteChat')}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          )}
+        </View>
       </View>
 
-        {error && (
+      {showOptionsMenu && (
+        <TouchableOpacity
+          style={styles.dropdownBackdrop}
+          activeOpacity={1}
+          onPress={() => setShowOptionsMenu(false)}
+        />
+      )}
+
+      {error && (
         <View style={styles.errorContainer}>
           <Text style={styles.errorText}>{error}</Text>
           <TouchableOpacity onPress={() => setError(null)}>
@@ -575,45 +633,6 @@ export default function ChatScreen() {
           </>
         )}
       </View>
-
-      <Modal
-        visible={showOptionsMenu}
-        transparent
-        animationType="fade"
-        onRequestClose={() => setShowOptionsMenu(false)}
-      >
-        <TouchableOpacity
-          style={styles.modalOverlay}
-          activeOpacity={1}
-          onPress={() => setShowOptionsMenu(false)}
-        >
-          <View style={styles.optionsMenu}>
-            <TouchableOpacity
-              style={styles.optionButton}
-              onPress={() => {
-                setShowOptionsMenu(false);
-                router.push(`/user/${otherUser.id}`);
-              }}
-            >
-              <Text style={styles.optionButtonText}>{t('showProfile')}</Text>
-            </TouchableOpacity>
-
-            <View style={styles.optionDivider} />
-
-            <TouchableOpacity
-              style={styles.optionButton}
-              onPress={() => {
-                setShowOptionsMenu(false);
-                setShowDeleteModal(true);
-              }}
-            >
-              <Text style={[styles.optionButtonText, styles.optionButtonTextDelete]}>
-                {t('deleteChat')}
-              </Text>
-            </TouchableOpacity>
-          </View>
-        </TouchableOpacity>
-      </Modal>
 
       <Modal
         visible={showDeleteModal}
@@ -720,6 +739,50 @@ const styles = StyleSheet.create({
   iconButton: {
     padding: 8,
     marginLeft: 4,
+  },
+  headerRight: {
+    position: 'relative',
+  },
+  dropdownBackdrop: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    zIndex: 999,
+  },
+  dropdownMenu: {
+    position: 'absolute',
+    top: 48,
+    right: 0,
+    width: 224,
+    backgroundColor: COLORS.CARD_BG,
+    borderRadius: 16,
+    ...SHADOW.elevated,
+    borderWidth: 1,
+    borderColor: COLORS.BORDER_COLOR,
+    overflow: 'hidden',
+    paddingVertical: 4,
+    zIndex: 1000,
+  },
+  dropdownOption: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    gap: 12,
+  },
+  dropdownOptionText: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: COLORS.TEXT_DARK,
+  },
+  dropdownOptionTextDelete: {
+    color: COLORS.ERROR_RED,
+  },
+  dropdownDivider: {
+    height: 1,
+    backgroundColor: COLORS.BORDER_COLOR + '80',
   },
   errorContainer: {
     backgroundColor: COLORS.ERROR_BG,
@@ -950,31 +1013,5 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     color: COLORS.WHITE,
-  },
-  optionsMenu: {
-    backgroundColor: COLORS.CARD_BG,
-    borderRadius: 16,
-    marginHorizontal: 20,
-    marginTop: 'auto',
-    marginBottom: 'auto',
-    overflow: 'hidden',
-    ...SHADOW.elevated,
-  },
-  optionButton: {
-    paddingVertical: 18,
-    paddingHorizontal: 20,
-    alignItems: 'center',
-  },
-  optionButtonText: {
-    fontSize: 16,
-    fontWeight: '500',
-    color: COLORS.TEXT_DARK,
-  },
-  optionButtonTextDelete: {
-    color: COLORS.ERROR_RED,
-  },
-  optionDivider: {
-    height: 1,
-    backgroundColor: COLORS.BORDER_COLOR,
   },
 });
