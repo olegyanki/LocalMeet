@@ -78,7 +78,7 @@ export default function RequestCard({ request, isPast = false, onReject, onAccep
               
               {isPast && (
                 <Text style={styles.pastSubtitle} numberOfLines={1}>
-                  {t('acceptedFor')} "{walk.title}"
+                  {walk.title}
                 </Text>
               )}
             </View>
