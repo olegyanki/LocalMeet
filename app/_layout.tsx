@@ -31,6 +31,13 @@ export default function RootLayout() {
                 presentation: 'card',
               }} 
             />
+            <Stack.Screen 
+              name="event-details" 
+              options={{ 
+                headerShown: false,
+                presentation: 'card',
+              }} 
+            />
           </Stack>
           <StatusBar style="auto" />
         </CreateEventProvider>

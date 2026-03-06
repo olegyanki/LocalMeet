@@ -478,7 +478,7 @@ export default function ChatScreen() {
           style={styles.headerTitleContainer}
           onPress={() => {
             if (chat.walk_request?.walk) {
-              router.push(`/event/${chat.walk_request.walk.id}`);
+              router.push(`/event-details/${chat.walk_request.walk.id}`);
             } else {
               router.push(`/user/${otherUser.id}`);
             }
@@ -512,7 +512,7 @@ export default function ChatScreen() {
                     onPress={() => {
                       setShowOptionsMenu(false);
                       if (chat.walk_request?.walk) {
-                        router.push(`/event/${chat.walk_request.walk.id}`);
+                        router.push(`/event-details/${chat.walk_request.walk.id}`);
                       }
                     }}
                   >
