@@ -258,7 +258,6 @@
   "join": "Приєднатись",
   "host": "Організатор",
   "wantsToJoinEvent": "Хоче приєднатися до вашої події",
-  "acceptedFor": "Прийнято для",
   "joined": "Приєднався",
   "declined": "Відхилено",
   "decline": "Відхилити",
@@ -277,5 +276,5 @@
   "tabGoOnline": "Створити",
   "tabChats": "Чати",
   "tabProfile": "Профіль",
-  "tabSettings": "Налаштування"
+  "tabSettings": "Меню"
 }
