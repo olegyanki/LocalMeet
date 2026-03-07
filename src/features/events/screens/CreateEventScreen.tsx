@@ -21,7 +21,7 @@ import * as ImagePicker from 'expo-image-picker';
 import { useAuth } from '@shared/contexts/AuthContext';
 import { useI18n } from '@shared/i18n';
 import { createWalk, uploadEventImage, getWalksByUserId } from '@shared/lib/api';
-import { Clock, MapPin, Camera, X, Maximize2, AlertTriangle } from 'lucide-react-native';
+import { Clock, MapPin, Camera, X, Maximize2, TriangleAlert as AlertTriangle } from 'lucide-react-native';
 import TimePickerModal from '@features/events/modals/TimePickerModal';
 import DatePickerModal from '@features/events/modals/DatePickerModal';
 import LocationPickerModal from '@features/events/modals/LocationPickerModal';

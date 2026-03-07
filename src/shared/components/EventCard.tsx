@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, Pressable, Image } from 'react-native';
-import { MapPin, ImageIcon, Clock } from 'lucide-react-native';
+import { MapPin, Image as ImageIcon, Clock } from 'lucide-react-native';
 import Avatar from '@shared/components/Avatar';
 import { COLORS, SHADOW } from '@shared/constants';
 import { NearbyWalk } from '@shared/lib/api';
