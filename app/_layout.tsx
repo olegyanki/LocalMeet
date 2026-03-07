@@ -4,7 +4,8 @@ import { StatusBar } from 'expo-status-bar';
 import { useFrameworkReady } from '@shared/hooks/useFrameworkReady';
 import { AuthProvider } from '@shared/contexts/AuthContext';
 import { CreateEventProvider } from '@shared/contexts/CreateEventContext';
-import { I18nProvider } from '@shared/i18n';
+import { I18nProvider } from '@shared/i18n'
+import { useFrameworkReady } from '@/hooks/useFrameworkReady';
 
 export default function RootLayout() {
   useFrameworkReady();
