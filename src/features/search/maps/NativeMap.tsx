@@ -19,6 +19,7 @@ interface NativeMapProps {
   latitude: number;
   longitude: number;
   paddingBottom?: number;
+  mapCenter?: {latitude: number; longitude: number; paddingBottom?: number} | null;
   markers: Marker[];
   selectedMarkerId?: string | null;
   onMarkerPress?: (id: string) => void;
@@ -38,6 +39,7 @@ export default function NativeMap({
   latitude,
   longitude,
   paddingBottom,
+  mapCenter,
   markers,
   selectedMarkerId,
   onMarkerPress,
@@ -51,6 +53,20 @@ export default function NativeMap({
   bounds,
 }: NativeMapProps) {
   const webViewRef = useRef<WebView>(null);
+
+  useEffect(() => {
+    if (webViewRef.current && mapCenter) {
+      const script = `
+        if (typeof map !== 'undefined') {
+          const point = map.project([${mapCenter.latitude}, ${mapCenter.longitude}], map.getZoom());
+          ${mapCenter.paddingBottom ? `point.y += ${mapCenter.paddingBottom};` : ''}
+          const newCenter = map.unproject(point, map.getZoom());
+          map.setView(newCenter, map.getZoom(), { animate: true, duration: 0.5 });
+        }
+      `;
+      webViewRef.current.injectJavaScript(script);
+    }
+  }, [mapCenter]);
 
   useEffect(() => {
     if (webViewRef.current) {

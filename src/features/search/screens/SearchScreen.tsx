@@ -384,6 +384,7 @@ export default function SearchScreen() {
           latitude={mapCenter ? mapCenter.latitude : location.coords.latitude}
           longitude={mapCenter ? mapCenter.longitude : location.coords.longitude}
           paddingBottom={mapCenter?.paddingBottom || 150}
+          mapCenter={mapCenter}
           markers={mapMarkers}
           bounds={null}
           selectedMarkerId={selectedMarkerId}
@@ -454,7 +455,7 @@ export default function SearchScreen() {
             if (location) {
               setMapCenter({
                 latitude: location.coords.latitude,
-                longitude: location.coords.longitude,
+                longitude: location.coords.longitude
               });
             }
           }}
@@ -542,20 +543,6 @@ export default function SearchScreen() {
                   onAvatarPress={() => {
                     if (item.walk) {
                       router.push(`/user/${item.walk.user_id}`);
-                    }
-                  }}
-                  onJoinPress={(eventId) => {
-                    const walk = sortedWalks.find(w => w.walk?.id === eventId);
-                    if (walk && walk.walk) {
-                      setContactRequestData({
-                        walkId: walk.walk.id,
-                        walkOwnerName: walk.host?.display_name || walk.host?.username || 'Unknown',
-                        walkOwnerAvatar: walk.host?.avatar_url,
-                        walkTitle: walk.walk.title,
-                        walkStartTime: walk.walk.start_time,
-                        walkImageUrl: walk.walk.image_url,
-                      });
-                      setContactRequestVisible(true);
                     }
                   }}
                 />
