@@ -1,16 +1,16 @@
 import { Tabs } from 'expo-router';
-import { Search, Plus, User, MessageCircle } from 'lucide-react-native';
-import { useAuth } from '../../contexts/AuthContext';
+import { Search, Plus, User, MessageCircle, Settings } from 'lucide-react-native';
+import { useAuth } from '@shared/contexts/AuthContext';
+import { useI18n } from '@shared/i18n';
 import { useRouter } from 'expo-router';
 import { useEffect } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Colors } from '../../constants/Colors';
 
-const ACCENT_ORANGE = Colors.accent;
-const TEXT_LIGHT = Colors.textLight;
+import { COLORS } from '@shared/constants';
 
 export default function TabLayout() {
   const { user, isLoading } = useAuth();
+  const { t } = useI18n();
   const router = useRouter();
   const insets = useSafeAreaInsets();
 
@@ -24,14 +24,14 @@ export default function TabLayout() {
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: ACCENT_ORANGE,
-        tabBarInactiveTintColor: TEXT_LIGHT,
+        tabBarActiveTintColor: COLORS.ACCENT_ORANGE,
+        tabBarInactiveTintColor: COLORS.TEXT_LIGHT,
         tabBarStyle: {
           position: 'absolute',
-          backgroundColor: '#FFFFFF',
+          backgroundColor: COLORS.WHITE,
           borderTopWidth: 0,
           elevation: 8,
-          shadowColor: '#000',
+          shadowColor: COLORS.SHADOW_BLACK,
           shadowOffset: { width: 0, height: -4 },
           shadowOpacity: 0.08,
           shadowRadius: 12,
@@ -44,17 +44,17 @@ export default function TabLayout() {
       }}
     >
       <Tabs.Screen
-        name="index"
+        name="(search)"
         options={{
-          title: 'SEARCH',
+          title: t('tabSearch').toUpperCase(),
           tabBarIcon: ({ size, color }) => <Search size={20} color={color} />,
           tabBarLabelStyle: { fontSize: 9, fontWeight: '600' },
         }}
       />
       <Tabs.Screen
-        name="create"
+        name="create-event"
         options={{
-          title: 'GO ONLINE',
+          title: t('tabGoOnline').toUpperCase(),
           tabBarIcon: ({ size, color }) => <Plus size={20} color={color} />,
           tabBarLabelStyle: { fontSize: 9, fontWeight: '600' },
         }}
@@ -62,21 +62,35 @@ export default function TabLayout() {
       <Tabs.Screen
         name="chats"
         options={{
-          title: 'CHATS',
+          title: t('tabChats').toUpperCase(),
           tabBarIcon: ({ size, color }) => <MessageCircle size={20} color={color} />,
           tabBarLabelStyle: { fontSize: 9, fontWeight: '600' },
         }}
       />
       <Tabs.Screen
-        name="profile"
+        name="(profile)"
         options={{
-          title: 'PROFILE',
+          title: t('tabProfile').toUpperCase(),
           tabBarIcon: ({ size, color }) => <User size={20} color={color} />,
           tabBarLabelStyle: { fontSize: 9, fontWeight: '600' },
         }}
       />
       <Tabs.Screen
+        name="settings"
+        options={{
+          title: t('tabSettings').toUpperCase(),
+          tabBarIcon: ({ size, color }) => <Settings size={20} color={color} />,
+          tabBarLabelStyle: { fontSize: 9, fontWeight: '600' },
+        }}
+      />
+      <Tabs.Screen
         name="onboarding"
+        options={{
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="index"
         options={{
           href: null,
         }}

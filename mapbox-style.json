@@ -1,0 +1,203 @@
+{
+    "version": 8,
+    "name": "Locals Light (Expo)",
+    "metadata": {
+        "mapbox:autocomposite": true,
+        "mapbox:sdk-support": {
+            "js": "3.17.0",
+            "android": "11.17.0",
+            "ios": "11.17.0"
+        },
+        "mapbox:groups": {},
+        "mapbox:thumb": "data:image/webp;base64,UklGRnITAABXRUJQVlA4WAoAAAAgAAAAOwAAOwAASUNDUMgBAAAAAAHIAAAAAAQwAABtbnRyUkdCIFhZWiAH4AABAAEAAAAAAABhY3NwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAA9tYAAQAAAADTLQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAlkZXNjAAAA8AAAACRyWFlaAAABFAAAABRnWFlaAAABKAAAABRiWFlaAAABPAAAABR3dHB0AAABUAAAABRyVFJDAAABZAAAAChnVFJDAAABZAAAAChiVFJDAAABZAAAAChjcHJ0AAABjAAAADxtbHVjAAAAAAAAAAEAAAAMZW5VUwAAAAgAAAAcAHMAUgBHAEJYWVogAAAAAAAAb6IAADj1AAADkFhZWiAAAAAAAABimQAAt4UAABjaWFlaIAAAAAAAACSgAAAPhAAAts9YWVogAAAAAAAA9tYAAQAAAADTLXBhcmEAAAAAAAQAAAACZmYAAPKnAAANWQAAE9AAAApbAAAAAAAAAABtbHVjAAAAAAAAAAEAAAAMZW5VUwAAACAAAAAcAEcAbwBvAGcAbABlACAASQBuAGMALgAgADIAMAAxADZWUDhMhBEAAC87wA4ADXUhov8BW7Ztq24krX3ufZIVjkiIZGbG/neiPpOZqaqSHNJ79+6dKHfBgiRJjhxJ6plV3WgMP37/f9zyXQxZoIEi7lGgJEeSJEl6RKKGLXBENu7//67EOICHQxMhCgVu2yjZMTN84c42lIpMoVIQgtFumgBF6eimoK48f9N6zOWEqiVQSGNIQqkEghooMUBRIEhoS83TIJp7t60AAAAUCDn5u6TPju1m8sBcx1PfnlaUNvTsnETTQEE15spSO9+e2+UYloBEgiQZILVEKURxLKDSkDQGCogSB4pACvgHKW30HyU9vSxU5ZA+MxeRGmfQ6vXe1yuQzGyhZgFdjqEEKQVNHAqjhMQQQipQEoUAkIQEU4ygrPC/AP8sjiIkItBy3IjL2n77Jfst9zs9XFOB6qKBMJTAtkkk1RWmQAgUwCgNMQipcb2YqOOQugjSAFyD0hCkJhFjcNw0d+396/H0j1+fpanVJRClaubITgKFbZMEKJpKkAAKMUUCVVpiNpcFE6lxXAquU81yHQoRsezB1e31l6+99zJWyplBTy5zr9NwRnWF1CSCXZckQlFaqqCEljjcTTCNEKoWqA21rplxphwCBQBAOzsSS6opMYduRi8/KF3sN9ZTt0wjG4QqJFZLhVZirgYNJYIkgAhd+uI4FAAqItSxxNGZcmdVEx8AAGAiVAWYE4XVoIq5nPJ8h9btWhKiJWrWPKUhQCskSlFQhBUGTUqmQZSKCFHKudSVDLUE4YxS+3e6Gc3SNZFRCiRAcKym3c5dhqGGyBRuZo26lpqAVIBQSKQuyXZuSkEiNYlLth/f6nr6fb32rIOErov5fPcuGlA78dSSJqg5QSIoTAYzW0kMyAZaAhCYIEmsNmgm7bDTILGa6kokqaY9vtIcVzqOPrauc/xzXYVRqUqCqRpA8f2hPZzNJT/Xv9ZCtRxzv263Ex9h2dIqlpVYQtrENLNJIakASWMkyjw44/5ObU91PQrX8e62GQ+PdXt2fP+3f3wXSlSN47pdEqtJdUNuj6gJS/oQ8DHb9aBAG4ZANa4ToWrny0O7nUNEEllqpVBNa90lPpfWVaWuAHh5XWxPjMHc+od3FJASKgmZCaBHN5IQWppjmdv1ACBSCG3WtIVpEyVut1MyINoUGzu3AAXZbv/w/2s3KAAAZrPOfR9ujTQEiFTG63OfztwTKKQgVF0g20u2W3s4BgCSts5ppCAEKZQMgBIUKnVcaQpRXY9zj4YJ13i+O1zDe72dNTPUgpzNmfH778s/f1DqWmkpRa0NIh6u5pBJ1MySmQGIULTErJYQkoJq0kkGEa1jrbsU2mt4bMZQbPr/qR58Rl//OWyP9Xit6ylUidmMKiiFQlJJSZNgstSGVBoIcGIUDqtJ4FzMPRpSUXptkhAZrXNmLOnVqdPL/eXLXfbb1Xr8uaPC7/WFdXussU0qLgehrLDQO8PThlajJrENIJGg0nAosbanzE0ZSpSqUEwQOL8b5tNf/fP7za6Sy/BwXh7861cNE50eXhEvYa+/n/axEtfcaIDfnut6buI4lYTKGWrKTEVElUhCUYNCnFND837fb6eUBLWti3DNbsiZ7a+/++ePGTt03J80DNrj9YEFoDZR7g+nn3/Z/f//ayhVXh8Ut6xROwOoUZZtiShEIEENAUCQEoa/eeODfXy2j/3Qr6fvH+v2WH/O6vnd0D6+nd+/rr/8svvXf2Q9+VgAaN2DsDMkc7+tl9Pp25fdp/dd2vVImB0ti+2Z9SCEq+tIa3XiDa0JPzgSAolt5PX5ITfWg1LakEKJyjXBteyz3+bz3frb7/77a57vAFS3C2OUlUq6vvvw89k7VenTy2pWKqkNP3/z05/90/tumZZI4WaWinVmKKUIFKnevcn+rHMyh0AkAAbXYNWyge3rP/Ppbz2ctO5r2THG/PpZt3NdDj+f/NDRzsyx9fSzYzwy5i5Sq6Z9/JCIaDtdQzpzGSCJf3xV0LvXkDMASESGhLmTSimzvi7jfzt+O/X0svrnT/7xdXz9t314s7x/BXS71DRzuzXHswvszzkmx2yPV+lWt/R320FP1WItIWX9/pnXx3p8tdzO8+VeAVYnkTOksJZNcws7LigtORvsUqmr+0ek0tlR79/45btf7tenz9K67Jnbr6dbNJursUd3KQg2/HD4N9ux3Ey3UulTs189fryzr8P2tJb+7/9hfwmffvtt949Pbd3RVm+JQlKqFDD5LKnaKBhlYh8SSdrtsv3xp1/ufX/U9QwUju2dchEZe9w7bpMuwiNjmhLROqMk9Nwa2qcv7JYNZjlknwLr3lSSjPl8125nQQIndEt0jeerc9tOnl9mtYii9uXT9svP29O/aOnNpJTWcQxJSKAaGbSo0hK1jtJW2q7HRKgkbw86biqkqWjaZV/BVG2IkEL483w8y1NzqiWECDluGYf+8V3uDzpemHtgklZDECZLE0mEkAoY2439xtx0PQOJRKXdrkqlrppKa9lM1Zi8T607AM4mTAAgoKjxMf3ykP25vbv6+e7062/eb1r3lFSOW0OKmsuioMLMGA2Xg5Bj8vrkZd+XLWOjKP21viGCIzDLqdqnnCvb0yAFoCEfPWugRLQC++wf3kCBLkdo/v2tmpntWE5tCy63kmqUhgKfqfbnjJ82vOzvyvri8ubukbu3xxw3RTxcvjnGhSg8PgO+ObfL5JNj9+Gxc/XUBRDU4M/gs0vaRFxNHq6pHaMsB17uth/fxt/f6/3ryce6pbOctpcbl71ZSlzD0nvSZ68ACgC6HgTOBM+9fa7btUKg9rE5U56bN28vpn7Zo0KF83xx7BRCh/T+sUzVOEpbD+f122ffH3TmpqmgxvFhPYSqmRlSCCQKIIrSUKiEKBl6fC3899SJtwJdWODLeXl8JmQCGjrP43MmSl0yGUKlCqblst9en7O/pNTlMDOqSQQ2DqklShVSCKQA5JhtaD7ftcfXznB0mf7/HAsKFVJdvny99/FSAYBrDCIqpY4hCaCSAB6u6y8/b3/9vfvyKRHkWEA/OnZKL/DknI6BVK33W14fvr+9O9bCVw/vfz99kTwyc2G1sBUDDLqxPWVsrbO0TNtq4JOz9y9RIAVhCUmYNLx8eL0+/etzqkkcApQX503qbLRqpSFC3p5Dj86oMRPMahSg2yMALaUcPr2dY6cwjNyf9HCpqbH1jAs4lqpNJK0ux2vZp4PV1O3V8c8/YyiCpBQAEqGJ1QAAsu5qbGoc25BIFaCPjs1UoeuxemLOQ9qakIgA2uB8NgKhJJRI7XfnKBEFj80sj5dxf8q5GCN0VSMzGmeXAF0OoLJCv6+n/x6WPj7nAkeQDemzy1JLUDNp47SFWSnR5UC2Gjq7ogkloav6l9NLGOVW1s3QA5DW7Xr66cfx42758MYZ4HjShvrYTm9PLdx72aQhcFfy9LIoSkG1oeoCjhOBRF8eW0uzvazL8VjtO+9fuDUGaEPz6DlrGtIFh1Gf7WnXFtQmokrUHo4ck6DmcDyNP/5Y/vu/ie+/GKLM+0O7ngTHVImAxAxKErUux2oIT8xF9Kj5zFyJ6+271uPMBtXkrFd6rA7WpVUZEgAqCUFof//69Nvv8+VRDxfWg/YXomq+3fVzdpfH81fj0qZXXqsXl5sapSFJYkJgUksIKVRT12MiCevJsTTUR5elIJRCa0qhAA1RiL4/vEYuL82bYyllGlJpmHU//vwrb49SiGVHAQ9lau44XpKhuQUSKkIqEBbMUgW1ULUgTBBMRPPpHy6HenxDvF+7Hh47LqXC4dI7bwYVQOjJZaEq4b+LpyRCk41lN+9Pvt+bagyuRwLLIRHLTqK5pY6hFhDQLsP4/6lZ3Ri9zKINnw6PrUBBQ7tVfPhk3d6WQihnlVaayifjdJukBYklYTWJUAKQUhJRCKH24d3668/bn39p2WnZ8facy0EizVm/Pvn5u25XhBRArTVBh3Qr0mpD6znGXkBIkYxt1WQZKU00O9Btq9BGXeVIYCqRhtUQAAGg/3nbX47uwlakt5N7Z/b/+LT9fef7o+8PeXv64X67Wk/z5J7Zd9b3r68vFEitUhuTCZKDAMfb/bHfzmpUNOWjICdtYTdjY2aTXuRltamMUwDUkNtldlkISYjUEFII0NuXF98f2sM5BIDA5RiaB+P7F5p7//zl6f2bLmf0teXFLC1RaiNEkIYcq1WbFuzmOu7b2AsAQ/uZeUoxQDfbYvYLx7sAaLN9QgSANGcyXFAAoJQzaclA1RJK02p4+fB23B9ot9//yMs3Liedk8tZCqbhl/s+muvFDARnAD2+HbaSZenxTTmroRvrWk+vb9o/uEJ4cQv1tC+l9FUKEO1pU3dzzTmZBwJaClxp2YnVNZ/v9e51nbf59/esh911v57mcs32rOfP21//9I9v+/s3jsOB1N+/tIdDWBqEAAQgidKLS9dd+7lmtb4JjK27i8DoSNx72y38/fIYBz46bbRfjzNtaC1PzLmkNrTsGAOqxwvxfHkImoSW2dPmdj20wXj6e3z7MrcXrUeJmar/5/8QKSUxoK2E4jhVNYkP60w5bt7NrKfn0ZzRUGLIGZXMDiIApQIhpY9mlhJm3VSlZN6f2u3sjGrUtser3162p7/nPtuy7desh8cJHz6016/b18/bH7/1D+/adR8uE6SSSFJcbceotCUAdBNs3YSt3i0Zu7ad3cUANbfOSmwDwTypIIEqNYcqRc1K6/FVqvz43B6OWQ5Srmftz1kOzpDuZ7bTqC/XGsrb4/b9251f/6jgsS1fPqVOpFSlhlHa9dyWsRJDo4aWiyjzaJ9Z9+GTGpWEE4cAmHtzFoSlUqFEmDZJSu7fOWZ7fGVUV+YOrbmFHLuWtNFtl8aYB1mvbRIVJEQ1AWpJKdJQaRAyJUqUSjJPSdrotmV/VQzERuttZgdyFgApmgoN3en4ePdNK9vzaT3eP3LPy5f5/ev4+hlqVuAMCa2pZFkaSjVPArhSYlOJ2hDn8vNdf/e6ZJlzGs2ShinrW3wCCLuZdffY6YsgdTmjupyxXLxunXvVjO9f2oe3rRkZh+1+vnxv715nOfrvr7w+zK//at23x4sklLg6Q9MAa3dLJoWoT1C1iVR6J5RIqfeZ52+hINvL9ucfy7//r6aaNW190TjwUYpP2ujYevEAUSKIFAAFYEPDaWZGCXP0Tx9SAb8+aYz+5WPdXkEUpagzQEtCkA2lkhgABbKAI0DR5ZR2o0X99pQz8/vn9vlTc2tmnwmPg7F1nN6tWTePnb4aUhMuK9Rkv+b0+y/98cLY0ZZqbCGlapZP7xmGEzeTyhyGAApAiEqtJAxAOBQGRGp+Kd+eW+GL69v7t++XtwsZVEp9kKhPLh40duapNrsdREWJofUtKSm16IvHj/u0ddoYtmZNpkgzd1CZgTkMAAKFJZTEjstSE0qkNjEEARtq7k5fWGa1CZePVwXguJujY2zRUJ+kzEO7NWBsXVZDbucBaFO7haeefm4Pp1AiaUhtIkrrJJoGUAMABKNQCJJQUkFKoMRQUgBA4nIrJVCkYQBMlYCc3bYCME73kXE4JxrMHQCWpWXduV5uXXahslKlEEkFZ4R/ONUV2lmnQqxwNyqF/v6mAduaaYohCgSJSQgBAYL8fCfpjxcN9ZkQ8EHIB7s10u3obtU8CmpQozaO794+tIoQSlxdnLOimaHGGVUmDlBccdfEExAAcOBThAqjo2dKQDWJAwEAFKVrPP07n/68+M9/qulJeB6AGij1wTjUFubebWsKWGak6MO3HcVxNYsbZcZmCSl03ywKoSikNgECEJC2kZBPash1WSEJjQIwU0pD488/fL+/+NcPNXdBs/YXxqGx1yegRhVKFMZeoNAWpAKF0K3Ql8ceKG3thstwZdyXXLX/O0cPUwddYLSi+2duJKlJw+j/6NeDZbBVD43bZSCiddUzQ9Pw17/8cr/86z91OSpd7aWhNtlf5WpuHWcpy9o+sh0Gy0y1wfEV"
+    },
+    "sources": {
+        "composite": {
+            "url": "mapbox://mapbox.mapbox-streets-v8",
+            "type": "vector"
+        }
+    },
+    "sprite": "mapbox://sprites/oleh-yankivskyi/cmjby103d000701s15oy6drxv/ec1l9bxmet5bi7f8v5eqboqka",
+    "glyphs": "mapbox://fonts/mapbox/{fontstack}/{range}.pbf",
+    "layers": [
+        {
+            "id": "background",
+            "type": "background",
+            "paint": {"background-color": "rgb(243, 247, 254)"}
+        },
+        {
+            "id": "water",
+            "type": "fill",
+            "source": "composite",
+            "source-layer": "water",
+            "paint": {"fill-color": "rgb(225, 238, 243)"}
+        },
+        {
+            "id": "waterway",
+            "type": "line",
+            "source": "composite",
+            "source-layer": "waterway",
+            "paint": {
+                "line-color": "rgb(225, 238, 243)",
+                "line-width": [
+                    "interpolate",
+                    ["linear"],
+                    ["zoom"],
+                    8,
+                    0.5,
+                    14,
+                    2
+                ]
+            }
+        },
+        {
+            "id": "landuse",
+            "type": "fill",
+            "source": "composite",
+            "source-layer": "landuse",
+            "paint": {"fill-color": "rgb(243, 247, 254)"}
+        },
+        {
+            "id": "parks",
+            "type": "fill",
+            "source": "composite",
+            "source-layer": "landuse",
+            "filter": ["==", ["get", "class"], "park"],
+            "paint": {"fill-color": "#c8f0c7", "fill-opacity": 0.75}
+        },
+        {
+            "id": "road-casing",
+            "type": "line",
+            "source": "composite",
+            "source-layer": "road",
+            "paint": {
+                "line-color": "#E8EEF3",
+                "line-width": [
+                    "interpolate",
+                    ["linear"],
+                    ["zoom"],
+                    10,
+                    1,
+                    14,
+                    5,
+                    18,
+                    20
+                ],
+                "line-opacity": 0.9
+            }
+        },
+        {
+            "id": "road-main",
+            "type": "line",
+            "source": "composite",
+            "source-layer": "road",
+            "paint": {
+                "line-color": "rgb(251, 255, 255)",
+                "line-width": [
+                    "interpolate",
+                    ["linear"],
+                    ["zoom"],
+                    10,
+                    0.6,
+                    14,
+                    3.2,
+                    18,
+                    14
+                ],
+                "line-opacity": 0.95
+            }
+        },
+        {
+            "id": "road-minor",
+            "type": "line",
+            "source": "composite",
+            "source-layer": "road",
+            "filter": [
+                "in",
+                ["get", "class"],
+                ["literal", ["street", "street_limited", "service", "path"]]
+            ],
+            "paint": {
+                "line-color": "rgb(251, 255, 255)",
+                "line-width": [
+                    "interpolate",
+                    ["linear"],
+                    ["zoom"],
+                    12,
+                    0.4,
+                    16,
+                    2,
+                    18,
+                    6
+                ],
+                "line-opacity": 0.7
+            }
+        },
+        {
+            "id": "buildings",
+            "type": "fill",
+            "source": "composite",
+            "source-layer": "building",
+            "minzoom": 14,
+            "paint": {"fill-color": "rgb(238, 242, 246)"}
+        },
+        {
+            "id": "place-labels",
+            "type": "symbol",
+            "source": "composite",
+            "source-layer": "place_label",
+            "layout": {
+                "text-field": [
+                    "step",
+                    ["zoom"],
+                    ["coalesce", ["get", "name_en"], ["get", "name"]],
+                    22,
+                    ["coalesce", ["get", "name_en"], ["get", "name"]]
+                ],
+                "text-font": ["DIN Pro Medium", "Arial Unicode MS Bold"],
+                "text-size": [
+                    "interpolate",
+                    ["linear"],
+                    ["zoom"],
+                    4,
+                    10,
+                    8,
+                    14
+                ],
+                "text-max-width": 8,
+                "text-size-scale-range": [0.1, 10]
+            },
+            "paint": {
+                "text-color": "rgb(56, 66, 81)",
+                "text-halo-color": "#F7FAFC",
+                "text-halo-width": 1.2
+            }
+        },
+        {
+            "id": "poi-labels",
+            "type": "symbol",
+            "source": "composite",
+            "source-layer": "poi_label",
+            "minzoom": 14,
+            "layout": {
+                "text-field": ["coalesce", ["get", "name_en"], ["get", "name"]],
+                "text-font": ["DIN Pro Regular", "Arial Unicode MS Regular"],
+                "text-size": 12,
+                "text-offset": [0, 0.6],
+                "text-anchor": "top"
+            },
+            "paint": {
+                "text-color": "rgb(152, 165, 192)",
+                "text-halo-color": "#F7FAFC",
+                "text-halo-width": 1
+            }
+        }
+    ],
+    "created": "2025-12-18T21:19:16.153Z",
+    "modified": "2025-12-26T14:52:17.567Z",
+    "id": "cmjby103d000701s15oy6drxv",
+    "owner": "oleh-yankivskyi",
+    "visibility": "private",
+    "protected": false,
+    "draft": false
+}
