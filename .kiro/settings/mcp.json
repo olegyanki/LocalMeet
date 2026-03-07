@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "supabase": {
+      "url": "https://mcp.supabase.com/mcp?project_ref=pnftswvikvfdpicnkini",
+      "autoApprove": [
+        "execute_sql",
+        "get_advisors",
+        "list_edge_functions"
+      ]
+    }
+  }
+}
