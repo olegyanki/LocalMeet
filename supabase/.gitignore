@@ -1,0 +1,10 @@
+# Supabase local development files
+.branches
+.temp
+.DS_Store
+
+# Local config (if using local Supabase)
+config.toml
+
+# Seed data (contains test data, use seed.example.sql as template)
+seed.sql
