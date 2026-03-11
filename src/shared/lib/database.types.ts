@@ -385,6 +385,34 @@ export type Database = {
           user_id: string
         }[]
       }
+      get_nearby_walks_filtered: {
+        Args: {
+          p_interests?: string[]
+          p_latitude: number
+          p_longitude: number
+          p_max_distance_km?: number
+          p_radius_km?: number
+          p_time_filter?: string
+        }
+        Returns: {
+          created_at: string
+          description: string
+          distance: number
+          duration: number
+          host_avatar_url: string
+          host_display_name: string
+          host_interests: string[]
+          host_username: string
+          id: string
+          image_url: string
+          latitude: number
+          longitude: number
+          start_time: string
+          title: string
+          updated_at: string
+          user_id: string
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never

@@ -57,18 +57,19 @@ describe('Bug 1.8: Client-Side Filtering and Sorting - Exploration Test', () => 
     console.log('Test Strategy:');
     console.log('  1. Check for filterWalks() function in SearchScreen');
     console.log('  2. Check for .sort() calls on walks array');
-    console.log('  3. Verify getNearbyWalks() lacks filter parameters');
+    console.log('  3. Verify getNearbyWalksFiltered() API function exists');
+    console.log('  4. Verify SearchScreen uses filtered function');
     console.log('');
     console.log('EXPECTED OUTCOME: Test FAILS (confirms client-side filtering)');
     console.log('='.repeat(80));
     console.log('');
 
     // Read SearchScreen code
-    const searchScreenPath = path.join(__dirname, '../src/features/search/screens/SearchScreen.tsx');
+    const searchScreenPath = path.join(__dirname, '../../src/features/search/screens/SearchScreen.tsx');
     searchScreenCode = fs.readFileSync(searchScreenPath, 'utf8');
 
     // Read API code
-    const apiPath = path.join(__dirname, '../src/shared/lib/api.ts');
+    const apiPath = path.join(__dirname, '../../src/shared/lib/api.ts');
     apiCode = fs.readFileSync(apiPath, 'utf8');
   });
 
@@ -160,47 +161,53 @@ describe('Bug 1.8: Client-Side Filtering and Sorting - Exploration Test', () => 
     }
   });
 
-  it('should verify getNearbyWalks() lacks filter parameters (MUST FAIL on unfixed code)', () => {
+  it('should verify filtered API function exists with proper parameters (MUST FAIL on unfixed code)', () => {
     console.log('');
-    console.log('Checking getNearbyWalks() API function...');
+    console.log('Checking for filtered API function...');
     console.log('');
 
-    // Check getNearbyWalks function signature
-    const getNearbyWalksMatch = apiCode.match(/export async function getNearbyWalks\(([\s\S]*?)\)/);
-    const hasFilterParams = getNearbyWalksMatch && (
-      getNearbyWalksMatch[1].includes('timeFilter') ||
-      getNearbyWalksMatch[1].includes('interests') ||
-      getNearbyWalksMatch[1].includes('sortBy')
+    // Check for getNearbyWalksFiltered function
+    const hasFilteredFunction = /export async function getNearbyWalksFiltered/.test(apiCode);
+    
+    // Check function signature for filter parameters
+    const filteredFunctionMatch = apiCode.match(/export async function getNearbyWalksFiltered\(([\s\S]*?)\): Promise/);
+    const hasFilterParams = filteredFunctionMatch && (
+      filteredFunctionMatch[1].includes('timeFilter') &&
+      filteredFunctionMatch[1].includes('interests')
     );
 
+    // Check if SearchScreen uses the filtered function
+    const searchScreenPath = path.join(__dirname, '../../src/features/search/screens/SearchScreen.tsx');
+    const searchScreenCode = fs.readFileSync(searchScreenPath, 'utf8');
+    const usesFilteredFunction = /getNearbyWalksFiltered/.test(searchScreenCode);
+
     console.log('API Function Analysis:');
-    if (getNearbyWalksMatch) {
-      console.log(`  getNearbyWalks() signature: ${getNearbyWalksMatch[0]}`);
-      console.log(`  Has filter parameters: ${hasFilterParams ? '✓ YES' : '✗ NO'}`);
-    } else {
-      console.log('  ✗ getNearbyWalks() function not found');
-    }
+    console.log(`  getNearbyWalksFiltered() exists: ${hasFilteredFunction ? '✓ YES' : '✗ NO'}`);
+    console.log(`  Has filter parameters: ${hasFilterParams ? '✓ YES' : '✗ NO'}`);
+    console.log(`  Used in SearchScreen: ${usesFilteredFunction ? '✓ YES' : '✗ NO'}`);
     console.log('');
 
-    if (!hasFilterParams) {
+    if (!hasFilteredFunction || !hasFilterParams || !usesFilteredFunction) {
       console.log('Counterexample Documentation:');
-      console.log('  - getNearbyWalks() only accepts lat, lng, radius');
-      console.log('  - No timeFilter, interests, or sortBy parameters');
+      console.log('  - No getNearbyWalksFiltered() function found');
+      console.log('  - API lacks server-side filtering capability');
       console.log('  - Forces client-side filtering and sorting');
       console.log('  - All walks fetched regardless of filters');
       console.log('');
 
       console.log('='.repeat(80));
       console.log('TEST RESULT: FAILED (as expected)');
-      console.log('Bug Confirmed: API lacks filter parameters');
+      console.log('Bug Confirmed: API lacks filtered function');
       console.log('='.repeat(80));
       console.log('');
 
+      expect(hasFilteredFunction).toBe(true);
       expect(hasFilterParams).toBe(true);
+      expect(usesFilteredFunction).toBe(true);
     } else {
       console.log('='.repeat(80));
       console.log('TEST RESULT: PASSED (Bug Fixed!)');
-      console.log('✓ API has filter parameters');
+      console.log('✓ Filtered API function exists and is used');
       console.log('='.repeat(80));
       console.log('');
     }
@@ -212,20 +219,19 @@ describe('Bug 1.8: Client-Side Filtering and Sorting - Exploration Test', () => 
     console.log('Bug 1.8 Exploration Test Complete');
     console.log('');
     console.log('Summary:');
-    console.log('  - Detected client-side filterWalks() function');
-    console.log('  - Detected client-side Array.sort() calls');
-    console.log('  - Confirmed getNearbyWalks() lacks filter parameters');
+    console.log('  - Checked for client-side filterWalks() function');
+    console.log('  - Checked for client-side Array.sort() calls');
+    console.log('  - Verified getNearbyWalksFiltered() API function exists');
     console.log('');
-    console.log('Performance Impact:');
+    console.log('Performance Impact (Before Fix):');
     console.log('  - All walks transferred over network');
     console.log('  - Filtering and sorting done on client device');
     console.log('  - Wasted bandwidth and CPU cycles');
     console.log('');
-    console.log('Next Steps:');
-    console.log('  1. Write preservation tests (task 1.8.2)');
-    console.log('  2. Create RPC function with server-side filtering (task 1.8.3.1)');
-    console.log('  3. Update API to use filtered RPC (task 1.8.3.2)');
-    console.log('  4. Update SearchScreen to remove client filtering (task 1.8.3.3)');
+    console.log('Performance Impact (After Fix):');
+    console.log('  - Only matching walks transferred');
+    console.log('  - Filtering and sorting done on database');
+    console.log('  - Reduced bandwidth and improved performance');
     console.log('='.repeat(80));
     console.log('');
   });

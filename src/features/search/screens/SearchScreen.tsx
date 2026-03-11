@@ -18,7 +18,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Location from 'expo-location';
 import { useAuth } from '@shared/contexts/AuthContext';
 import { useI18n } from '@shared/i18n';
-import { getNearbyWalks, NearbyWalk, getProfiles } from '@shared/lib/api';
+import { getNearbyWalksFiltered, NearbyWalk } from '@shared/lib/api';
 import Svg, { Rect, Defs, Filter, FeFlood, FeColorMatrix, FeOffset, FeGaussianBlur, FeBlend, G } from 'react-native-svg';
 import { COLORS, SIZES } from '@shared/constants';
 import { isWalkActive } from '@shared/utils/time';
@@ -61,6 +61,8 @@ export default function SearchScreen() {
   const [showFilterSheet, setShowFilterSheet] = useState(false);
   const [timeFilter, setTimeFilter] = useState<TimeFilter>('all');
   const [sortBy, setSortBy] = useState<SortBy>('distance');
+  const [distanceFilter, setDistanceFilter] = useState<number | undefined>(undefined);
+  const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
 
   const screenWidth = Dimensions.get('window').width;
   const cardWidth = screenWidth - 48;
@@ -68,6 +70,21 @@ export default function SearchScreen() {
   const containerTranslateY = useRef(new Animated.Value(0)).current;
 
   const collapsedOffset = 196;
+
+  // Map UI filter values to API filter values
+  const mapTimeFilterToAPI = (filter: TimeFilter): 'now' | 'today' | 'tomorrow' | 'this_week' | 'all' => {
+    switch (filter) {
+      case 'started':
+        return 'now';
+      case 'today':
+        return 'today';
+      case 'tomorrow':
+        return 'tomorrow';
+      case 'all':
+      default:
+        return 'all';
+    }
+  };
 
   const panResponder = useRef(
     PanResponder.create({
@@ -162,6 +179,13 @@ export default function SearchScreen() {
     }
   }, [location, user]);
 
+  // Reload walks when filters change
+  useEffect(() => {
+    if (location && user) {
+      loadNearbyWalks();
+    }
+  }, [timeFilter, sortBy, distanceFilter, selectedInterests]);
+
   const loadLocation = async () => {
     try {
       setIsLoadingLocation(true);
@@ -187,30 +211,22 @@ export default function SearchScreen() {
 
     try {
       setIsLoadingWalks(true);
-      const walks = await getNearbyWalks(location.coords.latitude, location.coords.longitude);
-
-      // Get unique user IDs from walks
-      const userIds = [...new Set(walks.map(w => w.walk?.user_id).filter(Boolean) as string[])];
       
-      // Fetch profiles for all users
-      const profilesMap = await getProfiles(userIds);
-      
-      // Attach hosts to walks
-      const walksWithHosts = walks.map(walk => {
-        if (walk.walk && walk.walk.user_id) {
-          const host = profilesMap.get(walk.walk.user_id);
-          if (host) {
-            return {
-              ...walk,
-              host,
-            };
-          }
-        }
-        return walk;
-      });
+      // Use filtered API with current filter state
+      const walks = await getNearbyWalksFiltered(
+        location.coords.latitude,
+        location.coords.longitude,
+        15, // radius
+        selectedInterests.length > 0 ? selectedInterests : undefined,
+        mapTimeFilterToAPI(timeFilter),
+        distanceFilter
+      );
 
-      const otherWalks = walksWithHosts.filter((w) => w.walk?.user_id !== user.id);
-      const ownWalks = walksWithHosts.filter((w) => w.walk?.user_id === user.id);
+      // Separate own walks from other walks
+      const otherWalks = walks.filter((w) => w.walk?.user_id !== user.id);
+      const ownWalks = walks.filter((w) => w.walk?.user_id === user.id);
+      
+      // Put own walks first
       const sortedWalks = [...ownWalks, ...otherWalks];
 
       setNearbyWalks(sortedWalks);
@@ -227,30 +243,19 @@ export default function SearchScreen() {
     try {
       setIsLoadingWalks(true);
       
-      // Reload events
-      const walks = await getNearbyWalks(
-        location.coords.latitude, 
-        location.coords.longitude
+      // Reload events with current filters
+      const walks = await getNearbyWalksFiltered(
+        location.coords.latitude,
+        location.coords.longitude,
+        15, // radius
+        selectedInterests.length > 0 ? selectedInterests : undefined,
+        mapTimeFilterToAPI(timeFilter),
+        distanceFilter
       );
 
-      // Get profiles for all users
-      const userIds = [...new Set(walks.map(w => w.walk?.user_id).filter(Boolean) as string[])];
-      const profilesMap = await getProfiles(userIds);
-      
-      // Attach hosts to walks
-      const walksWithHosts = walks.map(walk => {
-        if (walk.walk && walk.walk.user_id) {
-          const host = profilesMap.get(walk.walk.user_id);
-          if (host) {
-            return { ...walk, host };
-          }
-        }
-        return walk;
-      });
-
       // Sort walks (own walks first)
-      const otherWalks = walksWithHosts.filter((w) => w.walk?.user_id !== user.id);
-      const ownWalks = walksWithHosts.filter((w) => w.walk?.user_id === user.id);
+      const otherWalks = walks.filter((w) => w.walk?.user_id !== user.id);
+      const ownWalks = walks.filter((w) => w.walk?.user_id === user.id);
       const sortedWalks = [...ownWalks, ...otherWalks];
 
       setNearbyWalks(sortedWalks);
@@ -270,22 +275,11 @@ export default function SearchScreen() {
   };
 
   const selectWalkById = (walkId: string, walks: NearbyWalk[]) => {
-    // Apply current filters and sorting
-    const filtered = filterWalks(walks);
-    const sorted = [...filtered].sort((a, b) => {
-      if (sortBy === 'distance') {
-        return a.distance - b.distance;
-      } else {
-        const timeA = a.walk?.start_time ? new Date(a.walk.start_time).getTime() : 0;
-        const timeB = b.walk?.start_time ? new Date(b.walk.start_time).getTime() : 0;
-        return timeA - timeB;
-      }
-    });
-    
-    const walkIndex = sorted.findIndex((w) => w.walk?.id === walkId);
+    // Walks are already filtered and sorted by the API
+    const walkIndex = walks.findIndex((w) => w.walk?.id === walkId);
     
     if (walkIndex !== -1) {
-      const walk = sorted[walkIndex];
+      const walk = walks[walkIndex];
       setSelectedMarkerId(walk.walk!.id);
       setCurrentCardIndex(walkIndex);
       
@@ -314,43 +308,7 @@ export default function SearchScreen() {
     }
   };
 
-  const filterWalks = (walks: NearbyWalk[]) => {
-    const now = new Date();
-    const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    const todayEnd = new Date(todayStart.getTime() + 24 * 60 * 60 * 1000);
-    const tomorrowEnd = new Date(todayEnd.getTime() + 24 * 60 * 60 * 1000);
-
-    return walks.filter((walk) => {
-      if (!walk.walk?.start_time) return false;
-      const startTime = new Date(walk.walk.start_time);
-
-      switch (timeFilter) {
-        case 'started':
-          return startTime <= now;
-        case 'today':
-          return startTime >= todayStart && startTime < todayEnd;
-        case 'tomorrow':
-          return startTime >= todayEnd && startTime < tomorrowEnd;
-        case 'all':
-        default:
-          return true;
-      }
-    });
-  };
-
-  const filteredWalks = filterWalks(nearbyWalks);
-
-  const sortedWalks = [...filteredWalks].sort((a, b) => {
-    if (sortBy === 'distance') {
-      return a.distance - b.distance;
-    } else {
-      const timeA = a.walk?.start_time ? new Date(a.walk.start_time).getTime() : 0;
-      const timeB = b.walk?.start_time ? new Date(b.walk.start_time).getTime() : 0;
-      return timeA - timeB;
-    }
-  });
-
-  const mapMarkers = sortedWalks
+  const mapMarkers = nearbyWalks
     .filter((w) => w.walk)
     .map((w) => ({
       id: w.walk!.id,
@@ -392,7 +350,7 @@ export default function SearchScreen() {
           userLongitude={location.coords.longitude}
           onMarkerPress={(id) => {
             setSelectedMarkerId(id);
-            const index = sortedWalks.findIndex((item) => item.walk?.id === id);
+            const index = nearbyWalks.findIndex((item) => item.walk?.id === id);
             if (index !== -1 && scrollViewRef.current) {
               isScrollingProgrammatically.current = true;
               scrollViewRef.current.scrollTo({
@@ -500,9 +458,9 @@ export default function SearchScreen() {
 
             const offsetX = e.nativeEvent.contentOffset.x;
             const index = Math.round(offsetX / (cardWidth + cardGap));
-            if (index !== currentCardIndex && index < sortedWalks.length) {
+            if (index !== currentCardIndex && index < nearbyWalks.length) {
               setCurrentCardIndex(index);
-              const item = sortedWalks[index];
+              const item = nearbyWalks[index];
 
               if (item.walk) {
                 const padding = 150;
@@ -522,13 +480,13 @@ export default function SearchScreen() {
             <View style={[styles.loadingCard, { width: cardWidth }]}>
               <ActivityIndicator size="small" color={COLORS.ACCENT_ORANGE} />
             </View>
-          ) : sortedWalks.length === 0 ? (
+          ) : nearbyWalks.length === 0 ? (
             <View style={[styles.emptyCard, { width: cardWidth }]}>
               <Text style={styles.emptyText}>{t('noEventsNearby')}</Text>
             </View>
           ) : (
             <>
-              {sortedWalks.map((item) => (
+              {nearbyWalks.map((item) => (
                 <EventCard
                   key={`walk-${item.walk?.id}`}
                   item={item}

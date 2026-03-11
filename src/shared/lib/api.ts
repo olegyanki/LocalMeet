@@ -4,6 +4,7 @@ import type { Database } from './database.types';
 
 // Type aliases for RPC function return types
 type GetNearbyWalksRow = Database['public']['Functions']['get_nearby_walks']['Returns'][number];
+type GetNearbyWalksFilteredRow = Database['public']['Functions']['get_nearby_walks_filtered']['Returns'][number];
 type GetMyChatsOptimizedRow = Database['public']['Functions']['get_my_chats_optimized']['Returns'][number];
 
 export interface UserProfile {
@@ -90,6 +91,58 @@ export async function getNearbyWalks(
       image_url: row.image_url ?? null,
     },
   }));
+}
+
+export async function getNearbyWalksFiltered(
+  latitude: number,
+  longitude: number,
+  radiusKm: number = 15,
+  interests?: string[],
+  timeFilter?: 'now' | 'today' | 'tomorrow' | 'this_week' | 'all',
+  maxDistanceKm?: number
+): Promise<NearbyWalk[]> {
+  try {
+    const { data, error } = await supabase.rpc('get_nearby_walks_filtered', {
+      p_latitude: latitude,
+      p_longitude: longitude,
+      p_radius_km: radiusKm,
+      p_interests: interests,
+      p_time_filter: timeFilter,
+      p_max_distance_km: maxDistanceKm,
+    });
+
+    if (error) {
+      throw error;
+    }
+
+    if (!data || data.length === 0) {
+      return [];
+    }
+
+    // Transform RPC result to NearbyWalk format
+    return data.map((row: GetNearbyWalksFilteredRow) => ({
+      distance: row.distance,
+      walk: {
+        id: row.id,
+        user_id: row.user_id,
+        title: row.title,
+        start_time: row.start_time,
+        duration: row.duration,
+        description: row.description ?? null,
+        latitude: row.latitude,
+        longitude: row.longitude,
+        image_url: row.image_url ?? null,
+      },
+      host: {
+        username: row.host_username,
+        display_name: row.host_display_name ?? null,
+        avatar_url: row.host_avatar_url ?? null,
+      },
+    }));
+  } catch (error) {
+    console.error('Error fetching filtered nearby walks:', error);
+    throw error;
+  }
 }
 
 export async function getProfile(userId: string): Promise<UserProfile | null> {

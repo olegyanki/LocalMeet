@@ -1,21 +1,18 @@
 import { View, Text, StyleSheet, TouchableOpacity, FlatList, ActivityIndicator, RefreshControl, ScrollView } from 'react-native';
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter, useFocusEffect } from 'expo-router';
 
 // Contexts & Hooks
 import { useAuth } from '@shared/contexts/AuthContext';
 import { useI18n } from '@shared/i18n';
+import { useChatsData } from '@features/chats/hooks/useChatsData';
 
 // API & Utils
 import { 
-  getPendingWalkRequests,
-  getPastWalkRequests,
   updateWalkRequestStatus, 
-  getMyChats,
   createChatFromRequest,
-  WalkRequestWithProfile,
-  ChatWithLastMessage 
+  ChatWithLastMessage,
 } from '@shared/lib/api';
 import { getEventImage } from '@shared/utils/eventImage';
 import { formatRelativeTime } from '@shared/utils/time';
@@ -32,16 +29,36 @@ type TabType = 'messages' | 'requests';
 
 export default function ChatsScreen() {
   const [activeTab, setActiveTab] = useState<TabType>('messages');
-  const [pendingRequests, setPendingRequests] = useState<WalkRequestWithProfile[]>([]);
-  const [pastRequests, setPastRequests] = useState<WalkRequestWithProfile[]>([]);
-  const [chats, setChats] = useState<ChatWithLastMessage[]>([]);
-  const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { user } = useAuth();
   const { t } = useI18n();
+
+  // Use custom hook for data loading
+  const { chats, requests, isLoading, error, refresh } = useChatsData({
+    userId: user?.id || '',
+    shouldLoad: !!user,
+  });
+
+  // Reload data when screen comes into focus
+  useFocusEffect(
+    useCallback(() => {
+      if (user) {
+        refresh();
+      }
+    }, [user, refresh])
+  );
+
+  // Separate pending and past requests
+  const pendingRequests = useMemo(() => {
+    return requests.filter(r => r.status === 'pending');
+  }, [requests]);
+
+  const pastRequests = useMemo(() => {
+    return requests.filter(r => r.status !== 'pending');
+  }, [requests]);
 
   // Sort pending requests by created_at DESC (newest first)
   const sortedPendingRequests = useMemo(() => {
@@ -75,91 +92,11 @@ export default function ChatsScreen() {
     return pendingRequests.length;
   }, [pendingRequests]);
 
-  const loadRequests = async (showLoader = true) => {
-    if (!user) return;
-
-    try {
-      if (showLoader) setLoading(true);
-      const [pending, past] = await Promise.all([
-        getPendingWalkRequests(user.id),
-        getPastWalkRequests(user.id)
-      ]);
-      setPendingRequests(pending);
-      setPastRequests(past);
-    } catch (error) {
-      console.error('Error loading requests:', error);
-    } finally {
-      if (showLoader) setLoading(false);
-    }
-  };
-
-  const loadChats = async (showLoader = true) => {
-    if (!user) return;
-
-    try {
-      if (showLoader) setLoading(true);
-      const data = await getMyChats(user.id);
-      setChats(data);
-    } catch (error) {
-      console.error('Error loading chats:', error);
-    } finally {
-      if (showLoader) setLoading(false);
-    }
-  };
-
   const onRefresh = async () => {
     setRefreshing(true);
-    if (activeTab === 'requests') {
-      await loadRequests(false);
-    } else {
-      await loadChats(false);
-    }
+    await refresh();
     setRefreshing(false);
   };
-
-  useEffect(() => {
-    const loadInitialData = async () => {
-      if (!user) return;
-
-      try {
-        setLoading(true);
-        await Promise.all([
-          loadRequests(false),
-          loadChats(false)
-        ]);
-      } catch (error) {
-        console.error('Error loading initial data:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadInitialData();
-  }, [user]);
-
-  // Reload data when screen comes into focus
-  useFocusEffect(
-    useCallback(() => {
-      if (user && !loading) {
-        if (activeTab === 'messages') {
-          loadChats(false);
-        } else {
-          loadRequests(false);
-        }
-      }
-    }, [user, activeTab])
-  );
-
-  // Reload data when switching tabs (background refresh without spinner)
-  useEffect(() => {
-    if (user && !loading) {
-      if (activeTab === 'messages') {
-        loadChats(false);
-      } else {
-        loadRequests(false);
-      }
-    }
-  }, [activeTab]);
 
   const handleAccept = async (requestId: string) => {
     if (!user) return;
@@ -176,11 +113,8 @@ export default function ChatsScreen() {
 
       await updateWalkRequestStatus(requestId, 'accepted');
       
-      // Move request from pending to past
-      setPendingRequests(prev => prev.filter(r => r.id !== requestId));
-      
-      // Reload past requests to get the updated one
-      await loadRequests(false);
+      // Refresh data to update the UI
+      await refresh();
 
       router.push({
         pathname: `/chat/${chatId}` as any,
@@ -198,11 +132,8 @@ export default function ChatsScreen() {
     try {
       await updateWalkRequestStatus(requestId, 'rejected');
       
-      // Move request from pending to past
-      setPendingRequests(prev => prev.filter(r => r.id !== requestId));
-      
-      // Reload past requests to get the updated one
-      await loadRequests(false);
+      // Refresh data to update the UI
+      await refresh();
     } catch (error) {
       console.error('Error rejecting request:', error);
     }
@@ -254,7 +185,7 @@ export default function ChatsScreen() {
   };
 
   const renderRequestsContent = () => {
-    if (loading) {
+    if (isLoading) {
       return (
         <ScrollView
           contentContainerStyle={styles.emptyState}
@@ -320,7 +251,7 @@ export default function ChatsScreen() {
   };
 
   const renderChatsContent = () => {
-    if (loading) {
+    if (isLoading) {
       return (
         <ScrollView
           contentContainerStyle={styles.emptyState}
