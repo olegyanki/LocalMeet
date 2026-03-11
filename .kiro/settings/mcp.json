@@ -5,7 +5,9 @@
       "autoApprove": [
         "execute_sql",
         "get_advisors",
-        "list_edge_functions"
+        "list_edge_functions",
+        "apply_migration",
+        "list_migrations"
       ]
     }
   }

@@ -1,5 +1,10 @@
 import { supabase } from './supabase';
 import * as ImagePicker from 'expo-image-picker';
+import type { Database } from './database.types';
+
+// Type aliases for RPC function return types
+type GetNearbyWalksRow = Database['public']['Functions']['get_nearby_walks']['Returns'][number];
+type GetMyChatsOptimizedRow = Database['public']['Functions']['get_my_chats_optimized']['Returns'][number];
 
 export interface UserProfile {
   id: string;
@@ -71,7 +76,7 @@ export async function getNearbyWalks(
     return [];
   }
 
-  return data.map((row: any) => ({
+  return data.map((row: GetNearbyWalksRow) => ({
     distance: row.distance,
     walk: {
       id: row.id,
@@ -562,74 +567,66 @@ export interface ChatWithLastMessage extends Chat {
 }
 
 export async function getMyChats(userId: string): Promise<ChatWithLastMessage[]> {
-  const { data: chatsData, error } = await supabase
-    .from('chats')
-    .select(
-      `
-      id,
-      requester_id,
-      walker_id,
-      walk_request_id,
-      updated_at,
-      requester:profiles!chats_requester_id_fkey(id, username, display_name, avatar_url, bio, status, age, gender, languages, interests, social_instagram, social_telegram, looking_for),
-      walker:profiles!chats_walker_id_fkey(id, username, display_name, avatar_url, bio, status, age, gender, languages, interests, social_instagram, social_telegram, looking_for)
-    `
-    )
-    .or(`requester_id.eq.${userId},walker_id.eq.${userId}`)
-    .order('updated_at', { ascending: false });
+  // Use optimized RPC function to fetch all chat data in a single query
+  // Fixes Bug 1.6: N+1 Query Problem (1 query instead of 1 + 3N queries)
+  const { data, error } = await supabase.rpc('get_my_chats_optimized', {
+    p_user_id: userId,
+  });
 
   if (error) throw error;
 
-  const chatsWithMessages = await Promise.all(
-    (chatsData || []).map(async (chat: any) => {
-      // Get last message
-      const { data: lastMessage } = await supabase
-        .from('messages')
-        .select('content, created_at, sender_id, read')
-        .eq('chat_id', chat.id)
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .maybeSingle();
+  if (!data || data.length === 0) {
+    return [];
+  }
 
-      // Get walk info if exists
-      let walkTitle: string | undefined;
-      let walkImageUrl: string | null = null;
-      
-      if (chat.walk_request_id) {
-        const { data: walkRequest } = await supabase
-          .from('walk_requests')
-          .select('walk_id')
-          .eq('id', chat.walk_request_id)
-          .maybeSingle();
-
-        if (walkRequest?.walk_id) {
-          const { data: walk } = await supabase
-            .from('walks')
-            .select('title, image_url')
-            .eq('id', walkRequest.walk_id)
-            .maybeSingle();
-
-          walkTitle = walk?.title;
-          walkImageUrl = walk?.image_url ?? null;
+  // Transform RPC result to ChatWithLastMessage format
+  return data.map((row: GetMyChatsOptimizedRow) => ({
+    id: row.chat_id,
+    requester_id: row.requester_id,
+    walker_id: row.walker_id,
+    walk_request_id: row.walk_request_id,
+    updated_at: row.chat_updated_at,
+    requester: {
+      id: row.requester_id,
+      username: row.requester_username,
+      display_name: row.requester_display_name,
+      avatar_url: row.requester_avatar_url,
+      bio: row.requester_bio,
+      status: row.requester_status,
+      age: row.requester_age,
+      gender: row.requester_gender,
+      languages: row.requester_languages,
+      interests: row.requester_interests,
+      social_instagram: row.requester_social_instagram,
+      social_telegram: row.requester_social_telegram,
+      looking_for: row.requester_looking_for,
+    },
+    walker: {
+      id: row.walker_id,
+      username: row.walker_username,
+      display_name: row.walker_display_name,
+      avatar_url: row.walker_avatar_url,
+      bio: row.walker_bio,
+      status: row.walker_status,
+      age: row.walker_age,
+      gender: row.walker_gender,
+      languages: row.walker_languages,
+      interests: row.walker_interests,
+      social_instagram: row.walker_social_instagram,
+      social_telegram: row.walker_social_telegram,
+      looking_for: row.walker_looking_for,
+    },
+    walk_title: row.walk_title ?? undefined,
+    walk_image_url: row.walk_image_url ?? null,
+    lastMessage: row.last_message_content
+      ? {
+          content: row.last_message_content,
+          created_at: row.last_message_created_at,
+          sender_id: row.last_message_sender_id,
+          read: row.last_message_read,
         }
-      }
-
-      return {
-        id: chat.id,
-        requester_id: chat.requester_id,
-        walker_id: chat.walker_id,
-        walk_request_id: chat.walk_request_id,
-        updated_at: chat.updated_at,
-        requester: Array.isArray(chat.requester) ? chat.requester[0] : chat.requester,
-        walker: Array.isArray(chat.walker) ? chat.walker[0] : chat.walker,
-        walk_title: walkTitle,
-        walk_image_url: walkImageUrl,
-        lastMessage: lastMessage || undefined,
-      } as ChatWithLastMessage;
-    })
-  );
-
-  return chatsWithMessages;
+      : undefined,
+  }));
 }
 
 export async function createChatFromRequest(
@@ -637,31 +634,20 @@ export async function createChatFromRequest(
   requesterId: string,
   walkerId: string
 ): Promise<string> {
-  // Check if chat already exists
-  const { data: existingChat } = await supabase
-    .from('chats')
-    .select('id')
-    .eq('walk_request_id', requestId)
-    .maybeSingle();
-
-  if (existingChat) {
-    return existingChat.id;
-  }
-
-  // Create new chat
-  const { data: newChat, error } = await supabase
-    .from('chats')
-    .insert({
-      walk_request_id: requestId,
-      requester_id: requesterId,
-      walker_id: walkerId,
-    })
-    .select('id')
-    .single();
+  // Use transactional RPC function to create chat and update walk_request atomically
+  // Fixes Bug 1.10: Non-Transactional Chat Creation
+  const { data: chatId, error } = await supabase.rpc(
+    'create_chat_from_request_transactional',
+    {
+      p_request_id: requestId,
+      p_requester_id: requesterId,
+      p_walker_id: walkerId,
+    }
+  );
 
   if (error) throw error;
 
-  return newChat.id;
+  return chatId;
 }
 
 
