@@ -198,6 +198,7 @@ export async function createWalk(data: {
   longitude: number;
   imageUrl?: string;
 }) {
+  // Insert the walk - the database trigger will automatically create a group chat
   const { data: walk, error } = await supabase
     .from('walks')
     .insert({
@@ -301,6 +302,7 @@ export async function updateWalkRequestStatus(
   requestId: string,
   status: 'accepted' | 'rejected'
 ) {
+  // Update the request status - the database trigger will automatically add participant to group chat if accepted
   const { error } = await supabase
     .from('walk_requests')
     .update({ status })
@@ -600,15 +602,54 @@ export async function takePhotoAndUploadAvatar(userId: string): Promise<string |
 
 export interface Chat {
   id: string;
+  type: 'group' | 'direct';
+  walk_id: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+/**
+ * Chat participant with profile information
+ */
+export interface ChatParticipant {
+  id: string;
+  chat_id: string;
+  user_id: string;
+  role: 'owner' | 'member';
+  joined_at: string;
+  profile: UserProfile;
+}
+
+/**
+ * Chat with participants, last message, and unread count
+ * Used for chat list display
+ */
+export interface ChatWithDetails {
+  id: string;
+  type: 'group' | 'direct';
+  walk_id: string | null;
+  walk_title?: string;
+  walk_image_url?: string | null;
+  walk_start_time?: string;
+  participants: ChatParticipant[];
+  lastMessage?: {
+    content: string;
+    created_at: string;
+    sender_id: string;
+    read: boolean;
+  };
+  unread_count: number;
+}
+
+// Legacy interface for backward compatibility
+export interface ChatWithLastMessage {
+  id: string;
   requester_id: string;
   walker_id: string;
   walk_request_id: string | null;
   updated_at: string;
   requester: UserProfile;
   walker: UserProfile;
-}
-
-export interface ChatWithLastMessage extends Chat {
   walk_title?: string;
   walk_image_url?: string | null;
   lastMessage?: {
@@ -619,7 +660,10 @@ export interface ChatWithLastMessage extends Chat {
   };
 }
 
-export async function getMyChats(userId: string): Promise<ChatWithLastMessage[]> {
+/*
+// LEGACY FUNCTION - DEPRECATED
+// This function uses the old schema and will be removed in a future version
+export async function getMyChatsLegacy(userId: string): Promise<ChatWithLastMessage[]> {
   // Use optimized RPC function to fetch all chat data in a single query
   // Fixes Bug 1.6: N+1 Query Problem (1 query instead of 1 + 3N queries)
   const { data, error } = await supabase.rpc('get_my_chats_optimized', {
@@ -681,28 +725,7 @@ export async function getMyChats(userId: string): Promise<ChatWithLastMessage[]>
       : undefined,
   }));
 }
-
-export async function createChatFromRequest(
-  requestId: string,
-  requesterId: string,
-  walkerId: string
-): Promise<string> {
-  // Use transactional RPC function to create chat and update walk_request atomically
-  // Fixes Bug 1.10: Non-Transactional Chat Creation
-  const { data: chatId, error } = await supabase.rpc(
-    'create_chat_from_request_transactional',
-    {
-      p_request_id: requestId,
-      p_requester_id: requesterId,
-      p_walker_id: walkerId,
-    }
-  );
-
-  if (error) throw error;
-
-  return chatId;
-}
-
+*/
 
 export interface Message {
   id: string;
@@ -714,86 +737,13 @@ export interface Message {
   audio_duration: number | null;
   created_at: string;
   read: boolean;
-}
-
-export interface WalkRequestInfo {
-  message: string;
-  created_at: string;
-  walk_id: string;
-  walk?: Walk;
-}
-
-export interface ChatDetails {
-  id: string;
-  requester_id: string;
-  walker_id: string;
-  walk_request_id: string | null;
-  requester: {
-    id: string;
-    display_name: string;
-    avatar_url: string | null;
-  };
-  walker: {
-    id: string;
-    display_name: string;
-    avatar_url: string | null;
-  };
-  walk_request?: WalkRequestInfo;
+  sender?: UserProfile; // Added sender profile information
 }
 
 /**
- * Get chat details with participants and walk request info
+ * Get all messages for a chat (legacy function)
  */
-export async function getChatById(chatId: string): Promise<ChatDetails | null> {
-  const { data: chatData, error: chatError } = await supabase
-    .from('chats')
-    .select(
-      `
-      id,
-      requester_id,
-      walker_id,
-      walk_request_id,
-      requester:profiles!chats_requester_id_fkey(id, display_name, avatar_url),
-      walker:profiles!chats_walker_id_fkey(id, display_name, avatar_url),
-      walk_request:walk_requests!chats_walk_request_id_fkey(message, created_at, walk_id)
-    `
-    )
-    .eq('id', chatId)
-    .maybeSingle();
-
-  if (chatError) throw chatError;
-  if (!chatData) return null;
-
-  // Handle walk_request - it might be an array or single object
-  const walkRequest: any = Array.isArray(chatData.walk_request) 
-    ? chatData.walk_request[0] 
-    : chatData.walk_request;
-
-  if (walkRequest?.walk_id) {
-    const { data: walkData } = await supabase
-      .from('walks')
-      .select('id, title, description, start_time, duration, latitude, longitude, user_id, image_url')
-      .eq('id', walkRequest.walk_id)
-      .maybeSingle();
-
-    if (walkData) {
-      walkRequest.walk = walkData;
-    }
-  }
-
-  // Normalize the data structure
-  return {
-    ...chatData,
-    requester: Array.isArray(chatData.requester) ? chatData.requester[0] : chatData.requester,
-    walker: Array.isArray(chatData.walker) ? chatData.walker[0] : chatData.walker,
-    walk_request: walkRequest as WalkRequestInfo | undefined,
-  } as ChatDetails;
-}
-
-/**
- * Get all messages for a chat
- */
-export async function getChatMessages(chatId: string): Promise<Message[]> {
+export async function getChatMessagesLegacy(chatId: string): Promise<Message[]> {
   const { data, error } = await supabase
     .from('messages')
     .select('*')
@@ -904,4 +854,294 @@ export async function sendAudioMessage(
     console.error('Error sending audio message:', error);
     throw error;
   }
+}
+// ============================================================================
+// NEW GROUP CHAT SYSTEM API FUNCTIONS
+// ============================================================================
+
+/**
+ * Get all chats for a user (both group and direct chats)
+ * Uses optimized RPC function to fetch all data in a single query
+ * 
+ * @param userId - The user ID to get chats for
+ * @returns Promise<ChatWithDetails[]> - Array of chats with details
+ */
+export async function getMyChats(userId: string): Promise<ChatWithDetails[]> {
+  const { data, error } = await supabase.rpc('get_my_chats_optimized', {
+    p_user_id: userId,
+  });
+
+  if (error) {
+    console.error('Error fetching user chats:', error);
+    throw new Error(`Failed to fetch chats: ${error.message}`);
+  }
+
+  if (!data) return [];
+
+  return data.map((row: any) => ({
+    id: row.chat_id,
+    type: row.chat_type,
+    walk_id: row.walk_id,
+    walk_title: row.walk_title,
+    walk_image_url: row.walk_image_url,
+    walk_start_time: row.walk_start_time,
+    participants: row.participant_ids.map((id: string, index: number) => ({
+      id: `${row.chat_id}-${id}`, // Generate participant record ID
+      chat_id: row.chat_id,
+      user_id: id,
+      role: 'member', // Role info not available in optimized query
+      joined_at: '', // Join date not available in optimized query
+      profile: {
+        id: id,
+        username: row.participant_usernames[index],
+        display_name: row.participant_display_names[index],
+        avatar_url: row.participant_avatar_urls[index],
+        bio: '',
+        interests: [],
+        languages: [],
+        created_at: '',
+        updated_at: '',
+      },
+    })),
+    lastMessage: row.last_message_content ? {
+      content: row.last_message_content,
+      created_at: row.last_message_created_at,
+      sender_id: row.last_message_sender_id,
+      read: row.last_message_read,
+    } : undefined,
+    unread_count: row.unread_count,
+  }));
+}
+
+/**
+ * Get messages for a chat (works for both group and direct chats)
+ * 
+ * @param chatId - The chat ID to get messages for
+ * @returns Promise<Message[]> - Array of messages with sender profiles
+ */
+export async function getChatMessages(chatId: string): Promise<Message[]> {
+  const { data, error } = await supabase
+    .from('messages')
+    .select(`
+      *,
+      sender:profiles!sender_id(*)
+    `)
+    .eq('chat_id', chatId)
+    .order('created_at', { ascending: true });
+
+  if (error) {
+    console.error('Error fetching chat messages:', error);
+    throw new Error(`Failed to fetch messages: ${error.message}`);
+  }
+
+  return data || [];
+}
+
+/**
+ * Send a message to a chat (works for both group and direct chats)
+ * 
+ * @param chatId - The chat ID to send message to
+ * @param senderId - The sender's user ID
+ * @param content - The message content
+ * @param imageUrl - Optional image URL
+ * @param audioUrl - Optional audio URL
+ * @param audioDuration - Optional audio duration in seconds
+ * @returns Promise<Message> - The created message with sender profile
+ */
+export async function sendMessage(
+  chatId: string,
+  senderId: string,
+  content: string,
+  imageUrl?: string,
+  audioUrl?: string,
+  audioDuration?: number
+): Promise<Message> {
+  const { data, error } = await supabase
+    .from('messages')
+    .insert({
+      chat_id: chatId,
+      sender_id: senderId,
+      content,
+      image_url: imageUrl,
+      audio_url: audioUrl,
+      audio_duration: audioDuration,
+    })
+    .select(`
+      *,
+      sender:profiles!sender_id(*)
+    `)
+    .single();
+
+  if (error) {
+    console.error('Error sending message:', error);
+    throw new Error(`Failed to send message: ${error.message}`);
+  }
+
+  return data;
+}
+
+/**
+ * Leave a chat (works for both group and direct chats)
+ * Removes the user from chat_participants table
+ * 
+ * @param chatId - The chat ID to leave
+ * @param userId - The user ID who is leaving
+ * @returns Promise<void>
+ */
+export async function leaveChat(chatId: string, userId: string): Promise<void> {
+  const { error } = await supabase
+    .from('chat_participants')
+    .delete()
+    .eq('chat_id', chatId)
+    .eq('user_id', userId);
+
+  if (error) {
+    console.error('Error leaving chat:', error);
+    throw new Error(`Failed to leave chat: ${error.message}`);
+  }
+}
+
+/**
+ * Remove a participant from a chat (typically for group chats)
+ * Only owners can remove other participants
+ * 
+ * @param chatId - The chat ID to remove participant from
+ * @param removedUserId - The user ID to remove
+ * @returns Promise<void>
+ */
+export async function removeChatParticipant(
+  chatId: string,
+  removedUserId: string
+): Promise<void> {
+  const { error } = await supabase
+    .from('chat_participants')
+    .delete()
+    .eq('chat_id', chatId)
+    .eq('user_id', removedUserId);
+
+  if (error) {
+    console.error('Error removing chat participant:', error);
+    throw new Error(`Failed to remove participant: ${error.message}`);
+  }
+}
+
+/**
+ * Mark all unread messages in a chat as read for a user
+ * Updates all messages where sender_id != userId and read = false
+ * 
+ * @param chatId - The chat ID to mark as read
+ * @param userId - The user ID who is marking messages as read
+ * @returns Promise<void>
+ */
+export async function markChatAsRead(chatId: string, userId: string): Promise<void> {
+  const { error } = await supabase
+    .from('messages')
+    .update({ read: true })
+    .eq('chat_id', chatId)
+    .neq('sender_id', userId)
+    .eq('read', false);
+
+  if (error) {
+    console.error('Error marking chat as read:', error);
+    throw new Error(`Failed to mark chat as read: ${error.message}`);
+  }
+}
+
+/**
+ * Get detailed chat information including participants
+ * Uses the get_chat_details RPC function
+ * 
+ * @param chatId - The chat ID to get details for
+ * @param userId - The user ID requesting the details (must be a participant)
+ * @returns Promise<ChatWithDetails | null> - Chat details with participants
+ */
+export async function getChatDetails(chatId: string, userId: string): Promise<ChatWithDetails | null> {
+  const { data, error } = await supabase.rpc('get_chat_details', {
+    p_chat_id: chatId,
+    p_user_id: userId,
+  });
+
+  if (error) {
+    console.error('Error fetching chat details:', error);
+    throw new Error(`Failed to fetch chat details: ${error.message}`);
+  }
+
+  if (!data || data.length === 0) return null;
+
+  // Transform RPC result to ChatWithDetails format
+  const firstRow = data[0];
+  
+  return {
+    id: firstRow.chat_id,
+    type: firstRow.chat_type,
+    walk_id: firstRow.walk_id,
+    walk_title: firstRow.walk_title,
+    walk_image_url: firstRow.walk_image_url,
+    walk_start_time: firstRow.walk_start_time,
+    participants: data.map((row: any) => ({
+      id: row.participant_id,
+      chat_id: firstRow.chat_id,
+      user_id: row.participant_id,
+      role: row.participant_role,
+      joined_at: row.participant_joined_at,
+      profile: {
+        id: row.participant_id,
+        username: row.participant_username,
+        display_name: row.participant_display_name,
+        avatar_url: row.participant_avatar_url,
+        bio: '',
+        interests: [],
+        languages: [],
+        created_at: '',
+        updated_at: '',
+      },
+    })),
+    unread_count: 0, // Not available in this query
+  };
+}
+
+/**
+ * Get group chat ID for an event/walk
+ * 
+ * @param walkId - The walk/event ID to get chat for
+ * @returns Promise<string | null> - The chat ID or null if not found
+ */
+export async function getChatByWalkId(walkId: string): Promise<string | null> {
+  const { data, error } = await supabase
+    .from('chats')
+    .select('id')
+    .eq('walk_id', walkId)
+    .eq('type', 'group')
+    .maybeSingle();
+
+  if (error) {
+    console.error('Error fetching chat by walk_id:', error);
+    throw new Error(`Failed to fetch chat: ${error.message}`);
+  }
+
+  return data?.id || null;
+}
+
+/**
+ * Get participant count for a group chat
+ * 
+ * @param walkId - The walk/event ID to get participant count for
+ * @returns Promise<number> - The number of participants in the group chat
+ */
+export async function getChatParticipantCount(walkId: string): Promise<number> {
+  const { data, error } = await supabase
+    .from('chats')
+    .select(`
+      chat_participants(count)
+    `)
+    .eq('walk_id', walkId)
+    .eq('type', 'group')
+    .maybeSingle();
+
+  if (error) {
+    console.error('Error fetching participant count:', error);
+    return 0;
+  }
+
+  return data?.chat_participants?.[0]?.count || 0;
 }

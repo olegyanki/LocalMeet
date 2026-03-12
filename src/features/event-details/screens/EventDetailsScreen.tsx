@@ -25,11 +25,11 @@ import {
   getMyRequestForWalk, 
   getWalkById,
   getProfile,
+  getChatByWalkId,
   WalkRequest, 
   Walk,
   UserProfile 
 } from '@shared/lib/api';
-import { getTimeText, getTimeColor } from '@shared/utils/time';
 import { getEventImage } from '@shared/utils/eventImage';
 
 // Components
@@ -253,6 +253,23 @@ export default function EventDetailsScreen() {
     }
   };
 
+  const handleOpenGroupChat = async () => {
+    if (!walk?.id) return;
+
+    try {
+      const chatId = await getChatByWalkId(walk.id);
+      
+      if (chatId) {
+        router.push(`/chat/${chatId}`);
+      } else {
+        setError(t('groupChatNotFound'));
+      }
+    } catch (error) {
+      console.error('Failed to open group chat:', error);
+      setError(t('errorOpeningChat'));
+    }
+  };
+
   const confirmDelete = () => {
     setShowDeleteModal(true);
   };
@@ -269,6 +286,7 @@ export default function EventDetailsScreen() {
         text: t('loading'),
         color: COLORS.BORDER_COLOR,
         disabled: true,
+        onPress: undefined,
       };
     }
 
@@ -277,6 +295,7 @@ export default function EventDetailsScreen() {
         text: t('joinEvent'),
         color: COLORS.ACCENT_ORANGE,
         disabled: false,
+        onPress: handleConnect,
       };
     }
 
@@ -287,18 +306,21 @@ export default function EventDetailsScreen() {
           text: t('requestSentStatus'),
           color: COLORS.TEXT_LIGHT,
           disabled: true,
+          onPress: undefined,
         };
       case 'accepted':
         return {
-          text: t('requestAccepted'),
-          color: COLORS.SUCCESS_GREEN,
-          disabled: true,
+          text: t('openGroupChat'),
+          color: COLORS.ACCENT_ORANGE,
+          disabled: false,
+          onPress: handleOpenGroupChat,
         };
       default:
         return {
           text: t('joinEvent'),
           color: COLORS.ACCENT_ORANGE,
           disabled: false,
+          onPress: handleConnect,
         };
     }
   }, [isLoadingRequest, existingRequest, t]);
@@ -472,22 +494,29 @@ export default function EventDetailsScreen() {
           {!isOwnEvent && hasLoadedRequest && (
             <PrimaryButton
               title={buttonConfig.text}
-              onPress={handleConnect}
+              onPress={buttonConfig.onPress || handleConnect}
               disabled={buttonConfig.disabled}
               style={buttonConfig.disabled ? styles.disabledButton : undefined}
               textStyle={buttonConfig.disabled ? styles.disabledButtonText : undefined}
             />
           )}
 
-          {/* Delete Button for Own Events */}
+          {/* Owner Actions */}
           {isOwnEvent && (
-            <PrimaryButton
-              title={t('deleteEvent')}
-              onPress={confirmDelete}
-              disabled={isDeleting}
-              loading={isDeleting}
-              style={styles.deleteButton}
-            />
+            <>
+              <PrimaryButton
+                title={t('openGroupChat')}
+                onPress={handleOpenGroupChat}
+                style={styles.groupChatButton}
+              />
+              <PrimaryButton
+                title={t('deleteEvent')}
+                onPress={confirmDelete}
+                disabled={isDeleting}
+                loading={isDeleting}
+                style={styles.deleteButton}
+              />
+            </>
           )}
         </View>
       </ScrollView>
@@ -723,6 +752,10 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: COLORS.ERROR_RED,
     textAlign: 'center',
+  },
+  groupChatButton: {
+    backgroundColor: COLORS.ACCENT_ORANGE,
+    marginTop: 8,
   },
   deleteButton: {
     backgroundColor: COLORS.ERROR_RED,

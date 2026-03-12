@@ -3,7 +3,7 @@ import {
   getMyChats, 
   getPendingWalkRequests,
   getPastWalkRequests,
-  ChatWithLastMessage,
+  ChatWithDetails, // Updated to use new interface
   WalkRequestWithProfile 
 } from '@shared/lib/api';
 
@@ -17,28 +17,32 @@ interface UseChatsDataParams {
 }
 
 interface UseChatsDataReturn {
-  chats: ChatWithLastMessage[];
+  chats: ChatWithDetails[]; // Updated to use new interface
   requests: WalkRequestWithDetails[];
   isLoading: boolean;
   error: string | null;
   refresh: () => Promise<void>;
+  refreshSilently: () => Promise<void>; // New method for background refresh
 }
 
 export function useChatsData(params: UseChatsDataParams): UseChatsDataReturn {
   const { userId, shouldLoad = true } = params;
 
-  const [chats, setChats] = useState<ChatWithLastMessage[]>([]);
+  const [chats, setChats] = useState<ChatWithDetails[]>([]);
   const [requests, setRequests] = useState<WalkRequestWithDetails[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const loadData = useCallback(async () => {
+  const loadData = useCallback(async (isRefresh = false) => {
     if (!userId || !shouldLoad) {
       return;
     }
 
     try {
-      setIsLoading(true);
+      // Only show loading spinner on initial load, not on refresh
+      if (!isRefresh) {
+        setIsLoading(true);
+      }
       setError(null);
 
       // Load chats and requests in parallel
@@ -57,7 +61,9 @@ export function useChatsData(params: UseChatsDataParams): UseChatsDataReturn {
       console.error('Error loading chats data:', err);
       setError(err instanceof Error ? err.message : 'Failed to load data');
     } finally {
-      setIsLoading(false);
+      if (!isRefresh) {
+        setIsLoading(false);
+      }
     }
   }, [userId, shouldLoad]);
 
@@ -70,6 +76,7 @@ export function useChatsData(params: UseChatsDataParams): UseChatsDataReturn {
     requests,
     isLoading,
     error,
-    refresh: loadData,
+    refresh: () => loadData(false), // Full refresh with loading spinner
+    refreshSilently: () => loadData(true), // Background refresh without loading spinner
   };
 }

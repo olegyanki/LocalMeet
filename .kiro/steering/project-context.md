@@ -78,7 +78,11 @@ app/
   - **IMPORTANT**: `duration` field is stored in **seconds**, not minutes
 - `user_locations` - Real-time user locations
 - `walk_requests` - Walk join requests (pending/accepted/rejected)
-- `chats` - Chat rooms
+- `chats` - Chat rooms (both group and direct chats)
+  - `type` - 'group' for event chats, 'direct' for 1-on-1 chats
+  - `walk_id` - Links group chats to events (NULL for direct chats)
+- `chat_participants` - Junction table for chat membership
+  - `role` - 'owner' or 'member' (owners can manage group chats)
 - `messages` - Chat messages
 
 ### Key Types
@@ -87,8 +91,10 @@ app/
   - **duration**: number (in seconds)
 - `NearbyWalk` - Walk with distance (distance, walk)
 - `WalkRequest` - Join request (id, walk_id, requester_id, status, message)
-- `Chat` - Chat room with participants
-- `Message` - Chat message (text, image, or audio)
+- `Chat` - Universal chat interface (works for both group and direct chats)
+- `ChatParticipant` - Chat participant with profile information
+- `ChatWithDetails` - Chat with participants, last message, and event info
+- `Message` - Chat message (text, image, or audio) with sender profile
 
 ### Storage Buckets
 - `avatars` - User avatar images
@@ -98,6 +104,8 @@ app/
 
 ### RPC Functions
 - `get_nearby_walks(lat, lng, radius_km)` - Get walks within radius with distance
+- `get_my_chats_optimized(user_id)` - Get all user chats with details (optimized single query)
+- `get_chat_details(chat_id, user_id)` - Get chat details with participants
 
 ## Key Features
 
@@ -113,11 +121,19 @@ app/
 - Optional cover image
 - Auto-delete after event time
 
-### Walk Requests & Chats
-- Send request to join walk
-- Accept/reject requests
-- Auto-create chat on accept
-- Text, image, audio messages
+### Group Chat System & Direct Messaging
+- **Group Chats**: Automatically created for each event
+  - Event creator becomes chat owner
+  - Participants added when walk requests are accepted
+  - Owner can remove participants
+  - Ownership transfers if owner leaves
+- **Direct Chats**: Migrated from old 1-on-1 system
+  - Both participants have equal member status
+  - Preserved from previous chat system
+- **Universal API**: Same functions work for both chat types
+- Text, image, audio messages with sender profiles
+- Real-time message delivery to all participants
+- Unread count tracking (excludes sender's own messages)
 
 ### i18n
 - Ukrainian (uk) and English (en)
@@ -135,7 +151,11 @@ import {
   getNearbyWalks, 
   createWalk,
   getMyChats,
-  createChatFromRequest 
+  getChatMessages,
+  sendMessage,
+  leaveChat,
+  removeChatParticipant,
+  markChatAsRead
 } from '@shared/lib/api';
 
 // Update profile
@@ -144,7 +164,7 @@ await updateProfile(userId, { bio: 'New bio' });
 // Get nearby walks
 const walks = await getNearbyWalks(latitude, longitude, 15);
 
-// Create walk
+// Create walk (automatically creates group chat)
 await createWalk({
   userId,
   title: 'Coffee walk',
@@ -154,16 +174,26 @@ await createWalk({
   longitude,
 });
 
-// Get user's chats with last messages
+// Get user's chats (both group and direct chats)
 const chats = await getMyChats(userId);
 
-// Create chat from accepted request
-const chatId = await createChatFromRequest(requestId, requesterId, walkerId);
+// Get messages for any chat (group or direct)
+const messages = await getChatMessages(chatId);
 
-// Send messages
-await sendTextMessage(chatId, userId, 'Hello!');
-await sendImageMessage(chatId, userId, imageUrl);
-await sendAudioMessage(chatId, userId, audioUrl, duration);
+// Send message (works for both chat types)
+await sendMessage(chatId, userId, {
+  content: 'Hello everyone!',
+  type: 'text'
+});
+
+// Chat management (group chats)
+await leaveChat(chatId, userId);
+await removeChatParticipant(chatId, participantId); // Owner only
+await markChatAsRead(chatId, userId);
+
+// Legacy functions (deprecated)
+// await createChatFromRequest() - REMOVED
+// await getChatById() - REMOVED
 ```
 
 ### Authentication

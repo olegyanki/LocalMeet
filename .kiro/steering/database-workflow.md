@@ -194,6 +194,140 @@ ON profiles FOR UPDATE TO authenticated
 USING (auth.uid() = id) WITH CHECK (auth.uid() = id);
 ```
 
+### Complex Migration Example: Group Chat System
+
+This example shows a complete migration that adds new tables, migrates existing data, and updates policies:
+
+```sql
+-- supabase/migrations/20260311175120_031_group_chat_system.sql
+
+-- Step 1: Add new columns to existing table
+ALTER TABLE chats 
+ADD COLUMN type TEXT CHECK (type IN ('group', 'direct')),
+ADD COLUMN walk_id UUID REFERENCES walks(id) ON DELETE SET NULL;
+
+-- Step 2: Create new junction table
+CREATE TABLE chat_participants (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    chat_id UUID NOT NULL REFERENCES chats(id) ON DELETE CASCADE,
+    user_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+    role TEXT NOT NULL CHECK (role IN ('owner', 'member')) DEFAULT 'member',
+    joined_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    UNIQUE(chat_id, user_id)
+);
+
+-- Step 3: Create indexes for performance
+CREATE INDEX idx_chat_participants_chat_id ON chat_participants(chat_id);
+CREATE INDEX idx_chat_participants_user_id ON chat_participants(user_id);
+CREATE INDEX idx_chats_type ON chats(type);
+CREATE INDEX idx_chats_walk_id ON chats(walk_id) WHERE walk_id IS NOT NULL;
+
+-- Step 4: Migrate existing data
+UPDATE chats SET type = 'direct' WHERE type IS NULL;
+
+INSERT INTO chat_participants (chat_id, user_id, role)
+SELECT id, requester_id, 'member' FROM chats WHERE requester_id IS NOT NULL
+UNION ALL
+SELECT id, walker_id, 'member' FROM chats WHERE walker_id IS NOT NULL;
+
+-- Step 5: Make type column NOT NULL after migration
+ALTER TABLE chats ALTER COLUMN type SET NOT NULL;
+
+-- Step 6: Create database triggers for automation
+CREATE OR REPLACE FUNCTION create_group_chat_on_walk_insert()
+RETURNS TRIGGER AS $$
+BEGIN
+    INSERT INTO chats (type, walk_id) VALUES ('group', NEW.id);
+    INSERT INTO chat_participants (chat_id, user_id, role)
+    SELECT currval(pg_get_serial_sequence('chats', 'id')), NEW.user_id, 'owner';
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER create_group_chat_on_walk_insert_trigger
+    AFTER INSERT ON walks
+    FOR EACH ROW
+    EXECUTE FUNCTION create_group_chat_on_walk_insert();
+
+-- Step 7: Update RLS policies
+DROP POLICY IF EXISTS "Users can view chats" ON chats;
+CREATE POLICY "Users can view their chats"
+ON chats FOR SELECT TO authenticated
+USING (
+    EXISTS (
+        SELECT 1 FROM chat_participants cp 
+        WHERE cp.chat_id = chats.id AND cp.user_id = auth.uid()
+    )
+);
+
+-- Step 8: Enable RLS on new table
+ALTER TABLE chat_participants ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Users can view participants of their chats"
+ON chat_participants FOR SELECT TO authenticated
+USING (
+    EXISTS (
+        SELECT 1 FROM chat_participants cp 
+        WHERE cp.chat_id = chat_participants.chat_id AND cp.user_id = auth.uid()
+    )
+);
+
+-- Step 9: Create optimized RPC function
+CREATE OR REPLACE FUNCTION get_my_chats_optimized(p_user_id UUID)
+RETURNS TABLE (
+    chat_id UUID,
+    chat_type TEXT,
+    walk_id UUID,
+    event_title TEXT,
+    last_message TEXT,
+    last_message_time TIMESTAMP WITH TIME ZONE,
+    unread_count BIGINT,
+    participant_avatars TEXT[]
+) 
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path TO 'public'
+AS $$
+BEGIN
+    RETURN QUERY
+    SELECT 
+        c.id as chat_id,
+        c.type as chat_type,
+        c.walk_id,
+        w.title as event_title,
+        m.content as last_message,
+        m.created_at as last_message_time,
+        COUNT(CASE WHEN m2.read = false AND m2.sender_id != p_user_id THEN 1 END) as unread_count,
+        ARRAY_AGG(DISTINCT p.avatar_url) FILTER (WHERE p.avatar_url IS NOT NULL) as participant_avatars
+    FROM chats c
+    JOIN chat_participants cp ON c.id = cp.chat_id
+    LEFT JOIN walks w ON c.walk_id = w.id
+    LEFT JOIN messages m ON c.id = m.chat_id AND m.created_at = (
+        SELECT MAX(created_at) FROM messages WHERE chat_id = c.id
+    )
+    LEFT JOIN messages m2 ON c.id = m2.chat_id
+    LEFT JOIN chat_participants cp2 ON c.id = cp2.chat_id
+    LEFT JOIN profiles p ON cp2.user_id = p.id
+    WHERE cp.user_id = p_user_id
+    GROUP BY c.id, c.type, c.walk_id, w.title, m.content, m.created_at
+    ORDER BY COALESCE(m.created_at, c.created_at) DESC;
+END;
+$$;
+
+-- Step 10: Add validation and comments
+COMMENT ON TABLE chat_participants IS 'Junction table for chat membership with roles';
+COMMENT ON COLUMN chats.type IS 'Chat type: group (linked to events) or direct (1-on-1)';
+COMMENT ON COLUMN chats.walk_id IS 'Links group chats to events, NULL for direct chats';
+```
+
+**Key Migration Principles Demonstrated:**
+- **Data Preservation**: Existing chats migrated to new structure
+- **Atomic Operations**: All changes in single transaction
+- **Performance**: Indexes added for new query patterns
+- **Automation**: Triggers handle future chat creation
+- **Security**: RLS policies updated for new schema
+- **Optimization**: RPC function eliminates N+1 queries
+
 ## TypeScript Type Generation
 
 ### How It Works

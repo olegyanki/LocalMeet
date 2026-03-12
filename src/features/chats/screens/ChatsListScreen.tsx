@@ -11,8 +11,10 @@ import { useChatsData } from '@features/chats/hooks/useChatsData';
 // API & Utils
 import { 
   updateWalkRequestStatus, 
-  createChatFromRequest,
-  ChatWithLastMessage,
+  // createChatFromRequest, // @deprecated - removed in group chat system
+  // ChatWithLastMessage, // @deprecated - removed in group chat system
+  ChatWithDetails, // New interface for group chat system
+  getMyChats, // New API function for group chat system
 } from '@shared/lib/api';
 import { getEventImage } from '@shared/utils/eventImage';
 import { formatRelativeTime } from '@shared/utils/time';
@@ -37,18 +39,18 @@ export default function ChatsScreen() {
   const { t } = useI18n();
 
   // Use custom hook for data loading
-  const { chats, requests, isLoading, error, refresh } = useChatsData({
+  const { chats, requests, isLoading, error, refresh, refreshSilently } = useChatsData({
     userId: user?.id || '',
     shouldLoad: !!user,
   });
 
-  // Reload data when screen comes into focus
+  // Reload data when screen comes into focus (silently to avoid loading spinner)
   useFocusEffect(
     useCallback(() => {
       if (user) {
-        refresh();
+        refreshSilently();
       }
-    }, [user, refresh])
+    }, [user, refreshSilently])
   );
 
   // Separate pending and past requests
@@ -78,14 +80,10 @@ export default function ChatsScreen() {
     });
   }, [pastRequests]);
 
-  // Count unread messages
+  // Count unread messages using the new unread_count field
   const unreadCount = useMemo(() => {
-    return chats.filter(chat => 
-      chat.lastMessage && 
-      !chat.lastMessage.read && 
-      chat.lastMessage.sender_id !== user?.id
-    ).length;
-  }, [chats, user]);
+    return chats.reduce((total, chat) => total + (chat.unread_count || 0), 0);
+  }, [chats]);
 
   // Count pending requests
   const pendingCount = useMemo(() => {
@@ -105,24 +103,19 @@ export default function ChatsScreen() {
       const request = pendingRequests.find(r => r.id === requestId);
       if (!request) return;
 
-      const chatId = await createChatFromRequest(
-        requestId,
-        request.requester_id,
-        user.id
-      );
-
+      // Update request status - database trigger will automatically add participant to group chat
       await updateWalkRequestStatus(requestId, 'accepted');
       
       // Refresh data to update the UI
       await refresh();
 
-      router.push({
-        pathname: `/chat/${chatId}` as any,
-        params: {
-          otherUserName: request.requester.display_name,
-          otherUserAvatar: request.requester.avatar_url || '',
-        },
-      });
+      // Navigate to the group chat for this event
+      const { getChatByWalkId } = await import('@shared/lib/api');
+      const chatId = await getChatByWalkId(request.walk_id);
+      
+      if (chatId) {
+        router.push(`/chat/${chatId}`);
+      }
     } catch (error) {
       console.error('Error accepting request:', error);
     }
@@ -139,14 +132,39 @@ export default function ChatsScreen() {
     }
   };
 
-  const renderChatItem = ({ item }: { item: ChatWithLastMessage }) => {
-    const otherUser = item.requester_id === user?.id ? item.walker : item.requester;
-    const displayName = item.walk_title || otherUser.display_name;
-    const lastMessageText = item.lastMessage?.content || otherUser.display_name;
+  const renderChatItem = ({ item }: { item: ChatWithDetails }) => {
+    // For group chats, show event title and multiple participant avatars
+    // For direct chats, show the other participant's name and avatar
+    const isGroupChat = item.type === 'group';
+    
+    let displayName: string;
+    let avatarUrl: string | null = null;
+    let participantAvatars: string[] = [];
+    
+    if (isGroupChat) {
+      // Group chat: show event title
+      displayName = item.walk_title || t('groupChat');
+      avatarUrl = item.walk_image_url || null;
+      // Get participant avatars (excluding current user)
+      participantAvatars = item.participants
+        .filter(p => p.user_id !== user?.id)
+        .map(p => p.profile.avatar_url)
+        .filter(Boolean) as string[];
+    } else {
+      // Direct chat: show other participant's name
+      const otherParticipant = item.participants.find(p => p.user_id !== user?.id);
+      displayName = otherParticipant?.profile.display_name || otherParticipant?.profile.username || t('unknown');
+      avatarUrl = otherParticipant?.profile.avatar_url || null;
+    }
+
+    const lastMessageText = item.lastMessage?.content || (isGroupChat ? t('groupChatCreated') : displayName);
     const isUnread = item.lastMessage && !item.lastMessage.read && item.lastMessage.sender_id !== user?.id;
 
-    const walk = { image_url: item.walk_image_url } as any;
-    const eventImageUrl = getEventImage(walk, otherUser.avatar_url);
+    // For group chats, use event image or first participant avatar
+    // For direct chats, use other participant's avatar
+    const imageUrl = isGroupChat 
+      ? (item.walk_image_url || participantAvatars[0] || null)
+      : avatarUrl;
 
     const timeAgo = item.lastMessage ? formatRelativeTime(item.lastMessage.created_at) : '';
 
@@ -156,22 +174,41 @@ export default function ChatsScreen() {
         onPress={() => router.push({
           pathname: `/chat/${item.id}` as any,
           params: {
-            otherUserName: otherUser.display_name,
-            otherUserAvatar: otherUser.avatar_url || '',
+            chatType: item.type,
+            chatTitle: displayName,
           },
         })}
         activeOpacity={0.7}
       >
-        <Avatar 
-          uri={eventImageUrl} 
-          name={otherUser.display_name} 
-          size={52}
-        />
+        <View style={styles.avatarContainer}>
+          <Avatar 
+            uri={imageUrl} 
+            name={displayName} 
+            size={52}
+          />
+          {/* Show unread count badge if there are unread messages */}
+          {item.unread_count > 0 && (
+            <View style={styles.unreadCountBadge}>
+              <Text style={styles.unreadCountText}>
+                {item.unread_count > 99 ? '99+' : item.unread_count.toString()}
+              </Text>
+            </View>
+          )}
+        </View>
+        
         <View style={styles.chatInfo}>
           <View style={styles.chatHeader}>
             <Text style={styles.chatName} numberOfLines={1}>{displayName}</Text>
             {timeAgo && <Text style={styles.chatTime}>{timeAgo}</Text>}
           </View>
+          
+          {/* Show participant count for group chats */}
+          {isGroupChat && (
+            <Text style={styles.participantCount} numberOfLines={1}>
+              {t('participants', { count: item.participants.length })}
+            </Text>
+          )}
+          
           <Text
             style={[styles.chatMessage, isUnread && styles.chatMessageUnread]}
             numberOfLines={1}
@@ -179,6 +216,8 @@ export default function ChatsScreen() {
             {lastMessageText}
           </Text>
         </View>
+        
+        {/* Show small unread indicator dot */}
         {isUnread && <View style={styles.unreadBadge} />}
       </TouchableOpacity>
     );
@@ -366,6 +405,28 @@ const styles = StyleSheet.create({
     gap: 16,
     ...SHADOW.standard,
   },
+  avatarContainer: {
+    position: 'relative',
+  },
+  unreadCountBadge: {
+    position: 'absolute',
+    top: -4,
+    right: -4,
+    backgroundColor: COLORS.ACCENT_ORANGE,
+    borderRadius: 10,
+    minWidth: 20,
+    height: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 2,
+    borderColor: COLORS.CARD_BG,
+  },
+  unreadCountText: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: COLORS.CARD_BG,
+    paddingHorizontal: 4,
+  },
   chatInfo: {
     flex: 1,
     justifyContent: 'center',
@@ -389,6 +450,11 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: COLORS.TEXT_LIGHT,
     flexShrink: 0,
+  },
+  participantCount: {
+    fontSize: 12,
+    color: COLORS.TEXT_LIGHT,
+    marginBottom: 2,
   },
   chatMessage: {
     fontSize: 14,
