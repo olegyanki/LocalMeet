@@ -325,6 +325,13 @@ export type Database = {
         Returns: string
       }
       earth: { Args: never; Returns: number }
+      get_badge_counts_optimized: {
+        Args: { p_user_id: string }
+        Returns: {
+          pending_requests: number
+          unread_messages: number
+        }[]
+      }
       get_chat_details: {
         Args: { p_chat_id: string; p_user_id: string }
         Returns: {
@@ -414,6 +421,14 @@ export type Database = {
           updated_at: string
           user_id: string
         }[]
+      }
+      is_chat_owner: {
+        Args: { p_chat_id: string; p_user_id: string }
+        Returns: boolean
+      }
+      is_chat_participant: {
+        Args: { p_chat_id: string; p_user_id: string }
+        Returns: boolean
       }
     }
     Enums: {

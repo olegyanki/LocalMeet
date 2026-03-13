@@ -18,6 +18,7 @@ import * as ImagePicker from 'expo-image-picker';
 import { ChevronLeft, MoreVertical, Mic, Plus, Users, Trash2, User, Info } from 'lucide-react-native';
 
 import { useAuth } from '@shared/contexts/AuthContext';
+import { useBadgeCount } from '@shared/contexts/BadgeCountContext';
 import { useI18n } from '@shared/i18n';
 import { 
   sendMessage, // New unified function for both group and direct chats
@@ -47,6 +48,7 @@ export default function ChatScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { user } = useAuth();
+  const { forceRefresh } = useBadgeCount();
   const { t } = useI18n();
   const flatListRef = useRef<FlatList>(null);
 
@@ -76,7 +78,10 @@ export default function ChatScreen() {
   useEffect(() => {
     loadChatData();
     const unsubscribe = subscribeToMessages();
-    return unsubscribe;
+    
+    return () => {
+      unsubscribe();
+    };
   }, [chatId]);
 
   useEffect(() => {

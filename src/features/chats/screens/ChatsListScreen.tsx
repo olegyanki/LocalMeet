@@ -1,7 +1,7 @@
 import { View, Text, StyleSheet, TouchableOpacity, FlatList, ActivityIndicator, RefreshControl, ScrollView } from 'react-native';
 import { useState, useMemo, useCallback } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useRouter, useFocusEffect } from 'expo-router';
+import { useRouter } from 'expo-router';
 
 // Contexts & Hooks
 import { useAuth } from '@shared/contexts/AuthContext';
@@ -11,12 +11,8 @@ import { useChatsData } from '@features/chats/hooks/useChatsData';
 // API & Utils
 import { 
   updateWalkRequestStatus, 
-  // createChatFromRequest, // @deprecated - removed in group chat system
-  // ChatWithLastMessage, // @deprecated - removed in group chat system
-  ChatWithDetails, // New interface for group chat system
-  getMyChats, // New API function for group chat system
+  ChatWithDetails,
 } from '@shared/lib/api';
-import { getEventImage } from '@shared/utils/eventImage';
 import { formatRelativeTime } from '@shared/utils/time';
 
 // Components
@@ -39,19 +35,10 @@ export default function ChatsScreen() {
   const { t } = useI18n();
 
   // Use custom hook for data loading
-  const { chats, requests, isLoading, error, refresh, refreshSilently } = useChatsData({
+  const { chats, requests, isLoading, refresh, refreshSilently } = useChatsData({
     userId: user?.id || '',
     shouldLoad: !!user,
   });
-
-  // Reload data when screen comes into focus (silently to avoid loading spinner)
-  useFocusEffect(
-    useCallback(() => {
-      if (user) {
-        refreshSilently();
-      }
-    }, [user, refreshSilently])
-  );
 
   // Separate pending and past requests
   const pendingRequests = useMemo(() => {
@@ -168,16 +155,20 @@ export default function ChatsScreen() {
 
     const timeAgo = item.lastMessage ? formatRelativeTime(item.lastMessage.created_at) : '';
 
+    const handleChatPress = () => {
+      router.push({
+        pathname: `/chat/${item.id}` as any,
+        params: {
+          chatType: item.type,
+          chatTitle: displayName,
+        },
+      });
+    };
+
     return (
       <TouchableOpacity
         style={styles.chatItem}
-        onPress={() => router.push({
-          pathname: `/chat/${item.id}` as any,
-          params: {
-            chatType: item.type,
-            chatTitle: displayName,
-          },
-        })}
+        onPress={handleChatPress}
         activeOpacity={0.7}
       >
         <View style={styles.avatarContainer}>
@@ -331,7 +322,9 @@ export default function ChatsScreen() {
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
-      <Text style={styles.title}>{t('messages')}</Text>
+      <View style={styles.header}>
+        <Text style={styles.title}>{t('messages')}</Text>
+      </View>
 
       <SegmentedControl
         segments={[t('messages'), t('requests')]}
@@ -357,13 +350,19 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: COLORS.BG_SECONDARY,
   },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 24,
+    paddingTop: 20,
+    paddingBottom: 16,
+  },
   title: {
     fontSize: 28,
     fontWeight: '700',
     color: COLORS.TEXT_DARK,
-    paddingHorizontal: 24,
-    paddingTop: 20,
-    paddingBottom: 16,
+    flex: 1,
   },
   segmentedControl: {
     marginHorizontal: 24,

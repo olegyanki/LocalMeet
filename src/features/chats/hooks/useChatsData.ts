@@ -3,9 +3,10 @@ import {
   getMyChats, 
   getPendingWalkRequests,
   getPastWalkRequests,
-  ChatWithDetails, // Updated to use new interface
+  ChatWithDetails,
   WalkRequestWithProfile 
 } from '@shared/lib/api';
+import { supabase } from '@shared/lib/supabase';
 
 export interface WalkRequestWithDetails extends WalkRequestWithProfile {
   // Extends WalkRequestWithProfile with any additional fields if needed
@@ -59,7 +60,20 @@ export function useChatsData(params: UseChatsDataParams): UseChatsDataReturn {
       setRequests(allRequests);
     } catch (err) {
       console.error('Error loading chats data:', err);
-      setError(err instanceof Error ? err.message : 'Failed to load data');
+      
+      // Provide user-friendly error messages
+      let errorMessage = 'Failed to load data';
+      if (err instanceof Error) {
+        if (err.message.includes('Network request failed')) {
+          errorMessage = 'No internet connection. Please check your network.';
+        } else if (err.message.includes('Failed to fetch')) {
+          errorMessage = 'Unable to connect to server. Please try again.';
+        } else {
+          errorMessage = err.message;
+        }
+      }
+      
+      setError(errorMessage);
     } finally {
       if (!isRefresh) {
         setIsLoading(false);
@@ -70,6 +84,56 @@ export function useChatsData(params: UseChatsDataParams): UseChatsDataReturn {
   useEffect(() => {
     loadData();
   }, [loadData]);
+
+  // Setup real-time subscription for messages to update chat list
+  useEffect(() => {
+    if (!userId || !shouldLoad) return;
+
+    // Debounce timer to batch rapid updates
+    let debounceTimer: NodeJS.Timeout | null = null;
+
+    const debouncedRefresh = () => {
+      if (debounceTimer) {
+        clearTimeout(debounceTimer);
+      }
+      debounceTimer = setTimeout(() => {
+        loadData(true);
+      }, 500);
+    };
+
+    const channel = supabase
+      .channel(`chat-list-updates-${userId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'messages',
+        },
+        () => {
+          debouncedRefresh();
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'walk_requests',
+        },
+        () => {
+          debouncedRefresh();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      if (debounceTimer) {
+        clearTimeout(debounceTimer);
+      }
+      supabase.removeChannel(channel);
+    };
+  }, [userId, shouldLoad, loadData]);
 
   return {
     chats,

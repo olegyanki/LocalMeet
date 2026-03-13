@@ -292,5 +292,7 @@
   "errorLeavingChat": "Не вдалося покинути чат",
   "errorRemovingParticipant": "Не вдалося видалити учасника",
   "errorMarkingAsRead": "Не вдалося позначити як прочитане",
-  "ownerCannotLeaveChat": "Власник івенту не може покинути чат"
+  "ownerCannotLeaveChat": "Власник івенту не може покинути чат",
+  "badgeNotifications": "{{count}} сповіщень",
+  "badgeAccessibilityLabel": "{{count}} сповіщень: {{unread}} непрочитаних повідомлень та {{pending}} запитів в очікуванні"
 }

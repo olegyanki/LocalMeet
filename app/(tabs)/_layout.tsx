@@ -1,15 +1,18 @@
 import { Tabs } from 'expo-router';
 import { Search, Plus, User, MessageCircle, Settings } from 'lucide-react-native';
 import { useAuth } from '@shared/contexts/AuthContext';
+import { useBadgeCount } from '@shared/contexts/BadgeCountContext';
 import { useI18n } from '@shared/i18n';
 import { useRouter } from 'expo-router';
 import { useEffect } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import TabIconWithBadge from '@shared/components/TabIconWithBadge';
 
 import { COLORS } from '@shared/constants';
 
 export default function TabLayout() {
   const { user, isLoading } = useAuth();
+  const { totalBadgeCount, unreadMessagesCount, pendingRequestsCount } = useBadgeCount();
   const { t } = useI18n();
   const router = useRouter();
   const insets = useSafeAreaInsets();
@@ -63,7 +66,16 @@ export default function TabLayout() {
         name="chats"
         options={{
           title: t('tabChats').toUpperCase(),
-          tabBarIcon: ({ size, color }) => <MessageCircle size={20} color={color} />,
+          tabBarIcon: ({ size, color }) => (
+            <TabIconWithBadge
+              icon={MessageCircle}
+              size={20}
+              color={color}
+              badgeCount={totalBadgeCount}
+              unreadMessages={unreadMessagesCount}
+              pendingRequests={pendingRequestsCount}
+            />
+          ),
           tabBarLabelStyle: { fontSize: 9, fontWeight: '600' },
         }}
       />
