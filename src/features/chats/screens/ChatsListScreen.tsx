@@ -193,13 +193,6 @@ export default function ChatsScreen() {
             {timeAgo && <Text style={styles.chatTime}>{timeAgo}</Text>}
           </View>
           
-          {/* Show participant count for group chats */}
-          {isGroupChat && (
-            <Text style={styles.participantCount} numberOfLines={1}>
-              {t('participants', { count: item.participants.length })}
-            </Text>
-          )}
-          
           <Text
             style={[styles.chatMessage, isUnread && styles.chatMessageUnread]}
             numberOfLines={1}
@@ -449,11 +442,6 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: COLORS.TEXT_LIGHT,
     flexShrink: 0,
-  },
-  participantCount: {
-    fontSize: 12,
-    color: COLORS.TEXT_LIGHT,
-    marginBottom: 2,
   },
   chatMessage: {
     fontSize: 14,
