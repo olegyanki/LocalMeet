@@ -18,17 +18,17 @@ import * as ImagePicker from 'expo-image-picker';
 import { ChevronLeft, MoreVertical, Mic, Plus, Users, Trash2, User, Info } from 'lucide-react-native';
 
 import { useAuth } from '@shared/contexts/AuthContext';
+import { useBadgeCount } from '@shared/contexts/BadgeCountContext';
 import { useI18n } from '@shared/i18n';
 import { 
-  sendTextMessage, 
-  sendImageMessage, 
-  sendAudioMessage,
-  getChatById,
-  getChatMessages,
-  markMessagesAsRead,
-  deleteChat as deleteChatApi,
+  sendMessage, // New unified function for both group and direct chats
+  getChatMessages, // Updated to work with new schema
+  getChatDetails, // New function for getting chat details
+  markChatAsRead, // New function for marking messages as read
+  leaveChat, // New function for leaving chats
+  removeChatParticipant, // New function for removing participants
   Message,
-  ChatDetails,
+  ChatWithDetails, // New interface for group chat system
 } from '@shared/lib/api';
 import { supabase } from '@shared/lib/supabase';
 import { uploadChatImage, uploadChatAudio } from '@shared/utils/upload';
@@ -48,10 +48,11 @@ export default function ChatScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { user } = useAuth();
+  const { forceRefresh } = useBadgeCount();
   const { t } = useI18n();
   const flatListRef = useRef<FlatList>(null);
 
-  const [chat, setChat] = useState<ChatDetails | null>(null);
+  const [chat, setChat] = useState<ChatWithDetails | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const [loading, setLoading] = useState(true);
@@ -59,20 +60,28 @@ export default function ChatScreen() {
   const [uploading, setUploading] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showOptionsMenu, setShowOptionsMenu] = useState(false);
+  const [showParticipants, setShowParticipants] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
 
-  const otherUser =
-    chat && user
-      ? chat.requester_id === user.id
-        ? chat.walker
-        : chat.requester
-      : null;
+  // Determine if this is a group chat and get relevant info
+  const isGroupChat = chat?.type === 'group';
+  const currentUserParticipant = chat?.participants.find(p => p.user_id === user?.id);
+  const isOwner = currentUserParticipant?.role === 'owner';
+  const otherParticipants = chat?.participants.filter(p => p.user_id !== user?.id) || [];
+  
+  // For direct chats, get the other participant
+  const otherUser = !isGroupChat && otherParticipants.length > 0 
+    ? otherParticipants[0].profile 
+    : null;
 
   useEffect(() => {
     loadChatData();
     const unsubscribe = subscribeToMessages();
-    return unsubscribe;
+    
+    return () => {
+      unsubscribe();
+    };
   }, [chatId]);
 
   useEffect(() => {
@@ -84,9 +93,11 @@ export default function ChatScreen() {
   }, [loading, messages.length]);
 
   const loadChatData = async () => {
+    if (!user) return;
+    
     try {
       const [chatData, messagesData] = await Promise.all([
-        getChatById(chatId),
+        getChatDetails(chatId, user.id),
         getChatMessages(chatId),
       ]);
 
@@ -96,9 +107,8 @@ export default function ChatScreen() {
 
       setMessages(messagesData);
 
-      if (user) {
-        await markMessagesAsRead(chatId, user.id);
-      }
+      // Mark messages as read
+      await markChatAsRead(chatId, user.id);
     } catch (error) {
       console.error('Error loading chat:', error);
       setError(t('error'));
@@ -138,7 +148,7 @@ export default function ChatScreen() {
           }, SCROLL_DELAY);
 
           if (newMsg.sender_id !== user?.id && user) {
-            markMessagesAsRead(chatId, user.id);
+            markChatAsRead(chatId, user.id);
           }
         }
       )
@@ -182,7 +192,7 @@ export default function ChatScreen() {
         throw new Error(t('error'));
       }
 
-      await sendImageMessage(chatId, user.id, imageUrl);
+      await sendMessage(chatId, user.id, '', imageUrl);
     } catch (error: any) {
       console.error('Error sending image:', error);
       setError(error?.message || t('error'));
@@ -191,7 +201,7 @@ export default function ChatScreen() {
     }
   }, [user, chatId, t]);
 
-  const sendMessage = useCallback(async () => {
+  const sendTextMessage = useCallback(async () => {
     if (!newMessage.trim() || !user) return;
 
     const messageContent = newMessage.trim();
@@ -199,7 +209,7 @@ export default function ChatScreen() {
     setError(null);
 
     try {
-      await sendTextMessage(chatId, user.id, messageContent);
+      await sendMessage(chatId, user.id, messageContent);
     } catch (error: any) {
       console.error('Error sending message:', error);
       setError(error?.message || t('error'));
@@ -221,7 +231,7 @@ export default function ChatScreen() {
         throw new Error(t('errorUploadingAudio'));
       }
 
-      await sendAudioMessage(chatId, user.id, audioUrl, duration);
+      await sendMessage(chatId, user.id, '', undefined, audioUrl, duration);
     } catch (error: any) {
       console.error('Error sending audio:', error);
       
@@ -237,25 +247,52 @@ export default function ChatScreen() {
   }, [user, chatId, t]);
 
   const handleDeleteChat = useCallback(async () => {
-    if (!chatId || deleting) return;
+    if (!chatId || deleting || !user) return;
+
+    // Prevent owner from leaving group chat
+    if (isGroupChat && isOwner) {
+      setError(t('ownerCannotLeaveChat'));
+      return;
+    }
 
     setDeleting(true);
     setError(null);
 
     try {
-      await deleteChatApi(chatId);
+      // For group chats, leave the chat instead of deleting it
+      // For direct chats, we can still use the old delete function if available
+      if (isGroupChat) {
+        await leaveChat(chatId, user.id);
+      } else {
+        // For direct chats, leaving also works
+        await leaveChat(chatId, user.id);
+      }
+      
       setShowDeleteModal(false);
       router.back();
     } catch (error: any) {
-      console.error('Error deleting chat:', error);
+      console.error('Error leaving chat:', error);
       setError(error?.message || t('error'));
       setDeleting(false);
     }
-  }, [chatId, deleting, router, t]);
+  }, [chatId, deleting, router, t, isGroupChat, user, isOwner]);
 
-  const allMessages = chat?.walk_request
-    ? [{ id: 'initial-message', isInitial: true as const }, ...messages]
-    : messages;
+  const handleRemoveParticipant = useCallback(async (participantId: string) => {
+    if (!chatId || !user || !isOwner) return;
+
+    try {
+      await removeChatParticipant(chatId, participantId);
+      // Reload chat data to update participant list
+      await loadChatData();
+    } catch (error: any) {
+      console.error('Error removing participant:', error);
+      setError(error?.message || t('error'));
+    }
+  }, [chatId, user, isOwner, t]);
+
+  // For group chats, we don't show initial messages since the chat is created when the event is created
+  // For direct chats, we also don't need initial messages since they're created when requests are accepted
+  const allMessages = messages;
 
   const getDateLabel = useCallback((date: Date) => {
     const today = new Date();
@@ -282,47 +319,8 @@ export default function ChatScreen() {
     }
   }, [t]);
 
-  const renderMessage = useCallback(({ item, index }: { item: Message | { id: string; isInitial: true }, index: number }) => {
-    if ('isInitial' in item && item.isInitial && chat?.walk_request) {
-      const requestDate = new Date(chat.walk_request.created_at);
-      const dateLabel = getDateLabel(requestDate);
-
-      return (
-        <>
-          <View style={styles.dateContainer}>
-            <View style={styles.dateBadge}>
-              <Text style={styles.dateText}>{dateLabel}</Text>
-            </View>
-          </View>
-          <View style={[styles.messageContainer, styles.otherMessage]}>
-            <View style={styles.avatarContainer}>
-              <Avatar
-                uri={otherUser?.avatar_url}
-                size={32}
-                name={otherUser?.display_name || ''}
-              />
-            </View>
-            <View style={styles.messageContent}>
-              <Text style={styles.senderName}>{otherUser?.display_name}</Text>
-              <View style={[styles.messageBubble, styles.otherBubble]}>
-                <Text style={[styles.messageText, styles.otherMessageText]}>
-                  {chat.walk_request.message}
-                </Text>
-              </View>
-              <Text style={styles.messageTime}>
-                {new Date(chat.walk_request.created_at).toLocaleTimeString('en-US', {
-                  hour: '2-digit',
-                  minute: '2-digit',
-                  hour12: false,
-                })}
-              </Text>
-            </View>
-          </View>
-        </>
-      );
-    }
-
-    const message = item as Message;
+  const renderMessage = useCallback(({ item, index }: { item: Message, index: number }) => {
+    const message = item;
     const isOwnMessage = message.sender_id === user?.id;
     const messageTime = new Date(message.created_at).toLocaleTimeString('en-US', {
       hour: '2-digit',
@@ -331,34 +329,23 @@ export default function ChatScreen() {
     });
 
     // Show date separator for first message or when date changes
-    // Skip if previous item is initial message with same date
     let showDateSeparator = false;
     if (index === 0) {
-      showDateSeparator = false; // Never show for first item (initial message already has date)
+      showDateSeparator = true; // Always show for first message
     } else if (allMessages[index - 1]) {
-      const prevItem = allMessages[index - 1];
-      if ('isInitial' in prevItem && prevItem.isInitial) {
-        // Previous is initial message - check if dates are different
-        const prevDate = chat?.walk_request?.created_at;
-        if (prevDate) {
-          showDateSeparator = new Date(message.created_at).toDateString() !== new Date(prevDate).toDateString();
-        }
-      } else {
-        // Previous is regular message
-        showDateSeparator = new Date(message.created_at).toDateString() !== 
-          new Date((prevItem as Message).created_at).toDateString();
-      }
+      const prevMessage = allMessages[index - 1];
+      showDateSeparator = new Date(message.created_at).toDateString() !== 
+        new Date(prevMessage.created_at).toDateString();
     }
 
     const dateLabel = showDateSeparator ? getDateLabel(new Date(message.created_at)) : '';
 
-    const senderName = isOwnMessage 
-      ? (user?.id === chat?.requester_id ? chat?.requester.display_name : chat?.walker.display_name)
-      : (message.sender_id === chat?.requester_id ? chat?.requester.display_name : chat?.walker.display_name);
-
-    const senderAvatar = isOwnMessage
-      ? (user?.id === chat?.requester_id ? chat?.requester.avatar_url : chat?.walker.avatar_url)
-      : (message.sender_id === chat?.requester_id ? chat?.requester.avatar_url : chat?.walker.avatar_url);
+    // Get sender info from message.sender profile or from participants
+    const senderProfile = message.sender || 
+      chat?.participants.find(p => p.user_id === message.sender_id)?.profile;
+    
+    const senderName = senderProfile?.display_name || senderProfile?.username || t('unknown');
+    const senderAvatar = senderProfile?.avatar_url;
 
     return (
       <>
@@ -380,12 +367,12 @@ export default function ChatScreen() {
               <Avatar
                 uri={senderAvatar}
                 size={32}
-                name={senderName || ''}
+                name={senderName}
               />
             </View>
           )}
           <View style={[styles.messageContent, isOwnMessage && styles.ownMessageContent]}>
-            {!isOwnMessage && (
+            {!isOwnMessage && isGroupChat && (
               <Text style={styles.senderName}>{senderName}</Text>
             )}
             <View
@@ -427,9 +414,9 @@ export default function ChatScreen() {
         </View>
       </>
     );
-  }, [user, chat, otherUser, allMessages, getDateLabel]);
+  }, [user, chat, isGroupChat, allMessages, getDateLabel, t]);
 
-  if (loading || !chat || !otherUser) {
+  if (loading || !chat) {
     return (
       <View style={styles.container}>
         <View style={styles.loadingContainer}>
@@ -454,10 +441,10 @@ export default function ChatScreen() {
         </TouchableOpacity>
 
         <View style={styles.headerAvatarContainer}>
-          {chat.walk_request?.walk ? (
-            chat.walk_request.walk.image_url ? (
+          {isGroupChat ? (
+            chat.walk_image_url ? (
               <Image
-                source={{ uri: chat.walk_request.walk.image_url }}
+                source={{ uri: chat.walk_image_url }}
                 style={styles.headerEventImage}
               />
             ) : (
@@ -467,9 +454,9 @@ export default function ChatScreen() {
             )
           ) : (
             <Avatar
-              uri={otherUser.avatar_url}
+              uri={otherUser?.avatar_url}
               size={40}
-              name={otherUser.display_name}
+              name={otherUser?.display_name || otherUser?.username || ''}
             />
           )}
         </View>
@@ -477,20 +464,19 @@ export default function ChatScreen() {
         <TouchableOpacity
           style={styles.headerTitleContainer}
           onPress={() => {
-            if (chat.walk_request?.walk) {
-              router.push(`/event-details/${chat.walk_request.walk.id}`);
-            } else {
+            if (isGroupChat && chat.walk_id) {
+              router.push(`/event-details/${chat.walk_id}`);
+            } else if (otherUser) {
               router.push(`/user/${otherUser.id}`);
             }
           }}
         >
           <Text style={styles.headerTitle} numberOfLines={1}>
-            {chat.walk_request?.walk ? chat.walk_request.walk.title : otherUser.display_name}
+            {isGroupChat ? (chat.walk_title || t('groupChat')) : (otherUser?.display_name || otherUser?.username || t('unknown'))}
           </Text>
-          {chat.walk_request?.walk && (
+          {isGroupChat && (
             <Text style={styles.headerSubtitle}>
-              {/* TODO: Get actual participant count */}
-              8 PARTICIPANTS
+              {t('participantsCount', { count: chat.participants.length })}
             </Text>
           )}
         </TouchableOpacity>
@@ -505,15 +491,13 @@ export default function ChatScreen() {
 
           {showOptionsMenu && (
             <View style={styles.dropdownMenu}>
-              {chat.walk_request?.walk && (
+              {isGroupChat && chat.walk_id && (
                 <>
                   <TouchableOpacity
                     style={styles.dropdownOption}
                     onPress={() => {
                       setShowOptionsMenu(false);
-                      if (chat.walk_request?.walk) {
-                        router.push(`/event-details/${chat.walk_request.walk.id}`);
-                      }
+                      router.push(`/event-details/${chat.walk_id}`);
                     }}
                   >
                     <Info size={20} color={COLORS.TEXT_LIGHT} />
@@ -523,31 +507,53 @@ export default function ChatScreen() {
                 </>
               )}
 
-              <TouchableOpacity
-                style={styles.dropdownOption}
-                onPress={() => {
-                  setShowOptionsMenu(false);
-                  router.push(`/user/${otherUser.id}`);
-                }}
-              >
-                <User size={20} color={COLORS.TEXT_LIGHT} />
-                <Text style={styles.dropdownOptionText}>{t('showProfile')}</Text>
-              </TouchableOpacity>
+              {isGroupChat && (
+                <>
+                  <TouchableOpacity
+                    style={styles.dropdownOption}
+                    onPress={() => {
+                      setShowOptionsMenu(false);
+                      setShowParticipants(true);
+                    }}
+                  >
+                    <Users size={20} color={COLORS.TEXT_LIGHT} />
+                    <Text style={styles.dropdownOptionText}>{t('participants')}</Text>
+                  </TouchableOpacity>
+                  <View style={styles.dropdownDivider} />
+                </>
+              )}
 
-              <View style={styles.dropdownDivider} />
+              {!isGroupChat && otherUser && (
+                <>
+                  <TouchableOpacity
+                    style={styles.dropdownOption}
+                    onPress={() => {
+                      setShowOptionsMenu(false);
+                      router.push(`/user/${otherUser.id}`);
+                    }}
+                  >
+                    <User size={20} color={COLORS.TEXT_LIGHT} />
+                    <Text style={styles.dropdownOptionText}>{t('showProfile')}</Text>
+                  </TouchableOpacity>
+                  <View style={styles.dropdownDivider} />
+                </>
+              )}
 
-              <TouchableOpacity
-                style={styles.dropdownOption}
-                onPress={() => {
-                  setShowOptionsMenu(false);
-                  setShowDeleteModal(true);
-                }}
-              >
-                <Trash2 size={20} color={COLORS.ERROR_RED} />
-                <Text style={[styles.dropdownOptionText, styles.dropdownOptionTextDelete]}>
-                  {t('deleteChat')}
-                </Text>
-              </TouchableOpacity>
+              {/* Show leave/delete option only if not owner of group chat */}
+              {!(isGroupChat && isOwner) && (
+                <TouchableOpacity
+                  style={styles.dropdownOption}
+                  onPress={() => {
+                    setShowOptionsMenu(false);
+                    setShowDeleteModal(true);
+                  }}
+                >
+                  <Trash2 size={20} color={COLORS.ERROR_RED} />
+                  <Text style={[styles.dropdownOptionText, styles.dropdownOptionTextDelete]}>
+                    {isGroupChat ? t('leaveChat') : t('deleteChat')}
+                  </Text>
+                </TouchableOpacity>
+              )}
             </View>
           )}
         </View>
@@ -616,7 +622,7 @@ export default function ChatScreen() {
 
             <TouchableOpacity
               style={styles.sendIconButton}
-              onPress={newMessage.trim() ? sendMessage : () => setIsRecording(true)}
+              onPress={newMessage.trim() ? sendTextMessage : () => setIsRecording(true)}
               disabled={uploading}
             >
               {newMessage.trim() ? (
@@ -673,6 +679,67 @@ export default function ChatScreen() {
             </View>
           </View>
         </View>
+      </Modal>
+
+      {/* Participants Modal */}
+      <Modal
+        visible={showParticipants}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setShowParticipants(false)}
+      >
+        <TouchableOpacity
+          style={styles.modalOverlay}
+          activeOpacity={1}
+          onPress={() => setShowParticipants(false)}
+        >
+          <TouchableOpacity
+            style={[styles.modalContent, styles.participantsModal]}
+            activeOpacity={1}
+            onPress={(e) => e.stopPropagation()}
+          >
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>{t('participants')}</Text>
+              <TouchableOpacity
+                onPress={() => setShowParticipants(false)}
+                style={styles.modalCloseButton}
+              >
+                <Text style={styles.modalCloseText}>{t('close')}</Text>
+              </TouchableOpacity>
+            </View>
+            
+            <View style={styles.participantsList}>
+              {chat?.participants.map((participant) => (
+                <View key={participant.id} style={styles.participantItem}>
+                  <Avatar
+                    uri={participant.profile.avatar_url}
+                    size={40}
+                    name={participant.profile.display_name || participant.profile.username}
+                  />
+                  <View style={styles.participantInfo}>
+                    <Text style={styles.participantName}>
+                      {participant.profile.display_name || participant.profile.username}
+                      {participant.user_id === user?.id && ' (You)'}
+                    </Text>
+                    <Text style={styles.participantRole}>
+                      {participant.role === 'owner' ? t('owner') : t('member')}
+                    </Text>
+                  </View>
+                  
+                  {/* Show remove button only if current user is owner and this is not the current user */}
+                  {isOwner && participant.user_id !== user?.id && (
+                    <TouchableOpacity
+                      onPress={() => handleRemoveParticipant(participant.user_id)}
+                      style={styles.removeParticipantButton}
+                    >
+                      <Text style={styles.removeParticipantText}>{t('remove')}</Text>
+                    </TouchableOpacity>
+                  )}
+                </View>
+              ))}
+            </View>
+          </TouchableOpacity>
+        </TouchableOpacity>
       </Modal>
 
     </KeyboardAvoidingView>
@@ -1013,5 +1080,57 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     color: COLORS.WHITE,
+  },
+  participantsModal: {
+    maxHeight: '80%',
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  modalCloseButton: {
+    padding: 4,
+  },
+  modalCloseText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: COLORS.ACCENT_ORANGE,
+  },
+  participantsList: {
+    maxHeight: 400,
+  },
+  participantItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.BORDER_COLOR + '40',
+  },
+  participantInfo: {
+    flex: 1,
+    marginLeft: 12,
+  },
+  participantName: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: COLORS.TEXT_DARK,
+  },
+  participantRole: {
+    fontSize: 12,
+    color: COLORS.TEXT_LIGHT,
+    marginTop: 2,
+  },
+  removeParticipantButton: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    backgroundColor: COLORS.ERROR_RED + '20',
+    borderRadius: 8,
+  },
+  removeParticipantText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: COLORS.ERROR_RED,
   },
 });

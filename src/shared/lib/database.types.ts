@@ -14,30 +14,75 @@ export type Database = {
   }
   public: {
     Tables: {
+      chat_participants: {
+        Row: {
+          chat_id: string
+          id: string
+          joined_at: string | null
+          role: string
+          user_id: string
+        }
+        Insert: {
+          chat_id: string
+          id?: string
+          joined_at?: string | null
+          role: string
+          user_id: string
+        }
+        Update: {
+          chat_id?: string
+          id?: string
+          joined_at?: string | null
+          role?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chat_participants_chat_id_fkey"
+            columns: ["chat_id"]
+            isOneToOne: false
+            referencedRelation: "chats"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "chat_participants_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       chats: {
         Row: {
           created_at: string
           id: string
-          requester_id: string
+          requester_id: string | null
+          type: string
           updated_at: string
+          walk_id: string | null
           walk_request_id: string | null
-          walker_id: string
+          walker_id: string | null
         }
         Insert: {
           created_at?: string
           id?: string
-          requester_id: string
+          requester_id?: string | null
+          type?: string
           updated_at?: string
+          walk_id?: string | null
           walk_request_id?: string | null
-          walker_id: string
+          walker_id?: string | null
         }
         Update: {
           created_at?: string
           id?: string
-          requester_id?: string
+          requester_id?: string | null
+          type?: string
           updated_at?: string
+          walk_id?: string | null
           walk_request_id?: string | null
-          walker_id?: string
+          walker_id?: string | null
         }
         Relationships: [
           {
@@ -45,6 +90,13 @@ export type Database = {
             columns: ["requester_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "chats_walk_id_fkey"
+            columns: ["walk_id"]
+            isOneToOne: false
+            referencedRelation: "walks"
             referencedColumns: ["id"]
           },
           {
@@ -62,54 +114,6 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
-      }
-      connection_requests: {
-        Row: {
-          created_at: string | null
-          from_user_id: string
-          id: string
-          status: string | null
-          to_user_id: string
-          updated_at: string | null
-        }
-        Insert: {
-          created_at?: string | null
-          from_user_id: string
-          id?: string
-          status?: string | null
-          to_user_id: string
-          updated_at?: string | null
-        }
-        Update: {
-          created_at?: string | null
-          from_user_id?: string
-          id?: string
-          status?: string | null
-          to_user_id?: string
-          updated_at?: string | null
-        }
-        Relationships: []
-      }
-      interests: {
-        Row: {
-          created_at: string | null
-          id: string
-          interest: string
-          user_id: string
-        }
-        Insert: {
-          created_at?: string | null
-          id?: string
-          interest: string
-          user_id: string
-        }
-        Update: {
-          created_at?: string | null
-          id?: string
-          interest?: string
-          user_id?: string
-        }
-        Relationships: []
       }
       messages: {
         Row: {
@@ -321,6 +325,30 @@ export type Database = {
         Returns: string
       }
       earth: { Args: never; Returns: number }
+      get_badge_counts_optimized: {
+        Args: { p_user_id: string }
+        Returns: {
+          pending_requests: number
+          unread_messages: number
+        }[]
+      }
+      get_chat_details: {
+        Args: { p_chat_id: string; p_user_id: string }
+        Returns: {
+          chat_id: string
+          chat_type: string
+          participant_avatar_url: string
+          participant_display_name: string
+          participant_id: string
+          participant_joined_at: string
+          participant_role: string
+          participant_username: string
+          walk_id: string
+          walk_image_url: string
+          walk_start_time: string
+          walk_title: string
+        }[]
+      }
       get_database_stats: {
         Args: never
         Returns: {
@@ -334,40 +362,21 @@ export type Database = {
         Args: { p_user_id: string }
         Returns: {
           chat_id: string
+          chat_type: string
           chat_updated_at: string
           last_message_content: string
           last_message_created_at: string
           last_message_read: boolean
           last_message_sender_id: string
-          requester_age: number
-          requester_avatar_url: string
-          requester_bio: string
-          requester_display_name: string
-          requester_gender: string
-          requester_id: string
-          requester_interests: string[]
-          requester_languages: string[]
-          requester_looking_for: string
-          requester_social_instagram: string
-          requester_social_telegram: string
-          requester_status: string
-          requester_username: string
+          participant_avatar_urls: string[]
+          participant_display_names: string[]
+          participant_ids: string[]
+          participant_usernames: string[]
+          unread_count: number
+          walk_id: string
           walk_image_url: string
-          walk_request_id: string
+          walk_start_time: string
           walk_title: string
-          walker_age: number
-          walker_avatar_url: string
-          walker_bio: string
-          walker_display_name: string
-          walker_gender: string
-          walker_id: string
-          walker_interests: string[]
-          walker_languages: string[]
-          walker_looking_for: string
-          walker_social_instagram: string
-          walker_social_telegram: string
-          walker_status: string
-          walker_username: string
         }[]
       }
       get_nearby_walks: {
@@ -412,6 +421,14 @@ export type Database = {
           updated_at: string
           user_id: string
         }[]
+      }
+      is_chat_owner: {
+        Args: { p_chat_id: string; p_user_id: string }
+        Returns: boolean
+      }
+      is_chat_participant: {
+        Args: { p_chat_id: string; p_user_id: string }
+        Returns: boolean
       }
     }
     Enums: {

@@ -8,7 +8,8 @@
         "list_edge_functions",
         "apply_migration",
         "list_migrations",
-        "generate_typescript_types"
+        "generate_typescript_types",
+        "list_tables"
       ]
     }
   }

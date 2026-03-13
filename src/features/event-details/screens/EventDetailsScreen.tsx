@@ -25,11 +25,12 @@ import {
   getMyRequestForWalk, 
   getWalkById,
   getProfile,
+  getChatByWalkId,
+  getWalkParticipants,
   WalkRequest, 
   Walk,
   UserProfile 
 } from '@shared/lib/api';
-import { getTimeText, getTimeColor } from '@shared/utils/time';
 import { getEventImage } from '@shared/utils/eventImage';
 
 // Components
@@ -59,6 +60,8 @@ export default function EventDetailsScreen() {
   const [hasLoadedRequest, setHasLoadedRequest] = useState(false);
   const [walk, setWalk] = useState<Walk | null>(null);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
+  const [participants, setParticipants] = useState<UserProfile[]>([]);
+  const [isLoadingParticipants, setIsLoadingParticipants] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showFullDescription, setShowFullDescription] = useState(false);
   const [locationAddress, setLocationAddress] = useState<string | null>(null);
@@ -101,6 +104,25 @@ export default function EventDetailsScreen() {
 
     loadWalkData();
   }, [walkId, t]);
+
+  // Load participants
+  useEffect(() => {
+    const loadParticipants = async () => {
+      if (!walkId) return;
+
+      try {
+        setIsLoadingParticipants(true);
+        const participantsList = await getWalkParticipants(walkId);
+        setParticipants(participantsList);
+      } catch (err) {
+        console.error('Failed to load participants:', err);
+      } finally {
+        setIsLoadingParticipants(false);
+      }
+    };
+
+    loadParticipants();
+  }, [walkId]);
 
   // Load user location
   useEffect(() => {
@@ -197,6 +219,12 @@ export default function EventDetailsScreen() {
       try {
         const request = await getMyRequestForWalk(walk.id, currentUser.id);
         setExistingRequest(request);
+        
+        // Reload participants if request was accepted
+        if (request?.status === 'accepted') {
+          const participantsList = await getWalkParticipants(walk.id);
+          setParticipants(participantsList);
+        }
       } catch (error) {
         console.error('Failed to reload request:', error);
       }
@@ -253,6 +281,23 @@ export default function EventDetailsScreen() {
     }
   };
 
+  const handleOpenGroupChat = async () => {
+    if (!walk?.id) return;
+
+    try {
+      const chatId = await getChatByWalkId(walk.id);
+      
+      if (chatId) {
+        router.push(`/chat/${chatId}`);
+      } else {
+        setError(t('groupChatNotFound'));
+      }
+    } catch (error) {
+      console.error('Failed to open group chat:', error);
+      setError(t('errorOpeningChat'));
+    }
+  };
+
   const confirmDelete = () => {
     setShowDeleteModal(true);
   };
@@ -269,6 +314,7 @@ export default function EventDetailsScreen() {
         text: t('loading'),
         color: COLORS.BORDER_COLOR,
         disabled: true,
+        onPress: undefined,
       };
     }
 
@@ -277,6 +323,7 @@ export default function EventDetailsScreen() {
         text: t('joinEvent'),
         color: COLORS.ACCENT_ORANGE,
         disabled: false,
+        onPress: handleConnect,
       };
     }
 
@@ -287,18 +334,21 @@ export default function EventDetailsScreen() {
           text: t('requestSentStatus'),
           color: COLORS.TEXT_LIGHT,
           disabled: true,
+          onPress: undefined,
         };
       case 'accepted':
         return {
-          text: t('requestAccepted'),
-          color: COLORS.SUCCESS_GREEN,
-          disabled: true,
+          text: t('openGroupChat'),
+          color: COLORS.ACCENT_ORANGE,
+          disabled: false,
+          onPress: handleOpenGroupChat,
         };
       default:
         return {
           text: t('joinEvent'),
           color: COLORS.ACCENT_ORANGE,
           disabled: false,
+          onPress: handleConnect,
         };
     }
   }, [isLoadingRequest, existingRequest, t]);
@@ -437,6 +487,50 @@ export default function EventDetailsScreen() {
             <ChevronRight size={20} color={COLORS.TEXT_LIGHT} />
           </TouchableOpacity>
 
+          {/* Attendees Card */}
+          {(participants.length > 0 || userProfile) && (
+            <View style={styles.attendeesCard}>
+              <View style={styles.attendeesHeader}>
+                <View>
+                  <Text style={styles.attendeesLabel}>{t('attendees')}</Text>
+                  <Text style={styles.attendeesCount}>
+                    {t('participantsCount', { count: participants.length + 1 })}
+                  </Text>
+                </View>
+                <View style={styles.avatarStack}>
+                  {/* Show host first */}
+                  {userProfile && (
+                    <View style={[styles.avatarStackItem, { zIndex: 10 }]}>
+                      <Avatar 
+                        uri={userProfile.avatar_url} 
+                        name={userProfile.display_name} 
+                        size={32}
+                      />
+                    </View>
+                  )}
+                  {/* Then show participants */}
+                  {participants.slice(0, 2).map((participant, index) => (
+                    <View 
+                      key={participant.id} 
+                      style={[styles.avatarStackItem, { zIndex: 9 - index }]}
+                    >
+                      <Avatar 
+                        uri={participant.avatar_url} 
+                        name={participant.display_name} 
+                        size={32}
+                      />
+                    </View>
+                  ))}
+                  {participants.length > 2 && (
+                    <View style={[styles.avatarStackItem, styles.avatarMore, { zIndex: 0 }]}>
+                      <Text style={styles.avatarMoreText}>+{participants.length - 2}</Text>
+                    </View>
+                  )}
+                </View>
+              </View>
+            </View>
+          )}
+
           {/* About Section */}
           {walk.description && (
             <View style={styles.aboutCard}>
@@ -472,22 +566,29 @@ export default function EventDetailsScreen() {
           {!isOwnEvent && hasLoadedRequest && (
             <PrimaryButton
               title={buttonConfig.text}
-              onPress={handleConnect}
+              onPress={buttonConfig.onPress || handleConnect}
               disabled={buttonConfig.disabled}
               style={buttonConfig.disabled ? styles.disabledButton : undefined}
               textStyle={buttonConfig.disabled ? styles.disabledButtonText : undefined}
             />
           )}
 
-          {/* Delete Button for Own Events */}
+          {/* Owner Actions */}
           {isOwnEvent && (
-            <PrimaryButton
-              title={t('deleteEvent')}
-              onPress={confirmDelete}
-              disabled={isDeleting}
-              loading={isDeleting}
-              style={styles.deleteButton}
-            />
+            <>
+              <PrimaryButton
+                title={t('openGroupChat')}
+                onPress={handleOpenGroupChat}
+                style={styles.groupChatButton}
+              />
+              <PrimaryButton
+                title={t('deleteEvent')}
+                onPress={confirmDelete}
+                disabled={isDeleting}
+                loading={isDeleting}
+                style={styles.deleteButton}
+              />
+            </>
           )}
         </View>
       </ScrollView>
@@ -688,6 +789,59 @@ const styles = StyleSheet.create({
     color: COLORS.TEXT_LIGHT,
     marginTop: 2,
   },
+  attendeesCard: {
+    backgroundColor: COLORS.CARD_BG,
+    borderRadius: 16,
+    padding: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 3,
+    elevation: 2,
+    borderWidth: 1,
+    borderColor: COLORS.BORDER_COLOR,
+  },
+  attendeesHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  attendeesLabel: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: COLORS.TEXT_LIGHT,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    marginBottom: 4,
+  },
+  attendeesCount: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: COLORS.TEXT_DARK,
+  },
+  avatarStack: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  avatarStackItem: {
+    marginLeft: -8,
+    borderWidth: 2,
+    borderColor: COLORS.CARD_BG,
+    borderRadius: 16,
+    overflow: 'hidden',
+  },
+  avatarMore: {
+    width: 32,
+    height: 32,
+    backgroundColor: COLORS.BG_SECONDARY,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  avatarMoreText: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: COLORS.TEXT_LIGHT,
+  },
   aboutCard: {
     backgroundColor: COLORS.CARD_BG,
     borderRadius: 16,
@@ -723,6 +877,10 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: COLORS.ERROR_RED,
     textAlign: 'center',
+  },
+  groupChatButton: {
+    backgroundColor: COLORS.ACCENT_ORANGE,
+    marginTop: 8,
   },
   deleteButton: {
     backgroundColor: COLORS.ERROR_RED,
