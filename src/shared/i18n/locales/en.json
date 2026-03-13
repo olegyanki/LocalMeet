@@ -281,6 +281,7 @@
   "groupChatCreated": "Group chat created",
   "unknown": "Unknown",
   "participants": "Participants",
+  "attendees": "Attendees",
   "participantsCount": "{{count}} participants",
   "leaveChat": "Leave Chat",
   "owner": "Owner",

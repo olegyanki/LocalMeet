@@ -281,6 +281,7 @@
   "groupChatCreated": "Груповий чат створено",
   "unknown": "Невідомо",
   "participants": "Учасники",
+  "attendees": "Учасники",
   "participantsCount": "{{count}} учасників",
   "leaveChat": "Покинути чат",
   "owner": "Власник",

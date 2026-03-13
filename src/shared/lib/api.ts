@@ -66,6 +66,43 @@ export async function updateProfile(userId: string, data: Partial<UserProfile>) 
   }
 }
 
+export async function getWalkParticipants(walkId: string): Promise<UserProfile[]> {
+  const { data, error } = await supabase
+    .from('walk_requests')
+    .select(`
+      requester_id,
+      profiles:requester_id (
+        id,
+        username,
+        display_name,
+        bio,
+        avatar_url,
+        status,
+        age,
+        gender,
+        languages,
+        interests,
+        social_instagram,
+        social_telegram,
+        looking_for
+      )
+    `)
+    .eq('walk_id', walkId)
+    .eq('status', 'accepted');
+
+  if (error) {
+    throw error;
+  }
+
+  if (!data) {
+    return [];
+  }
+
+  return data
+    .map((item: any) => item.profiles)
+    .filter((profile: any) => profile !== null);
+}
+
 export async function getNearbyWalks(
   latitude: number,
   longitude: number,
