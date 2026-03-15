@@ -61,14 +61,19 @@ export default function ContactRequestBottomSheet({
 
   React.useEffect(() => {
     if (visible) {
+      // Скидаємо позицію перед анімацією
+      slideAnim.setValue(Dimensions.get('window').height);
       setMessage('');
       setError(null);
-      Animated.spring(slideAnim, {
-        toValue: 0,
-        useNativeDriver: true,
-        tension: 65,
-        friction: 11,
-      }).start();
+      // Використовуємо requestAnimationFrame для кращої синхронізації
+      requestAnimationFrame(() => {
+        Animated.spring(slideAnim, {
+          toValue: 0,
+          useNativeDriver: true,
+          tension: 65,
+          friction: 11,
+        }).start();
+      });
     } else {
       Animated.timing(slideAnim, {
         toValue: Dimensions.get('window').height,
