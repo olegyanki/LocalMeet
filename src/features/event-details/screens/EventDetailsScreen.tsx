@@ -510,20 +510,6 @@ export default function EventDetailsScreen() {
             </View>
           </View>
 
-          {/* User Card */}
-          <TouchableOpacity style={styles.userCard} onPress={handleUserPress} activeOpacity={0.7}>
-            <Avatar 
-              uri={userProfile.avatar_url} 
-              name={userProfile.display_name} 
-              size={40}
-            />
-            <View style={styles.userInfo}>
-              <Text style={styles.userName}>{userProfile.display_name}</Text>
-              <Text style={styles.userStats}>Local Expert</Text>
-            </View>
-            <ChevronRight size={20} color={COLORS.TEXT_LIGHT} />
-          </TouchableOpacity>
-
           {/* Attendees Card */}
           {(participants.length > 0 || userProfile) && (
             <TouchableOpacity 
