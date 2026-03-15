@@ -19,8 +19,8 @@ interface BadgeCountProviderProps {
 
 const BadgeCountContext = createContext<BadgeCountContextType | undefined>(undefined);
 
-// Cache for badge counts with 30-second TTL
-const CACHE_TTL = 30 * 1000;
+// Cache for badge counts with 5-minute TTL (only for app state changes)
+const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
 let badgeCountCache: { data: BadgeCountData; timestamp: number } | null = null;
 
 export function BadgeCountProvider({ children, userId }: BadgeCountProviderProps) {
@@ -36,6 +36,11 @@ export function BadgeCountProvider({ children, userId }: BadgeCountProviderProps
   // Refs for cleanup and debouncing
   const subscriptionCleanupRef = useRef<(() => void) | null>(null);
   const updateTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Badge count update strategy:
+  // 1. Primary: Real-time subscriptions (instant updates)
+  // 2. Fallback: App foreground refresh (when subscriptions might have failed)
+  // 3. Cache: 5-minute TTL to avoid unnecessary API calls
 
   // Debounced update function to batch rapid changes
   const debouncedUpdate = useCallback((newCounts: BadgeCountData) => {
@@ -68,12 +73,25 @@ export function BadgeCountProvider({ children, userId }: BadgeCountProviderProps
       badgeCountCache = { data: newCounts, timestamp: Date.now() };
       
     } catch (err) {
-      console.error('Failed to load badge counts:', err);
-      setError('Failed to load notifications');
-      
-      // Use cached data if available, even if stale
-      if (badgeCountCache) {
-        setCounts(badgeCountCache.data);
+      // Handle network errors gracefully
+      if (err instanceof Error && 
+          (err.message.includes('Network request failed') || 
+           err.message.includes('fetch'))) {
+        // Use cached data if available for network errors
+        if (badgeCountCache) {
+          setCounts(badgeCountCache.data);
+        } else {
+          // Set default values for network errors
+          setCounts({ unreadMessages: 0, pendingRequests: 0, totalCount: 0, lastUpdated: new Date() });
+        }
+      } else {
+        console.error('Failed to load badge counts:', err);
+        setError('Failed to load notifications');
+        
+        // Use cached data if available, even if stale
+        if (badgeCountCache) {
+          setCounts(badgeCountCache.data);
+        }
       }
     } finally {
       setIsLoading(false);
@@ -96,6 +114,13 @@ export function BadgeCountProvider({ children, userId }: BadgeCountProviderProps
       setCounts(newCounts);
       badgeCountCache = { data: newCounts, timestamp: Date.now() };
     } catch (err) {
+      // Handle network errors gracefully
+      if (err instanceof Error && 
+          (err.message.includes('Network request failed') || 
+           err.message.includes('fetch'))) {
+        // Silently fail for network errors during refresh
+        return;
+      }
       console.error('Failed to refresh badge counts:', err);
       setError('Failed to refresh notifications');
     }
@@ -111,12 +136,19 @@ export function BadgeCountProvider({ children, userId }: BadgeCountProviderProps
       setCounts(newCounts);
       badgeCountCache = { data: newCounts, timestamp: Date.now() };
     } catch (err) {
+      // Handle network errors gracefully
+      if (err instanceof Error && 
+          (err.message.includes('Network request failed') || 
+           err.message.includes('fetch'))) {
+        // Silently fail for network errors during force refresh
+        return;
+      }
       console.error('Failed to force refresh badge counts:', err);
       setError('Failed to refresh notifications');
     }
   }, [userId]);
 
-  // Setup real-time subscriptions with fallback polling
+  // Setup real-time subscriptions only (no polling needed)
   const setupSubscriptions = useCallback(() => {
     if (!userId) return;
 
@@ -127,22 +159,7 @@ export function BadgeCountProvider({ children, userId }: BadgeCountProviderProps
 
       const cleanup = setupBadgeSubscriptions(userId, debouncedUpdate);
       
-      // Setup fallback polling
-      const pollInterval = setInterval(async () => {
-        try {
-          if (!badgeCountCache || (Date.now() - badgeCountCache.timestamp) > CACHE_TTL) {
-            const newCounts = await getBadgeCounts(userId);
-            debouncedUpdate(newCounts);
-          }
-        } catch (err) {
-          console.error('Polling failed:', err);
-        }
-      }, 30000);
-
-      subscriptionCleanupRef.current = () => {
-        cleanup();
-        clearInterval(pollInterval);
-      };
+      subscriptionCleanupRef.current = cleanup;
 
     } catch (err) {
       console.error('Failed to setup badge subscriptions:', err);
@@ -154,7 +171,8 @@ export function BadgeCountProvider({ children, userId }: BadgeCountProviderProps
   useEffect(() => {
     const handleAppStateChange = (nextAppState: string) => {
       if (nextAppState === 'active') {
-        // App came to foreground - refresh counts
+        // App came to foreground - refresh counts as fallback
+        // This ensures we get updates even if subscriptions failed
         refreshCounts();
       }
     };

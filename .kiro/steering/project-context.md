@@ -227,6 +227,12 @@ useEffect(() => {
 }, []);
 ```
 
+**Badge Count System:**
+- Uses real-time subscriptions for instant updates (no polling)
+- Fallback refresh only when app returns to foreground
+- 5-minute cache to avoid unnecessary API calls
+- Subscribes to: messages, walk_requests, chat_participants tables
+
 ### Styling
 - Use constants from `@shared/constants`
 - Colors: `COLORS.ACCENT_ORANGE`, `COLORS.TEXT_DARK`, etc.

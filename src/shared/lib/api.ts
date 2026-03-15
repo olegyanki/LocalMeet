@@ -1175,34 +1175,51 @@ export async function getChatByWalkId(walkId: string): Promise<string | null> {
  * @returns Promise<BadgeCountData> - Badge count data with totals
  */
 export async function getBadgeCounts(userId: string): Promise<BadgeCountData> {
-  const { data, error } = await supabase.rpc('get_badge_counts_optimized', {
-    p_user_id: userId,
-  });
+  try {
+    const { data, error } = await supabase.rpc('get_badge_counts_optimized', {
+      p_user_id: userId,
+    });
 
-  if (error) {
-    console.error('Error fetching badge counts:', error);
-    throw new Error(`Failed to fetch badge counts: ${error.message}`);
-  }
+    if (error) {
+      console.error('Error fetching badge counts:', error);
+      throw new Error(`Failed to fetch badge counts: ${error.message}`);
+    }
 
-  if (!data || data.length === 0) {
-    return {
-      unreadMessages: 0,
-      pendingRequests: 0,
-      totalCount: 0,
+    if (!data || data.length === 0) {
+      return {
+        unreadMessages: 0,
+        pendingRequests: 0,
+        totalCount: 0,
+        lastUpdated: new Date(),
+      };
+    }
+
+    const result = data[0] as GetBadgeCountsOptimizedRow;
+    
+    const badgeData = {
+      unreadMessages: result.unread_messages,
+      pendingRequests: result.pending_requests,
+      totalCount: result.unread_messages + result.pending_requests,
       lastUpdated: new Date(),
     };
+    
+    return badgeData;
+  } catch (error) {
+    // Handle network errors gracefully
+    if (error instanceof Error && 
+        (error.message.includes('Network request failed') || 
+         error.message.includes('fetch'))) {
+      // Return default values for network errors
+      return {
+        unreadMessages: 0,
+        pendingRequests: 0,
+        totalCount: 0,
+        lastUpdated: new Date(),
+      };
+    }
+    // Re-throw other errors
+    throw error;
   }
-
-  const result = data[0] as GetBadgeCountsOptimizedRow;
-  
-  const badgeData = {
-    unreadMessages: result.unread_messages,
-    pendingRequests: result.pending_requests,
-    totalCount: result.unread_messages + result.pending_requests,
-    lastUpdated: new Date(),
-  };
-  
-  return badgeData;
 }
 
 /**
@@ -1217,6 +1234,8 @@ export function setupBadgeSubscriptions(
 ): () => void {
   const channels: any[] = [];
 
+  console.log('Setting up badge count subscriptions for user:', userId);
+
   // Subscribe to message changes (new messages, read status changes)
   const messagesChannel = supabase
     .channel('badge-messages')
@@ -1225,12 +1244,18 @@ export function setupBadgeSubscriptions(
       schema: 'public',
       table: 'messages',
     }, async (payload) => {
+      console.log('Badge count update triggered by message change:', payload.eventType);
       // Refresh badge counts when messages change
       try {
         const newCounts = await getBadgeCounts(userId);
         onUpdate(newCounts);
       } catch (error) {
-        console.error('Error updating badge counts from message change:', error);
+        // Silently handle network errors in subscriptions
+        if (error instanceof Error && 
+            !error.message.includes('Network request failed') && 
+            !error.message.includes('fetch')) {
+          console.error('Error updating badge counts from message change:', error);
+        }
       }
     })
     .subscribe();
@@ -1245,12 +1270,18 @@ export function setupBadgeSubscriptions(
       schema: 'public',
       table: 'walk_requests',
     }, async (payload) => {
+      console.log('Badge count update triggered by walk request change:', payload.eventType);
       // Refresh badge counts when walk requests change
       try {
         const newCounts = await getBadgeCounts(userId);
         onUpdate(newCounts);
       } catch (error) {
-        console.error('Error updating badge counts from request change:', error);
+        // Silently handle network errors in subscriptions
+        if (error instanceof Error && 
+            !error.message.includes('Network request failed') && 
+            !error.message.includes('fetch')) {
+          console.error('Error updating badge counts from request change:', error);
+        }
       }
     })
     .subscribe();
@@ -1266,12 +1297,18 @@ export function setupBadgeSubscriptions(
       table: 'chat_participants',
       filter: `user_id=eq.${userId}`,
     }, async (payload) => {
+      console.log('Badge count update triggered by chat participant change:', payload.eventType);
       // Refresh badge counts when user's chat membership changes
       try {
         const newCounts = await getBadgeCounts(userId);
         onUpdate(newCounts);
       } catch (error) {
-        console.error('Error updating badge counts from participant change:', error);
+        // Silently handle network errors in subscriptions
+        if (error instanceof Error && 
+            !error.message.includes('Network request failed') && 
+            !error.message.includes('fetch')) {
+          console.error('Error updating badge counts from participant change:', error);
+        }
       }
     })
     .subscribe();
@@ -1280,6 +1317,7 @@ export function setupBadgeSubscriptions(
 
   // Return cleanup function
   return () => {
+    console.log('Cleaning up badge count subscriptions');
     channels.forEach(channel => {
       supabase.removeChannel(channel);
     });
