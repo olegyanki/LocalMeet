@@ -256,6 +256,11 @@ export default function EventDetailsScreen() {
     setShowLocationModal(false);
   };
 
+  const handleOpenParticipants = () => {
+    if (!walk?.id || !walk?.user_id) return;
+    router.push(`/event-participants/${walk.id}?hostId=${walk.user_id}`);
+  };
+
   const handleDelete = async () => {
     if (!walk?.id) return;
 
@@ -489,46 +494,53 @@ export default function EventDetailsScreen() {
 
           {/* Attendees Card */}
           {(participants.length > 0 || userProfile) && (
-            <View style={styles.attendeesCard}>
+            <TouchableOpacity 
+              style={styles.attendeesCard} 
+              onPress={handleOpenParticipants}
+              activeOpacity={0.7}
+            >
               <View style={styles.attendeesHeader}>
-                <View>
-                  <Text style={styles.attendeesLabel}>{t('attendees')}</Text>
-                  <Text style={styles.attendeesCount}>
-                    {t('participantsCount', { count: participants.length + 1 })}
-                  </Text>
+                <View style={styles.attendeesLeft}>
+                  <View>
+                    <Text style={styles.attendeesLabel}>{t('attendees')}</Text>
+                    <Text style={styles.attendeesCount}>
+                      {t('participantsCount', { count: participants.length + 1 })}
+                    </Text>
+                  </View>
+                  <View style={styles.avatarStack}>
+                    {/* Show host first */}
+                    {userProfile && (
+                      <View style={[styles.avatarStackItem, { zIndex: 10 }]}>
+                        <Avatar 
+                          uri={userProfile.avatar_url} 
+                          name={userProfile.display_name} 
+                          size={32}
+                        />
+                      </View>
+                    )}
+                    {/* Then show participants */}
+                    {participants.slice(0, 2).map((participant, index) => (
+                      <View 
+                        key={participant.id} 
+                        style={[styles.avatarStackItem, { zIndex: 9 - index }]}
+                      >
+                        <Avatar 
+                          uri={participant.avatar_url} 
+                          name={participant.display_name} 
+                          size={32}
+                        />
+                      </View>
+                    ))}
+                    {participants.length > 2 && (
+                      <View style={[styles.avatarStackItem, styles.avatarMore, { zIndex: 0 }]}>
+                        <Text style={styles.avatarMoreText}>+{participants.length - 2}</Text>
+                      </View>
+                    )}
+                  </View>
                 </View>
-                <View style={styles.avatarStack}>
-                  {/* Show host first */}
-                  {userProfile && (
-                    <View style={[styles.avatarStackItem, { zIndex: 10 }]}>
-                      <Avatar 
-                        uri={userProfile.avatar_url} 
-                        name={userProfile.display_name} 
-                        size={32}
-                      />
-                    </View>
-                  )}
-                  {/* Then show participants */}
-                  {participants.slice(0, 2).map((participant, index) => (
-                    <View 
-                      key={participant.id} 
-                      style={[styles.avatarStackItem, { zIndex: 9 - index }]}
-                    >
-                      <Avatar 
-                        uri={participant.avatar_url} 
-                        name={participant.display_name} 
-                        size={32}
-                      />
-                    </View>
-                  ))}
-                  {participants.length > 2 && (
-                    <View style={[styles.avatarStackItem, styles.avatarMore, { zIndex: 0 }]}>
-                      <Text style={styles.avatarMoreText}>+{participants.length - 2}</Text>
-                    </View>
-                  )}
-                </View>
+                <ChevronRight size={20} color={COLORS.TEXT_LIGHT} />
               </View>
-            </View>
+            </TouchableOpacity>
           )}
 
           {/* About Section */}
@@ -805,6 +817,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+  },
+  attendeesLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    flex: 1,
+    marginRight: 8,
   },
   attendeesLabel: {
     fontSize: 10,

@@ -283,6 +283,8 @@
   "participants": "Учасники",
   "attendees": "Учасники",
   "participantsCount": "{{count}} учасників",
+  "searchParticipants": "Пошук учасників...",
+  "noParticipantsFound": "Учасників не знайдено",
   "leaveChat": "Покинути чат",
   "owner": "Власник",
   "member": "Учасник",

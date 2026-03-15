@@ -283,6 +283,8 @@
   "participants": "Participants",
   "attendees": "Attendees",
   "participantsCount": "{{count}} participants",
+  "searchParticipants": "Search for participants...",
+  "noParticipantsFound": "No participants found",
   "leaveChat": "Leave Chat",
   "owner": "Owner",
   "member": "Member",
