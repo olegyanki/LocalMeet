@@ -26,7 +26,6 @@ import {
   getChatDetails, // New function for getting chat details
   markChatAsRead, // New function for marking messages as read
   leaveChat, // New function for leaving chats
-  removeChatParticipant, // New function for removing participants
   Message,
   ChatWithDetails, // New interface for group chat system
 } from '@shared/lib/api';
@@ -60,7 +59,6 @@ export default function ChatScreen() {
   const [uploading, setUploading] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showOptionsMenu, setShowOptionsMenu] = useState(false);
-  const [showParticipants, setShowParticipants] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
 
@@ -276,19 +274,6 @@ export default function ChatScreen() {
       setDeleting(false);
     }
   }, [chatId, deleting, router, t, isGroupChat, user, isOwner]);
-
-  const handleRemoveParticipant = useCallback(async (participantId: string) => {
-    if (!chatId || !user || !isOwner) return;
-
-    try {
-      await removeChatParticipant(chatId, participantId);
-      // Reload chat data to update participant list
-      await loadChatData();
-    } catch (error: any) {
-      console.error('Error removing participant:', error);
-      setError(error?.message || t('error'));
-    }
-  }, [chatId, user, isOwner, t]);
 
   // For group chats, we don't show initial messages since the chat is created when the event is created
   // For direct chats, we also don't need initial messages since they're created when requests are accepted
@@ -513,7 +498,13 @@ export default function ChatScreen() {
                     style={styles.dropdownOption}
                     onPress={() => {
                       setShowOptionsMenu(false);
-                      setShowParticipants(true);
+                      if (chat.walk_id) {
+                        // Navigate to EventParticipantsScreen instead of showing modal
+                        const hostParticipant = chat.participants.find(p => p.role === 'owner');
+                        if (hostParticipant) {
+                          router.push(`/event-participants/${chat.walk_id}?hostId=${hostParticipant.user_id}`);
+                        }
+                      }
                     }}
                   >
                     <Users size={20} color={COLORS.TEXT_LIGHT} />
@@ -679,67 +670,6 @@ export default function ChatScreen() {
             </View>
           </View>
         </View>
-      </Modal>
-
-      {/* Participants Modal */}
-      <Modal
-        visible={showParticipants}
-        transparent
-        animationType="slide"
-        onRequestClose={() => setShowParticipants(false)}
-      >
-        <TouchableOpacity
-          style={styles.modalOverlay}
-          activeOpacity={1}
-          onPress={() => setShowParticipants(false)}
-        >
-          <TouchableOpacity
-            style={[styles.modalContent, styles.participantsModal]}
-            activeOpacity={1}
-            onPress={(e) => e.stopPropagation()}
-          >
-            <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>{t('participants')}</Text>
-              <TouchableOpacity
-                onPress={() => setShowParticipants(false)}
-                style={styles.modalCloseButton}
-              >
-                <Text style={styles.modalCloseText}>{t('close')}</Text>
-              </TouchableOpacity>
-            </View>
-            
-            <View style={styles.participantsList}>
-              {chat?.participants.map((participant) => (
-                <View key={participant.id} style={styles.participantItem}>
-                  <Avatar
-                    uri={participant.profile.avatar_url}
-                    size={40}
-                    name={participant.profile.display_name || participant.profile.username}
-                  />
-                  <View style={styles.participantInfo}>
-                    <Text style={styles.participantName}>
-                      {participant.profile.display_name || participant.profile.username}
-                      {participant.user_id === user?.id && ' (You)'}
-                    </Text>
-                    <Text style={styles.participantRole}>
-                      {participant.role === 'owner' ? t('owner') : t('member')}
-                    </Text>
-                  </View>
-                  
-                  {/* Show remove button only if current user is owner and this is not the current user */}
-                  {isOwner && participant.user_id !== user?.id && (
-                    <TouchableOpacity
-                      onPress={() => handleRemoveParticipant(participant.user_id)}
-                      style={styles.removeParticipantButton}
-                    >
-                      <Text style={styles.removeParticipantText}>{t('remove')}</Text>
-                    </TouchableOpacity>
-                  )}
-                </View>
-              ))}
-            </View>
-          </TouchableOpacity>
-        </TouchableOpacity>
       </Modal>
 
     </KeyboardAvoidingView>
@@ -1080,57 +1010,5 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     color: COLORS.WHITE,
-  },
-  participantsModal: {
-    maxHeight: '80%',
-  },
-  modalHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 20,
-  },
-  modalCloseButton: {
-    padding: 4,
-  },
-  modalCloseText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: COLORS.ACCENT_ORANGE,
-  },
-  participantsList: {
-    maxHeight: 400,
-  },
-  participantItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.BORDER_COLOR + '40',
-  },
-  participantInfo: {
-    flex: 1,
-    marginLeft: 12,
-  },
-  participantName: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: COLORS.TEXT_DARK,
-  },
-  participantRole: {
-    fontSize: 12,
-    color: COLORS.TEXT_LIGHT,
-    marginTop: 2,
-  },
-  removeParticipantButton: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    backgroundColor: COLORS.ERROR_RED + '20',
-    borderRadius: 8,
-  },
-  removeParticipantText: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: COLORS.ERROR_RED,
   },
 });
