@@ -31,6 +31,7 @@ import {
 } from '@shared/lib/api';
 import { supabase } from '@shared/lib/supabase';
 import { uploadChatImage, uploadChatAudio } from '@shared/utils/upload';
+import { getPluralSuffix } from '@shared/utils/pluralization';
 
 import AudioRecorder from '@shared/components/AudioRecorder';
 import AudioPlayer from '@shared/components/AudioPlayer';
@@ -48,7 +49,7 @@ export default function ChatScreen() {
   const insets = useSafeAreaInsets();
   const { user } = useAuth();
   const { forceRefresh } = useBadgeCount();
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const flatListRef = useRef<FlatList>(null);
 
   const [chat, setChat] = useState<ChatWithDetails | null>(null);
@@ -461,7 +462,7 @@ export default function ChatScreen() {
           </Text>
           {isGroupChat && (
             <Text style={styles.headerSubtitle}>
-              {t('participantsCount', { count: chat.participants.length })}
+              {t(`participantsCount${getPluralSuffix(chat.participants.length, locale)}` as any, { count: chat.participants.length })}
             </Text>
           )}
         </TouchableOpacity>

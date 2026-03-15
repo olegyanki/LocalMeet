@@ -17,6 +17,7 @@ import { useI18n } from '@shared/i18n';
 
 // API & Utils
 import { getWalkParticipants, getProfile, UserProfile } from '@shared/lib/api';
+import { getPluralSuffix } from '@shared/utils/pluralization';
 
 // Components
 import Avatar from '@shared/components/Avatar';
@@ -27,7 +28,7 @@ import { COLORS, SIZES } from '@shared/constants';
 export default function EventParticipantsScreen() {
   // Hooks
   const insets = useSafeAreaInsets();
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const params = useLocalSearchParams();
 
   // State
@@ -184,7 +185,7 @@ export default function EventParticipantsScreen() {
 
         {/* Count */}
         <Text style={styles.countText}>
-          {t('participantsCount', { count: allParticipants.length })}
+          {t(`participantsCount${getPluralSuffix(allParticipants.length, locale)}` as any, { count: allParticipants.length })}
         </Text>
 
         {/* Participants List */}

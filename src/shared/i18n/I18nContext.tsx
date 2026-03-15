@@ -4,6 +4,7 @@ import { translations, Language, TranslationKey } from './translations';
 
 interface I18nContextType {
   language: Language;
+  locale: Language; // Alias for language (for convenience)
   setLanguage: (lang: Language) => void;
   t: (key: TranslationKey, params?: Record<string, any>) => string;
 }
@@ -38,7 +39,7 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
   };
 
   const t = (key: TranslationKey, params?: Record<string, any>): string => {
-    let translation = translations[language][key] || key;
+    let translation = translations[language][key as keyof typeof translations[typeof language]] || key;
     
     // Replace {{param}} with actual values
     if (params) {
@@ -54,7 +55,7 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <I18nContext.Provider value={{ language, setLanguage, t }}>
+    <I18nContext.Provider value={{ language, locale: language, setLanguage, t }}>
       {children}
     </I18nContext.Provider>
   );

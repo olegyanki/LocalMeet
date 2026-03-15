@@ -32,6 +32,7 @@ import {
   UserProfile 
 } from '@shared/lib/api';
 import { getEventImage } from '@shared/utils/eventImage';
+import { getPluralSuffix } from '@shared/utils/pluralization';
 
 // Components
 import Avatar from '@shared/components/Avatar';
@@ -48,7 +49,7 @@ const HERO_IMAGE_HEIGHT = 224;
 export default function EventDetailsScreen() {
   // Hooks
   const insets = useSafeAreaInsets();
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const { user: currentUser } = useAuth();
   const params = useLocalSearchParams();
 
@@ -535,7 +536,7 @@ export default function EventDetailsScreen() {
                   <View>
                     <Text style={styles.attendeesLabel}>{t('attendees')}</Text>
                     <Text style={styles.attendeesCount}>
-                      {t('participantsCount', { count: participants.length + 1 })}
+                      {t(`participantsCount${getPluralSuffix(participants.length + 1, locale)}` as any, { count: participants.length + 1 })}
                     </Text>
                   </View>
                   <View style={styles.avatarStack}>
