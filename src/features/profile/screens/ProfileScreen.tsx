@@ -47,6 +47,7 @@ export default function ProfileScreen() {
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [occupation, setOccupation] = useState('');
+  const [gender, setGender] = useState<'male' | 'female' | 'other' | null>(null);
   const [bio, setBio] = useState('');
   const [avatarUrl, setAvatarUrl] = useState('');
   const [languages, setLanguages] = useState<string[]>([]);
@@ -80,6 +81,7 @@ export default function ProfileScreen() {
       firstName !== (contextProfile.first_name || '') ||
       lastName !== (contextProfile.last_name || '') ||
       occupation !== (contextProfile.occupation || '') ||
+      gender !== (contextProfile.gender || null) ||
       bio !== (contextProfile.bio || '') ||
       avatarUrl !== (contextProfile.avatar_url || '') ||
       instagram !== (contextProfile.social_instagram || '') ||
@@ -87,13 +89,14 @@ export default function ProfileScreen() {
       JSON.stringify(languages) !== JSON.stringify(contextProfile.languages || []) ||
       JSON.stringify(interests) !== JSON.stringify(contextProfile.interests || [])
     );
-  }, [firstName, lastName, occupation, bio, avatarUrl, instagram, telegram, languages, interests, contextProfile]);
+  }, [firstName, lastName, occupation, gender, bio, avatarUrl, instagram, telegram, languages, interests, contextProfile]);
 
   useEffect(() => {
     if (contextProfile) {
       setFirstName(contextProfile.first_name || '');
       setLastName(contextProfile.last_name || '');
       setOccupation(contextProfile.occupation || '');
+      setGender((contextProfile.gender as 'male' | 'female' | 'other') || null);
       setBio(contextProfile.bio || '');
       setAvatarUrl(contextProfile.avatar_url || '');
       setLanguages(contextProfile.languages || []);
@@ -141,6 +144,7 @@ export default function ProfileScreen() {
       setFirstName(contextProfile.first_name || '');
       setLastName(contextProfile.last_name || '');
       setOccupation(contextProfile.occupation || '');
+      setGender((contextProfile.gender as 'male' | 'female' | 'other') || null);
       setBio(contextProfile.bio || '');
       setAvatarUrl(contextProfile.avatar_url || '');
       setLanguages(contextProfile.languages || []);
@@ -174,6 +178,7 @@ export default function ProfileScreen() {
         first_name: firstName.trim(),
         last_name: lastName?.trim() || null,
         occupation: occupation?.trim() || null,
+        gender: gender || null,
         bio,
         avatar_url: avatarUrl || null,
         languages,
@@ -294,6 +299,60 @@ export default function ProfileScreen() {
               value={occupation}
               onChangeText={setOccupation}
             />
+          </View>
+        </View>
+
+        <View style={styles.inputGroup}>
+          <Text style={styles.label}>{t('gender').toUpperCase()}</Text>
+          <View style={styles.segmentedControl}>
+            <TouchableOpacity
+              style={[
+                styles.segmentButton,
+                gender === 'male' && styles.segmentButtonActive,
+              ]}
+              onPress={() => setGender('male')}
+            >
+              <Text
+                style={[
+                  styles.segmentButtonText,
+                  gender === 'male' && styles.segmentButtonTextActive,
+                ]}
+              >
+                {t('genderMale')}
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[
+                styles.segmentButton,
+                gender === 'female' && styles.segmentButtonActive,
+              ]}
+              onPress={() => setGender('female')}
+            >
+              <Text
+                style={[
+                  styles.segmentButtonText,
+                  gender === 'female' && styles.segmentButtonTextActive,
+                ]}
+              >
+                {t('genderFemale')}
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[
+                styles.segmentButton,
+                gender === 'other' && styles.segmentButtonActive,
+              ]}
+              onPress={() => setGender('other')}
+            >
+              <Text
+                style={[
+                  styles.segmentButtonText,
+                  gender === 'other' && styles.segmentButtonTextActive,
+                ]}
+              >
+                {t('genderOther')}
+              </Text>
+            </TouchableOpacity>
           </View>
         </View>
 
@@ -565,5 +624,50 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     fontSize: 14,
     color: COLORS.TEXT_DARK,
+  },
+  segmentedControl: {
+    flexDirection: 'row',
+    backgroundColor: COLORS.CARD_BG,
+    borderRadius: 24,
+    ...SHADOW.standard,
+    shadowRadius: 8,
+    elevation: 2,
+    padding: 6,
+    gap: 4,
+    minHeight: INPUT_MIN_HEIGHT,
+  },
+  segmentButton: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 12,
+    backgroundColor: 'transparent',
+    borderRadius: 16,
+  },
+  segmentButtonLeft: {
+    // No specific left styling needed with gap
+  },
+  segmentButtonMiddle: {
+    // No specific middle styling needed with gap
+  },
+  segmentButtonRight: {
+    // No specific right styling needed with gap
+  },
+  segmentButtonActive: {
+    backgroundColor: COLORS.ACCENT_ORANGE,
+    ...SHADOW.elevated,
+    shadowColor: COLORS.ACCENT_ORANGE,
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  segmentButtonText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: COLORS.TEXT_LIGHT,
+  },
+  segmentButtonTextActive: {
+    color: COLORS.CARD_BG,
+    fontWeight: '700',
   },
 });
