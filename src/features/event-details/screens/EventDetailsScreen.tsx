@@ -745,7 +745,7 @@ const styles = StyleSheet.create({
   contentContainer: {
     paddingHorizontal: 20,
     paddingTop: 16,
-    paddingBottom: 32,
+    paddingBottom: SIZES.TAB_BAR_HEIGHT + 32,
     gap: 12,
     marginTop: -32,
     zIndex: 10,
