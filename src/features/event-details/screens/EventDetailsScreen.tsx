@@ -41,7 +41,7 @@ import LocationPickerModal from '@features/events/modals/LocationPickerModal';
 import ContactRequestBottomSheet from '@features/events/modals/ContactRequestBottomSheet';
 
 // Constants
-import { COLORS, NAVBAR_STYLES } from '@shared/constants';
+import { COLORS, NAVBAR_STYLES, SIZES } from '@shared/constants';
 
 const HERO_IMAGE_HEIGHT = 224;
 
@@ -70,6 +70,7 @@ export default function EventDetailsScreen() {
   const [showLocationModal, setShowLocationModal] = useState(false);
   const [showContactRequestModal, setShowContactRequestModal] = useState(false);
   const [userLocation, setUserLocation] = useState<Location.LocationObject | null>(null);
+  const [titleLineCount, setTitleLineCount] = useState(1);
 
   // Derived state
   const walkId = Array.isArray(params.id) ? params.id[0] : params.id;
@@ -312,6 +313,11 @@ export default function EventDetailsScreen() {
     setDescriptionLineCount(lines.length);
   };
 
+  const handleTitleLayout = (e: any) => {
+    const { lines } = e.nativeEvent;
+    setTitleLineCount(lines.length);
+  };
+
   // Derived state
   const buttonConfig = useMemo(() => {
     if (isLoadingRequest) {
@@ -393,11 +399,15 @@ export default function EventDetailsScreen() {
   if (error || !walk || !userProfile) {
     return (
       <View style={styles.container}>
-        <View style={[styles.content, { paddingTop: insets.top + 16 }]}>
+        <View style={[styles.content, { paddingTop: insets.top + SIZES.SCREEN_TOP_PADDING }]}>
           <View style={styles.header}>
-            <TouchableOpacity onPress={handleBack} style={NAVBAR_STYLES.backButton}>
+            <TouchableOpacity onPress={handleBack} style={styles.backButton}>
               <ChevronLeft size={24} color={COLORS.TEXT_DARK} />
             </TouchableOpacity>
+            <Text style={styles.headerTitle} numberOfLines={2}>
+              {walk?.title || t('eventDetails')}
+            </Text>
+            <View style={styles.headerSpacer} />
           </View>
           <View style={styles.centerContainer}>
             <Text style={styles.errorText}>{error || t('walkNotFound')}</Text>
@@ -413,26 +423,38 @@ export default function EventDetailsScreen() {
   return (
     <View style={styles.container}>
       {/* Fixed Header */}
-      <View style={[styles.fixedHeader, { paddingTop: insets.top + 8 }]}>
+      <View style={[styles.fixedHeader, { paddingTop: insets.top + SIZES.SCREEN_TOP_PADDING }]}>
         <View style={styles.headerContent}>
-          <TouchableOpacity onPress={handleBack} style={NAVBAR_STYLES.backButton}>
+          <TouchableOpacity onPress={handleBack} style={styles.backButton}>
             <ChevronLeft size={24} color={COLORS.TEXT_DARK} />
           </TouchableOpacity>
+          {/* Hidden text to measure line count */}
           <Text 
-            style={NAVBAR_STYLES.title} 
-            numberOfLines={1}
-            adjustsFontSizeToFit
-            minimumFontScale={0.7}
+            style={[styles.headerTitle, { position: 'absolute', opacity: 0 }]}
+            onTextLayout={handleTitleLayout}
           >
             {walk.title}
           </Text>
-          <View style={NAVBAR_STYLES.spacer} />
+          
+          {/* Visible title with dynamic alignment */}
+          <Text 
+            style={[
+              styles.headerTitle, 
+              { textAlign: titleLineCount > 1 ? 'left' : 'center' }
+            ]} 
+            numberOfLines={2}
+            adjustsFontSizeToFit
+            minimumFontScale={0.85}
+          >
+            {walk.title}
+          </Text>
+          <View style={styles.headerSpacer} />
         </View>
       </View>
 
       <ScrollView
         style={styles.scrollView}
-        contentContainerStyle={{ paddingTop: insets.top + 56 }}
+        contentContainerStyle={{ paddingTop: insets.top + SIZES.SCREEN_TOP_PADDING + 56 }}
         showsVerticalScrollIndicator={false}
       >
         {/* Hero Image */}
@@ -666,13 +688,29 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255, 255, 255, 0.95)',
     borderBottomWidth: 1,
     borderBottomColor: COLORS.BORDER_COLOR,
-    paddingHorizontal: 16,
-    paddingBottom: 8,
+    paddingHorizontal: 24,
+    paddingBottom: 16,
   },
   headerContent: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+  },
+  backButton: {
+    width: 40,
+    height: 40,
+    justifyContent: 'center',
+    alignItems: 'flex-start',
+  },
+  headerTitle: {
+    fontSize: 22,
+    fontWeight: '700',
+    color: COLORS.TEXT_DARK,
+    flex: 1,
+    lineHeight: 26,
+  },
+  headerSpacer: {
+    width: 40,
   },
   scrollView: {
     flex: 1,
@@ -918,6 +956,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
   },
   header: {
-    marginBottom: 20,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 16,
   },
 });
