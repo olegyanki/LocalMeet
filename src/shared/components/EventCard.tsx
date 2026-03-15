@@ -6,6 +6,7 @@ import { COLORS, SHADOW } from '@shared/constants';
 import { NearbyWalk } from '@shared/lib/api';
 import { TranslationKey } from '@shared/i18n/translations';
 import { formatHHMM, formatDateAndTime, getTimeColor } from '@shared/utils/time';
+import { getDisplayName, getShortDisplayName } from '@shared/utils/profile';
 
 interface EventCardProps {
   // Data
@@ -38,7 +39,7 @@ export default React.memo(function EventCard({
   const isOwnEvent = item.walk?.user_id === currentUserId;
   const eventImageUrl = item.walk?.image_url;
   const hostAvatarUrl = item.host?.avatar_url;
-  const hostName = item.host?.display_name || item.host?.username || t('unknownHost');
+  const hostName = item.host ? getShortDisplayName(item.host as any) : t('unknownHost');
   
   // Time formatting
   const getTimeDisplay = (startTime: string, duration: number) => {

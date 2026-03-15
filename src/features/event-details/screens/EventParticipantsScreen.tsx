@@ -18,6 +18,7 @@ import { useI18n } from '@shared/i18n';
 // API & Utils
 import { getWalkParticipants, getProfile, UserProfile } from '@shared/lib/api';
 import { getPluralSuffix } from '@shared/utils/pluralization';
+import { getDisplayName, getShortDisplayName } from '@shared/utils/profile';
 
 // Components
 import Avatar from '@shared/components/Avatar';
@@ -76,11 +77,10 @@ export default function EventParticipantsScreen() {
     }
 
     const query = searchQuery.toLowerCase();
-    return participants.filter(
-      (p) =>
-        p.display_name.toLowerCase().includes(query) ||
-        p.username.toLowerCase().includes(query)
-    );
+    return participants.filter((p) => {
+      const displayName = getDisplayName(p).toLowerCase();
+      return displayName.includes(query);
+    });
   }, [participants, searchQuery]);
 
   // All participants including host
@@ -90,9 +90,8 @@ export default function EventParticipantsScreen() {
     // Check if searching and host matches
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
-      const hostMatches =
-        hostProfile.display_name.toLowerCase().includes(query) ||
-        hostProfile.username.toLowerCase().includes(query);
+      const hostDisplayName = getShortDisplayName(hostProfile).toLowerCase();
+      const hostMatches = hostDisplayName.includes(query);
       
       return hostMatches ? [hostProfile, ...filteredParticipants] : filteredParticipants;
     }
@@ -205,20 +204,27 @@ export default function EventParticipantsScreen() {
                   activeOpacity={0.7}
                 >
                   <View style={styles.participantLeft}>
-                    <Avatar uri={item.avatar_url} name={item.display_name} size={48} />
+                    <Avatar 
+                      uri={item.avatar_url} 
+                      name={isHost ? getShortDisplayName(item) : getDisplayName(item)} 
+                      size={48} 
+                    />
                     <View style={styles.participantInfo}>
                       <View style={styles.participantNameRow}>
-                        <Text style={styles.participantName}>{item.display_name}</Text>
-                        {isHost && (
-                          <View style={styles.hostBadge}>
-                            <Text style={styles.hostBadgeText}>{t('host')}</Text>
-                          </View>
-                        )}
+                        <Text style={styles.participantName}>
+                          {isHost ? getShortDisplayName(item) : getDisplayName(item)}
+                        </Text>
                       </View>
-                      <Text style={styles.participantUsername}>@{item.username}</Text>
                     </View>
                   </View>
-                  <ChevronRight size={20} color={COLORS.TEXT_LIGHT} />
+                  <View style={styles.participantRight}>
+                    {isHost && (
+                      <View style={styles.hostBadge}>
+                        <Text style={styles.hostBadgeText}>{t('host')}</Text>
+                      </View>
+                    )}
+                    <ChevronRight size={20} color={COLORS.TEXT_LIGHT} />
+                  </View>
                 </TouchableOpacity>
               );
             })}
@@ -317,6 +323,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 12,
     flex: 1,
+  },
+  participantRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
   },
   participantInfo: {
     flex: 1,

@@ -10,18 +10,16 @@ type GetBadgeCountsOptimizedRow = Database['public']['Functions']['get_badge_cou
 
 export interface UserProfile {
   id: string;
-  username: string;
-  display_name: string;
+  first_name: string;
+  last_name: string | null;
   bio: string | null;
   avatar_url: string | null;
-  status: string | null;
-  age: number | null;
   gender: string | null;
+  occupation: string | null;
   languages: string[];
   interests: string[];
   social_instagram: string | null;
   social_telegram: string | null;
-  looking_for: string | null;
 }
 
 export interface Walk {
@@ -37,8 +35,8 @@ export interface Walk {
 }
 
 export interface WalkHost {
-  username: string;
-  display_name: string | null;
+  first_name: string;
+  last_name: string | null;
   avatar_url: string | null;
 }
 
@@ -73,18 +71,16 @@ export async function getWalkParticipants(walkId: string): Promise<UserProfile[]
       requester_id,
       profiles:requester_id (
         id,
-        username,
-        display_name,
+        first_name,
+        last_name,
         bio,
         avatar_url,
-        status,
-        age,
         gender,
         languages,
         interests,
         social_instagram,
         social_telegram,
-        looking_for
+        occupation
       )
     `)
     .eq('walk_id', walkId)
@@ -179,8 +175,8 @@ export async function getNearbyWalksFiltered(
         image_url: row.image_url ?? null,
       },
       host: {
-        username: row.host_username,
-        display_name: row.host_display_name ?? null,
+        first_name: row.host_first_name,
+        last_name: row.host_last_name ?? null,
         avatar_url: row.host_avatar_url ?? null,
       },
     }));
@@ -212,7 +208,7 @@ export async function getProfiles(userIds: string[]): Promise<Map<string, WalkHo
 
   const { data, error } = await supabase
     .from('profiles')
-    .select('id, username, display_name, avatar_url')
+    .select('id, first_name, last_name, avatar_url')
     .in('id', userIds);
 
   if (error) {
@@ -223,8 +219,8 @@ export async function getProfiles(userIds: string[]): Promise<Map<string, WalkHo
   if (data) {
     data.forEach((profile) => {
       profilesMap.set(profile.id, {
-        username: profile.username,
-        display_name: profile.display_name,
+        first_name: profile.first_name,
+        last_name: profile.last_name,
         avatar_url: profile.avatar_url,
       });
     });
@@ -938,14 +934,16 @@ export async function getMyChats(userId: string): Promise<ChatWithDetails[]> {
       joined_at: '', // Join date not available in optimized query
       profile: {
         id: id,
-        username: row.participant_usernames[index],
-        display_name: row.participant_display_names[index],
+        first_name: row.participant_first_names?.[index] ?? '',
+        last_name: row.participant_last_names?.[index] ?? null,
         avatar_url: row.participant_avatar_urls[index],
-        bio: '',
+        bio: null,
+        gender: null,
+        occupation: null,
         interests: [],
         languages: [],
-        created_at: '',
-        updated_at: '',
+        social_instagram: null,
+        social_telegram: null,
       },
     })),
     lastMessage: row.last_message_content ? {
@@ -1131,14 +1129,16 @@ export async function getChatDetails(chatId: string, userId: string): Promise<Ch
       joined_at: row.participant_joined_at,
       profile: {
         id: row.participant_id,
-        username: row.participant_username,
-        display_name: row.participant_display_name,
+        first_name: row.participant_first_name,
+        last_name: row.participant_last_name ?? null,
         avatar_url: row.participant_avatar_url,
-        bio: '',
+        bio: null,
+        gender: null,
+        occupation: null,
         interests: [],
         languages: [],
-        created_at: '',
-        updated_at: '',
+        social_instagram: null,
+        social_telegram: null,
       },
     })),
     unread_count: 0, // Not available in this query

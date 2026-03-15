@@ -3,6 +3,7 @@ import { WalkRequestWithProfile } from '@shared/lib/api';
 import { Calendar } from 'lucide-react-native';
 import { COLORS, SHADOW } from '@shared/constants';
 import { formatRelativeTime } from '@shared/utils/time';
+import { getDisplayName } from '@shared/utils/profile';
 import { useI18n } from '@shared/i18n';
 import Avatar from '@shared/components/Avatar';
 import GradientView from '@shared/components/GradientView';
@@ -49,7 +50,7 @@ export default function RequestCard({ request, isPast = false, onReject, onAccep
             <View style={styles.avatarContainer}>
               <Avatar 
                 uri={requester.avatar_url} 
-                name={requester.display_name || requester.username} 
+                name={getDisplayName(requester)} 
                 size={avatarSize}
               />
             </View>
@@ -58,7 +59,7 @@ export default function RequestCard({ request, isPast = false, onReject, onAccep
               {!isPast && (
                 <View style={styles.nameRow}>
                   <Text style={styles.name} numberOfLines={1}>
-                    {requester.display_name || requester.username}
+                    {getDisplayName(requester)}
                   </Text>
                   <Text style={styles.timestamp}>
                     {formatRelativeTime(request.created_at).toUpperCase()}
@@ -68,7 +69,7 @@ export default function RequestCard({ request, isPast = false, onReject, onAccep
 
               {isPast && (
                 <Text style={styles.pastName} numberOfLines={1}>
-                  {requester.display_name || requester.username}
+                  {getDisplayName(requester)}
                 </Text>
               )}
 

@@ -20,6 +20,7 @@ import { ChevronLeft, MoreVertical, Mic, Plus, Users, Trash2, User, Info } from 
 import { useAuth } from '@shared/contexts/AuthContext';
 import { useBadgeCount } from '@shared/contexts/BadgeCountContext';
 import { useI18n } from '@shared/i18n';
+import { getDisplayName } from '@shared/utils/profile';
 import { 
   sendMessage, // New unified function for both group and direct chats
   getChatMessages, // Updated to work with new schema
@@ -330,7 +331,7 @@ export default function ChatScreen() {
     const senderProfile = message.sender || 
       chat?.participants.find(p => p.user_id === message.sender_id)?.profile;
     
-    const senderName = senderProfile?.display_name || senderProfile?.username || t('unknown');
+    const senderName = getDisplayName(senderProfile) || t('unknown');
     const senderAvatar = senderProfile?.avatar_url;
 
     return (
@@ -442,7 +443,7 @@ export default function ChatScreen() {
             <Avatar
               uri={otherUser?.avatar_url}
               size={40}
-              name={otherUser?.display_name || otherUser?.username || ''}
+              name={getDisplayName(otherUser) || ''}
             />
           )}
         </View>
@@ -458,7 +459,7 @@ export default function ChatScreen() {
           }}
         >
           <Text style={styles.headerTitle} numberOfLines={1}>
-            {isGroupChat ? (chat.walk_title || t('groupChat')) : (otherUser?.display_name || otherUser?.username || t('unknown'))}
+            {isGroupChat ? (chat.walk_title || t('groupChat')) : (getDisplayName(otherUser) || t('unknown'))}
           </Text>
           {isGroupChat && (
             <Text style={styles.headerSubtitle}>

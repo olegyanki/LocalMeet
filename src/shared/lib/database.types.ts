@@ -168,55 +168,49 @@ export type Database = {
       }
       profiles: {
         Row: {
-          age: number | null
           avatar_url: string | null
           bio: string | null
           created_at: string | null
-          display_name: string
-          gender: string | null
+          first_name: string
+          gender: Database["public"]["Enums"]["gender_type"] | null
           id: string
           interests: string[] | null
           languages: string[] | null
-          looking_for: string | null
+          last_name: string | null
+          occupation: string | null
           social_instagram: string | null
           social_telegram: string | null
-          status: string | null
           updated_at: string | null
-          username: string
         }
         Insert: {
-          age?: number | null
           avatar_url?: string | null
           bio?: string | null
           created_at?: string | null
-          display_name: string
-          gender?: string | null
+          first_name: string
+          gender?: Database["public"]["Enums"]["gender_type"] | null
           id: string
           interests?: string[] | null
           languages?: string[] | null
-          looking_for?: string | null
+          last_name?: string | null
+          occupation?: string | null
           social_instagram?: string | null
           social_telegram?: string | null
-          status?: string | null
           updated_at?: string | null
-          username: string
         }
         Update: {
-          age?: number | null
           avatar_url?: string | null
           bio?: string | null
           created_at?: string | null
-          display_name?: string
-          gender?: string | null
+          first_name?: string
+          gender?: Database["public"]["Enums"]["gender_type"] | null
           id?: string
           interests?: string[] | null
           languages?: string[] | null
-          looking_for?: string | null
+          last_name?: string | null
+          occupation?: string | null
           social_instagram?: string | null
           social_telegram?: string | null
-          status?: string | null
           updated_at?: string | null
-          username?: string
         }
         Relationships: []
       }
@@ -338,11 +332,11 @@ export type Database = {
           chat_id: string
           chat_type: string
           participant_avatar_url: string
-          participant_display_name: string
+          participant_first_name: string
           participant_id: string
           participant_joined_at: string
+          participant_last_name: string
           participant_role: string
-          participant_username: string
           walk_id: string
           walk_image_url: string
           walk_start_time: string
@@ -369,9 +363,9 @@ export type Database = {
           last_message_read: boolean
           last_message_sender_id: string
           participant_avatar_urls: string[]
-          participant_display_names: string[]
+          participant_first_names: string[]
           participant_ids: string[]
-          participant_usernames: string[]
+          participant_last_names: string[]
           unread_count: number
           walk_id: string
           walk_image_url: string
@@ -409,9 +403,9 @@ export type Database = {
           distance: number
           duration: number
           host_avatar_url: string
-          host_display_name: string
+          host_first_name: string
           host_interests: string[]
-          host_username: string
+          host_last_name: string
           id: string
           image_url: string
           latitude: number
@@ -432,7 +426,7 @@ export type Database = {
       }
     }
     Enums: {
-      [_ in never]: never
+      gender_type: "male" | "female" | "other"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -559,6 +553,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      gender_type: ["male", "female", "other"],
+    },
   },
 } as const

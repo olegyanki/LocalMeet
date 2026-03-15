@@ -43,8 +43,15 @@ export default function ProfileScreen() {
   const insets = useSafeAreaInsets();
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState('');
+  const [fieldErrors, setFieldErrors] = useState<{
+    firstName?: boolean;
+    lastName?: boolean;
+  }>({});
 
-  const [displayName, setDisplayName] = useState('');
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [occupation, setOccupation] = useState('');
+  const [gender, setGender] = useState<'male' | 'female' | 'other' | null>(null);
   const [bio, setBio] = useState('');
   const [avatarUrl, setAvatarUrl] = useState('');
   const [languages, setLanguages] = useState<string[]>([]);
@@ -75,7 +82,10 @@ export default function ProfileScreen() {
     if (!contextProfile) return false;
     
     return (
-      displayName !== (contextProfile.display_name || '') ||
+      firstName !== (contextProfile.first_name || '') ||
+      lastName !== (contextProfile.last_name || '') ||
+      occupation !== (contextProfile.occupation || '') ||
+      gender !== (contextProfile.gender || null) ||
       bio !== (contextProfile.bio || '') ||
       avatarUrl !== (contextProfile.avatar_url || '') ||
       instagram !== (contextProfile.social_instagram || '') ||
@@ -83,11 +93,14 @@ export default function ProfileScreen() {
       JSON.stringify(languages) !== JSON.stringify(contextProfile.languages || []) ||
       JSON.stringify(interests) !== JSON.stringify(contextProfile.interests || [])
     );
-  }, [displayName, bio, avatarUrl, instagram, telegram, languages, interests, contextProfile]);
+  }, [firstName, lastName, occupation, gender, bio, avatarUrl, instagram, telegram, languages, interests, contextProfile]);
 
   useEffect(() => {
     if (contextProfile) {
-      setDisplayName(contextProfile.display_name || '');
+      setFirstName(contextProfile.first_name || '');
+      setLastName(contextProfile.last_name || '');
+      setOccupation(contextProfile.occupation || '');
+      setGender((contextProfile.gender as 'male' | 'female' | 'other') || null);
       setBio(contextProfile.bio || '');
       setAvatarUrl(contextProfile.avatar_url || '');
       setLanguages(contextProfile.languages || []);
@@ -99,7 +112,10 @@ export default function ProfileScreen() {
 
   const handleCancel = () => {
     if (contextProfile) {
-      setDisplayName(contextProfile.display_name || '');
+      setFirstName(contextProfile.first_name || '');
+      setLastName(contextProfile.last_name || '');
+      setOccupation(contextProfile.occupation || '');
+      setGender((contextProfile.gender as 'male' | 'female' | 'other') || null);
       setBio(contextProfile.bio || '');
       setAvatarUrl(contextProfile.avatar_url || '');
       setLanguages(contextProfile.languages || []);
@@ -108,17 +124,38 @@ export default function ProfileScreen() {
       setTelegram(contextProfile.social_telegram || '');
     }
     setError('');
+    setFieldErrors({});
   };
 
   const handleSave = async () => {
     if (!user) return;
 
+    // Clear previous errors
+    setError('');
+    setFieldErrors({});
+
+    // Validation: firstName is required and must be at least 2 characters
+    if (!firstName || firstName.trim().length < 2) {
+      setError(t('firstNameTooShort'));
+      setFieldErrors({ firstName: true });
+      return;
+    }
+
+    // Validation: if lastName is provided, it must be at least 2 characters
+    if (lastName && lastName.trim().length < 2) {
+      setError(t('lastNameTooShort'));
+      setFieldErrors({ lastName: true });
+      return;
+    }
+
     try {
       setIsSaving(true);
-      setError('');
 
       await updateProfile(user.id, {
-        display_name: displayName,
+        first_name: firstName.trim(),
+        last_name: lastName?.trim() || null,
+        occupation: occupation?.trim() || null,
+        gender: gender || null,
         bio,
         avatar_url: avatarUrl || null,
         languages,
@@ -190,7 +227,7 @@ export default function ProfileScreen() {
         <View style={styles.avatarSection}>
           <AvatarPicker
             currentAvatar={avatarUrl}
-            displayName={displayName || 'User'}
+            displayName={firstName || 'User'}
             userId={user?.id || ''}
             onAvatarChange={setAvatarUrl}
             isEditing={true}
@@ -198,15 +235,101 @@ export default function ProfileScreen() {
         </View>
 
         <View style={styles.inputGroup}>
-          <Text style={styles.label}>{t('name').toUpperCase()}</Text>
+          <Text style={styles.label}>{t('firstName').toUpperCase()}</Text>
+          <View style={[
+            styles.inputWrapper,
+            fieldErrors.firstName && styles.inputWrapperError
+          ]}>
+            <TextInput
+              style={styles.input}
+              placeholder={t('firstNamePlaceholder')}
+              placeholderTextColor={COLORS.GRAY_PLACEHOLDER}
+              value={firstName}
+              onChangeText={setFirstName}
+            />
+          </View>
+        </View>
+
+        <View style={styles.inputGroup}>
+          <Text style={styles.label}>{t('lastName').toUpperCase()}</Text>
+          <View style={[
+            styles.inputWrapper,
+            fieldErrors.lastName && styles.inputWrapperError
+          ]}>
+            <TextInput
+              style={styles.input}
+              placeholder={t('lastNamePlaceholder')}
+              placeholderTextColor={COLORS.GRAY_PLACEHOLDER}
+              value={lastName}
+              onChangeText={setLastName}
+            />
+          </View>
+        </View>
+
+        <View style={styles.inputGroup}>
+          <Text style={styles.label}>{t('occupation').toUpperCase()}</Text>
           <View style={styles.inputWrapper}>
             <TextInput
               style={styles.input}
-              placeholder={t('namePlaceholder')}
+              placeholder={t('occupationPlaceholder')}
               placeholderTextColor={COLORS.GRAY_PLACEHOLDER}
-              value={displayName}
-              onChangeText={setDisplayName}
+              value={occupation}
+              onChangeText={setOccupation}
             />
+          </View>
+        </View>
+
+        <View style={styles.inputGroup}>
+          <Text style={styles.label}>{t('gender').toUpperCase()}</Text>
+          <View style={styles.segmentedControl}>
+            <TouchableOpacity
+              style={[
+                styles.segmentButton,
+                gender === 'male' && styles.segmentButtonActive,
+              ]}
+              onPress={() => setGender('male')}
+            >
+              <Text
+                style={[
+                  styles.segmentButtonText,
+                  gender === 'male' && styles.segmentButtonTextActive,
+                ]}
+              >
+                {t('genderMale')}
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[
+                styles.segmentButton,
+                gender === 'female' && styles.segmentButtonActive,
+              ]}
+              onPress={() => setGender('female')}
+            >
+              <Text
+                style={[
+                  styles.segmentButtonText,
+                  gender === 'female' && styles.segmentButtonTextActive,
+                ]}
+              >
+                {t('genderFemale')}
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[
+                styles.segmentButton,
+                gender === 'other' && styles.segmentButtonActive,
+              ]}
+              onPress={() => setGender('other')}
+            >
+              <Text
+                style={[
+                  styles.segmentButtonText,
+                  gender === 'other' && styles.segmentButtonTextActive,
+                ]}
+              >
+                {t('genderOther')}
+              </Text>
+            </TouchableOpacity>
           </View>
         </View>
 
@@ -401,6 +524,12 @@ const styles = StyleSheet.create({
     padding: 4,
     minHeight: INPUT_MIN_HEIGHT,
   },
+  inputWrapperError: {
+    borderWidth: 2,
+    borderColor: COLORS.ERROR_RED,
+    shadowColor: COLORS.ERROR_RED,
+    shadowOpacity: 0.15,
+  },
   input: {
     backgroundColor: 'transparent',
     borderWidth: 0,
@@ -471,5 +600,50 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     fontSize: 14,
     color: COLORS.TEXT_DARK,
+  },
+  segmentedControl: {
+    flexDirection: 'row',
+    backgroundColor: COLORS.CARD_BG,
+    borderRadius: 24,
+    ...SHADOW.standard,
+    shadowRadius: 8,
+    elevation: 2,
+    padding: 6,
+    gap: 4,
+    minHeight: INPUT_MIN_HEIGHT,
+  },
+  segmentButton: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 12,
+    backgroundColor: 'transparent',
+    borderRadius: 16,
+  },
+  segmentButtonLeft: {
+    // No specific left styling needed with gap
+  },
+  segmentButtonMiddle: {
+    // No specific middle styling needed with gap
+  },
+  segmentButtonRight: {
+    // No specific right styling needed with gap
+  },
+  segmentButtonActive: {
+    backgroundColor: COLORS.ACCENT_ORANGE,
+    ...SHADOW.elevated,
+    shadowColor: COLORS.ACCENT_ORANGE,
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  segmentButtonText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: COLORS.TEXT_LIGHT,
+  },
+  segmentButtonTextActive: {
+    color: COLORS.CARD_BG,
+    fontWeight: '700',
   },
 });

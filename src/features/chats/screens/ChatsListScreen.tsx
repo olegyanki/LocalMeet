@@ -14,6 +14,7 @@ import {
   ChatWithDetails,
 } from '@shared/lib/api';
 import { formatRelativeTime } from '@shared/utils/time';
+import { getDisplayName } from '@shared/utils/profile';
 
 // Components
 import RequestCard from '@features/chats/components/RequestCard';
@@ -140,7 +141,7 @@ export default function ChatsScreen() {
     } else {
       // Direct chat: show other participant's name
       const otherParticipant = item.participants.find(p => p.user_id !== user?.id);
-      displayName = otherParticipant?.profile.display_name || otherParticipant?.profile.username || t('unknown');
+      displayName = getDisplayName(otherParticipant?.profile) || t('unknown');
       avatarUrl = otherParticipant?.profile.avatar_url || null;
     }
 
