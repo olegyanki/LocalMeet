@@ -695,7 +695,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     zIndex: 50,
-    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+    backgroundColor: COLORS.CARD_BG,
     borderBottomWidth: 1,
     borderBottomColor: COLORS.BORDER_COLOR,
     paddingHorizontal: 24,
