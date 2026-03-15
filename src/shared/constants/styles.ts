@@ -169,6 +169,9 @@ export const SIZES = {
   EVENT_IMAGE_SIZE: 96,
   HOST_AVATAR_SIZE: 40,
   ONLINE_INDICATOR_SIZE: 12,
+  
+  // Navbar height (for fixed headers with back button)
+  NAVBAR_HEIGHT: 56,
 };
 
 // Common header styles

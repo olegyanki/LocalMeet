@@ -41,7 +41,7 @@ import LocationPickerModal from '@features/events/modals/LocationPickerModal';
 import ContactRequestBottomSheet from '@features/events/modals/ContactRequestBottomSheet';
 
 // Constants
-import { COLORS, NAVBAR_STYLES, SIZES } from '@shared/constants';
+import { COLORS, SIZES } from '@shared/constants';
 
 const HERO_IMAGE_HEIGHT = 224;
 
@@ -71,6 +71,7 @@ export default function EventDetailsScreen() {
   const [showContactRequestModal, setShowContactRequestModal] = useState(false);
   const [userLocation, setUserLocation] = useState<Location.LocationObject | null>(null);
   const [titleLineCount, setTitleLineCount] = useState(1);
+  const [navbarHeight, setNavbarHeight] = useState(SIZES.NAVBAR_HEIGHT);
 
   // Derived state
   const walkId = Array.isArray(params.id) ? params.id[0] : params.id;
@@ -318,6 +319,11 @@ export default function EventDetailsScreen() {
     setTitleLineCount(lines.length);
   };
 
+  const handleNavbarLayout = (e: any) => {
+    const { height } = e.nativeEvent.layout;
+    setNavbarHeight(height);
+  };
+
   // Derived state
   const buttonConfig = useMemo(() => {
     if (isLoadingRequest) {
@@ -423,7 +429,10 @@ export default function EventDetailsScreen() {
   return (
     <View style={styles.container}>
       {/* Fixed Header */}
-      <View style={[styles.fixedHeader, { paddingTop: insets.top + SIZES.SCREEN_TOP_PADDING }]}>
+      <View 
+        style={[styles.fixedHeader, { paddingTop: insets.top + SIZES.SCREEN_TOP_PADDING }]}
+        onLayout={handleNavbarLayout}
+      >
         <View style={styles.headerContent}>
           <TouchableOpacity onPress={handleBack} style={styles.backButton}>
             <ChevronLeft size={24} color={COLORS.TEXT_DARK} />
@@ -454,7 +463,7 @@ export default function EventDetailsScreen() {
 
       <ScrollView
         style={styles.scrollView}
-        contentContainerStyle={{ paddingTop: insets.top + SIZES.SCREEN_TOP_PADDING + 56 }}
+        contentContainerStyle={{ paddingTop: navbarHeight }}
         showsVerticalScrollIndicator={false}
       >
         {/* Hero Image */}
