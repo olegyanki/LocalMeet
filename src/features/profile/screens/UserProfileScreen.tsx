@@ -22,6 +22,7 @@ import { useI18n } from '@shared/i18n';
 
 // API & Utils
 import { getProfile } from '@shared/lib/api';
+import { getDisplayName } from '@shared/utils/profile';
 
 // Components
 import Avatar from '@shared/components/Avatar';
@@ -131,16 +132,14 @@ export default function UserProfileScreen() {
           >
             <Avatar 
               uri={profile.avatar_url} 
-              name={profile.display_name || '?'} 
+              name={getDisplayName(profile) || '?'} 
               size={100}
               shape={'square' as 'square'}
             />
           </TouchableOpacity>
         </View>
 
-        {profile.display_name && (
-          <Text style={styles.displayName}>{profile.display_name}</Text>
-        )}
+        <Text style={styles.displayName}>{getDisplayName(profile)}</Text>
 
         {profile.bio && (
           <View style={styles.bioSection}>

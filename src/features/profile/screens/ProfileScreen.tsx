@@ -44,7 +44,9 @@ export default function ProfileScreen() {
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState('');
 
-  const [displayName, setDisplayName] = useState('');
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [occupation, setOccupation] = useState('');
   const [bio, setBio] = useState('');
   const [avatarUrl, setAvatarUrl] = useState('');
   const [languages, setLanguages] = useState<string[]>([]);
@@ -75,7 +77,9 @@ export default function ProfileScreen() {
     if (!contextProfile) return false;
     
     return (
-      displayName !== (contextProfile.display_name || '') ||
+      firstName !== (contextProfile.first_name || '') ||
+      lastName !== (contextProfile.last_name || '') ||
+      occupation !== (contextProfile.occupation || '') ||
       bio !== (contextProfile.bio || '') ||
       avatarUrl !== (contextProfile.avatar_url || '') ||
       instagram !== (contextProfile.social_instagram || '') ||
@@ -83,11 +87,13 @@ export default function ProfileScreen() {
       JSON.stringify(languages) !== JSON.stringify(contextProfile.languages || []) ||
       JSON.stringify(interests) !== JSON.stringify(contextProfile.interests || [])
     );
-  }, [displayName, bio, avatarUrl, instagram, telegram, languages, interests, contextProfile]);
+  }, [firstName, lastName, occupation, bio, avatarUrl, instagram, telegram, languages, interests, contextProfile]);
 
   useEffect(() => {
     if (contextProfile) {
-      setDisplayName(contextProfile.display_name || '');
+      setFirstName(contextProfile.first_name || '');
+      setLastName(contextProfile.last_name || '');
+      setOccupation(contextProfile.occupation || '');
       setBio(contextProfile.bio || '');
       setAvatarUrl(contextProfile.avatar_url || '');
       setLanguages(contextProfile.languages || []);
@@ -97,9 +103,44 @@ export default function ProfileScreen() {
     }
   }, [contextProfile]);
 
+  // Validation handlers
+  const handleFirstNameChange = (text: string) => {
+    // If original firstName exists and has 2+ chars, don't allow reducing below 2 chars
+    if (contextProfile?.first_name && contextProfile.first_name.length >= 2) {
+      if (text.length >= 2 || text.length > firstName.length) {
+        setFirstName(text);
+      }
+      // If trying to delete/reduce, show error
+      if (text.length < 2 && text.length < firstName.length) {
+        setError(t('cannotReduceName'));
+        setTimeout(() => setError(''), 2000);
+      }
+    } else {
+      setFirstName(text);
+    }
+  };
+
+  const handleLastNameChange = (text: string) => {
+    // If original lastName exists and has 2+ chars, don't allow reducing below 2 chars
+    if (contextProfile?.last_name && contextProfile.last_name.length >= 2) {
+      if (text.length >= 2 || text.length > lastName.length) {
+        setLastName(text);
+      }
+      // If trying to delete/reduce, show error
+      if (text.length < 2 && text.length < lastName.length) {
+        setError(t('cannotReduceName'));
+        setTimeout(() => setError(''), 2000);
+      }
+    } else {
+      setLastName(text);
+    }
+  };
+
   const handleCancel = () => {
     if (contextProfile) {
-      setDisplayName(contextProfile.display_name || '');
+      setFirstName(contextProfile.first_name || '');
+      setLastName(contextProfile.last_name || '');
+      setOccupation(contextProfile.occupation || '');
       setBio(contextProfile.bio || '');
       setAvatarUrl(contextProfile.avatar_url || '');
       setLanguages(contextProfile.languages || []);
@@ -113,12 +154,26 @@ export default function ProfileScreen() {
   const handleSave = async () => {
     if (!user) return;
 
+    // Validation: firstName is required and must be at least 2 characters
+    if (!firstName || firstName.trim().length < 2) {
+      setError(t('firstNameTooShort'));
+      return;
+    }
+
+    // Validation: if lastName is provided, it must be at least 2 characters
+    if (lastName && lastName.trim().length < 2) {
+      setError(t('lastNameTooShort'));
+      return;
+    }
+
     try {
       setIsSaving(true);
       setError('');
 
       await updateProfile(user.id, {
-        display_name: displayName,
+        first_name: firstName.trim(),
+        last_name: lastName?.trim() || null,
+        occupation: occupation?.trim() || null,
         bio,
         avatar_url: avatarUrl || null,
         languages,
@@ -190,7 +245,7 @@ export default function ProfileScreen() {
         <View style={styles.avatarSection}>
           <AvatarPicker
             currentAvatar={avatarUrl}
-            displayName={displayName || 'User'}
+            displayName={firstName || 'User'}
             userId={user?.id || ''}
             onAvatarChange={setAvatarUrl}
             isEditing={true}
@@ -198,14 +253,46 @@ export default function ProfileScreen() {
         </View>
 
         <View style={styles.inputGroup}>
-          <Text style={styles.label}>{t('name').toUpperCase()}</Text>
+          <Text style={styles.label}>{t('firstName').toUpperCase()}</Text>
           <View style={styles.inputWrapper}>
             <TextInput
               style={styles.input}
-              placeholder={t('namePlaceholder')}
+              placeholder={t('firstNamePlaceholder')}
               placeholderTextColor={COLORS.GRAY_PLACEHOLDER}
-              value={displayName}
-              onChangeText={setDisplayName}
+              value={firstName}
+              onChangeText={handleFirstNameChange}
+            />
+          </View>
+          {hasChanges && contextProfile?.first_name && contextProfile.first_name.length >= 2 && (
+            <Text style={styles.hintText}>{t('nameCannotBeReduced')}</Text>
+          )}
+        </View>
+
+        <View style={styles.inputGroup}>
+          <Text style={styles.label}>{t('lastName').toUpperCase()}</Text>
+          <View style={styles.inputWrapper}>
+            <TextInput
+              style={styles.input}
+              placeholder={t('lastNamePlaceholder')}
+              placeholderTextColor={COLORS.GRAY_PLACEHOLDER}
+              value={lastName}
+              onChangeText={handleLastNameChange}
+            />
+          </View>
+          {hasChanges && contextProfile?.last_name && contextProfile.last_name.length >= 2 && (
+            <Text style={styles.hintText}>{t('nameCannotBeReduced')}</Text>
+          )}
+        </View>
+
+        <View style={styles.inputGroup}>
+          <Text style={styles.label}>{t('occupation').toUpperCase()}</Text>
+          <View style={styles.inputWrapper}>
+            <TextInput
+              style={styles.input}
+              placeholder={t('occupationPlaceholder')}
+              placeholderTextColor={COLORS.GRAY_PLACEHOLDER}
+              value={occupation}
+              onChangeText={setOccupation}
             />
           </View>
         </View>
@@ -376,6 +463,13 @@ const styles = StyleSheet.create({
     padding: 12,
     borderRadius: 16,
     fontWeight: '500',
+  },
+  hintText: {
+    fontSize: 11,
+    color: COLORS.TEXT_LIGHT,
+    marginTop: 6,
+    marginLeft: 4,
+    fontStyle: 'italic',
   },
   avatarSection: {
     alignItems: 'center',

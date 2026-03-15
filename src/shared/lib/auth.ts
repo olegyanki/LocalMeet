@@ -3,8 +3,8 @@ import { supabase } from './supabase';
 export interface SignUpData {
   email: string;
   password: string;
-  display_name: string;
-  username: string;
+  first_name: string;
+  last_name?: string;
 }
 
 export interface SignInData {
@@ -12,14 +12,14 @@ export interface SignInData {
   password: string;
 }
 
-export async function signUp({ email, password, display_name, username }: SignUpData) {
+export async function signUp({ email, password, first_name, last_name }: SignUpData) {
   const { data: authData, error: authError } = await supabase.auth.signUp({
     email,
     password,
     options: {
       data: {
-        display_name,
-        username,
+        first_name,
+        last_name,
       },
     },
   });

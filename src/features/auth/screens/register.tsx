@@ -20,8 +20,8 @@ import PrimaryButton from '@shared/components/PrimaryButton';
 export default function RegisterScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [displayName, setDisplayName] = useState('');
-  const [username, setUsername] = useState('');
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
@@ -30,8 +30,8 @@ export default function RegisterScreen() {
 
   const handleRegister = async () => {
     setError('');
-    if (!email || !password || !displayName || !username) {
-      setError('Please fill in all fields');
+    if (!email || !password || !firstName) {
+      setError('Please fill in all required fields');
       return;
     }
 
@@ -42,7 +42,7 @@ export default function RegisterScreen() {
 
     try {
       setIsLoading(true);
-      await signUp({ email, password, display_name: displayName, username });
+      await signUp({ email, password, first_name: firstName, last_name: lastName });
       router.replace('/(tabs)/onboarding');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Registration failed');
@@ -73,27 +73,26 @@ export default function RegisterScreen() {
           ) : null}
 
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>{t('displayName')}</Text>
+            <Text style={styles.label}>{t('firstName')}</Text>
             <TextInput
               style={styles.input}
-              placeholder={t('displayName')}
+              placeholder={t('firstNamePlaceholder')}
               placeholderTextColor={COLORS.TEXT_LIGHT}
-              value={displayName}
-              onChangeText={setDisplayName}
+              value={firstName}
+              onChangeText={setFirstName}
               editable={!isLoading}
             />
           </View>
 
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>{t('username')}</Text>
+            <Text style={styles.label}>{t('lastName')}</Text>
             <TextInput
               style={styles.input}
-              placeholder={t('username')}
+              placeholder={t('lastNamePlaceholder')}
               placeholderTextColor={COLORS.TEXT_LIGHT}
-              value={username}
-              onChangeText={setUsername}
+              value={lastName}
+              onChangeText={setLastName}
               editable={!isLoading}
-              autoCapitalize="none"
             />
           </View>
 
