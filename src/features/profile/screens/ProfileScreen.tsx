@@ -43,6 +43,10 @@ export default function ProfileScreen() {
   const insets = useSafeAreaInsets();
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState('');
+  const [fieldErrors, setFieldErrors] = useState<{
+    firstName?: boolean;
+    lastName?: boolean;
+  }>({});
 
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
@@ -106,39 +110,6 @@ export default function ProfileScreen() {
     }
   }, [contextProfile]);
 
-  // Validation handlers
-  const handleFirstNameChange = (text: string) => {
-    // If original firstName exists and has 2+ chars, don't allow reducing below 2 chars
-    if (contextProfile?.first_name && contextProfile.first_name.length >= 2) {
-      if (text.length >= 2 || text.length > firstName.length) {
-        setFirstName(text);
-      }
-      // If trying to delete/reduce, show error
-      if (text.length < 2 && text.length < firstName.length) {
-        setError(t('cannotReduceName'));
-        setTimeout(() => setError(''), 2000);
-      }
-    } else {
-      setFirstName(text);
-    }
-  };
-
-  const handleLastNameChange = (text: string) => {
-    // If original lastName exists and has 2+ chars, don't allow reducing below 2 chars
-    if (contextProfile?.last_name && contextProfile.last_name.length >= 2) {
-      if (text.length >= 2 || text.length > lastName.length) {
-        setLastName(text);
-      }
-      // If trying to delete/reduce, show error
-      if (text.length < 2 && text.length < lastName.length) {
-        setError(t('cannotReduceName'));
-        setTimeout(() => setError(''), 2000);
-      }
-    } else {
-      setLastName(text);
-    }
-  };
-
   const handleCancel = () => {
     if (contextProfile) {
       setFirstName(contextProfile.first_name || '');
@@ -153,26 +124,32 @@ export default function ProfileScreen() {
       setTelegram(contextProfile.social_telegram || '');
     }
     setError('');
+    setFieldErrors({});
   };
 
   const handleSave = async () => {
     if (!user) return;
 
+    // Clear previous errors
+    setError('');
+    setFieldErrors({});
+
     // Validation: firstName is required and must be at least 2 characters
     if (!firstName || firstName.trim().length < 2) {
       setError(t('firstNameTooShort'));
+      setFieldErrors({ firstName: true });
       return;
     }
 
     // Validation: if lastName is provided, it must be at least 2 characters
     if (lastName && lastName.trim().length < 2) {
       setError(t('lastNameTooShort'));
+      setFieldErrors({ lastName: true });
       return;
     }
 
     try {
       setIsSaving(true);
-      setError('');
 
       await updateProfile(user.id, {
         first_name: firstName.trim(),
@@ -259,34 +236,34 @@ export default function ProfileScreen() {
 
         <View style={styles.inputGroup}>
           <Text style={styles.label}>{t('firstName').toUpperCase()}</Text>
-          <View style={styles.inputWrapper}>
+          <View style={[
+            styles.inputWrapper,
+            fieldErrors.firstName && styles.inputWrapperError
+          ]}>
             <TextInput
               style={styles.input}
               placeholder={t('firstNamePlaceholder')}
               placeholderTextColor={COLORS.GRAY_PLACEHOLDER}
               value={firstName}
-              onChangeText={handleFirstNameChange}
+              onChangeText={setFirstName}
             />
           </View>
-          {hasChanges && contextProfile?.first_name && contextProfile.first_name.length >= 2 && (
-            <Text style={styles.hintText}>{t('nameCannotBeReduced')}</Text>
-          )}
         </View>
 
         <View style={styles.inputGroup}>
           <Text style={styles.label}>{t('lastName').toUpperCase()}</Text>
-          <View style={styles.inputWrapper}>
+          <View style={[
+            styles.inputWrapper,
+            fieldErrors.lastName && styles.inputWrapperError
+          ]}>
             <TextInput
               style={styles.input}
               placeholder={t('lastNamePlaceholder')}
               placeholderTextColor={COLORS.GRAY_PLACEHOLDER}
               value={lastName}
-              onChangeText={handleLastNameChange}
+              onChangeText={setLastName}
             />
           </View>
-          {hasChanges && contextProfile?.last_name && contextProfile.last_name.length >= 2 && (
-            <Text style={styles.hintText}>{t('nameCannotBeReduced')}</Text>
-          )}
         </View>
 
         <View style={styles.inputGroup}>
@@ -523,13 +500,6 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     fontWeight: '500',
   },
-  hintText: {
-    fontSize: 11,
-    color: COLORS.TEXT_LIGHT,
-    marginTop: 6,
-    marginLeft: 4,
-    fontStyle: 'italic',
-  },
   avatarSection: {
     alignItems: 'center',
     marginBottom: 16,
@@ -553,6 +523,12 @@ const styles = StyleSheet.create({
     elevation: 2,
     padding: 4,
     minHeight: INPUT_MIN_HEIGHT,
+  },
+  inputWrapperError: {
+    borderWidth: 2,
+    borderColor: COLORS.ERROR_RED,
+    shadowColor: COLORS.ERROR_RED,
+    shadowOpacity: 0.15,
   },
   input: {
     backgroundColor: 'transparent',
