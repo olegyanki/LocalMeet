@@ -33,6 +33,7 @@ import {
 } from '@shared/lib/api';
 import { getEventImage } from '@shared/utils/eventImage';
 import { getPluralSuffix } from '@shared/utils/pluralization';
+import { getDisplayName } from '@shared/utils/profile';
 
 // Components
 import Avatar from '@shared/components/Avatar';
@@ -412,7 +413,7 @@ export default function EventDetailsScreen() {
               <ChevronLeft size={24} color={COLORS.TEXT_DARK} />
             </TouchableOpacity>
             <Text style={styles.headerTitle} numberOfLines={2}>
-              {walk?.title || t('eventDetails')}
+              {walk?.title || t('walkNotFound')}
             </Text>
             <View style={styles.headerSpacer} />
           </View>
@@ -531,7 +532,7 @@ export default function EventDetailsScreen() {
                       <View style={[styles.avatarStackItem, { zIndex: 10 }]}>
                         <Avatar 
                           uri={userProfile.avatar_url} 
-                          name={userProfile.display_name} 
+                          name={getDisplayName(userProfile)} 
                           size={32}
                         />
                       </View>
@@ -544,7 +545,7 @@ export default function EventDetailsScreen() {
                       >
                         <Avatar 
                           uri={participant.avatar_url} 
-                          name={participant.display_name} 
+                          name={getDisplayName(participant)} 
                           size={32}
                         />
                       </View>
@@ -653,7 +654,7 @@ export default function EventDetailsScreen() {
           onClose={() => setShowContactRequestModal(false)}
           walkId={walk.id}
           requesterId={currentUser.id}
-          walkOwnerName={userProfile.display_name}
+          walkOwnerName={getDisplayName(userProfile)}
           walkOwnerAvatar={userProfile.avatar_url}
           walkTitle={walk.title}
           walkStartTime={walk.start_time}

@@ -1,10 +1,12 @@
-import type { UserProfile } from '@shared/lib/api';
+import type { UserProfile, WalkHost } from '@shared/lib/api';
+
+type ProfileLike = UserProfile | WalkHost | null | undefined;
 
 /**
- * Get display name from user profile
+ * Get display name from user profile or walk host
  * Returns: first_name + last_name or just first_name
  */
-export function getDisplayName(profile: UserProfile | null | undefined): string {
+export function getDisplayName(profile: ProfileLike): string {
   if (!profile) return '';
   
   if (profile.last_name) {
@@ -17,7 +19,7 @@ export function getDisplayName(profile: UserProfile | null | undefined): string 
 /**
  * Get short display name (first name only)
  */
-export function getShortDisplayName(profile: UserProfile | null | undefined): string {
+export function getShortDisplayName(profile: ProfileLike): string {
   if (!profile) return '';
   
   return profile.first_name;

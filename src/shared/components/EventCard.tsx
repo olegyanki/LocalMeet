@@ -39,7 +39,7 @@ export default React.memo(function EventCard({
   const isOwnEvent = item.walk?.user_id === currentUserId;
   const eventImageUrl = item.walk?.image_url;
   const hostAvatarUrl = item.host?.avatar_url;
-  const hostName = item.host ? getShortDisplayName(item.host as any) : t('unknownHost');
+  const hostName = item.host ? getShortDisplayName(item.host) : t('unknownHost');
   
   // Time formatting
   const getTimeDisplay = (startTime: string, duration: number) => {
