@@ -726,7 +726,6 @@ export async function getMyChatsLegacy(userId: string): Promise<ChatWithLastMess
     updated_at: row.chat_updated_at,
     requester: {
       id: row.requester_id,
-      username: row.requester_username,
       display_name: row.requester_display_name,
       avatar_url: row.requester_avatar_url,
       bio: row.requester_bio,
@@ -741,7 +740,6 @@ export async function getMyChatsLegacy(userId: string): Promise<ChatWithLastMess
     },
     walker: {
       id: row.walker_id,
-      username: row.walker_username,
       display_name: row.walker_display_name,
       avatar_url: row.walker_avatar_url,
       bio: row.walker_bio,
