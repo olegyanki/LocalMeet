@@ -18,7 +18,6 @@ import * as ImagePicker from 'expo-image-picker';
 import { ChevronLeft, MoreVertical, Mic, Plus, Users, Trash2, User, Info } from 'lucide-react-native';
 
 import { useAuth } from '@shared/contexts/AuthContext';
-import { useBadgeCount } from '@shared/contexts/BadgeCountContext';
 import { useI18n } from '@shared/i18n';
 import { getDisplayName } from '@shared/utils/profile';
 import { 
@@ -40,7 +39,6 @@ import Avatar from '@shared/components/Avatar';
 
 import { COLORS, SHADOW } from '@shared/constants';
 
-const SCROLL_DELAY = 100;
 const MAX_MESSAGE_LENGTH = 1000;
 
 export default function ChatScreen() {
@@ -49,7 +47,6 @@ export default function ChatScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { user } = useAuth();
-  const { forceRefresh } = useBadgeCount();
   const { t, locale } = useI18n();
   const flatListRef = useRef<FlatList>(null);
 
@@ -84,21 +81,13 @@ export default function ChatScreen() {
     };
   }, [chatId]);
 
-  useEffect(() => {
-    if (!loading && messages.length > 0) {
-      setTimeout(() => {
-        flatListRef.current?.scrollToEnd({ animated: false });
-      }, SCROLL_DELAY);
-    }
-  }, [loading, messages.length]);
-
   const loadChatData = async () => {
     if (!user) return;
     
     try {
       const [chatData, messagesData] = await Promise.all([
         getChatDetails(chatId, user.id),
-        getChatMessages(chatId),
+        getChatMessages(chatId, 50), // Load last 400 messages for testing
       ]);
 
       if (chatData) {
@@ -142,10 +131,6 @@ export default function ChatScreen() {
 
             return [...prev, newMsg];
           });
-
-          setTimeout(() => {
-            flatListRef.current?.scrollToEnd({ animated: true });
-          }, SCROLL_DELAY);
 
           if (newMsg.sender_id !== user?.id && user) {
             markChatAsRead(chatId, user.id);
@@ -281,6 +266,9 @@ export default function ChatScreen() {
   // For direct chats, we also don't need initial messages since they're created when requests are accepted
   const allMessages = messages;
 
+  // API returns messages in DESC order (newest first), perfect for inverted FlatList
+  const displayMessages = allMessages;
+
   const getDateLabel = useCallback((date: Date) => {
     const today = new Date();
     const yesterday = new Date(today);
@@ -315,14 +303,15 @@ export default function ChatScreen() {
       hour12: false,
     });
 
-    // Show date separator for first message or when date changes
+    // Show date separator - for inverted list, check next message (index + 1)
     let showDateSeparator = false;
-    if (index === 0) {
-      showDateSeparator = true; // Always show for first message
-    } else if (allMessages[index - 1]) {
-      const prevMessage = allMessages[index - 1];
+    if (index === displayMessages.length - 1) {
+      // Last message in inverted list (oldest message) - always show date
+      showDateSeparator = true;
+    } else if (displayMessages[index + 1]) {
+      const nextMessage = displayMessages[index + 1];
       showDateSeparator = new Date(message.created_at).toDateString() !== 
-        new Date(prevMessage.created_at).toDateString();
+        new Date(nextMessage.created_at).toDateString();
     }
 
     const dateLabel = showDateSeparator ? getDateLabel(new Date(message.created_at)) : '';
@@ -336,13 +325,6 @@ export default function ChatScreen() {
 
     return (
       <>
-        {showDateSeparator && (
-          <View style={styles.dateContainer}>
-            <View style={styles.dateBadge}>
-              <Text style={styles.dateText}>{dateLabel}</Text>
-            </View>
-          </View>
-        )}
         <View
           style={[
             styles.messageContainer,
@@ -399,9 +381,16 @@ export default function ChatScreen() {
             </View>
           </View>
         </View>
+        {showDateSeparator && (
+          <View style={styles.dateContainer}>
+            <View style={styles.dateBadge}>
+              <Text style={styles.dateText}>{dateLabel}</Text>
+            </View>
+          </View>
+        )}
       </>
     );
-  }, [user, chat, isGroupChat, allMessages, getDateLabel, t]);
+  }, [user, chat, isGroupChat, displayMessages, getDateLabel, t]);
 
   if (loading || !chat) {
     return (
@@ -571,13 +560,15 @@ export default function ChatScreen() {
 
       <FlatList
         ref={flatListRef}
-        data={allMessages}
+        data={displayMessages}
         keyExtractor={(item) => item.id}
         renderItem={renderMessage}
         contentContainerStyle={styles.messagesList}
-        onContentSizeChange={() =>
-          flatListRef.current?.scrollToEnd({ animated: false })
-        }
+        inverted
+        initialNumToRender={20}
+        maxToRenderPerBatch={10}
+        windowSize={21}
+        removeClippedSubviews={true}
       />
 
       <View style={[styles.inputContainer, { paddingBottom: insets.bottom + 8 }]}>

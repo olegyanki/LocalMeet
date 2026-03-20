@@ -960,21 +960,28 @@ export async function getMyChats(userId: string): Promise<ChatWithDetails[]> {
  * @param chatId - The chat ID to get messages for
  * @returns Promise<Message[]> - Array of messages with sender profiles
  */
-export async function getChatMessages(chatId: string): Promise<Message[]> {
-  const { data, error } = await supabase
+export async function getChatMessages(chatId: string, limit?: number): Promise<Message[]> {
+  let query = supabase
     .from('messages')
     .select(`
       *,
       sender:profiles!sender_id(*)
     `)
     .eq('chat_id', chatId)
-    .order('created_at', { ascending: true });
+    .order('created_at', { ascending: false }); // Get newest first
+
+  if (limit) {
+    query = query.limit(limit);
+  }
+
+  const { data, error } = await query;
 
   if (error) {
     console.error('Error fetching chat messages:', error);
     throw new Error(`Failed to fetch messages: ${error.message}`);
   }
 
+  // Return as-is (newest first) - will be reversed in UI for inverted FlatList
   return data || [];
 }
 
