@@ -73,11 +73,6 @@ export default function ChatScreen() {
     messageTextRef.current = text;
   }, []);
 
-  const handleBlur = useCallback(() => {
-    // Update ref with final value after autocorrect
-    messageTextRef.current = newMessage;
-  }, [newMessage]);
-
   // Determine if this is a group chat and get relevant info
   const isGroupChat = chat?.type === 'group';
   const currentUserParticipant = chat?.participants.find(p => p.user_id === user?.id);
@@ -163,10 +158,19 @@ export default function ChatScreen() {
             const exists = prev.some(m => m.id === newMsg.id);
             if (exists) return prev;
 
-            // Remove optimistic message if this is from current user
+            // If this is from current user and we have optimistic message
             if (newMsg.sender_id === user?.id) {
-              const withoutOptimistic = prev.filter(m => !m.id.toString().startsWith('temp-'));
-              return [newMsg, ...withoutOptimistic];
+              const optimisticIndex = prev.findIndex(m => m.id.toString().startsWith('temp-'));
+              
+              if (optimisticIndex !== -1) {
+                // Update only isPending flag in place
+                const updated = [...prev];
+                updated[optimisticIndex] = {
+                  ...updated[optimisticIndex],
+                  isPending: false,
+                };
+                return updated;
+              }
             }
 
             // Add new message at the beginning (DESC order - newest first)
@@ -209,9 +213,26 @@ export default function ChatScreen() {
     if (!user) return;
 
     setError(null);
+    setUploading(true);
+
+    // Create optimistic message with local image URI
+    const optimisticMessage: MessageWithPending = {
+      id: `temp-${Date.now()}`,
+      chat_id: chatId,
+      sender_id: user.id,
+      content: '',
+      created_at: new Date().toISOString(),
+      read: false,
+      image_url: asset.uri, // Use local URI temporarily
+      audio_url: null,
+      audio_duration: null,
+      isPending: true,
+    };
+
+    // Add optimistic message immediately
+    setMessages(prev => [optimisticMessage, ...prev]);
 
     try {
-      setUploading(true);
       const imageUrl = await uploadChatImage(chatId, asset);
 
       if (!imageUrl) {
@@ -219,9 +240,12 @@ export default function ChatScreen() {
       }
 
       await sendMessage(chatId, user.id, '', imageUrl);
+      // Real message will come via real-time subscription
     } catch (error: any) {
       console.error('Error sending image:', error);
       setError(error?.message || t('error'));
+      // Remove optimistic message on error
+      setMessages(prev => prev.filter(m => m.id !== optimisticMessage.id));
     } finally {
       setUploading(false);
     }
@@ -230,8 +254,8 @@ export default function ChatScreen() {
   const sendTextMessage = useCallback(async () => {
     if (!user) return;
 
-    // Get current value directly from input
-    const currentText = inputRef.current?.value || messageTextRef.current;
+    // Get current value from ref
+    const currentText = messageTextRef.current;
     
     if (!currentText.trim()) return;
 
@@ -276,9 +300,26 @@ export default function ChatScreen() {
 
     setError(null);
     setIsRecording(false);
+    setUploading(true);
+
+    // Create optimistic message with local audio URI
+    const optimisticMessage: MessageWithPending = {
+      id: `temp-${Date.now()}`,
+      chat_id: chatId,
+      sender_id: user.id,
+      content: '',
+      created_at: new Date().toISOString(),
+      read: false,
+      image_url: null,
+      audio_url: audioUri, // Use local URI temporarily
+      audio_duration: duration,
+      isPending: true,
+    };
+
+    // Add optimistic message immediately
+    setMessages(prev => [optimisticMessage, ...prev]);
 
     try {
-      setUploading(true);
       const audioUrl = await uploadChatAudio(chatId, audioUri, user.id);
 
       if (!audioUrl) {
@@ -286,8 +327,12 @@ export default function ChatScreen() {
       }
 
       await sendMessage(chatId, user.id, '', undefined, audioUrl, duration);
+      // Real message will come via real-time subscription
     } catch (error: any) {
       console.error('Error sending audio:', error);
+      
+      // Remove optimistic message on error
+      setMessages(prev => prev.filter(m => m.id !== optimisticMessage.id));
       
       // Check if it's a bucket not found error
       if (error?.message?.includes('Bucket not found')) {
@@ -422,6 +467,7 @@ export default function ChatScreen() {
             >
               {message.image_url && (
                 <Image
+                  key={message.image_url}
                   source={{ uri: message.image_url }}
                   style={styles.messageImage}
                   resizeMode="cover"
@@ -448,7 +494,7 @@ export default function ChatScreen() {
                     <ActivityIndicator 
                       size={12} 
                       color={COLORS.WHITE} 
-                      style={styles.messageSpinner} 
+                      style={{ width: 12, height: 12 }} 
                     />
                   ) : (
                     <Text style={styles.messageStatus}>
@@ -1008,10 +1054,6 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: COLORS.ACCENT_ORANGE,
     fontWeight: '600',
-  },
-  messageSpinner: {
-    width: 12,
-    height: 12,
   },
   messageImage: {
     width: 220,
