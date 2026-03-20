@@ -153,7 +153,8 @@ export default function ChatScreen() {
               return prev;
             }
 
-            return [...prev, newMsg];
+            // Add new message at the beginning (DESC order - newest first)
+            return [newMsg, ...prev];
           });
 
           if (newMsg.sender_id !== user?.id && user) {
