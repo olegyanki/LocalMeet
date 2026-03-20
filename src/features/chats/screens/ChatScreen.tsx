@@ -41,6 +41,9 @@ import { COLORS, SHADOW } from '@shared/constants';
 
 const MAX_MESSAGE_LENGTH = 1000;
 
+// Extended message type with pending state
+type MessageWithPending = Message & { isPending?: boolean };
+
 export default function ChatScreen() {
   const { id } = useLocalSearchParams();
   const chatId = Array.isArray(id) ? id[0] : id;
@@ -49,9 +52,11 @@ export default function ChatScreen() {
   const { user } = useAuth();
   const { t, locale } = useI18n();
   const flatListRef = useRef<FlatList>(null);
+  const inputRef = useRef<TextInput>(null);
+  const messageTextRef = useRef<string>('');
 
   const [chat, setChat] = useState<ChatWithDetails | null>(null);
-  const [messages, setMessages] = useState<Message[]>([]);
+  const [messages, setMessages] = useState<MessageWithPending[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -62,6 +67,16 @@ export default function ChatScreen() {
   const [isRecording, setIsRecording] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasMoreMessages, setHasMoreMessages] = useState(true);
+
+  const handleTextChange = useCallback((text: string) => {
+    setNewMessage(text);
+    messageTextRef.current = text;
+  }, []);
+
+  const handleBlur = useCallback(() => {
+    // Update ref with final value after autocorrect
+    messageTextRef.current = newMessage;
+  }, [newMessage]);
 
   // Determine if this is a group chat and get relevant info
   const isGroupChat = chat?.type === 'group';
@@ -148,9 +163,10 @@ export default function ChatScreen() {
             const exists = prev.some(m => m.id === newMsg.id);
             if (exists) return prev;
 
-            const hasTempMsg = prev.some(m => m.id.toString().startsWith('temp-'));
-            if (hasTempMsg && newMsg.sender_id === user?.id) {
-              return prev;
+            // Remove optimistic message if this is from current user
+            if (newMsg.sender_id === user?.id) {
+              const withoutOptimistic = prev.filter(m => !m.id.toString().startsWith('temp-'));
+              return [newMsg, ...withoutOptimistic];
             }
 
             // Add new message at the beginning (DESC order - newest first)
@@ -212,20 +228,48 @@ export default function ChatScreen() {
   }, [user, chatId, t]);
 
   const sendTextMessage = useCallback(async () => {
-    if (!newMessage.trim() || !user) return;
+    if (!user) return;
 
-    const messageContent = newMessage.trim();
+    // Get current value directly from input
+    const currentText = inputRef.current?.value || messageTextRef.current;
+    
+    if (!currentText.trim()) return;
+
+    const messageContent = currentText.trim();
+    
+    // Clear input immediately
     setNewMessage('');
+    messageTextRef.current = '';
+    inputRef.current?.clear();
+    
     setError(null);
+
+    // Create optimistic message
+    const optimisticMessage: MessageWithPending = {
+      id: `temp-${Date.now()}`,
+      chat_id: chatId,
+      sender_id: user.id,
+      content: messageContent,
+      created_at: new Date().toISOString(),
+      read: false,
+      image_url: null,
+      audio_url: null,
+      audio_duration: null,
+      isPending: true,
+    };
+
+    setMessages(prev => [optimisticMessage, ...prev]);
 
     try {
       await sendMessage(chatId, user.id, messageContent);
     } catch (error: any) {
       console.error('Error sending message:', error);
       setError(error?.message || t('error'));
+      setMessages(prev => prev.filter(m => m.id !== optimisticMessage.id));
       setNewMessage(messageContent);
+      messageTextRef.current = messageContent;
     }
-  }, [newMessage, user, chatId, t]);
+  }, [user, chatId, t]);
 
   const handleSendAudioMessage = useCallback(async (audioUri: string, duration: number) => {
     if (!user) return;
@@ -319,7 +363,7 @@ export default function ChatScreen() {
     }
   }, [t]);
 
-  const renderMessage = useCallback(({ item, index }: { item: Message, index: number }) => {
+  const renderMessage = useCallback(({ item, index }: { item: MessageWithPending, index: number }) => {
     const message = item;
     const isOwnMessage = message.sender_id === user?.id;
     const messageTime = new Date(message.created_at).toLocaleTimeString('en-US', {
@@ -399,9 +443,19 @@ export default function ChatScreen() {
             <View style={[styles.messageTimeContainer, isOwnMessage && styles.ownMessageTimeContainer]}>
               <Text style={styles.messageTime}>{messageTime}</Text>
               {isOwnMessage && (
-                <Text style={styles.messageStatus}>
-                  {message.read ? '✓✓' : '✓'}
-                </Text>
+                <View style={styles.messageStatusContainer}>
+                  {message.isPending ? (
+                    <ActivityIndicator 
+                      size={12} 
+                      color={COLORS.WHITE} 
+                      style={styles.messageSpinner} 
+                    />
+                  ) : (
+                    <Text style={styles.messageStatus}>
+                      {message.read ? '✓✓' : '✓'}
+                    </Text>
+                  )}
+                </View>
               )}
             </View>
           </View>
@@ -627,11 +681,14 @@ export default function ChatScreen() {
 
             <View style={styles.inputWrapper}>
               <TextInput
+                ref={inputRef}
                 style={styles.input}
                 placeholder={t('message')}
                 placeholderTextColor={COLORS.TEXT_LIGHT + '80'}
                 value={newMessage}
-                onChangeText={setNewMessage}
+                onChangeText={handleTextChange}
+                onSubmitEditing={sendTextMessage}
+                blurOnSubmit={false}
                 multiline
                 maxLength={MAX_MESSAGE_LENGTH}
                 editable={!uploading}
@@ -640,7 +697,14 @@ export default function ChatScreen() {
 
             <TouchableOpacity
               style={styles.sendIconButton}
-              onPress={newMessage.trim() ? sendTextMessage : () => setIsRecording(true)}
+              onPress={() => {
+                if (newMessage.trim()) {
+                  // Use setTimeout to let React update state after autocorrect
+                  setTimeout(sendTextMessage, 0);
+                } else {
+                  setIsRecording(true);
+                }
+              }}
               disabled={uploading}
             >
               {newMessage.trim() ? (
@@ -934,10 +998,20 @@ const styles = StyleSheet.create({
     fontSize: 10,
     color: COLORS.TEXT_LIGHT,
   },
+  messageStatusContainer: {
+    width: 20,
+    height: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   messageStatus: {
     fontSize: 12,
     color: COLORS.ACCENT_ORANGE,
     fontWeight: '600',
+  },
+  messageSpinner: {
+    width: 12,
+    height: 12,
   },
   messageImage: {
     width: 220,
