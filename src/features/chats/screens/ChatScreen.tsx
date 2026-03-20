@@ -60,6 +60,8 @@ export default function ChatScreen() {
   const [showOptionsMenu, setShowOptionsMenu] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [hasMoreMessages, setHasMoreMessages] = useState(true);
 
   // Determine if this is a group chat and get relevant info
   const isGroupChat = chat?.type === 'group';
@@ -87,7 +89,7 @@ export default function ChatScreen() {
     try {
       const [chatData, messagesData] = await Promise.all([
         getChatDetails(chatId, user.id),
-        getChatMessages(chatId, 50), // Load last 400 messages for testing
+        getChatMessages(chatId, 50), // Load last 50 messages
       ]);
 
       if (chatData) {
@@ -95,6 +97,7 @@ export default function ChatScreen() {
       }
 
       setMessages(messagesData);
+      setHasMoreMessages(messagesData.length === 50); // If we got 50, there might be more
 
       // Mark messages as read
       await markChatAsRead(chatId, user.id);
@@ -103,6 +106,27 @@ export default function ChatScreen() {
       setError(t('error'));
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadMoreMessages = async () => {
+    if (loadingMore || !hasMoreMessages) return;
+
+    try {
+      setLoadingMore(true);
+      const offset = messages.length;
+      const olderMessages = await getChatMessages(chatId, 50, offset);
+
+      if (olderMessages.length > 0) {
+        setMessages(prev => [...prev, ...olderMessages]);
+        setHasMoreMessages(olderMessages.length === 50);
+      } else {
+        setHasMoreMessages(false);
+      }
+    } catch (error) {
+      console.error('Error loading more messages:', error);
+    } finally {
+      setLoadingMore(false);
     }
   };
 
@@ -565,6 +589,15 @@ export default function ChatScreen() {
         renderItem={renderMessage}
         contentContainerStyle={styles.messagesList}
         inverted
+        onEndReached={loadMoreMessages}
+        onEndReachedThreshold={0.5}
+        ListFooterComponent={
+          loadingMore ? (
+            <View style={styles.loadingMoreContainer}>
+              <ActivityIndicator size="small" color={COLORS.ACCENT_ORANGE} />
+            </View>
+          ) : null
+        }
         initialNumToRender={20}
         maxToRenderPerBatch={10}
         windowSize={21}
@@ -799,6 +832,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     paddingVertical: 24,
     backgroundColor: COLORS.BG_SECONDARY,
+  },
+  loadingMoreContainer: {
+    paddingVertical: 16,
+    alignItems: 'center',
   },
   dateContainer: {
     alignItems: 'center',

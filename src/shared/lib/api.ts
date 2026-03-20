@@ -960,7 +960,11 @@ export async function getMyChats(userId: string): Promise<ChatWithDetails[]> {
  * @param chatId - The chat ID to get messages for
  * @returns Promise<Message[]> - Array of messages with sender profiles
  */
-export async function getChatMessages(chatId: string, limit?: number): Promise<Message[]> {
+export async function getChatMessages(
+  chatId: string, 
+  limit?: number, 
+  offset?: number
+): Promise<Message[]> {
   let query = supabase
     .from('messages')
     .select(`
@@ -972,6 +976,10 @@ export async function getChatMessages(chatId: string, limit?: number): Promise<M
 
   if (limit) {
     query = query.limit(limit);
+  }
+
+  if (offset) {
+    query = query.range(offset, offset + (limit || 50) - 1);
   }
 
   const { data, error } = await query;
