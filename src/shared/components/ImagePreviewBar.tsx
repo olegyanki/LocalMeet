@@ -45,7 +45,7 @@ export default function ImagePreviewBar({
             onPress={() => onRemove(image.id)}
             activeOpacity={0.7}
           >
-            <X size={16} color={COLORS.WHITE} strokeWidth={3} />
+            <X size={16} color={COLORS.TEXT_LIGHT} strokeWidth={2.5} />
           </TouchableOpacity>
         </View>
       ))}
@@ -84,7 +84,9 @@ const styles = StyleSheet.create({
     width: 24,
     height: 24,
     borderRadius: 12,
-    backgroundColor: COLORS.ERROR_RED,
+    backgroundColor: COLORS.CARD_BG,
+    borderWidth: 1,
+    borderColor: COLORS.BORDER_COLOR,
     justifyContent: 'center',
     alignItems: 'center',
     ...SHADOW.elevated,
