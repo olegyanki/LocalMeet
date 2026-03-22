@@ -29,20 +29,30 @@ import {
   ChatWithDetails, // New interface for group chat system
 } from '@shared/lib/api';
 import { supabase } from '@shared/lib/supabase';
-import { uploadChatImage, uploadChatAudio } from '@shared/utils/upload';
+import { uploadChatImage, uploadChatAudio, uploadChatImages } from '@shared/utils/upload';
 import { getPluralSuffix } from '@shared/utils/pluralization';
 
 import AudioRecorder from '@shared/components/AudioRecorder';
 import AudioPlayer from '@shared/components/AudioPlayer';
 import Avatar from '@shared/components/Avatar';
 import CachedImage from '@shared/components/CachedImage';
+import ImagePreviewBar from '@shared/components/ImagePreviewBar';
+import ImageGrid from '@shared/components/ImageGrid';
 
 import { COLORS, SHADOW } from '@shared/constants';
 
 const MAX_MESSAGE_LENGTH = 1000;
+const MAX_IMAGES = 10;
 
 // Extended message type with pending state
 type MessageWithPending = Message & { isPending?: boolean };
+
+// Image preview interface for selected images
+interface ImagePreview {
+  uri: string;
+  asset: ImagePicker.ImagePickerAsset;
+  id: string;
+}
 
 export default function ChatScreen() {
   const { id } = useLocalSearchParams();
@@ -60,7 +70,6 @@ export default function ChatScreen() {
   const [newMessage, setNewMessage] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [uploading, setUploading] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showOptionsMenu, setShowOptionsMenu] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -68,10 +77,19 @@ export default function ChatScreen() {
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasMoreMessages, setHasMoreMessages] = useState(true);
 
+  // Image selection state management (Task 7.1)
+  const [selectedImages, setSelectedImages] = useState<ImagePreview[]>([]);
+  const [captionText, setCaptionText] = useState('');
+
   const handleTextChange = useCallback((text: string) => {
-    setNewMessage(text);
-    messageTextRef.current = text;
-  }, []);
+    // When images are selected, update caption text; otherwise update message text
+    if (selectedImages.length > 0) {
+      setCaptionText(text);
+    } else {
+      setNewMessage(text);
+      messageTextRef.current = text;
+    }
+  }, [selectedImages.length]);
 
   // Determine if this is a group chat and get relevant info
   const isGroupChat = chat?.type === 'group';
@@ -189,31 +207,141 @@ export default function ChatScreen() {
     };
   };
 
-  const pickImage = useCallback(async () => {
-    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-
-    if (status !== 'granted') {
-      setError(t('error'));
+  const pickImages = useCallback(async () => {
+    // Task 10.3: Check if we've reached the maximum image limit
+    if (selectedImages.length >= MAX_IMAGES) {
+      setError(t('maxImagesReached'));
       return;
     }
 
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: 'images' as any,
-      allowsEditing: true,
-      aspect: [4, 3],
-      quality: 0.8,
-    });
+    try {
+      // Task 10.2: Check permission status before launching picker
+      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
 
-    if (!result.canceled && result.assets[0]) {
-      await handleSendImageMessage(result.assets[0]);
+      if (status !== 'granted') {
+        // Task 10.2: Show permission denied error with settings option
+        setError(t('permissionDeniedMessage'));
+        return;
+      }
+
+      // Calculate remaining slots before launching picker
+      const remainingSlots = MAX_IMAGES - selectedImages.length;
+
+      // Launch image picker with multiple selection and selectionLimit
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: 'images' as any,
+        allowsMultipleSelection: true,
+        quality: 0.8,
+        selectionLimit: remainingSlots,
+      });
+
+      if (!result.canceled && result.assets.length > 0) {
+        // Create preview objects for selected images
+        const newPreviews: ImagePreview[] = result.assets.map(asset => ({
+          uri: asset.uri,
+          asset,
+          id: `preview-${Date.now()}-${Math.random()}`,
+        }));
+
+        // If this is the first image selection and there's text in newMessage,
+        // copy it to captionText
+        if (selectedImages.length === 0 && newMessage.trim()) {
+          setCaptionText(newMessage);
+          setNewMessage('');
+          messageTextRef.current = '';
+        }
+
+        // Add new images to existing selection
+        setSelectedImages(prev => [...prev, ...newPreviews]);
+      }
+    } catch (error) {
+      console.error('Error picking images:', error);
+      setError(t('error'));
     }
-  }, [t]);
+  }, [selectedImages, newMessage, t]);
+
+  const removeImage = useCallback((imageId: string) => {
+    setSelectedImages(prev => {
+      const updated = prev.filter(img => img.id !== imageId);
+      
+      // If removing the last image and there's caption text,
+      // move it back to newMessage
+      if (updated.length === 0 && captionText.trim()) {
+        setNewMessage(captionText);
+        messageTextRef.current = captionText;
+        setCaptionText('');
+      }
+      
+      return updated;
+    });
+  }, [captionText]);
+
+  // Task 7.4: Send handler for images with caption
+  const handleSendImagesWithCaption = useCallback(async () => {
+    if (!user || selectedImages.length === 0) return;
+
+    const caption = captionText.trim();
+    const assets = selectedImages.map(p => p.asset);
+    const localUris = selectedImages.map(p => p.uri);
+
+    // Create optimistic message with local URIs
+    const optimisticMessage: MessageWithPending = {
+      id: `temp-${Date.now()}`,
+      chat_id: chatId,
+      sender_id: user.id,
+      content: caption,
+      created_at: new Date().toISOString(),
+      read: false,
+      image_urls: localUris,
+      audio_url: null,
+      audio_duration: null,
+      isPending: true,
+    };
+
+    // Add optimistic message immediately
+    setMessages(prev => [optimisticMessage, ...prev]);
+
+    // Clear preview and caption immediately on send
+    setSelectedImages([]);
+    setCaptionText('');
+    setError(null);
+
+    try {
+      // Upload images using uploadChatImages utility
+      const imageUrls = await uploadChatImages(chatId, assets);
+
+      if (!imageUrls || imageUrls.length === 0) {
+        throw new Error(t('errorUploadingImages'));
+      }
+
+      // Send message with uploaded URLs and caption
+      await sendMessage(chatId, user.id, caption, undefined, undefined, imageUrls);
+      // Real message will come via real-time subscription
+    } catch (error: any) {
+      console.error('Error sending images:', error);
+      
+      // Task 10.1: Show error message on upload failure
+      setError(error?.message || t('errorUploadingImages'));
+      
+      // Task 10.1: Remove optimistic message on error
+      setMessages(prev => prev.filter(m => m.id !== optimisticMessage.id));
+      
+      // Task 10.1: Restore preview state with original images for retry
+      setSelectedImages(assets.map((asset, index) => ({
+        uri: asset.uri,
+        asset,
+        id: `preview-${Date.now()}-${index}`,
+      })));
+      
+      // Task 10.1: Restore caption text for retry
+      setCaptionText(caption);
+    }
+  }, [user, chatId, selectedImages, captionText, t]);
 
   const handleSendImageMessage = useCallback(async (asset: ImagePicker.ImagePickerAsset) => {
     if (!user) return;
 
     setError(null);
-    setUploading(true);
 
     // Create optimistic message with local image URI
     const optimisticMessage: MessageWithPending = {
@@ -223,7 +351,7 @@ export default function ChatScreen() {
       content: '',
       created_at: new Date().toISOString(),
       read: false,
-      image_url: asset.uri, // Use local URI temporarily
+      image_urls: [asset.uri],
       audio_url: null,
       audio_duration: null,
       isPending: true,
@@ -238,7 +366,6 @@ export default function ChatScreen() {
       if (!imageUrl) {
         throw new Error(t('error'));
       }
-
       await sendMessage(chatId, user.id, '', imageUrl);
       // Real message will come via real-time subscription
     } catch (error: any) {
@@ -246,8 +373,6 @@ export default function ChatScreen() {
       setError(error?.message || t('error'));
       // Remove optimistic message on error
       setMessages(prev => prev.filter(m => m.id !== optimisticMessage.id));
-    } finally {
-      setUploading(false);
     }
   }, [user, chatId, t]);
 
@@ -276,7 +401,7 @@ export default function ChatScreen() {
       content: messageContent,
       created_at: new Date().toISOString(),
       read: false,
-      image_url: null,
+      image_urls: null,
       audio_url: null,
       audio_duration: null,
       isPending: true,
@@ -300,7 +425,6 @@ export default function ChatScreen() {
 
     setError(null);
     setIsRecording(false);
-    setUploading(true);
 
     // Create optimistic message with local audio URI
     const optimisticMessage: MessageWithPending = {
@@ -310,8 +434,8 @@ export default function ChatScreen() {
       content: '',
       created_at: new Date().toISOString(),
       read: false,
-      image_url: null,
-      audio_url: audioUri, // Use local URI temporarily
+      image_urls: null,
+      audio_url: audioUri,
       audio_duration: duration,
       isPending: true,
     };
@@ -326,7 +450,7 @@ export default function ChatScreen() {
         throw new Error(t('errorUploadingAudio'));
       }
 
-      await sendMessage(chatId, user.id, '', undefined, audioUrl, duration);
+      await sendMessage(chatId, user.id, '', audioUrl, duration);
       // Real message will come via real-time subscription
     } catch (error: any) {
       console.error('Error sending audio:', error);
@@ -340,8 +464,6 @@ export default function ChatScreen() {
       } else {
         setError(error?.message || t('error'));
       }
-    } finally {
-      setUploading(false);
     }
   }, [user, chatId, t]);
 
@@ -473,14 +595,27 @@ export default function ChatScreen() {
                 message.audio_url && styles.audioBubble,
               ]}
             >
-              {message.image_url && (
-                <CachedImage
-                  uri={message.image_url}
-                  style={styles.messageImage}
-                  contentFit="cover"
-                  borderRadius={12}
-                />
-              )}
+              {/* Render ImageGrid when images present */}
+              {(() => {
+                const imageUrls = message.image_urls;
+                
+                if (imageUrls && imageUrls.length > 0) {
+                  return (
+                    <View style={{ marginBottom: message.content ? 8 : 0 }}>
+                      <ImageGrid
+                        images={imageUrls}
+                        maxWidth={220}
+                        onImagePress={(images, index) => {
+                          // TODO: Open full-screen image viewer
+                          console.log('Image pressed:', index);
+                        }}
+                      />
+                    </View>
+                  );
+                }
+                return null;
+              })()}
+              
               {message.audio_url && message.audio_duration ? (
                 <AudioPlayer
                   audioUrl={message.audio_url}
@@ -720,6 +855,17 @@ export default function ChatScreen() {
         removeClippedSubviews={true}
       />
 
+      {/* Image Preview Bar - Show above input when images selected */}
+      {selectedImages.length > 0 && (
+        <View style={styles.previewBarContainer}>
+          <ImagePreviewBar
+            images={selectedImages}
+            onRemove={removeImage}
+            maxImages={MAX_IMAGES}
+          />
+        </View>
+      )}
+
       <View style={[styles.inputContainer, { paddingBottom: insets.bottom + 8 }]}>
         {isRecording ? (
           <AudioRecorder
@@ -730,45 +876,41 @@ export default function ChatScreen() {
           <>
             <TouchableOpacity
               style={styles.inputIconButton}
-              onPress={pickImage}
-              disabled={uploading}
+              onPress={pickImages}
             >
-              {uploading ? (
-                <ActivityIndicator size="small" color={COLORS.TEXT_LIGHT} />
-              ) : (
-                <Plus size={30} color={COLORS.TEXT_LIGHT} strokeWidth={1.5} />
-              )}
+              <Plus size={30} color={COLORS.TEXT_LIGHT} strokeWidth={1.5} />
             </TouchableOpacity>
 
             <View style={styles.inputWrapper}>
               <TextInput
                 ref={inputRef}
                 style={styles.input}
-                placeholder={t('message')}
+                placeholder={selectedImages.length > 0 ? t('addCaption') : t('message')}
                 placeholderTextColor={COLORS.TEXT_LIGHT + '80'}
-                value={newMessage}
+                value={selectedImages.length > 0 ? captionText : newMessage}
                 onChangeText={handleTextChange}
                 onSubmitEditing={sendTextMessage}
                 blurOnSubmit={false}
                 multiline
                 maxLength={MAX_MESSAGE_LENGTH}
-                editable={!uploading}
               />
             </View>
 
             <TouchableOpacity
               style={styles.sendIconButton}
               onPress={() => {
-                if (newMessage.trim()) {
+                // When images are selected, send images with caption
+                if (selectedImages.length > 0) {
+                  handleSendImagesWithCaption();
+                } else if (newMessage.trim()) {
                   // Use setTimeout to let React update state after autocorrect
                   setTimeout(sendTextMessage, 0);
                 } else {
                   setIsRecording(true);
                 }
               }}
-              disabled={uploading}
             >
-              {newMessage.trim() ? (
+              {selectedImages.length > 0 || newMessage.trim() ? (
                 <ChevronLeft 
                   size={30} 
                   color={COLORS.ACCENT_ORANGE} 
@@ -1075,6 +1217,9 @@ const styles = StyleSheet.create({
     height: 220,
     borderRadius: 12,
     marginBottom: 8,
+  },
+  previewBarContainer: {
+    backgroundColor: COLORS.BG_SECONDARY,
   },
   inputContainer: {
     flexDirection: 'row',

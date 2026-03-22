@@ -123,7 +123,7 @@ export type Database = {
           content: string
           created_at: string
           id: string
-          image_url: string | null
+          image_urls: Json | null
           read: boolean
           sender_id: string
         }
@@ -134,7 +134,7 @@ export type Database = {
           content: string
           created_at?: string
           id?: string
-          image_url?: string | null
+          image_urls?: Json | null
           read?: boolean
           sender_id: string
         }
@@ -145,7 +145,7 @@ export type Database = {
           content?: string
           created_at?: string
           id?: string
-          image_url?: string | null
+          image_urls?: Json | null
           read?: boolean
           sender_id?: string
         }
@@ -358,8 +358,10 @@ export type Database = {
           chat_id: string
           chat_type: string
           chat_updated_at: string
+          last_message_audio_url: string
           last_message_content: string
           last_message_created_at: string
+          last_message_image_urls: Json
           last_message_read: boolean
           last_message_sender_id: string
           participant_avatar_urls: string[]

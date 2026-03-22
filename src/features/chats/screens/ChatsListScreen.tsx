@@ -158,10 +158,28 @@ export default function ChatsScreen() {
       avatarUrl = otherParticipant?.profile.avatar_url || null;
     }
 
-    const lastMessageText = item.lastMessage?.content 
-      || (item.lastMessage?.image_url ? '📷 ' + t('photo') : '')
-      || (item.lastMessage?.audio_url ? '🎤 ' + t('voiceMessage') : '')
-      || (isGroupChat ? t('groupChatCreated') : displayName);
+    // Update last message preview to show image icon and caption
+    let lastMessageText = '';
+    if (item.lastMessage) {
+      // Check for images
+      const hasImages = item.lastMessage.image_urls && item.lastMessage.image_urls.length > 0;
+      
+      if (hasImages) {
+        // Show image icon with caption if present
+        if (item.lastMessage.content) {
+          lastMessageText = '📷 ' + item.lastMessage.content;
+        } else {
+          lastMessageText = '📷 ' + t('photo');
+        }
+      } else if (item.lastMessage.audio_url) {
+        lastMessageText = '🎤 ' + t('voiceMessage');
+      } else {
+        lastMessageText = item.lastMessage.content;
+      }
+    } else {
+      lastMessageText = isGroupChat ? t('groupChatCreated') : displayName;
+    }
+    
     const isUnread = item.lastMessage && !item.lastMessage.read && item.lastMessage.sender_id !== user?.id;
 
     // For group chats, use event image or first participant avatar

@@ -678,7 +678,7 @@ export interface ChatWithDetails {
     created_at: string;
     sender_id: string;
     read: boolean;
-    image_url?: string | null;
+    image_urls?: string[] | null;
     audio_url?: string | null;
   };
   unread_count: number;
@@ -774,7 +774,7 @@ export interface Message {
   chat_id: string;
   sender_id: string;
   content: string;
-  image_url: string | null;
+  image_urls: string[] | null;
   audio_url: string | null;
   audio_duration: number | null;
   created_at: string;
@@ -855,27 +855,6 @@ export async function sendTextMessage(
 }
 
 /**
- * Send an image message
- */
-export async function sendImageMessage(
-  chatId: string,
-  senderId: string,
-  imageUrl: string
-): Promise<void> {
-  const { error } = await supabase.from('messages').insert({
-    chat_id: chatId,
-    sender_id: senderId,
-    content: '',
-    image_url: imageUrl,
-  });
-
-  if (error) {
-    console.error('Error sending image message:', error);
-    throw error;
-  }
-}
-
-/**
  * Send an audio message
  */
 export async function sendAudioMessage(
@@ -947,12 +926,12 @@ export async function getMyChats(userId: string): Promise<ChatWithDetails[]> {
         social_telegram: null,
       },
     })),
-    lastMessage: row.last_message_content || row.last_message_image_url || row.last_message_audio_url ? {
+    lastMessage: row.last_message_content || row.last_message_image_urls || row.last_message_audio_url ? {
       content: row.last_message_content,
       created_at: row.last_message_created_at,
       sender_id: row.last_message_sender_id,
       read: row.last_message_read,
-      image_url: row.last_message_image_url,
+      image_urls: row.last_message_image_urls,
       audio_url: row.last_message_audio_url,
     } : undefined,
     unread_count: row.unread_count,
@@ -1005,18 +984,18 @@ export async function getChatMessages(
  * @param chatId - The chat ID to send message to
  * @param senderId - The sender's user ID
  * @param content - The message content
- * @param imageUrl - Optional image URL
  * @param audioUrl - Optional audio URL
  * @param audioDuration - Optional audio duration in seconds
+ * @param imageUrls - Optional array of image URLs
  * @returns Promise<Message> - The created message with sender profile
  */
 export async function sendMessage(
   chatId: string,
   senderId: string,
   content: string,
-  imageUrl?: string,
   audioUrl?: string,
-  audioDuration?: number
+  audioDuration?: number,
+  imageUrls?: string[]
 ): Promise<Message> {
   const { data, error } = await supabase
     .from('messages')
@@ -1024,7 +1003,7 @@ export async function sendMessage(
       chat_id: chatId,
       sender_id: senderId,
       content,
-      image_url: imageUrl,
+      image_urls: imageUrls || null,
       audio_url: audioUrl,
       audio_duration: audioDuration,
     })
@@ -1130,6 +1109,18 @@ export async function getChatDetails(chatId: string, userId: string): Promise<Ch
 
   if (!data || data.length === 0) return null;
 
+  // Get chat created_at timestamp
+  const { data: chatData, error: chatError } = await supabase
+    .from('chats')
+    .select('created_at')
+    .eq('id', chatId)
+    .single();
+
+  if (chatError) {
+    console.error('Error fetching chat created_at:', chatError);
+    throw new Error(`Failed to fetch chat created_at: ${chatError.message}`);
+  }
+
   // Transform RPC result to ChatWithDetails format
   const firstRow = data[0];
   
@@ -1161,6 +1152,7 @@ export async function getChatDetails(chatId: string, userId: string): Promise<Ch
       },
     })),
     unread_count: 0, // Not available in this query
+    created_at: chatData.created_at,
   };
 }
 
