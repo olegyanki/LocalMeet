@@ -701,6 +701,10 @@ export default function ChatScreen() {
         renderItem={renderMessage}
         contentContainerStyle={styles.messagesList}
         inverted
+        maintainVisibleContentPosition={{
+          minIndexForVisible: 0,
+          autoscrollToTopThreshold: 10,
+        }}
         onEndReached={loadMoreMessages}
         onEndReachedThreshold={0.5}
         ListFooterComponent={
