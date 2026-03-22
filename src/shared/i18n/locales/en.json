@@ -311,5 +311,7 @@
   "errorMarkingAsRead": "Failed to mark as read",
   "ownerCannotLeaveChat": "Event owner cannot leave the chat",
   "badgeNotifications": "{{count}} notifications",
-  "badgeAccessibilityLabel": "{{count}} notifications: {{unread}} unread messages and {{pending}} pending requests"
+  "badgeAccessibilityLabel": "{{count}} notifications: {{unread}} unread messages and {{pending}} pending requests",
+  "photo": "Photo",
+  "voiceMessage": "Voice message"
 }

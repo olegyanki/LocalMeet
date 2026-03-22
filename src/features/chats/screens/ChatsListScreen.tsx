@@ -41,6 +41,19 @@ export default function ChatsScreen() {
     shouldLoad: !!user,
   });
 
+  // Sort chats by last message time (newest first)
+  const sortedChats = useMemo(() => {
+    return [...chats].sort((a, b) => {
+      const timeA = a.lastMessage?.created_at 
+        ? new Date(a.lastMessage.created_at).getTime() 
+        : new Date(a.created_at).getTime();
+      const timeB = b.lastMessage?.created_at 
+        ? new Date(b.lastMessage.created_at).getTime() 
+        : new Date(b.created_at).getTime();
+      return timeB - timeA; // DESC order (newest first)
+    });
+  }, [chats]);
+
   // Separate pending and past requests
   const pendingRequests = useMemo(() => {
     return requests.filter(r => r.status === 'pending');
@@ -70,8 +83,8 @@ export default function ChatsScreen() {
 
   // Count unread messages using the new unread_count field
   const unreadCount = useMemo(() => {
-    return chats.reduce((total, chat) => total + (chat.unread_count || 0), 0);
-  }, [chats]);
+    return sortedChats.reduce((total, chat) => total + (chat.unread_count || 0), 0);
+  }, [sortedChats]);
 
   // Count pending requests
   const pendingCount = useMemo(() => {
@@ -145,7 +158,10 @@ export default function ChatsScreen() {
       avatarUrl = otherParticipant?.profile.avatar_url || null;
     }
 
-    const lastMessageText = item.lastMessage?.content || (isGroupChat ? t('groupChatCreated') : displayName);
+    const lastMessageText = item.lastMessage?.content 
+      || (item.lastMessage?.image_url ? '📷 ' + t('photo') : '')
+      || (item.lastMessage?.audio_url ? '🎤 ' + t('voiceMessage') : '')
+      || (isGroupChat ? t('groupChatCreated') : displayName);
     const isUnread = item.lastMessage && !item.lastMessage.read && item.lastMessage.sender_id !== user?.id;
 
     // For group chats, use event image or first participant avatar
@@ -288,7 +304,7 @@ export default function ChatsScreen() {
       );
     }
 
-    if (chats.length === 0) {
+    if (sortedChats.length === 0) {
       return (
         <ScrollView
           contentContainerStyle={styles.emptyState}
@@ -303,7 +319,7 @@ export default function ChatsScreen() {
 
     return (
       <FlatList
-        data={chats}
+        data={sortedChats}
         keyExtractor={(item) => item.id}
         renderItem={renderChatItem}
         contentContainerStyle={{ paddingTop: 4, paddingBottom: insets.bottom + 80 }}

@@ -678,8 +678,11 @@ export interface ChatWithDetails {
     created_at: string;
     sender_id: string;
     read: boolean;
+    image_url?: string | null;
+    audio_url?: string | null;
   };
   unread_count: number;
+  created_at: string;
 }
 
 // Legacy interface for backward compatibility
@@ -944,13 +947,16 @@ export async function getMyChats(userId: string): Promise<ChatWithDetails[]> {
         social_telegram: null,
       },
     })),
-    lastMessage: row.last_message_content ? {
+    lastMessage: row.last_message_content || row.last_message_image_url || row.last_message_audio_url ? {
       content: row.last_message_content,
       created_at: row.last_message_created_at,
       sender_id: row.last_message_sender_id,
       read: row.last_message_read,
+      image_url: row.last_message_image_url,
+      audio_url: row.last_message_audio_url,
     } : undefined,
     unread_count: row.unread_count,
+    created_at: row.chat_updated_at,
   }));
 }
 

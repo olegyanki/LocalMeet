@@ -312,5 +312,7 @@
   "errorMarkingAsRead": "Не вдалося позначити як прочитане",
   "ownerCannotLeaveChat": "Власник івенту не може покинути чат",
   "badgeNotifications": "{{count}} сповіщень",
-  "badgeAccessibilityLabel": "{{count}} сповіщень: {{unread}} непрочитаних повідомлень та {{pending}} запитів в очікуванні"
+  "badgeAccessibilityLabel": "{{count}} сповіщень: {{unread}} непрочитаних повідомлень та {{pending}} запитів в очікуванні",
+  "photo": "Фото",
+  "voiceMessage": "Голосове повідомлення"
 }
