@@ -446,13 +446,21 @@ export default function ChatScreen() {
           ]}
         >
           {!isOwnMessage && (
-            <View style={styles.avatarContainer}>
+            <TouchableOpacity 
+              style={styles.avatarContainer}
+              onPress={() => {
+                if (message.sender_id && message.sender_id !== user?.id) {
+                  router.push(`/user/${message.sender_id}`);
+                }
+              }}
+              activeOpacity={0.7}
+            >
               <Avatar
                 uri={senderAvatar}
                 size={32}
                 name={senderName}
               />
-            </View>
+            </TouchableOpacity>
           )}
           <View style={[styles.messageContent, isOwnMessage && styles.ownMessageContent]}>
             {!isOwnMessage && isGroupChat && (
