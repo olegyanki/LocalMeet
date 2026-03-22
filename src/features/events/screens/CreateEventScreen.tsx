@@ -13,7 +13,7 @@ import {
   Dimensions,
   TouchableOpacity,
 } from 'react-native';
-import { Image } from 'expo-image';
+import CachedImage from '@shared/components/CachedImage';
 import MapPreview from '@shared/components/MapPreview';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Location from 'expo-location';
@@ -321,11 +321,11 @@ export default function CreateEventScreen() {
             ]} onPress={pickCoverImage}>
               {coverImage ? (
                 <>
-                  <Image 
-                    source={{ uri: coverImage }} 
+                  <CachedImage
+                    uri={coverImage}
                     style={styles.coverImage}
                     contentFit="cover"
-                    cachePolicy="memory-disk"
+                    borderRadius={16}
                   />
                   <Pressable style={styles.removeCoverButton} onPress={() => setCoverImage(null)}>
                     <X size={16} color="#FFF" />
@@ -333,11 +333,12 @@ export default function CreateEventScreen() {
                 </>
               ) : (
                 <>
-                  <Image 
-                    source={{ uri: 'https://images.unsplash.com/photo-1557804506-669a67965ba0?w=400&h=200&fit=crop&crop=entropy&auto=format&q=60' }}
+                  <CachedImage
+                    uri="https://images.unsplash.com/photo-1557804506-669a67965ba0?w=400&h=200&fit=crop&crop=entropy&auto=format&q=60"
                     style={styles.backgroundImage}
                     contentFit="cover"
-                    cachePolicy="memory-disk"
+                    borderRadius={16}
+                    showShimmer={false}
                   />
                   <View style={styles.coverPhotoOverlay}>
                     <View style={styles.coverPhotoIcon}>

@@ -10,9 +10,7 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Modal,
-  Animated,
 } from 'react-native';
-import { Image } from 'expo-image';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as ImagePicker from 'expo-image-picker';
@@ -37,6 +35,7 @@ import { getPluralSuffix } from '@shared/utils/pluralization';
 import AudioRecorder from '@shared/components/AudioRecorder';
 import AudioPlayer from '@shared/components/AudioPlayer';
 import Avatar from '@shared/components/Avatar';
+import CachedImage from '@shared/components/CachedImage';
 
 import { COLORS, SHADOW } from '@shared/constants';
 
@@ -44,41 +43,6 @@ const MAX_MESSAGE_LENGTH = 1000;
 
 // Extended message type with pending state
 type MessageWithPending = Message & { isPending?: boolean };
-
-// Shimmer loading component for images
-const ImageShimmer = () => {
-  const shimmerAnim = useRef(new Animated.Value(0)).current;
-
-  useEffect(() => {
-    const animation = Animated.loop(
-      Animated.timing(shimmerAnim, {
-        toValue: 1,
-        duration: 1200,
-        useNativeDriver: true,
-      })
-    );
-    animation.start();
-    return () => animation.stop();
-  }, []);
-
-  const translateX = shimmerAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: [-100, 320],
-  });
-
-  return (
-    <View style={styles.shimmerContainer}>
-      <Animated.View
-        style={[
-          styles.shimmerWave,
-          {
-            transform: [{ translateX }],
-          },
-        ]}
-      />
-    </View>
-  );
-};
 
 export default function ChatScreen() {
   const { id } = useLocalSearchParams();
@@ -502,19 +466,12 @@ export default function ChatScreen() {
               ]}
             >
               {message.image_url && (
-                <View style={styles.imageWrapper}>
-                  <View style={styles.shimmerOverlay}>
-                    <ImageShimmer />
-                  </View>
-                  <Image
-                    key={message.image_url}
-                    source={{ uri: message.image_url }}
-                    style={styles.messageImage}
-                    contentFit="cover"
-                    cachePolicy="memory-disk"
-                    transition={300}
-                  />
-                </View>
+                <CachedImage
+                  uri={message.image_url}
+                  style={styles.messageImage}
+                  contentFit="cover"
+                  borderRadius={12}
+                />
               )}
               {message.audio_url && message.audio_duration ? (
                 <AudioPlayer
@@ -587,11 +544,12 @@ export default function ChatScreen() {
         <View style={styles.headerAvatarContainer}>
           {isGroupChat ? (
             chat.walk_image_url ? (
-              <Image
-                source={{ uri: chat.walk_image_url }}
+              <CachedImage
+                uri={chat.walk_image_url}
                 style={styles.headerEventImage}
                 contentFit="cover"
-                cachePolicy="memory-disk"
+                borderRadius={12}
+                showShimmer={false}
               />
             ) : (
               <View style={styles.headerGroupIcon}>
@@ -1105,34 +1063,6 @@ const styles = StyleSheet.create({
     height: 220,
     borderRadius: 12,
     marginBottom: 8,
-  },
-  imageWrapper: {
-    position: 'relative',
-    width: 220,
-    height: 220,
-    borderRadius: 12,
-    marginBottom: 8,
-    overflow: 'hidden',
-    backgroundColor: COLORS.BG_SECONDARY,
-  },
-  shimmerOverlay: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-  },
-  shimmerContainer: {
-    width: '100%',
-    height: '100%',
-    backgroundColor: COLORS.BG_SECONDARY,
-    overflow: 'hidden',
-  },
-  shimmerWave: {
-    width: 100,
-    height: '100%',
-    backgroundColor: 'rgba(255, 255, 255, 0.15)',
-    transform: [{ skewX: '-20deg' }],
   },
   inputContainer: {
     flexDirection: 'row',

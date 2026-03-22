@@ -9,7 +9,7 @@ import {
   Linking,
   Platform,
 } from 'react-native';
-import { Image } from 'expo-image';
+import CachedImage from '@shared/components/CachedImage';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams } from 'expo-router';
 import { Clock, Calendar, MapPin, ChevronLeft, ChevronRight } from 'lucide-react-native';
@@ -471,11 +471,11 @@ export default function EventDetailsScreen() {
         {/* Hero Image */}
         <View style={styles.heroContainer}>
           {heroImage && (
-            <Image 
-              source={{ uri: heroImage }} 
+            <CachedImage
+              uri={heroImage}
               style={styles.heroImage}
               contentFit="cover"
-              cachePolicy="memory-disk"
+              borderRadius={0}
             />
           )}
           <View style={styles.heroGradient} />

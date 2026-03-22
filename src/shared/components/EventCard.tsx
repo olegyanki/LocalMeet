@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
-import { Image } from 'expo-image';
 import { MapPin, ImageIcon, Clock } from 'lucide-react-native';
 import Avatar from '@shared/components/Avatar';
+import CachedImage from '@shared/components/CachedImage';
 import { COLORS, SHADOW } from '@shared/constants';
 import { NearbyWalk } from '@shared/lib/api';
 import { TranslationKey } from '@shared/i18n/translations';
@@ -89,12 +89,11 @@ export default React.memo(function EventCard({
         {/* Event Image */}
         <View style={styles.imageContainer}>
           {eventImageUrl && !imageError ? (
-            <Image
-              source={{ uri: eventImageUrl }}
+            <CachedImage
+              uri={eventImageUrl}
               style={styles.eventImage}
               contentFit="cover"
-              cachePolicy="memory-disk"
-              onError={() => setImageError(true)}
+              borderRadius={34}
             />
           ) : (
             <View style={[styles.eventImage, styles.imagePlaceholder]}>

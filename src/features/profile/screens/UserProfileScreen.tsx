@@ -10,7 +10,7 @@ import {
   Dimensions,
   Linking,
 } from 'react-native';
-import { Image } from 'expo-image';
+import CachedImage from '@shared/components/CachedImage';
 
 // Third-party libraries
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -253,11 +253,12 @@ export default function UserProfileScreen() {
             onPress={() => setIsImageModalVisible(false)}
           >
             {profile?.avatar_url && (
-              <Image
-                source={{ uri: profile.avatar_url }}
+              <CachedImage
+                uri={profile.avatar_url}
                 style={styles.fullScreenImage}
                 contentFit="contain"
-                cachePolicy="memory-disk"
+                borderRadius={0}
+                showShimmer={false}
               />
             )}
           </TouchableOpacity>
