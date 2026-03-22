@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Image, Text, StyleSheet, ViewStyle } from 'react-native';
+import { View, Text, StyleSheet, ViewStyle } from 'react-native';
+import { Image } from 'expo-image';
 import { COLORS } from '../constants/colors';
 import GradientView from './GradientView';
 
@@ -16,7 +17,14 @@ export default function Avatar({ uri, name, size = 60, style, shape = 'circle' }
   const avatarSize = { width: size, height: size, borderRadius };
 
   if (uri) {
-    return <Image source={{ uri }} style={[styles.avatar, avatarSize, style]} />;
+    return (
+      <Image 
+        source={{ uri }} 
+        style={[styles.avatar, avatarSize, style]} 
+        contentFit="cover"
+        cachePolicy="memory-disk"
+      />
+    );
   }
 
   const initial = name && name.length > 0 ? name.charAt(0).toUpperCase() : '?';

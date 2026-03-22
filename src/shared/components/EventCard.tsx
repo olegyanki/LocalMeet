@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, Pressable, Image } from 'react-native';
+import { View, Text, StyleSheet, Pressable } from 'react-native';
+import { Image } from 'expo-image';
 import { MapPin, ImageIcon, Clock } from 'lucide-react-native';
 import Avatar from '@shared/components/Avatar';
 import { COLORS, SHADOW } from '@shared/constants';
@@ -91,6 +92,8 @@ export default React.memo(function EventCard({
             <Image
               source={{ uri: eventImageUrl }}
               style={styles.eventImage}
+              contentFit="cover"
+              cachePolicy="memory-disk"
               onError={() => setImageError(true)}
             />
           ) : (

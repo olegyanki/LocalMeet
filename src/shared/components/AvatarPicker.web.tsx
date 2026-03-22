@@ -1,5 +1,6 @@
 import React, { useRef } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Image } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { Image } from 'expo-image';
 import { Camera } from 'lucide-react-native';
 import { useI18n } from '@shared/i18n';
 import { COLORS } from '@shared/constants';
@@ -58,7 +59,12 @@ export default function AvatarPicker({
         disabled={!isEditing}
         style={styles.avatarContainer}
       >
-        <Image source={{ uri: avatarUri }} style={styles.avatar} />
+        <Image 
+          source={{ uri: avatarUri }} 
+          style={styles.avatar} 
+          contentFit="cover"
+          cachePolicy="memory-disk"
+        />
         {isEditing && (
           <View style={styles.editBadge}>
             <Camera size={16} color={COLORS.WHITE} />

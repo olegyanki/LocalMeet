@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Image, ActivityIndicator, Alert, ImageBackground } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, ActivityIndicator, Alert } from 'react-native';
+import { Image } from 'expo-image';
 import { Camera, ImageIcon } from 'lucide-react-native';
 import { pickAndUploadAvatar, takePhotoAndUploadAvatar } from '@shared/lib';
 import { useI18n } from '@shared/i18n';
@@ -96,7 +97,12 @@ export default function AvatarPicker({
         style={styles.avatarContainer}
       >
         {currentAvatar ? (
-          <Image source={{ uri: avatarUri }} style={styles.avatar} />
+          <Image 
+            source={{ uri: avatarUri }} 
+            style={styles.avatar} 
+            contentFit="cover"
+            cachePolicy="memory-disk"
+          />
         ) : (
           <LinearGradient
             colors={GRADIENT_COLORS}

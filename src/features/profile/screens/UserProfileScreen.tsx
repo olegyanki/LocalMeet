@@ -6,11 +6,11 @@ import {
   TouchableOpacity,
   ScrollView,
   ActivityIndicator,
-  Image,
   Modal,
   Dimensions,
   Linking,
 } from 'react-native';
+import { Image } from 'expo-image';
 
 // Third-party libraries
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -256,7 +256,8 @@ export default function UserProfileScreen() {
               <Image
                 source={{ uri: profile.avatar_url }}
                 style={styles.fullScreenImage}
-                resizeMode="contain"
+                contentFit="contain"
+                cachePolicy="memory-disk"
               />
             )}
           </TouchableOpacity>

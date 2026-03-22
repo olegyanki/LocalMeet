@@ -6,10 +6,10 @@ import {
   ScrollView,
   TouchableOpacity,
   ActivityIndicator,
-  Image,
   Linking,
   Platform,
 } from 'react-native';
+import { Image } from 'expo-image';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams } from 'expo-router';
 import { Clock, Calendar, MapPin, ChevronLeft, ChevronRight } from 'lucide-react-native';
@@ -470,7 +470,14 @@ export default function EventDetailsScreen() {
       >
         {/* Hero Image */}
         <View style={styles.heroContainer}>
-          {heroImage && <Image source={{ uri: heroImage }} style={styles.heroImage} />}
+          {heroImage && (
+            <Image 
+              source={{ uri: heroImage }} 
+              style={styles.heroImage}
+              contentFit="cover"
+              cachePolicy="memory-disk"
+            />
+          )}
           <View style={styles.heroGradient} />
         </View>
 
