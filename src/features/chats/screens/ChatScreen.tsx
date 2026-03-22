@@ -607,17 +607,15 @@ export default function ChatScreen() {
                 
                 if (imageUrls && imageUrls.length > 0) {
                   return (
-                    <View style={{ marginBottom: message.content ? 8 : 0 }}>
-                      <ImageGrid
-                        images={imageUrls}
-                        maxWidth={260}
-                        hasCaption={!!message.content}
-                        onImagePress={(images, index) => {
-                          // TODO: Open full-screen image viewer
-                          console.log('Image pressed:', index);
-                        }}
-                      />
-                    </View>
+                    <ImageGrid
+                      images={imageUrls}
+                      maxWidth={260}
+                      hasCaption={!!message.content}
+                      onImagePress={(images, index) => {
+                        // TODO: Open full-screen image viewer
+                        console.log('Image pressed:', index);
+                      }}
+                    />
                   );
                 }
                 return null;
@@ -1147,8 +1145,8 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   messageContent: {
-    flex: 1,
     marginLeft: 12,
+    alignSelf: 'flex-start',
   },
   ownMessageContent: {
     marginLeft: 0,
@@ -1169,6 +1167,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 16,
     borderRadius: 24,
+    overflow: 'visible',
+    alignSelf: 'flex-start',
     ...SHADOW.standard,
   },
   audioBubble: {
@@ -1178,7 +1178,8 @@ const styles = StyleSheet.create({
   imageBubble: {
     width: 260,
     paddingHorizontal: 0,
-    paddingVertical: 0,
+    paddingTop: 0,
+    paddingBottom: 0,
   },
   imageBubbleOnly: {
     padding: 0,
@@ -1199,11 +1200,12 @@ const styles = StyleSheet.create({
   },
   messageText: {
     fontSize: 14,
-    lineHeight: 21,
+    lineHeight: 20,
   },
   captionTextContainer: {
     paddingHorizontal: 12,
-    paddingBottom: 8,
+    paddingTop: 8,
+    paddingBottom: 12,
   },
   ownMessageText: {
     color: COLORS.WHITE,
