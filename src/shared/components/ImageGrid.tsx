@@ -160,7 +160,7 @@ export default function ImageGrid({ images, maxWidth, onImagePress, hasCaption =
 
 // Layout algorithm for image grid
 function calculateGridLayout(count: number, maxWidth: number) {
-  const GAP = 2; // Gap between images (reduced from 4px to 2px)
+  const GAP = 0; // No gap between images
 
   if (count === 1) {
     return {
@@ -174,8 +174,8 @@ function calculateGridLayout(count: number, maxWidth: number) {
   if (count === 2) {
     return {
       imageStyle: {
-        width: (maxWidth - GAP) / 2,
-        height: (maxWidth - GAP) / 2,
+        width: maxWidth / 2,
+        height: maxWidth / 2,
       },
     };
   }
@@ -183,8 +183,8 @@ function calculateGridLayout(count: number, maxWidth: number) {
   if (count === 3) {
     return {
       imageStyle: {
-        width: (maxWidth - GAP * 2) / 3,
-        height: (maxWidth - GAP * 2) / 3,
+        width: maxWidth / 3,
+        height: maxWidth / 3,
       },
     };
   }
@@ -192,8 +192,8 @@ function calculateGridLayout(count: number, maxWidth: number) {
   // 4+ images: 2x2 grid
   return {
     imageStyle: {
-      width: (maxWidth - GAP) / 2,
-      height: (maxWidth - GAP) / 2,
+      width: maxWidth / 2,
+      height: maxWidth / 2,
     },
   };
 }
@@ -204,14 +204,14 @@ const styles = StyleSheet.create({
   },
   rowContainer: {
     flexDirection: 'row',
-    gap: 2,
+    gap: 0,
   },
   gridContainer: {
-    gap: 2,
+    gap: 0,
   },
   gridRow: {
     flexDirection: 'row',
-    gap: 2,
+    gap: 0,
   },
   lastImageContainer: {
     position: 'relative',
