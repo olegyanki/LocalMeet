@@ -7,9 +7,10 @@ interface ImageGridProps {
   images: string[];
   maxWidth: number;
   onImagePress?: (images: string[], index: number) => void;
+  hasCaption?: boolean;
 }
 
-export default function ImageGrid({ images, maxWidth, onImagePress }: ImageGridProps) {
+export default function ImageGrid({ images, maxWidth, onImagePress, hasCaption = false }: ImageGridProps) {
   if (!images || images.length === 0) {
     return null;
   }
@@ -24,18 +25,27 @@ export default function ImageGrid({ images, maxWidth, onImagePress }: ImageGridP
     }
   };
 
-  // Single image - square layout
+  const cornerRadius = 20;
+
+  // Single image - apply border radius based on caption
   if (images.length === 1) {
     return (
       <TouchableOpacity
         activeOpacity={0.9}
         onPress={() => handleImagePress(0)}
+        style={{ 
+          overflow: 'hidden', 
+          borderTopLeftRadius: cornerRadius,
+          borderTopRightRadius: cornerRadius,
+          borderBottomLeftRadius: hasCaption ? 0 : cornerRadius,
+          borderBottomRightRadius: hasCaption ? 0 : cornerRadius,
+        }}
       >
         <CachedImage
           uri={images[0]}
           style={{ ...styles.image, ...layout.imageStyle }}
           contentFit="cover"
-          borderRadius={8}
+          borderRadius={0}
         />
       </TouchableOpacity>
     );
@@ -45,20 +55,37 @@ export default function ImageGrid({ images, maxWidth, onImagePress }: ImageGridP
   if (images.length === 2 || images.length === 3) {
     return (
       <View style={styles.rowContainer}>
-        {images.map((uri, index) => (
-          <TouchableOpacity
-            key={index}
-            activeOpacity={0.9}
-            onPress={() => handleImagePress(index)}
-          >
-            <CachedImage
-              uri={uri}
-              style={{ ...styles.image, ...layout.imageStyle }}
-              contentFit="cover"
-              borderRadius={8}
-            />
-          </TouchableOpacity>
-        ))}
+        {images.map((uri, index) => {
+          // First image gets top-left corner, last image gets top-right corner
+          let borderRadiusStyle = {};
+          if (index === 0) {
+            borderRadiusStyle = {
+              borderTopLeftRadius: cornerRadius,
+              borderBottomLeftRadius: hasCaption ? 0 : cornerRadius,
+            };
+          } else if (index === images.length - 1) {
+            borderRadiusStyle = {
+              borderTopRightRadius: cornerRadius,
+              borderBottomRightRadius: hasCaption ? 0 : cornerRadius,
+            };
+          }
+
+          return (
+            <TouchableOpacity
+              key={index}
+              activeOpacity={0.9}
+              onPress={() => handleImagePress(index)}
+              style={{ overflow: 'hidden', ...borderRadiusStyle }}
+            >
+              <CachedImage
+                uri={uri}
+                style={{ ...styles.image, ...layout.imageStyle }}
+                contentFit="cover"
+                borderRadius={0}
+              />
+            </TouchableOpacity>
+          );
+        })}
       </View>
     );
   }
@@ -67,51 +94,58 @@ export default function ImageGrid({ images, maxWidth, onImagePress }: ImageGridP
   return (
     <View style={styles.gridContainer}>
       <View style={styles.gridRow}>
+        {/* Top-left image */}
         <TouchableOpacity
           activeOpacity={0.9}
           onPress={() => handleImagePress(0)}
+          style={{ overflow: 'hidden', borderTopLeftRadius: cornerRadius }}
         >
           <CachedImage
             uri={displayImages[0]}
             style={{ ...styles.image, ...layout.imageStyle }}
             contentFit="cover"
-            borderRadius={8}
+            borderRadius={0}
           />
         </TouchableOpacity>
+        {/* Top-right image */}
         <TouchableOpacity
           activeOpacity={0.9}
           onPress={() => handleImagePress(1)}
+          style={{ overflow: 'hidden', borderTopRightRadius: cornerRadius }}
         >
           <CachedImage
             uri={displayImages[1]}
             style={{ ...styles.image, ...layout.imageStyle }}
             contentFit="cover"
-            borderRadius={8}
+            borderRadius={0}
           />
         </TouchableOpacity>
       </View>
       <View style={styles.gridRow}>
+        {/* Bottom-left image */}
         <TouchableOpacity
           activeOpacity={0.9}
           onPress={() => handleImagePress(2)}
+          style={{ overflow: 'hidden', borderBottomLeftRadius: hasCaption ? 0 : cornerRadius }}
         >
           <CachedImage
             uri={displayImages[2]}
             style={{ ...styles.image, ...layout.imageStyle }}
             contentFit="cover"
-            borderRadius={8}
+            borderRadius={0}
           />
         </TouchableOpacity>
+        {/* Bottom-right image */}
         <TouchableOpacity
           activeOpacity={0.9}
           onPress={() => handleImagePress(3)}
-          style={styles.lastImageContainer}
+          style={[styles.lastImageContainer, { overflow: 'hidden', borderBottomRightRadius: hasCaption ? 0 : cornerRadius }]}
         >
           <CachedImage
             uri={displayImages[3]}
             style={{ ...styles.image, ...layout.imageStyle }}
             contentFit="cover"
-            borderRadius={8}
+            borderRadius={0}
           />
           {remainingCount > 0 && (
             <View style={styles.overlay}>
@@ -126,7 +160,7 @@ export default function ImageGrid({ images, maxWidth, onImagePress }: ImageGridP
 
 // Layout algorithm for image grid
 function calculateGridLayout(count: number, maxWidth: number) {
-  const GAP = 4; // Gap between images
+  const GAP = 2; // Gap between images (reduced from 4px to 2px)
 
   if (count === 1) {
     return {
@@ -170,14 +204,14 @@ const styles = StyleSheet.create({
   },
   rowContainer: {
     flexDirection: 'row',
-    gap: 4,
+    gap: 2,
   },
   gridContainer: {
-    gap: 4,
+    gap: 2,
   },
   gridRow: {
     flexDirection: 'row',
-    gap: 4,
+    gap: 2,
   },
   lastImageContainer: {
     position: 'relative',
@@ -191,7 +225,6 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
     justifyContent: 'center',
     alignItems: 'center',
-    borderRadius: 8,
   },
   overlayText: {
     color: COLORS.WHITE,

@@ -584,7 +584,11 @@ export default function ChatScreen() {
               />
             </TouchableOpacity>
           )}
-          <View style={[styles.messageContent, isOwnMessage && styles.ownMessageContent]}>
+          <View style={[
+            styles.messageContent, 
+            isOwnMessage && styles.ownMessageContent,
+            message.image_urls && message.image_urls.length > 0 && styles.imageMessageContent,
+          ]}>
             {!isOwnMessage && isGroupChat && (
               <Text style={styles.senderName}>{senderName}</Text>
             )}
@@ -593,6 +597,8 @@ export default function ChatScreen() {
                 styles.messageBubble,
                 isOwnMessage ? styles.ownBubble : styles.otherBubble,
                 message.audio_url && styles.audioBubble,
+                message.image_urls && message.image_urls.length > 0 && styles.imageBubble,
+                message.image_urls && message.image_urls.length > 0 && !message.content && styles.imageBubbleOnly,
               ]}
             >
               {/* Render ImageGrid when images present */}
@@ -604,7 +610,8 @@ export default function ChatScreen() {
                     <View style={{ marginBottom: message.content ? 8 : 0 }}>
                       <ImageGrid
                         images={imageUrls}
-                        maxWidth={220}
+                        maxWidth={260}
+                        hasCaption={!!message.content}
                         onImagePress={(images, index) => {
                           // TODO: Open full-screen image viewer
                           console.log('Image pressed:', index);
@@ -624,9 +631,11 @@ export default function ChatScreen() {
                 />
               ) : null}
               {message.content ? (
-                <Text style={[styles.messageText, isOwnMessage ? styles.ownMessageText : styles.otherMessageText]}>
-                  {message.content}
-                </Text>
+                <View style={message.image_urls && message.image_urls.length > 0 ? styles.captionTextContainer : null}>
+                  <Text style={[styles.messageText, isOwnMessage ? styles.ownMessageText : styles.otherMessageText]}>
+                    {message.content}
+                  </Text>
+                </View>
               ) : null}
             </View>
             <View style={[styles.messageTimeContainer, isOwnMessage && styles.ownMessageTimeContainer]}>
@@ -1146,6 +1155,9 @@ const styles = StyleSheet.create({
     marginRight: 0,
     alignItems: 'flex-end',
   },
+  imageMessageContent: {
+    flex: 0,
+  },
   senderName: {
     fontSize: 11,
     fontWeight: '500',
@@ -1163,6 +1175,16 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 8,
   },
+  imageBubble: {
+    width: 260,
+    paddingHorizontal: 0,
+    paddingVertical: 0,
+  },
+  imageBubbleOnly: {
+    padding: 0,
+    width: 260,
+    overflow: 'hidden',
+  },
   ownBubble: {
     backgroundColor: COLORS.ACCENT_ORANGE,
     borderBottomRightRadius: 4,
@@ -1178,6 +1200,10 @@ const styles = StyleSheet.create({
   messageText: {
     fontSize: 14,
     lineHeight: 21,
+  },
+  captionTextContainer: {
+    paddingHorizontal: 12,
+    paddingBottom: 8,
   },
   ownMessageText: {
     color: COLORS.WHITE,
