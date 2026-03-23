@@ -10,11 +10,13 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Modal,
+  Image,
+  Dimensions,
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as ImagePicker from 'expo-image-picker';
-import { ChevronLeft, MoreVertical, Mic, Plus, Users, Trash2, User, Info } from 'lucide-react-native';
+import { ChevronLeft, MoreVertical, Mic, Plus, Users, Trash2, User, Info, X } from 'lucide-react-native';
 
 import { useAuth } from '@shared/contexts/AuthContext';
 import { useI18n } from '@shared/i18n';
@@ -80,6 +82,11 @@ export default function ChatScreen() {
   // Image selection state management (Task 7.1)
   const [selectedImages, setSelectedImages] = useState<ImagePreview[]>([]);
   const [captionText, setCaptionText] = useState('');
+
+  // Image viewer state
+  const [viewerVisible, setViewerVisible] = useState(false);
+  const [viewerImages, setViewerImages] = useState<string[]>([]);
+  const [viewerIndex, setViewerIndex] = useState(0);
 
   const handleTextChange = useCallback((text: string) => {
     // When images are selected, update caption text; otherwise update message text
@@ -612,8 +619,9 @@ export default function ChatScreen() {
                       maxWidth={260}
                       hasCaption={!!message.content}
                       onImagePress={(images, index) => {
-                        // TODO: Open full-screen image viewer
-                        console.log('Image pressed:', index);
+                        setViewerImages(images);
+                        setViewerIndex(index);
+                        setViewerVisible(true);
                       }}
                     />
                   );
@@ -970,6 +978,46 @@ export default function ChatScreen() {
               </TouchableOpacity>
             </View>
           </View>
+        </View>
+      </Modal>
+
+      {/* Image Viewer Modal */}
+      <Modal
+        visible={viewerVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setViewerVisible(false)}
+      >
+        <View style={styles.imageViewerOverlay}>
+          <TouchableOpacity
+            style={styles.imageViewerCloseButton}
+            onPress={() => setViewerVisible(false)}
+          >
+            <X size={28} color={COLORS.WHITE} />
+          </TouchableOpacity>
+          
+          <FlatList
+            data={viewerImages}
+            horizontal
+            pagingEnabled
+            showsHorizontalScrollIndicator={false}
+            initialScrollIndex={viewerIndex}
+            getItemLayout={(data, index) => ({
+              length: Dimensions.get('window').width,
+              offset: Dimensions.get('window').width * index,
+              index,
+            })}
+            keyExtractor={(item, index) => `viewer-${index}`}
+            renderItem={({ item }) => (
+              <View style={styles.imageViewerPage}>
+                <Image
+                  source={{ uri: item }}
+                  style={styles.imageViewerImage}
+                  resizeMode="contain"
+                />
+              </View>
+            )}
+          />
         </View>
       </Modal>
 
@@ -1345,5 +1393,30 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     color: COLORS.WHITE,
+  },
+  imageViewerOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.95)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  imageViewerCloseButton: {
+    position: 'absolute',
+    top: 50,
+    right: 20,
+    zIndex: 10,
+    padding: 8,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    borderRadius: 20,
+  },
+  imageViewerPage: {
+    width: Dimensions.get('window').width,
+    height: Dimensions.get('window').height,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  imageViewerImage: {
+    width: '100%',
+    height: '100%',
   },
 });
