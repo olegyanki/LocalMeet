@@ -1255,7 +1255,6 @@ export function setupBadgeSubscriptions(
       schema: 'public',
       table: 'messages',
     }, async (payload) => {
-      console.log('Badge count update triggered by message change:', payload.eventType);
       // Refresh badge counts when messages change
       try {
         const newCounts = await getBadgeCounts(userId);
@@ -1281,7 +1280,6 @@ export function setupBadgeSubscriptions(
       schema: 'public',
       table: 'walk_requests',
     }, async (payload) => {
-      console.log('Badge count update triggered by walk request change:', payload.eventType);
       // Refresh badge counts when walk requests change
       try {
         const newCounts = await getBadgeCounts(userId);
@@ -1308,7 +1306,6 @@ export function setupBadgeSubscriptions(
       table: 'chat_participants',
       filter: `user_id=eq.${userId}`,
     }, async (payload) => {
-      console.log('Badge count update triggered by chat participant change:', payload.eventType);
       // Refresh badge counts when user's chat membership changes
       try {
         const newCounts = await getBadgeCounts(userId);
