@@ -320,5 +320,7 @@
   "badgeNotifications": "{{count}} сповіщень",
   "badgeAccessibilityLabel": "{{count}} сповіщень: {{unread}} непрочитаних повідомлень та {{pending}} запитів в очікуванні",
   "photo": "Фото",
-  "voiceMessage": "Голосове повідомлення"
+  "voiceMessage": "Голосове повідомлення",
+  "slideToCancel": "Проведіть, щоб скасувати",
+  "releaseToCancel": "Відпустіть, щоб скасувати"
 }

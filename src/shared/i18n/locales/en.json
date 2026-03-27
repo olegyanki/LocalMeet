@@ -319,5 +319,7 @@
   "badgeNotifications": "{{count}} notifications",
   "badgeAccessibilityLabel": "{{count}} notifications: {{unread}} unread messages and {{pending}} pending requests",
   "photo": "Photo",
-  "voiceMessage": "Voice message"
+  "voiceMessage": "Voice message",
+  "slideToCancel": "Slide to cancel",
+  "releaseToCancel": "Release to cancel"
 }
