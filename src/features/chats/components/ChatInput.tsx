@@ -7,7 +7,9 @@ import AudioRecorder from '@shared/components/AudioRecorder';
 import { COLORS, SHADOW } from '@shared/constants';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
+const SCREEN_HEIGHT = Dimensions.get('window').height;
 const CANCEL_THRESHOLD = -SCREEN_WIDTH * 0.6; // 60% of screen width
+const LOCK_THRESHOLD = -SCREEN_HEIGHT * 0.2; // 20% of screen height (negative because swipe up)
 
 interface ChatInputProps {
   value: string;
@@ -42,6 +44,7 @@ export default function ChatInput({
   const [isCancelled, setIsCancelled] = useState(false);
   const [shouldStopRecording, setShouldStopRecording] = useState(false);
   const hasReachedThreshold = useRef(false); // Track if we've already vibrated for threshold
+  const [isLocked, setIsLocked] = useState(false); // Track if recording is locked (hands-free)
 
   // Reset shouldStop and slideAnim when recording starts or stops
   useEffect(() => {
@@ -49,10 +52,12 @@ export default function ChatInput({
       setShouldStopRecording(false);
       slideAnim.setValue(0);
       hasReachedThreshold.current = false; // Reset threshold flag
+      setIsLocked(false); // Reset lock state
     } else {
       // Reset animation immediately when recording stops (without animation)
       slideAnim.setValue(0);
       hasReachedThreshold.current = false;
+      setIsLocked(false);
     }
   }, [isRecording, slideAnim]);
 
@@ -84,27 +89,41 @@ export default function ChatInput({
     },
     
     onPanResponderMove: (_, gestureState) => {
-      if (isRecording && gestureState.dx < 0) {
-        // Animate button position with finger
-        slideAnim.setValue(gestureState.dx);
-        
-        // Vibrate when reaching cancel threshold (only once)
-        if (gestureState.dx < CANCEL_THRESHOLD && !hasReachedThreshold.current) {
-          hasReachedThreshold.current = true;
+      if (isRecording && !isLocked) {
+        // Check for swipe up to lock (hands-free mode)
+        if (gestureState.dy < LOCK_THRESHOLD) {
+          console.log('Swipe up detected - locking recording, dy:', gestureState.dy);
+          setIsLocked(true);
+          // Reset animation immediately
+          slideAnim.setValue(0);
+          // Vibrate for lock
           Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+          return;
         }
         
-        // Close audio recording if sliding 70% of screen width
-        if (gestureState.dx < CANCEL_THRESHOLD && !isCancelled) {
-          console.log('Sliding left - closing audio recording, dx:', gestureState.dx, 'threshold:', CANCEL_THRESHOLD);
-          setIsCancelled(true);
-          setShouldStopRecording(true);
+        // Handle horizontal swipe (cancel)
+        if (gestureState.dx < 0) {
+          // Animate button position with finger
+          slideAnim.setValue(gestureState.dx);
+          
+          // Vibrate when reaching cancel threshold (only once)
+          if (gestureState.dx < CANCEL_THRESHOLD && !hasReachedThreshold.current) {
+            hasReachedThreshold.current = true;
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+          }
+          
+          // Close audio recording if sliding 60% of screen width
+          if (gestureState.dx < CANCEL_THRESHOLD && !isCancelled) {
+            console.log('Sliding left - closing audio recording, dx:', gestureState.dx, 'threshold:', CANCEL_THRESHOLD);
+            setIsCancelled(true);
+            setShouldStopRecording(true);
+          }
         }
       }
     },
     
     onPanResponderRelease: (_, gestureState) => {
-      console.log('onPanResponderRelease, isRecording:', isRecording, 'dx:', gestureState.dx, 'isCancelled:', isCancelled);
+      console.log('onPanResponderRelease, isRecording:', isRecording, 'dx:', gestureState.dx, 'isCancelled:', isCancelled, 'isLocked:', isLocked);
       
       if (longPressTimer.current) {
         clearTimeout(longPressTimer.current);
@@ -117,9 +136,15 @@ export default function ChatInput({
         }
       }
       
+      // If locked, don't stop recording on release
+      if (isLocked) {
+        console.log('Recording is locked, ignoring release');
+        return;
+      }
+      
       if (isRecording) {
         if (gestureState.dx < CANCEL_THRESHOLD) {
-          // Cancelled by sliding left 70% of screen
+          // Cancelled by sliding left 60% of screen
           console.log('Release - cancelled by slide, dx:', gestureState.dx, 'threshold:', CANCEL_THRESHOLD);
           setIsCancelled(true);
           setShouldStopRecording(true);
@@ -222,9 +247,17 @@ export default function ChatInput({
               console.log('AudioRecorder onCancel called');
               setIsRecording(false);
             }}
+            onStopClick={() => {
+              // Handle stop button click in locked mode
+              console.log('Stop button clicked in locked mode');
+              setIsCancelled(false);
+              setShouldStopRecording(true);
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+            }}
             isCancelled={isCancelled}
             shouldStop={shouldStopRecording}
             slideAnim={slideAnim}
+            isLocked={isLocked}
           />
         </View>
       )}

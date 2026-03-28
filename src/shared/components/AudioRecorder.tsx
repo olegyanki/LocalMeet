@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { View, Text, StyleSheet, Animated } from 'react-native';
+import { View, Text, StyleSheet, Animated, TouchableOpacity } from 'react-native';
 import { Audio } from 'expo-av';
 import { ChevronLeft } from 'lucide-react-native';
 import { COLORS } from '@shared/constants';
@@ -11,12 +11,14 @@ let isRecordingGlobally = false;
 interface AudioRecorderProps {
   onSend: (audioUri: string, duration: number) => void;
   onCancel: () => void;
+  onStopClick: () => void;
   isCancelled?: boolean;
   shouldStop?: boolean;
   slideAnim: Animated.Value;
+  isLocked: boolean;
 }
 
-export default function AudioRecorder({ onSend, onCancel, isCancelled = false, shouldStop = false, slideAnim }: AudioRecorderProps) {
+export default function AudioRecorder({ onSend, onCancel, onStopClick, isCancelled = false, shouldStop = false, slideAnim, isLocked }: AudioRecorderProps) {
   const { t } = useI18n();
   const [recording, setRecording] = useState<Audio.Recording | null>(null);
   const [recordingDuration, setRecordingDuration] = useState(0);
@@ -284,7 +286,7 @@ export default function AudioRecorder({ onSend, onCancel, isCancelled = false, s
         style={[
           styles.rightSection,
           {
-            transform: [{ translateX: slideAnim }],
+            transform: [{ translateX: isLocked ? 0 : slideAnim }],
           },
         ]}
       >
@@ -294,9 +296,13 @@ export default function AudioRecorder({ onSend, onCancel, isCancelled = false, s
         </View>
         
         {/* Stop Recording Button */}
-        <View style={styles.stopButton}>
+        <TouchableOpacity 
+          style={styles.stopButton}
+          onPress={isLocked ? onStopClick : undefined}
+          disabled={!isLocked}
+        >
           <View style={styles.stopIcon} />
-        </View>
+        </TouchableOpacity>
       </Animated.View>
     </View>
   );
