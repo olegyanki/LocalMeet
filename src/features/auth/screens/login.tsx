@@ -17,12 +17,15 @@ import { COLORS } from '@shared/constants';
 import { useI18n } from '@shared/i18n';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import PrimaryButton from '@shared/components/PrimaryButton';
+import { Eye, EyeOff } from 'lucide-react-native';
 
 export default function LoginScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [isPasswordFocused, setIsPasswordFocused] = useState(false);
   const router = useRouter();
   const { t } = useI18n();
   const insets = useSafeAreaInsets();
@@ -84,15 +87,27 @@ export default function LoginScreen() {
 
           <View style={styles.inputGroup}>
             <Text style={styles.label}>{t('password')}</Text>
-            <TextInput
-              style={styles.input}
-              placeholder={t('password')}
-              placeholderTextColor={COLORS.TEXT_LIGHT}
-              value={password}
-              onChangeText={setPassword}
-              secureTextEntry
-              editable={!isLoading}
-            />
+            <View style={styles.passwordWrapper}>
+              <TextInput
+                style={styles.passwordInput}
+                placeholder={t('password')}
+                placeholderTextColor={COLORS.TEXT_LIGHT}
+                value={password}
+                onChangeText={setPassword}
+                secureTextEntry={!showPassword}
+                editable={!isLoading}
+                onFocus={() => setIsPasswordFocused(true)}
+                onBlur={() => setIsPasswordFocused(false)}
+              />
+              {isPasswordFocused && password.length > 0 && (
+                <TouchableOpacity onPress={() => setShowPassword(v => !v)} style={styles.eyeButton}>
+                  {showPassword
+                    ? <EyeOff size={20} color={COLORS.TEXT_LIGHT} />
+                    : <Eye size={20} color={COLORS.TEXT_LIGHT} />
+                  }
+                </TouchableOpacity>
+              )}
+            </View>
           </View>
 
           <PrimaryButton
@@ -164,6 +179,27 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.06,
     shadowRadius: 8,
     elevation: 2,
+  },
+  passwordWrapper: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: COLORS.CARD_BG,
+    borderRadius: 12,
+    shadowColor: COLORS.SHADOW_BLACK,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  passwordInput: {
+    flex: 1,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    fontSize: 16,
+    color: COLORS.TEXT_DARK,
+  },
+  eyeButton: {
+    padding: 14,
   },
   errorContainer: {
     backgroundColor: COLORS.ERROR_BG,
