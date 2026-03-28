@@ -11,6 +11,7 @@ import {
   ScrollView,
 } from 'react-native';
 import { useRouter } from 'expo-router';
+import { useNavigationState } from '@react-navigation/native';
 import { signUp } from '@shared/lib/auth';
 import { COLORS } from '@shared/constants';
 import { useI18n } from '@shared/i18n';
@@ -26,6 +27,16 @@ export default function RegisterScreen() {
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   const { t } = useI18n();
+  const routes = useNavigationState((state) => state?.routes ?? []);
+
+  const handleGoToLogin = () => {
+    const prevRoute = routes[routes.length - 2];
+    if (prevRoute?.name?.includes('login')) {
+      router.back();
+    } else {
+      router.push('/auth/login');
+    }
+  };
   const insets = useSafeAreaInsets();
 
   const handleRegister = async () => {
@@ -133,7 +144,7 @@ export default function RegisterScreen() {
 
           <View style={styles.loginSection}>
             <Text style={styles.loginText}>{t('haveAccount')}</Text>
-            <TouchableOpacity onPress={() => router.push('/auth/login')} disabled={isLoading}>
+            <TouchableOpacity onPress={handleGoToLogin} disabled={isLoading}>
               <Text style={styles.loginLink}>{t('loginLink')}</Text>
             </TouchableOpacity>
           </View>

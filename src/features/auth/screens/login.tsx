@@ -4,10 +4,11 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
+  TouchableWithoutFeedback,
   TextInput,
   KeyboardAvoidingView,
   Platform,
-  ActivityIndicator,
+  Keyboard,
   ScrollView,
 } from 'react-native';
 import { useRouter } from 'expo-router';
@@ -49,7 +50,12 @@ export default function LoginScreen() {
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       style={styles.container}
     >
-      <View style={[styles.content, { paddingTop: insets.top + 60 }]}>
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+        <ScrollView
+          contentContainerStyle={[styles.content, { paddingTop: insets.top + 60 }]}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+        >
         <View style={styles.header}>
           <Text style={styles.title}>{t('hello')}</Text>
           <Text style={styles.subtitle}>{t('loginSubtitle')}</Text>
@@ -104,7 +110,8 @@ export default function LoginScreen() {
             </TouchableOpacity>
           </View>
         </View>
-      </View>
+        </ScrollView>
+      </TouchableWithoutFeedback>
     </KeyboardAvoidingView>
   );
 }
@@ -115,8 +122,9 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.BG_SECONDARY,
   },
   content: {
-    flex: 1,
+    flexGrow: 1,
     padding: 20,
+    paddingBottom: 40,
   },
   header: {
     marginBottom: 40,
