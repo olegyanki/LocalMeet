@@ -40,6 +40,9 @@ export default function ChatInput({
 }: ChatInputProps) {
   const inputRef = useRef<TextInput>(null);
   const slideAnim = useRef(new Animated.Value(0)).current;
+  const buttonColorAnim = useRef(new Animated.Value(0)).current; // 0 = orange, 1 = red
+  const buttonScaleAnim = useRef(new Animated.Value(2)).current; // Scale for button in AudioRecorder
+  const recorderOpacity = useRef(new Animated.Value(0)).current; // Opacity for recorder appearance
   const longPressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [isCancelled, setIsCancelled] = useState(false);
   const [shouldStopRecording, setShouldStopRecording] = useState(false);
@@ -59,18 +62,31 @@ export default function ChatInput({
     if (isRecording) {
       setShouldStopRecording(false);
       slideAnim.setValue(0);
+      buttonColorAnim.setValue(0); // Reset to orange
+      buttonScaleAnim.setValue(2); // Start at 2x
       hasReachedThreshold.current = false;
       setIsLocked(false);
       isStartingRecording.current = false;
+      
+      // Animate recorder appearance (fade-in only)
+      recorderOpacity.setValue(0);
+      Animated.timing(recorderOpacity, {
+        toValue: 1,
+        duration: 200,
+        useNativeDriver: true,
+      }).start();
     } else {
       slideAnim.setValue(0);
+      buttonColorAnim.setValue(0); // Reset to orange
+      buttonScaleAnim.setValue(2); // Reset to 2x
+      recorderOpacity.setValue(0); // Reset opacity
       hasReachedThreshold.current = false;
       setIsLocked(false);
       isStartingRecording.current = false;
       setShouldStopRecording(false);
       setIsCancelled(false);
     }
-  }, [isRecording, slideAnim]);
+  }, [isRecording, slideAnim, buttonColorAnim, buttonScaleAnim, recorderOpacity]);
 
   const panResponder = PanResponder.create({
     onStartShouldSetPanResponder: (evt, gestureState) => {
@@ -101,13 +117,35 @@ export default function ChatInput({
       if (isRecordingRef.current && !isLocked) {
         if (gestureState.dy < LOCK_THRESHOLD) {
           setIsLocked(true);
-          slideAnim.setValue(0);
+          // Animate slide back to center
+          Animated.spring(slideAnim, {
+            toValue: 0,
+            useNativeDriver: true,
+            tension: 50,
+            friction: 7,
+          }).start();
+          // Reset color to orange (no animation needed, instant is fine)
+          buttonColorAnim.setValue(0);
           Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
           return;
         }
         
+        // Handle vertical swipe (for lock gesture) - scale button up
+        if (gestureState.dy < 0) {
+          // Calculate scale based on vertical distance
+          // 0 = 2x (normal), LOCK_THRESHOLD = 2.5x (max scale)
+          const scaleProgress = Math.min(Math.abs(gestureState.dy) / Math.abs(LOCK_THRESHOLD), 1);
+          const newScale = 2 + (scaleProgress * 0.5); // From 2 to 2.5
+          buttonScaleAnim.setValue(newScale);
+        }
+        
         if (gestureState.dx < 0) {
           slideAnim.setValue(gestureState.dx);
+          
+          // Interpolate color based on slide distance
+          // 0 = orange (at start), 1 = red (at cancel threshold)
+          const colorProgress = Math.min(Math.abs(gestureState.dx) / Math.abs(CANCEL_THRESHOLD), 1);
+          buttonColorAnim.setValue(colorProgress);
           
           if (gestureState.dx < CANCEL_THRESHOLD && !hasReachedThreshold.current) {
             hasReachedThreshold.current = true;
@@ -118,6 +156,9 @@ export default function ChatInput({
             setIsCancelled(true);
             setShouldStopRecording(true);
           }
+        } else {
+          // Swiping back to the right - reset color to orange
+          buttonColorAnim.setValue(0);
         }
       }
     },
@@ -175,6 +216,7 @@ export default function ChatInput({
         clearTimeout(longPressTimer.current);
         longPressTimer.current = null;
       }
+      
       isStartingRecording.current = false;
       pressStartTime.current = 0;
       if (isRecordingRef.current) {
@@ -240,10 +282,13 @@ export default function ChatInput({
 
       {/* Audio recorder overlay - covers the input area */}
       {isRecording && (
-        <View 
+        <Animated.View 
           style={[
             styles.recorderOverlay,
             isCancelled && styles.recorderHidden,
+            {
+              opacity: recorderOpacity,
+            },
           ]} 
           pointerEvents="box-none"
         >
@@ -263,9 +308,11 @@ export default function ChatInput({
             isCancelled={isCancelled}
             shouldStop={shouldStopRecording}
             slideAnim={slideAnim}
+            buttonColorAnim={buttonColorAnim}
+            buttonScaleAnim={buttonScaleAnim}
             isLocked={isLocked}
           />
-        </View>
+        </Animated.View>
       )}
     </View>
   );

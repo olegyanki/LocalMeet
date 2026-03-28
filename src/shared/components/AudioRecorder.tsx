@@ -17,10 +17,12 @@ interface AudioRecorderProps {
   isCancelled?: boolean;
   shouldStop?: boolean;
   slideAnim: Animated.Value;
+  buttonColorAnim: Animated.Value;
+  buttonScaleAnim: Animated.Value;
   isLocked: boolean;
 }
 
-export default function AudioRecorder({ onSend, onCancel, onStopClick, isCancelled = false, shouldStop = false, slideAnim, isLocked }: AudioRecorderProps) {
+export default function AudioRecorder({ onSend, onCancel, onStopClick, isCancelled = false, shouldStop = false, slideAnim, buttonColorAnim, buttonScaleAnim, isLocked }: AudioRecorderProps) {
   const { t } = useI18n();
   const [recording, setRecording] = useState<Audio.Recording | null>(null);
   const [recordingDuration, setRecordingDuration] = useState(0);
@@ -269,16 +271,45 @@ export default function AudioRecorder({ onSend, onCancel, onStopClick, isCancell
     }
   };
 
+  const handleCancelClick = () => {
+    // Stop recording first, then call onCancel
+    stopRecording(false);
+  };
+
   const formatDuration = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
+  // Interpolate button color from orange to red
+  const buttonBackgroundColor = buttonColorAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [COLORS.ACCENT_ORANGE, COLORS.ERROR_RED],
+  });
+
+  // Interpolate left section opacity (recording dot and duration)
+  const leftSectionOpacity = buttonColorAnim.interpolate({
+    inputRange: [0, 0.5, 1], // Faster fade: fully transparent at 50% of swipe
+    outputRange: [1, 0.2, 0], // From fully visible to almost transparent to fully transparent
+  });
+
+  // Animate button scale when locked state changes
+  useEffect(() => {
+    if (isLocked) {
+      Animated.spring(buttonScaleAnim, {
+        toValue: 1,
+        useNativeDriver: true,
+        tension: 50,
+        friction: 7,
+      }).start();
+    }
+  }, [isLocked, buttonScaleAnim]);
+
   return (
     <View style={styles.container}>
       {/* Left: Recording Status */}
-      <View style={styles.leftSection}>
+      <Animated.View style={[styles.leftSection, { opacity: leftSectionOpacity }]}>
         <Animated.View
           style={[
             styles.recordingDot,
@@ -288,10 +319,10 @@ export default function AudioRecorder({ onSend, onCancel, onStopClick, isCancell
           ]}
         />
         <Text style={styles.duration}>{formatDuration(recordingDuration)}</Text>
-      </View>
+      </Animated.View>
 
       {/* Center: Waveform Visualizer */}
-      <View style={styles.waveformContainer}>
+      <Animated.View style={[styles.waveformContainer, { opacity: leftSectionOpacity }]}>
         {waveAnims.map((anim, index) => (
           <Animated.View
             key={index}
@@ -303,30 +334,75 @@ export default function AudioRecorder({ onSend, onCancel, onStopClick, isCancell
             ]}
           />
         ))}
-      </View>
+      </Animated.View>
 
       {/* Right: Action Area */}
       <Animated.View 
         style={[
           styles.rightSection,
           {
-            transform: [{ translateX: isLocked ? 0 : slideAnim }],
+            transform: [{ translateX: slideAnim }],
           },
         ]}
       >
-        <View style={styles.cancelHint}>
-          <ChevronLeft size={14} color={COLORS.TEXT_LIGHT} strokeWidth={2} />
-          <Text style={styles.cancelText}>{t('slideToCancel')}</Text>
-        </View>
-        
-        {/* Stop Recording Button */}
-        <TouchableOpacity 
-          style={styles.stopButton}
-          onPress={isLocked ? onStopClick : undefined}
-          disabled={!isLocked}
-        >
-          <View style={styles.stopIcon} />
-        </TouchableOpacity>
+        {!isLocked ? (
+          // Normal mode: show slide to cancel hint
+          <>
+            <View style={styles.cancelHint}>
+              <ChevronLeft size={14} color={COLORS.TEXT_LIGHT} strokeWidth={2} />
+              <Text style={styles.cancelText}>{t('slideToCancel')}</Text>
+            </View>
+            
+            {/* Stop Recording Button */}
+            <TouchableOpacity 
+              style={styles.stopButton}
+              disabled={true}
+            >
+              <Animated.View 
+                style={[
+                  styles.stopButtonBackground,
+                  {
+                    backgroundColor: buttonBackgroundColor,
+                    transform: [{ scale: buttonScaleAnim }],
+                  },
+                ]}
+              >
+                <View style={styles.stopIcon} />
+              </Animated.View>
+            </TouchableOpacity>
+          </>
+        ) : (
+          // Locked mode: show cancel button and send button
+          <>
+            <TouchableOpacity 
+              style={styles.cancelButton}
+              onPress={handleCancelClick}
+            >
+              <Text style={styles.cancelButtonText}>{t('cancel')}</Text>
+            </TouchableOpacity>
+            
+            {/* Send Recording Button */}
+            <TouchableOpacity 
+              style={styles.sendButton}
+              onPress={onStopClick}
+            >
+              <Animated.View
+                style={[
+                  styles.sendButtonBackground,
+                  {
+                    transform: [{ scale: buttonScaleAnim }],
+                  },
+                ]}
+              />
+              <ChevronLeft 
+                size={24} 
+                color={COLORS.CARD_BG} 
+                strokeWidth={2}
+                style={{ transform: [{ rotate: '180deg' }] }}
+              />
+            </TouchableOpacity>
+          </>
+        )}
       </Animated.View>
     </View>
   );
@@ -405,7 +481,13 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: COLORS.ACCENT_ORANGE,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  stopButtonBackground: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     alignItems: 'center',
     justifyContent: 'center',
     shadowColor: COLORS.ACCENT_ORANGE,
@@ -419,5 +501,30 @@ const styles = StyleSheet.create({
     height: 14,
     backgroundColor: COLORS.CARD_BG,
     borderRadius: 2,
+  },
+  cancelButton: {
+    paddingHorizontal: 16,
+    paddingVertical: 0,
+    borderRadius: 16,
+    backgroundColor: 'transparent',
+  },
+  cancelButtonText: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: COLORS.TEXT_LIGHT,
+    lineHeight: 18,
+  },
+  sendButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: COLORS.ACCENT_ORANGE,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: COLORS.ACCENT_ORANGE,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
+    elevation: 4,
   },
 });
