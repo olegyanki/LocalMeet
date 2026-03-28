@@ -1,9 +1,13 @@
 import React, { useRef, useState, useEffect } from 'react';
-import { View, TextInput, TouchableOpacity, StyleSheet, PanResponder, Animated, Keyboard } from 'react-native';
+import { View, TextInput, TouchableOpacity, StyleSheet, PanResponder, Animated, Dimensions } from 'react-native';
+import * as Haptics from 'expo-haptics';
 import { ChevronLeft, Mic, Plus } from 'lucide-react-native';
 
 import AudioRecorder from '@shared/components/AudioRecorder';
 import { COLORS, SHADOW } from '@shared/constants';
+
+const SCREEN_WIDTH = Dimensions.get('window').width;
+const CANCEL_THRESHOLD = -SCREEN_WIDTH * 0.6; // 60% of screen width
 
 interface ChatInputProps {
   value: string;
@@ -37,13 +41,20 @@ export default function ChatInput({
   const longPressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [isCancelled, setIsCancelled] = useState(false);
   const [shouldStopRecording, setShouldStopRecording] = useState(false);
+  const hasReachedThreshold = useRef(false); // Track if we've already vibrated for threshold
 
-  // Reset shouldStop when recording starts
+  // Reset shouldStop and slideAnim when recording starts or stops
   useEffect(() => {
     if (isRecording) {
       setShouldStopRecording(false);
+      slideAnim.setValue(0);
+      hasReachedThreshold.current = false; // Reset threshold flag
+    } else {
+      // Reset animation immediately when recording stops (without animation)
+      slideAnim.setValue(0);
+      hasReachedThreshold.current = false;
     }
-  }, [isRecording]);
+  }, [isRecording, slideAnim]);
 
   const panResponder = PanResponder.create({
     onStartShouldSetPanResponder: (evt, gestureState) => {
@@ -66,17 +77,26 @@ export default function ChatInput({
         longPressTimer.current = setTimeout(() => {
           console.log('Long press timer - starting recording');
           setIsRecording(true);
+          // Vibrate when recording starts
+          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
         }, 150);
       }
     },
     
     onPanResponderMove: (_, gestureState) => {
       if (isRecording && gestureState.dx < 0) {
-        // Don't animate button position
+        // Animate button position with finger
+        slideAnim.setValue(gestureState.dx);
         
-        // Close audio recording if sliding far left
-        if (gestureState.dx < -80 && !isCancelled) {
-          console.log('Sliding left - closing audio recording, dx:', gestureState.dx);
+        // Vibrate when reaching cancel threshold (only once)
+        if (gestureState.dx < CANCEL_THRESHOLD && !hasReachedThreshold.current) {
+          hasReachedThreshold.current = true;
+          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+        }
+        
+        // Close audio recording if sliding 70% of screen width
+        if (gestureState.dx < CANCEL_THRESHOLD && !isCancelled) {
+          console.log('Sliding left - closing audio recording, dx:', gestureState.dx, 'threshold:', CANCEL_THRESHOLD);
           setIsCancelled(true);
           setShouldStopRecording(true);
         }
@@ -98,17 +118,21 @@ export default function ChatInput({
       }
       
       if (isRecording) {
-        if (gestureState.dx < -80) {
-          // Cancelled by sliding left
-          console.log('Release - cancelled by slide, dx:', gestureState.dx);
+        if (gestureState.dx < CANCEL_THRESHOLD) {
+          // Cancelled by sliding left 70% of screen
+          console.log('Release - cancelled by slide, dx:', gestureState.dx, 'threshold:', CANCEL_THRESHOLD);
           setIsCancelled(true);
+          setShouldStopRecording(true);
+          // Vibrate for cancellation
+          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
         } else {
           // Send recording by releasing
           console.log('Release - sending recording, dx:', gestureState.dx);
           setIsCancelled(false);
+          setShouldStopRecording(true);
+          // Vibrate for success
+          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
         }
-        console.log('Setting shouldStopRecording to true');
-        setShouldStopRecording(true);
       }
     },
     
@@ -122,6 +146,7 @@ export default function ChatInput({
         setIsCancelled(true);
         setShouldStopRecording(true);
       }
+      slideAnim.setValue(0);
     },
   });
 
@@ -180,7 +205,13 @@ export default function ChatInput({
 
       {/* Audio recorder overlay - covers the input area */}
       {isRecording && (
-        <View style={styles.recorderOverlay} pointerEvents="box-none">
+        <View 
+          style={[
+            styles.recorderOverlay,
+            isCancelled && styles.recorderHidden,
+          ]} 
+          pointerEvents="box-none"
+        >
           <AudioRecorder
             onSend={(uri, duration) => {
               console.log('AudioRecorder onSend called');
@@ -193,6 +224,7 @@ export default function ChatInput({
             }}
             isCancelled={isCancelled}
             shouldStop={shouldStopRecording}
+            slideAnim={slideAnim}
           />
         </View>
       )}
@@ -247,5 +279,8 @@ const styles = StyleSheet.create({
     left: 12,
     right: 12,
     top: 8,
+  },
+  recorderHidden: {
+    opacity: 0,
   },
 });

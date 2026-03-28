@@ -13,9 +13,10 @@ interface AudioRecorderProps {
   onCancel: () => void;
   isCancelled?: boolean;
   shouldStop?: boolean;
+  slideAnim: Animated.Value;
 }
 
-export default function AudioRecorder({ onSend, onCancel, isCancelled = false, shouldStop = false }: AudioRecorderProps) {
+export default function AudioRecorder({ onSend, onCancel, isCancelled = false, shouldStop = false, slideAnim }: AudioRecorderProps) {
   const { t } = useI18n();
   const [recording, setRecording] = useState<Audio.Recording | null>(null);
   const [recordingDuration, setRecordingDuration] = useState(0);
@@ -279,7 +280,14 @@ export default function AudioRecorder({ onSend, onCancel, isCancelled = false, s
       </View>
 
       {/* Right: Action Area */}
-      <View style={styles.rightSection}>
+      <Animated.View 
+        style={[
+          styles.rightSection,
+          {
+            transform: [{ translateX: slideAnim }],
+          },
+        ]}
+      >
         <View style={styles.cancelHint}>
           <ChevronLeft size={14} color={COLORS.TEXT_LIGHT} strokeWidth={2} />
           <Text style={styles.cancelText}>{t('slideToCancel')}</Text>
@@ -289,7 +297,7 @@ export default function AudioRecorder({ onSend, onCancel, isCancelled = false, s
         <View style={styles.stopButton}>
           <View style={styles.stopIcon} />
         </View>
-      </View>
+      </Animated.View>
     </View>
   );
 }
