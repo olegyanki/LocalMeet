@@ -1,8 +1,8 @@
 import { useState, useRef, useEffect } from 'react';
 import { View, Text, StyleSheet, Animated } from 'react-native';
 import { Audio } from 'expo-av';
-import { Mic, ChevronLeft } from 'lucide-react-native';
-import { COLORS, SHADOW } from '@shared/constants';
+import { ChevronLeft } from 'lucide-react-native';
+import { COLORS } from '@shared/constants';
 import { useI18n } from '@shared/i18n';
 
 // Global flag to prevent multiple recordings
@@ -25,7 +25,7 @@ export default function AudioRecorder({ onSend, onCancel, isCancelled = false, s
   
   // Waveform animation
   const waveAnims = useRef(
-    Array.from({ length: 12 }, () => new Animated.Value(4))
+    Array.from({ length: 10 }, () => new Animated.Value(4))
   ).current;
   
   // Pulsing dot animation
@@ -99,16 +99,19 @@ export default function AudioRecorder({ onSend, onCancel, isCancelled = false, s
 
   const startWaveformAnimation = () => {
     const animations = waveAnims.map((anim, index) => {
+      const delays = [0.1, 0.3, 0.2, 0.4, 0.1, 0.3, 0.5, 0.2, 0.4, 0.1];
+      const heights = [10, 6, 14, 8, 12, 4, 10, 8, 12, 6];
+      
       return Animated.loop(
         Animated.sequence([
           Animated.timing(anim, {
-            toValue: 16,
-            duration: 300 + Math.random() * 200,
+            toValue: heights[index],
+            duration: 400 + Math.random() * 200,
             useNativeDriver: false,
           }),
           Animated.timing(anim, {
             toValue: 4,
-            duration: 300 + Math.random() * 200,
+            duration: 400 + Math.random() * 200,
             useNativeDriver: false,
           }),
         ])
@@ -247,20 +250,20 @@ export default function AudioRecorder({ onSend, onCancel, isCancelled = false, s
 
   return (
     <View style={styles.container}>
-      {/* Pulsing Record Dot */}
-      <Animated.View
-        style={[
-          styles.recordingDot,
-          {
-            transform: [{ scale: pulseAnim }],
-          },
-        ]}
-      />
+      {/* Left: Recording Status */}
+      <View style={styles.leftSection}>
+        <Animated.View
+          style={[
+            styles.recordingDot,
+            {
+              transform: [{ scale: pulseAnim }],
+            },
+          ]}
+        />
+        <Text style={styles.duration}>{formatDuration(recordingDuration)}</Text>
+      </View>
 
-      {/* Timer */}
-      <Text style={styles.duration}>{formatDuration(recordingDuration)}</Text>
-
-      {/* Waveform Visualizer */}
+      {/* Center: Waveform Visualizer */}
       <View style={styles.waveformContainer}>
         {waveAnims.map((anim, index) => (
           <Animated.View
@@ -275,17 +278,17 @@ export default function AudioRecorder({ onSend, onCancel, isCancelled = false, s
         ))}
       </View>
 
-      {/* Slide to Cancel */}
-      <View style={styles.cancelHint}>
-        <ChevronLeft size={14} color={COLORS.TEXT_LIGHT} />
-        <Text style={styles.cancelText}>
-          {t('slideToCancel')}
-        </Text>
-      </View>
-
-      {/* Microphone Icon */}
-      <View style={styles.micIcon}>
-        <Mic size={24} color={COLORS.ACCENT_ORANGE} />
+      {/* Right: Action Area */}
+      <View style={styles.rightSection}>
+        <View style={styles.cancelHint}>
+          <ChevronLeft size={14} color={COLORS.TEXT_LIGHT} strokeWidth={2} />
+          <Text style={styles.cancelText}>{t('slideToCancel')}</Text>
+        </View>
+        
+        {/* Stop Recording Button */}
+        <View style={styles.stopButton}>
+          <View style={styles.stopIcon} />
+        </View>
       </View>
     </View>
   );
@@ -295,54 +298,88 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
+    justifyContent: 'space-between',
     backgroundColor: COLORS.CARD_BG,
     borderRadius: 24,
-    paddingHorizontal: 16,
     paddingVertical: 8,
-    ...SHADOW.standard,
+    paddingHorizontal: 12,
+    height: 48,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.1,
+    shadowRadius: 32,
+    elevation: 8,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.2)',
+  },
+  leftSection: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
   },
   recordingDot: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
+    width: 10,
+    height: 10,
+    borderRadius: 5,
     backgroundColor: COLORS.ERROR_RED,
+    shadowColor: COLORS.ERROR_RED,
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.5,
+    shadowRadius: 8,
   },
   duration: {
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: '700',
     color: COLORS.TEXT_DARK,
-    minWidth: 40,
+    minWidth: 35,
   },
   waveformContainer: {
-    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 3,
-    height: 24,
+    gap: 2,
+    height: 16,
     paddingHorizontal: 8,
   },
   waveBar: {
-    width: 3,
+    width: 2,
     backgroundColor: COLORS.ACCENT_ORANGE,
-    borderRadius: 2,
+    borderRadius: 1,
+    opacity: 0.8,
+  },
+  rightSection: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
   },
   cancelHint: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
+    gap: 6,
+    opacity: 0.8,
   },
   cancelText: {
-    fontSize: 12,
-    fontWeight: '500',
+    fontSize: 11,
+    fontWeight: '600',
     color: COLORS.TEXT_LIGHT,
   },
-  micIcon: {
+  stopButton: {
     width: 40,
     height: 40,
+    borderRadius: 20,
+    backgroundColor: COLORS.ACCENT_ORANGE,
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: -8,
+    shadowColor: COLORS.ACCENT_ORANGE,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
+    elevation: 4,
+  },
+  stopIcon: {
+    width: 14,
+    height: 14,
+    backgroundColor: COLORS.CARD_BG,
+    borderRadius: 2,
   },
 });
