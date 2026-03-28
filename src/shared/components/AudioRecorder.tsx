@@ -5,8 +5,10 @@ import { ChevronLeft } from 'lucide-react-native';
 import { COLORS } from '@shared/constants';
 import { useI18n } from '@shared/i18n';
 
-// Global flag to prevent multiple recordings
+// Global state to prevent multiple recordings
 let isRecordingGlobally = false;
+let globalRecordingInstance: Audio.Recording | null = null;
+let cleanupPromise: Promise<void> | null = null;
 
 interface AudioRecorderProps {
   onSend: (audioUri: string, duration: number) => void;
@@ -37,48 +39,80 @@ export default function AudioRecorder({ onSend, onCancel, onStopClick, isCancell
 
 
   useEffect(() => {
-    hasStoppedRef.current = false; // Reset on mount
-    setRecordingDuration(0); // Reset duration
+    hasStoppedRef.current = false;
+    setRecordingDuration(0);
     
-    // Wait a bit to ensure previous recording is cleaned up
-    const initTimer = setTimeout(() => {
+    let mounted = true;
+    let initTimer: ReturnType<typeof setTimeout> | null = null;
+    
+    const init = async () => {
+      if (cleanupPromise) {
+        try {
+          await cleanupPromise;
+        } catch (err) {
+          // Ignore cleanup errors
+        }
+      }
+      
+      await new Promise(resolve => setTimeout(resolve, 150));
+      
+      if (!mounted) return;
+      
       startRecording();
       startWaveformAnimation();
       startPulseAnimation();
-    }, 100);
+    };
+    
+    init();
 
     return () => {
-      console.log('AudioRecorder unmounting, cleaning up');
-      clearTimeout(initTimer);
+      mounted = false;
+      
+      if (initTimer) {
+        clearTimeout(initTimer);
+      }
       
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
         intervalRef.current = null;
       }
       
-      // Clean up recording on unmount
-      if (recording && !hasStoppedRef.current) {
-        console.log('Cleaning up recording on unmount');
-        recording.stopAndUnloadAsync().catch(err => {
-          console.log('Error stopping recording on unmount:', err);
-        });
-      }
-      
-      // Always reset audio mode and global flag
-      Audio.setAudioModeAsync({
-        allowsRecordingIOS: false,
-      }).catch(err => {
-        console.log('Error resetting audio mode on unmount:', err);
-      });
-      
-      isRecordingGlobally = false;
+      cleanupPromise = (async () => {
+        try {
+          const recordingToClean = recording || globalRecordingInstance;
+          if (recordingToClean && !hasStoppedRef.current) {
+            try {
+              const status = await recordingToClean.getStatusAsync();
+              if (status.canRecord || status.isRecording || status.isDoneRecording === false) {
+                await recordingToClean.stopAndUnloadAsync();
+              }
+            } catch (err) {
+              try {
+                await recordingToClean.stopAndUnloadAsync();
+              } catch (e) {
+                // Ignore
+              }
+            }
+          }
+          
+          await Audio.setAudioModeAsync({
+            allowsRecordingIOS: false,
+          });
+          
+          await new Promise(resolve => setTimeout(resolve, 100));
+        } catch (err) {
+          // Ignore cleanup errors
+        } finally {
+          isRecordingGlobally = false;
+          globalRecordingInstance = null;
+        }
+      })();
     };
   }, []);
 
   // Handle stop signal from parent
   useEffect(() => {
     if (shouldStop && !hasStoppedRef.current && recording) {
-      console.log('shouldStop triggered, isCancelled:', isCancelled);
       stopRecording(!isCancelled);
     }
   }, [shouldStop, isCancelled, recording]);
@@ -128,42 +162,36 @@ export default function AudioRecorder({ onSend, onCancel, onStopClick, isCancell
 
   const startRecording = async () => {
     try {
-      // Check global flag first
       if (isRecordingGlobally) {
-        console.log('Another recording is already in progress globally, aborting');
         onCancel();
         return;
       }
 
-      // Clean up any existing recording first
-      if (recording) {
-        console.log('Cleaning up existing recording before starting new one');
+      const existingRecording = recording || globalRecordingInstance;
+      if (existingRecording) {
         try {
-          const status = await recording.getStatusAsync();
+          const status = await existingRecording.getStatusAsync();
           if (status.canRecord || status.isRecording || status.isDoneRecording === false) {
-            await recording.stopAndUnloadAsync();
+            await existingRecording.stopAndUnloadAsync();
           }
         } catch (err) {
-          console.log('Error cleaning up old recording:', err);
-          // Try to unload anyway
           try {
-            await recording.stopAndUnloadAsync();
+            await existingRecording.stopAndUnloadAsync();
           } catch (e) {
-            console.log('Could not unload:', e);
+            // Ignore
           }
         }
         setRecording(null);
+        globalRecordingInstance = null;
       }
 
-      // Reset audio mode to ensure clean state
       try {
         await Audio.setAudioModeAsync({
           allowsRecordingIOS: false,
         });
-        // Small delay to ensure mode is reset
-        await new Promise(resolve => setTimeout(resolve, 50));
+        await new Promise(resolve => setTimeout(resolve, 100));
       } catch (err) {
-        console.log('Error resetting audio mode:', err);
+        // Ignore
       }
 
       if (permissionResponse?.status !== 'granted') {
@@ -175,7 +203,6 @@ export default function AudioRecorder({ onSend, onCancel, onStopClick, isCancell
         }
       }
 
-      // Set global flag before starting
       isRecordingGlobally = true;
 
       await Audio.setAudioModeAsync({
@@ -188,6 +215,7 @@ export default function AudioRecorder({ onSend, onCancel, onStopClick, isCancell
       );
 
       setRecording(newRecording);
+      globalRecordingInstance = newRecording;
 
       intervalRef.current = setInterval(() => {
         setRecordingDuration((prev) => prev + 1);
@@ -195,6 +223,7 @@ export default function AudioRecorder({ onSend, onCancel, onStopClick, isCancell
     } catch (err) {
       console.error('Failed to start recording', err);
       isRecordingGlobally = false;
+      globalRecordingInstance = null;
       onCancel();
     }
   };
@@ -203,7 +232,6 @@ export default function AudioRecorder({ onSend, onCancel, onStopClick, isCancell
     if (!recording || hasStoppedRef.current) return;
     
     hasStoppedRef.current = true;
-    console.log('stopRecording called:', { shouldSend, duration: recordingDuration });
 
     try {
       if (intervalRef.current) {
@@ -212,9 +240,7 @@ export default function AudioRecorder({ onSend, onCancel, onStopClick, isCancell
       }
 
       const status = await recording.getStatusAsync();
-      console.log('Recording status:', status);
       
-      // Only stop if recording is still active
       if (status.isRecording || status.isDoneRecording === false) {
         await recording.stopAndUnloadAsync();
       }
@@ -224,23 +250,21 @@ export default function AudioRecorder({ onSend, onCancel, onStopClick, isCancell
       });
 
       const uri = recording.getURI();
-      console.log('Recording URI:', uri);
 
       if (shouldSend && uri && recordingDuration > 0) {
-        console.log('Calling onSend with:', { uri, duration: recordingDuration });
         onSend(uri, recordingDuration);
       } else {
-        console.log('Calling onCancel, shouldSend:', shouldSend, 'uri:', uri, 'duration:', recordingDuration);
         onCancel();
       }
 
       setRecording(null);
+      globalRecordingInstance = null;
     } catch (err) {
       console.error('Failed to stop recording', err);
       setRecording(null);
+      globalRecordingInstance = null;
       onCancel();
     } finally {
-      // Always reset global flag
       isRecordingGlobally = false;
     }
   };

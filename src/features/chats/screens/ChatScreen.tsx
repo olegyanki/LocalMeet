@@ -144,13 +144,11 @@ export default function ChatScreen() {
   }, [selectedImages, captionText, sendImagesWithCaption, sendTextMessage, clearImages]);
 
   const handleSendAudio = useCallback(async (audioUri: string, duration: number) => {
-    console.log('handleSendAudio called:', { audioUri, duration });
     try {
       await sendAudioMessage(audioUri, duration);
-      setIsRecording(false);
     } catch (error) {
       console.error('Error in handleSendAudio:', error);
-      // Error already handled
+      setIsRecording(false);
     }
   }, [sendAudioMessage]);
 
