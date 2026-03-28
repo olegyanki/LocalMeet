@@ -39,7 +39,6 @@ export default function ChatInput({
   paddingBottom,
 }: ChatInputProps) {
   const inputRef = useRef<TextInput>(null);
-  const slideAnim = useRef(new Animated.Value(0)).current;
   const buttonColorAnim = useRef(new Animated.Value(0)).current; // 0 = orange, 1 = red
   const buttonScaleAnim = useRef(new Animated.Value(2)).current; // Scale for button in AudioRecorder
   const recorderOpacity = useRef(new Animated.Value(0)).current; // Opacity for recorder appearance
@@ -61,7 +60,6 @@ export default function ChatInput({
   useEffect(() => {
     if (isRecording) {
       setShouldStopRecording(false);
-      slideAnim.setValue(0);
       buttonColorAnim.setValue(0); // Reset to orange
       buttonScaleAnim.setValue(2); // Start at 2x
       hasReachedThreshold.current = false;
@@ -76,7 +74,6 @@ export default function ChatInput({
         useNativeDriver: true,
       }).start();
     } else {
-      slideAnim.setValue(0);
       buttonColorAnim.setValue(0); // Reset to orange
       buttonScaleAnim.setValue(2); // Reset to 2x
       recorderOpacity.setValue(0); // Reset opacity
@@ -86,7 +83,7 @@ export default function ChatInput({
       setShouldStopRecording(false);
       setIsCancelled(false);
     }
-  }, [isRecording, slideAnim, buttonColorAnim, buttonScaleAnim, recorderOpacity]);
+  }, [isRecording, buttonColorAnim, buttonScaleAnim, recorderOpacity]);
 
   const panResponder = PanResponder.create({
     onStartShouldSetPanResponder: (evt, gestureState) => {
@@ -117,35 +114,34 @@ export default function ChatInput({
       if (isRecordingRef.current && !isLocked) {
         if (gestureState.dy < LOCK_THRESHOLD) {
           setIsLocked(true);
-          // Animate slide back to center
-          Animated.spring(slideAnim, {
-            toValue: 0,
-            useNativeDriver: true,
-            tension: 50,
-            friction: 7,
-          }).start();
           // Reset color to orange (no animation needed, instant is fine)
           buttonColorAnim.setValue(0);
           Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
           return;
         }
         
-        // Handle vertical swipe (for lock gesture) - scale button up
-        if (gestureState.dy < 0) {
+        // Determine primary swipe direction
+        const isVerticalSwipe = Math.abs(gestureState.dy) > Math.abs(gestureState.dx);
+        
+        if (isVerticalSwipe && gestureState.dy < 0) {
+          // Handle vertical swipe (for lock gesture) - scale button up
           // Calculate scale based on vertical distance
           // 0 = 2x (normal), LOCK_THRESHOLD = 2.5x (max scale)
           const scaleProgress = Math.min(Math.abs(gestureState.dy) / Math.abs(LOCK_THRESHOLD), 1);
           const newScale = 2 + (scaleProgress * 0.5); // From 2 to 2.5
           buttonScaleAnim.setValue(newScale);
-        }
-        
-        if (gestureState.dx < 0) {
-          slideAnim.setValue(gestureState.dx);
+          // Keep color orange
+          buttonColorAnim.setValue(0);
+        } else if (!isVerticalSwipe && gestureState.dx < 0) {
+          // Handle horizontal swipe (for cancel gesture) - scale button up and change color
+          // Calculate scale based on horizontal distance
+          const scaleProgress = Math.min(Math.abs(gestureState.dx) / Math.abs(CANCEL_THRESHOLD), 1);
+          const newScale = 2 + (scaleProgress * 0.5); // From 2 to 2.5
+          buttonScaleAnim.setValue(newScale);
           
           // Interpolate color based on slide distance
           // 0 = orange (at start), 1 = red (at cancel threshold)
-          const colorProgress = Math.min(Math.abs(gestureState.dx) / Math.abs(CANCEL_THRESHOLD), 1);
-          buttonColorAnim.setValue(colorProgress);
+          buttonColorAnim.setValue(scaleProgress);
           
           if (gestureState.dx < CANCEL_THRESHOLD && !hasReachedThreshold.current) {
             hasReachedThreshold.current = true;
@@ -156,9 +152,10 @@ export default function ChatInput({
             setIsCancelled(true);
             setShouldStopRecording(true);
           }
-        } else {
-          // Swiping back to the right - reset color to orange
+        } else if (gestureState.dx > 0) {
+          // Swiping back to the right - reset color and scale to normal
           buttonColorAnim.setValue(0);
+          buttonScaleAnim.setValue(2);
         }
       }
     },
@@ -307,7 +304,6 @@ export default function ChatInput({
             }}
             isCancelled={isCancelled}
             shouldStop={shouldStopRecording}
-            slideAnim={slideAnim}
             buttonColorAnim={buttonColorAnim}
             buttonScaleAnim={buttonScaleAnim}
             isLocked={isLocked}

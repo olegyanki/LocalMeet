@@ -16,13 +16,12 @@ interface AudioRecorderProps {
   onStopClick: () => void;
   isCancelled?: boolean;
   shouldStop?: boolean;
-  slideAnim: Animated.Value;
   buttonColorAnim: Animated.Value;
   buttonScaleAnim: Animated.Value;
   isLocked: boolean;
 }
 
-export default function AudioRecorder({ onSend, onCancel, onStopClick, isCancelled = false, shouldStop = false, slideAnim, buttonColorAnim, buttonScaleAnim, isLocked }: AudioRecorderProps) {
+export default function AudioRecorder({ onSend, onCancel, onStopClick, isCancelled = false, shouldStop = false, buttonColorAnim, buttonScaleAnim, isLocked }: AudioRecorderProps) {
   const { t } = useI18n();
   const [recording, setRecording] = useState<Audio.Recording | null>(null);
   const [recordingDuration, setRecordingDuration] = useState(0);
@@ -37,6 +36,14 @@ export default function AudioRecorder({ onSend, onCancel, onStopClick, isCancell
   
   // Pulsing dot animation
   const pulseAnim = useRef(new Animated.Value(1)).current;
+  
+  // Lock mode animations
+  const lockModeOpacity = useRef(new Animated.Value(0)).current;
+  const normalModeOpacity = useRef(new Animated.Value(1)).current;
+  
+  // Component visibility animation
+  const componentOpacity = useRef(new Animated.Value(1)).current;
+  const componentScale = useRef(new Animated.Value(1)).current;
   
 
 
@@ -118,6 +125,24 @@ export default function AudioRecorder({ onSend, onCancel, onStopClick, isCancell
       stopRecording(!isCancelled);
     }
   }, [shouldStop, isCancelled, recording]);
+  
+  // Animate out when cancelled by swipe
+  useEffect(() => {
+    if (isCancelled) {
+      Animated.parallel([
+        Animated.timing(componentOpacity, {
+          toValue: 0,
+          duration: 200,
+          useNativeDriver: true,
+        }),
+        Animated.timing(componentScale, {
+          toValue: 0.9,
+          duration: 200,
+          useNativeDriver: true,
+        }),
+      ]).start();
+    }
+  }, [isCancelled, componentOpacity, componentScale]);
 
   const startPulseAnimation = () => {
     Animated.loop(
@@ -138,7 +163,6 @@ export default function AudioRecorder({ onSend, onCancel, onStopClick, isCancell
 
   const startWaveformAnimation = () => {
     const animations = waveAnims.map((anim, index) => {
-      const delays = [0.1, 0.3, 0.2, 0.4, 0.1, 0.3, 0.5, 0.2, 0.4, 0.1];
       const heights = [10, 6, 14, 8, 12, 4, 10, 8, 12, 6];
       
       return Animated.loop(
@@ -272,8 +296,22 @@ export default function AudioRecorder({ onSend, onCancel, onStopClick, isCancell
   };
 
   const handleCancelClick = () => {
-    // Stop recording first, then call onCancel
-    stopRecording(false);
+    // Animate out before canceling
+    Animated.parallel([
+      Animated.timing(componentOpacity, {
+        toValue: 0,
+        duration: 200,
+        useNativeDriver: true,
+      }),
+      Animated.timing(componentScale, {
+        toValue: 0.9,
+        duration: 200,
+        useNativeDriver: true,
+      }),
+    ]).start(() => {
+      // Stop recording and call onCancel after animation
+      stopRecording(false);
+    });
   };
 
   const formatDuration = (seconds: number) => {
@@ -294,117 +332,161 @@ export default function AudioRecorder({ onSend, onCancel, onStopClick, isCancell
     outputRange: [1, 0.2, 0], // From fully visible to almost transparent to fully transparent
   });
 
-  // Animate button scale when locked state changes
+  // Animate button scale and mode transition when locked state changes
   useEffect(() => {
     if (isLocked) {
-      Animated.spring(buttonScaleAnim, {
-        toValue: 1,
-        useNativeDriver: true,
-        tension: 50,
-        friction: 7,
-      }).start();
+      Animated.parallel([
+        Animated.spring(buttonScaleAnim, {
+          toValue: 1,
+          useNativeDriver: true,
+          tension: 50,
+          friction: 7,
+        }),
+        Animated.timing(lockModeOpacity, {
+          toValue: 1,
+          duration: 300,
+          useNativeDriver: true,
+        }),
+        Animated.timing(normalModeOpacity, {
+          toValue: 0,
+          duration: 300,
+          useNativeDriver: true,
+        }),
+      ]).start();
+    } else {
+      Animated.parallel([
+        Animated.timing(lockModeOpacity, {
+          toValue: 0,
+          duration: 300,
+          useNativeDriver: true,
+        }),
+        Animated.timing(normalModeOpacity, {
+          toValue: 1,
+          duration: 300,
+          useNativeDriver: true,
+        }),
+      ]).start();
     }
-  }, [isLocked, buttonScaleAnim]);
+  }, [isLocked, buttonScaleAnim, lockModeOpacity, normalModeOpacity]);
 
   return (
-    <View style={styles.container}>
-      {/* Left: Recording Status */}
-      <Animated.View style={[styles.leftSection, { opacity: leftSectionOpacity }]}>
-        <Animated.View
-          style={[
-            styles.recordingDot,
-            {
-              transform: [{ scale: pulseAnim }],
-            },
-          ]}
-        />
-        <Text style={styles.duration}>{formatDuration(recordingDuration)}</Text>
-      </Animated.View>
-
-      {/* Center: Waveform Visualizer */}
-      <Animated.View style={[styles.waveformContainer, { opacity: leftSectionOpacity }]}>
-        {waveAnims.map((anim, index) => (
+    <Animated.View 
+      style={[
+        styles.container,
+        {
+          opacity: componentOpacity,
+          transform: [{ scale: componentScale }],
+        },
+      ]}
+    >
+      {/* Left: Recording Status and Waveform */}
+      <View style={styles.leftContent}>
+        <Animated.View style={[styles.leftSection, { opacity: leftSectionOpacity }]}>
           <Animated.View
-            key={index}
             style={[
-              styles.waveBar,
+              styles.recordingDot,
               {
-                height: anim,
+                transform: [{ scale: pulseAnim }],
               },
             ]}
           />
-        ))}
-      </Animated.View>
+          <Text style={styles.duration}>{formatDuration(recordingDuration)}</Text>
+        </Animated.View>
+
+        {/* Center: Waveform Visualizer */}
+        <Animated.View style={[styles.waveformContainer, { opacity: leftSectionOpacity }]}>
+          {waveAnims.map((anim, index) => (
+            <Animated.View
+              key={index}
+              style={[
+                styles.waveBar,
+                {
+                  height: anim,
+                },
+              ]}
+            />
+          ))}
+        </Animated.View>
+      </View>
 
       {/* Right: Action Area */}
-      <Animated.View 
-        style={[
-          styles.rightSection,
-          {
-            transform: [{ translateX: slideAnim }],
-          },
-        ]}
-      >
-        {!isLocked ? (
-          // Normal mode: show slide to cancel hint
-          <>
-            <View style={styles.cancelHint}>
-              <ChevronLeft size={14} color={COLORS.TEXT_LIGHT} strokeWidth={2} />
-              <Text style={styles.cancelText}>{t('slideToCancel')}</Text>
-            </View>
-            
-            {/* Stop Recording Button */}
-            <TouchableOpacity 
-              style={styles.stopButton}
-              disabled={true}
+      <View style={styles.rightSection}>
+        {/* Normal mode: show slide to cancel hint */}
+        <Animated.View 
+          style={[
+            styles.normalModeContainer,
+            { 
+              opacity: normalModeOpacity,
+              pointerEvents: isLocked ? 'none' : 'auto',
+            }
+          ]}
+        >
+          <View style={styles.cancelHint}>
+            <ChevronLeft size={14} color={COLORS.TEXT_LIGHT} strokeWidth={2} />
+            <Text style={styles.cancelText}>{t('slideToCancel')}</Text>
+          </View>
+          
+          {/* Stop Recording Button */}
+          <TouchableOpacity 
+            style={styles.stopButton}
+            disabled={true}
+          >
+            <Animated.View 
+              style={[
+                styles.stopButtonBackground,
+                {
+                  backgroundColor: buttonBackgroundColor,
+                  transform: [{ scale: buttonScaleAnim }],
+                },
+              ]}
             >
-              <Animated.View 
-                style={[
-                  styles.stopButtonBackground,
-                  {
-                    backgroundColor: buttonBackgroundColor,
-                    transform: [{ scale: buttonScaleAnim }],
-                  },
-                ]}
-              >
-                <View style={styles.stopIcon} />
-              </Animated.View>
-            </TouchableOpacity>
-          </>
-        ) : (
-          // Locked mode: show cancel button and send button
-          <>
-            <TouchableOpacity 
-              style={styles.cancelButton}
-              onPress={handleCancelClick}
+              <View style={styles.stopIcon} />
+            </Animated.View>
+          </TouchableOpacity>
+        </Animated.View>
+        
+        {/* Locked mode: show cancel button and send button */}
+        <Animated.View 
+          style={[
+            styles.lockModeContainer,
+            { 
+              opacity: lockModeOpacity,
+              pointerEvents: isLocked ? 'auto' : 'none',
+            }
+          ]}
+        >
+          <TouchableOpacity 
+            style={styles.cancelButton}
+            onPress={handleCancelClick}
+          >
+            <Text style={styles.cancelButtonText}>{t('cancel')}</Text>
+          </TouchableOpacity>
+          
+          {/* Send Recording Button */}
+          <TouchableOpacity 
+            style={styles.sendButton}
+            onPress={onStopClick}
+          >
+            <Animated.View
+              style={[
+                styles.stopButtonBackground,
+                {
+                  backgroundColor: COLORS.ACCENT_ORANGE,
+                  transform: [{ scale: buttonScaleAnim }],
+                },
+              ]}
             >
-              <Text style={styles.cancelButtonText}>{t('cancel')}</Text>
-            </TouchableOpacity>
-            
-            {/* Send Recording Button */}
-            <TouchableOpacity 
-              style={styles.sendButton}
-              onPress={onStopClick}
-            >
-              <Animated.View
-                style={[
-                  styles.sendButtonBackground,
-                  {
-                    transform: [{ scale: buttonScaleAnim }],
-                  },
-                ]}
-              />
               <ChevronLeft 
                 size={24} 
                 color={COLORS.CARD_BG} 
                 strokeWidth={2}
                 style={{ transform: [{ rotate: '180deg' }] }}
               />
-            </TouchableOpacity>
-          </>
-        )}
-      </Animated.View>
-    </View>
+            </Animated.View>
+          </TouchableOpacity>
+        </Animated.View>
+      </View>
+    </Animated.View>
   );
 }
 
@@ -425,6 +507,13 @@ const styles = StyleSheet.create({
     elevation: 8,
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.2)',
+  },
+  leftContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    flex: 1,
+    marginRight: 12,
   },
   leftSection: {
     flexDirection: 'row',
@@ -450,10 +539,10 @@ const styles = StyleSheet.create({
   waveformContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
     gap: 2,
     height: 16,
     paddingHorizontal: 8,
+    flex: 1,
   },
   waveBar: {
     width: 2,
@@ -462,6 +551,21 @@ const styles = StyleSheet.create({
     opacity: 0.8,
   },
   rightSection: {
+    position: 'relative',
+    height: 40,
+    width: 160,
+    flexShrink: 0,
+  },
+  normalModeContainer: {
+    position: 'absolute',
+    right: 0,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 28,
+  },
+  lockModeContainer: {
+    position: 'absolute',
+    right: 0,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
@@ -518,13 +622,7 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: COLORS.ACCENT_ORANGE,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: COLORS.ACCENT_ORANGE,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 12,
-    elevation: 4,
   },
 });

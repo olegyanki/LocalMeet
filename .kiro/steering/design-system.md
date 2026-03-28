@@ -207,8 +207,11 @@ const styles = StyleSheet.create({
 
 ## Animation
 
-**CRITICAL**: All modals, bottom sheets, and UI transitions MUST be animated.
+**CRITICAL**: All UI transitions, state changes, and interactive elements MUST be animated.
 
+### Required Animations
+
+**Modals & Bottom Sheets:**
 ```typescript
 // Show animation
 Animated.spring(slideAnim, {
@@ -226,9 +229,102 @@ Animated.timing(slideAnim, {
 }).start();
 ```
 
-- Always use `useNativeDriver: true`
-- Spring for show: tension 50-80, friction 8-11
-- Timing for hide: 200-300ms
+**Component Appearance/Disappearance:**
+```typescript
+// Fade in + scale up
+Animated.parallel([
+  Animated.timing(opacity, {
+    toValue: 1,
+    duration: 200,
+    useNativeDriver: true,
+  }),
+  Animated.spring(scale, {
+    toValue: 1,
+    useNativeDriver: true,
+    tension: 50,
+    friction: 7,
+  }),
+]).start();
+
+// Fade out + scale down
+Animated.parallel([
+  Animated.timing(opacity, {
+    toValue: 0,
+    duration: 200,
+    useNativeDriver: true,
+  }),
+  Animated.timing(scale, {
+    toValue: 0.9,
+    duration: 200,
+    useNativeDriver: true,
+  }),
+]).start();
+```
+
+**State Transitions (e.g., mode changes):**
+```typescript
+// Cross-fade between states
+Animated.parallel([
+  Animated.timing(oldStateOpacity, {
+    toValue: 0,
+    duration: 300,
+    useNativeDriver: true,
+  }),
+  Animated.timing(newStateOpacity, {
+    toValue: 1,
+    duration: 300,
+    useNativeDriver: true,
+  }),
+]).start();
+```
+
+**Button Press Feedback:**
+```typescript
+// Scale down on press
+Animated.spring(buttonScale, {
+  toValue: 0.95,
+  useNativeDriver: true,
+  tension: 300,
+  friction: 10,
+}).start();
+
+// Scale back on release
+Animated.spring(buttonScale, {
+  toValue: 1,
+  useNativeDriver: true,
+  tension: 300,
+  friction: 10,
+}).start();
+```
+
+### Animation Guidelines
+
+- Always use `useNativeDriver: true` for transform and opacity
+- Spring for show/appear: tension 50-80, friction 7-11
+- Timing for hide/disappear: 200-300ms
+- Use `Animated.parallel()` for simultaneous animations
+- Use `Animated.sequence()` for sequential animations
+- Animate ALL state changes that affect visibility or layout
+- Animate mode transitions (normal → locked, edit → view, etc.)
+- Add scale feedback to interactive elements
+
+### What to Animate
+
+✅ Modals and bottom sheets (show/hide)
+✅ Component mount/unmount (fade in/out)
+✅ State transitions (mode changes, toggles)
+✅ Conditional rendering (buttons appearing/disappearing)
+✅ Interactive feedback (button press, swipe)
+✅ Loading states (spinner, skeleton)
+✅ Error messages (slide in/out)
+✅ Tooltips and hints (fade in/out)
+
+### What NOT to Animate
+
+❌ Text content changes (just swap)
+❌ Static layouts (no state change)
+❌ List scrolling (native behavior)
+❌ Keyboard appearance (system handles it)
 
 ## Best Practices
 
@@ -240,8 +336,11 @@ Animated.timing(slideAnim, {
 ✅ Track keyboard visibility for dynamic padding
 ✅ Use `useMemo` for expensive computations
 ✅ Show buttons conditionally based on state
-✅ Animate all modals and transitions
+✅ Animate ALL UI transitions and state changes
+✅ Animate component appearance/disappearance
+✅ Animate mode transitions (normal ↔ locked, edit ↔ view)
 ✅ Use PanResponder for swipe gestures
+✅ Add scale feedback to interactive elements
 
 ### DON'T
 ❌ Don't use borders on inputs (use shadows)
@@ -253,6 +352,8 @@ Animated.timing(slideAnim, {
 ❌ Don't use white backgrounds for screens
 ❌ Don't hardcode magic numbers
 ❌ Don't show buttons when not needed
+❌ Don't use instant show/hide (always animate)
+❌ Don't use conditional rendering without animation for state changes
 
 ## Accessibility
 - Minimum touch target: 44x44px
