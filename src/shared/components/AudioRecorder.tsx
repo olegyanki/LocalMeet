@@ -19,9 +19,10 @@ interface AudioRecorderProps {
   buttonColorAnim: Animated.Value;
   buttonScaleAnim: Animated.Value;
   isLocked: boolean;
+  exitAnim: Animated.Value;
 }
 
-export default function AudioRecorder({ onSend, onCancel, onStopClick, isCancelled = false, shouldStop = false, buttonColorAnim, buttonScaleAnim, isLocked }: AudioRecorderProps) {
+export default function AudioRecorder({ onSend, onCancel, onStopClick, isCancelled = false, shouldStop = false, buttonColorAnim, buttonScaleAnim, isLocked, exitAnim }: AudioRecorderProps) {
   const { t } = useI18n();
   const [recording, setRecording] = useState<Audio.Recording | null>(null);
   const [recordingDuration, setRecordingDuration] = useState(0);
@@ -40,12 +41,15 @@ export default function AudioRecorder({ onSend, onCancel, onStopClick, isCancell
   // Lock mode animations
   const lockModeOpacity = useRef(new Animated.Value(0)).current;
   const normalModeOpacity = useRef(new Animated.Value(1)).current;
+  const isFirstRender = useRef(true);
+  const prevIsLocked = useRef(false);
   
   // Component visibility animation
   const componentOpacity = useRef(new Animated.Value(1)).current;
   const componentScale = useRef(new Animated.Value(1)).current;
   
-
+  // Left section opacity (independent from buttonColorAnim)
+  const leftSectionAnim = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
     hasStoppedRef.current = false;
@@ -122,27 +126,30 @@ export default function AudioRecorder({ onSend, onCancel, onStopClick, isCancell
   // Handle stop signal from parent
   useEffect(() => {
     if (shouldStop && !hasStoppedRef.current && recording) {
-      stopRecording(!isCancelled);
+      if (isCancelled) {
+        setTimeout(() => stopRecording(false), 220);
+      } else {
+        stopRecording(true);
+      }
     }
   }, [shouldStop, isCancelled, recording]);
   
-  // Animate out when cancelled by swipe
   useEffect(() => {
     if (isCancelled) {
       Animated.parallel([
-        Animated.timing(componentOpacity, {
+        Animated.timing(exitAnim, {
           toValue: 0,
           duration: 200,
           useNativeDriver: true,
         }),
-        Animated.timing(componentScale, {
-          toValue: 0.9,
-          duration: 200,
+        Animated.timing(leftSectionAnim, {
+          toValue: 0,
+          duration: 100,
           useNativeDriver: true,
         }),
       ]).start();
     }
-  }, [isCancelled, componentOpacity, componentScale]);
+  }, [isCancelled, exitAnim, leftSectionAnim]);
 
   const startPulseAnimation = () => {
     Animated.loop(
@@ -256,7 +263,6 @@ export default function AudioRecorder({ onSend, onCancel, onStopClick, isCancell
 
   const stopRecording = async (shouldSend: boolean) => {
     if (!recording || hasStoppedRef.current) return;
-    
     hasStoppedRef.current = true;
 
     try {
@@ -264,25 +270,17 @@ export default function AudioRecorder({ onSend, onCancel, onStopClick, isCancell
         clearInterval(intervalRef.current);
         intervalRef.current = null;
       }
-
       const status = await recording.getStatusAsync();
-      
       if (status.isRecording || status.isDoneRecording === false) {
         await recording.stopAndUnloadAsync();
       }
-      
-      await Audio.setAudioModeAsync({
-        allowsRecordingIOS: false,
-      });
-
+      await Audio.setAudioModeAsync({ allowsRecordingIOS: false });
       const uri = recording.getURI();
-
       if (shouldSend && uri && recordingDuration > 0) {
         onSend(uri, recordingDuration);
       } else {
         onCancel();
       }
-
       setRecording(null);
       globalRecordingInstance = null;
     } catch (err) {
@@ -296,22 +294,18 @@ export default function AudioRecorder({ onSend, onCancel, onStopClick, isCancell
   };
 
   const handleCancelClick = () => {
-    // Animate out before canceling
     Animated.parallel([
-      Animated.timing(componentOpacity, {
+      Animated.timing(exitAnim, {
         toValue: 0,
         duration: 200,
         useNativeDriver: true,
       }),
-      Animated.timing(componentScale, {
-        toValue: 0.9,
-        duration: 200,
+      Animated.timing(leftSectionAnim, {
+        toValue: 0,
+        duration: 100,
         useNativeDriver: true,
       }),
-    ]).start(() => {
-      // Stop recording and call onCancel after animation
-      stopRecording(false);
-    });
+    ]).start(() => stopRecording(false));
   };
 
   const formatDuration = (seconds: number) => {
@@ -326,14 +320,23 @@ export default function AudioRecorder({ onSend, onCancel, onStopClick, isCancell
     outputRange: [COLORS.ACCENT_ORANGE, COLORS.ERROR_RED],
   });
 
-  // Interpolate left section opacity (recording dot and duration)
-  const leftSectionOpacity = buttonColorAnim.interpolate({
-    inputRange: [0, 0.5, 1], // Faster fade: fully transparent at 50% of swipe
-    outputRange: [1, 0.2, 0], // From fully visible to almost transparent to fully transparent
-  });
+  // Left section fades out as swipe progresses, but also controlled directly on cancel
+  const leftSectionOpacity = Animated.multiply(
+    buttonColorAnim.interpolate({
+      inputRange: [0, 0.5, 1],
+      outputRange: [1, 0.2, 0],
+    }),
+    leftSectionAnim
+  );
 
   // Animate button scale and mode transition when locked state changes
   useEffect(() => {
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
+    }
+    if (prevIsLocked.current === isLocked) return;
+    prevIsLocked.current = isLocked;
     if (isLocked) {
       Animated.parallel([
         Animated.spring(buttonScaleAnim, {
@@ -370,15 +373,7 @@ export default function AudioRecorder({ onSend, onCancel, onStopClick, isCancell
   }, [isLocked, buttonScaleAnim, lockModeOpacity, normalModeOpacity]);
 
   return (
-    <Animated.View 
-      style={[
-        styles.container,
-        {
-          opacity: componentOpacity,
-          transform: [{ scale: componentScale }],
-        },
-      ]}
-    >
+    <View style={styles.container}>
       {/* Left: Recording Status and Waveform */}
       <View style={styles.leftContent}>
         <Animated.View style={[styles.leftSection, { opacity: leftSectionOpacity }]}>
@@ -486,7 +481,7 @@ export default function AudioRecorder({ onSend, onCancel, onStopClick, isCancell
           </TouchableOpacity>
         </Animated.View>
       </View>
-    </Animated.View>
+    </View>
   );
 }
 
