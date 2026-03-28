@@ -244,8 +244,8 @@ const styles = StyleSheet.create({
   },
   recorderOverlay: {
     position: 'absolute',
-    left: 16,
-    right: 16,
+    left: 12,
+    right: 12,
     top: 8,
   },
 });
