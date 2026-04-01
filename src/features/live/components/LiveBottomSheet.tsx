@@ -1,11 +1,11 @@
-import React, { useRef, useEffect, useCallback } from 'react';
+import React, { useRef, useEffect, useCallback, useState } from 'react';
 import {
   View,
   Modal,
   Animated,
   PanResponder,
   TouchableOpacity,
-  KeyboardAvoidingView,
+  Keyboard,
   Platform,
   Dimensions,
   StyleSheet,
@@ -16,7 +16,7 @@ import { COLORS, SHADOW, SIZES } from '@shared/constants';
 import LiveScreen from './LiveScreen';
 
 const SCREEN_HEIGHT = Dimensions.get('window').height;
-const SHEET_HEIGHT = SCREEN_HEIGHT * 0.7;
+const MAX_SHEET_HEIGHT = SCREEN_HEIGHT * 0.9;
 const SWIPE_THRESHOLD = 80;
 
 interface LiveBottomSheetProps {
@@ -31,6 +31,8 @@ export default function LiveBottomSheet({
   onNavigateToCreateEvent,
 }: LiveBottomSheetProps) {
   const translateY = useRef(new Animated.Value(SCREEN_HEIGHT)).current;
+  const keyboardOffset = useRef(new Animated.Value(0)).current;
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
 
   const animateOpen = useCallback(() => {
     Animated.spring(translateY, {
@@ -42,6 +44,7 @@ export default function LiveBottomSheet({
   }, [translateY]);
 
   const animateClose = useCallback(() => {
+    Keyboard.dismiss();
     Animated.timing(translateY, {
       toValue: SCREEN_HEIGHT,
       duration: 250,
@@ -57,6 +60,35 @@ export default function LiveBottomSheet({
       animateOpen();
     }
   }, [isVisible, animateOpen, translateY]);
+
+  // Keyboard tracking — shift sheet up when keyboard appears
+  useEffect(() => {
+    const showEvent = Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow';
+    const hideEvent = Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide';
+
+    const showListener = Keyboard.addListener(showEvent, (e) => {
+      setKeyboardHeight(e.endCoordinates.height);
+      Animated.timing(keyboardOffset, {
+        toValue: -e.endCoordinates.height,
+        duration: Platform.OS === 'ios' ? e.duration : 250,
+        useNativeDriver: true,
+      }).start();
+    });
+
+    const hideListener = Keyboard.addListener(hideEvent, (e) => {
+      setKeyboardHeight(0);
+      Animated.timing(keyboardOffset, {
+        toValue: 0,
+        duration: Platform.OS === 'ios' ? (e?.duration ?? 250) : 250,
+        useNativeDriver: true,
+      }).start();
+    });
+
+    return () => {
+      showListener.remove();
+      hideListener.remove();
+    };
+  }, [keyboardOffset]);
 
   const panResponder = useRef(
     PanResponder.create({
@@ -105,7 +137,12 @@ export default function LiveBottomSheet({
         <Animated.View
           style={[
             styles.sheetContainer,
-            { transform: [{ translateY }] },
+            {
+              maxHeight: MAX_SHEET_HEIGHT,
+              transform: [
+                { translateY: Animated.add(translateY, keyboardOffset) },
+              ],
+            },
           ]}
           {...panResponder.panHandlers}
         >
@@ -113,15 +150,10 @@ export default function LiveBottomSheet({
             <View style={styles.handle} />
           </View>
 
-          <KeyboardAvoidingView
-            style={styles.keyboardAvoidingView}
-            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-          >
-            <LiveScreen
-              onClose={animateClose}
-              onNavigateToCreateEvent={onNavigateToCreateEvent}
-            />
-          </KeyboardAvoidingView>
+          <LiveScreen
+            onClose={animateClose}
+            onNavigateToCreateEvent={onNavigateToCreateEvent}
+          />
         </Animated.View>
       </View>
     </Modal>
@@ -138,7 +170,6 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0,0,0,0.5)',
   },
   sheetContainer: {
-    height: SHEET_HEIGHT,
     backgroundColor: COLORS.BG_SECONDARY,
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
@@ -154,8 +185,5 @@ const styles = StyleSheet.create({
     height: SIZES.HANDLE_HEIGHT,
     backgroundColor: COLORS.GRAY_HANDLE,
     borderRadius: SIZES.HANDLE_HEIGHT / 2,
-  },
-  keyboardAvoidingView: {
-    flex: 1,
   },
 });

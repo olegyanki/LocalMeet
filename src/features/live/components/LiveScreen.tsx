@@ -4,7 +4,6 @@ import {
   Text,
   StyleSheet,
   TextInput,
-  ScrollView,
   TouchableOpacity,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -78,14 +77,11 @@ export default function LiveScreen({ onClose, onNavigateToCreateEvent }: LiveScr
   };
 
   return (
-    <ScrollView
-      style={styles.container}
-      contentContainerStyle={[
+    <View
+      style={[
         styles.content,
         { paddingBottom: insets.bottom + 16 },
       ]}
-      keyboardShouldPersistTaps="handled"
-      showsVerticalScrollIndicator={false}
     >
       <Text style={styles.title}>{t('liveTitle')}</Text>
       <Text style={styles.subtitle}>{t('liveSubtitle')}</Text>
@@ -122,18 +118,15 @@ export default function LiveScreen({ onClose, onNavigateToCreateEvent }: LiveScr
           <Text style={styles.secondaryButton}>{t('liveSecondaryButton')}</Text>
         </TouchableOpacity>
       </View>
-    </ScrollView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: COLORS.BG_SECONDARY,
-  },
   content: {
     paddingHorizontal: 24,
     paddingTop: 16,
+    backgroundColor: COLORS.BG_SECONDARY,
   },
   title: {
     fontSize: 22,
