@@ -79,7 +79,7 @@ export default function RequestCard({ request, isPast = false, onReject, onAccep
               
               {isPast && (
                 <Text style={styles.pastSubtitle} numberOfLines={1}>
-                  {walk.title}
+                  {walk.title || ''}
                 </Text>
               )}
             </View>
@@ -106,7 +106,7 @@ export default function RequestCard({ request, isPast = false, onReject, onAccep
             <View style={styles.eventRow}>
               <Calendar size={16} color={COLORS.ACCENT_ORANGE} />
               <Text style={styles.eventName} numberOfLines={1}>
-                {walk.title}
+                {walk.title || ''}
               </Text>
             </View>
           )}

@@ -25,7 +25,7 @@ export interface UserProfile {
 export interface Walk {
   id: string;
   user_id: string;
-  title: string;
+  title: string | null;
   start_time: string;
   duration: number;
   description: string | null;
@@ -275,10 +275,10 @@ export async function createLiveWalk(params: CreateLiveWalkParams): Promise<Walk
     .from('walks')
     .insert({
       user_id: params.userId,
-      title: params.statusText,
+      title: null,
       start_time: new Date().toISOString(),
       duration: 7200,
-      description: null,
+      description: params.statusText || null,
       latitude: params.latitude,
       longitude: params.longitude,
       image_url: null,
