@@ -60,16 +60,6 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="create-event"
-        options={{
-          title: t('tabGoOnline').toUpperCase(),
-          tabBarButton: (props) => (
-            <PlusTabButton {...props} onPress={() => setIsVisible(true)} />
-          ),
-          tabBarLabelStyle: { fontSize: 9, fontWeight: '600' },
-        }}
-      />
-      <Tabs.Screen
         name="chats"
         options={{
           title: t('tabChats').toUpperCase(),
@@ -82,6 +72,16 @@ export default function TabLayout() {
               unreadMessages={unreadMessagesCount}
               pendingRequests={pendingRequestsCount}
             />
+          ),
+          tabBarLabelStyle: { fontSize: 9, fontWeight: '600' },
+        }}
+      />
+      <Tabs.Screen
+        name="create-event"
+        options={{
+          title: t('tabGoOnline').toUpperCase(),
+          tabBarButton: (props) => (
+            <PlusTabButton {...props} onPress={() => setIsVisible(true)} />
           ),
           tabBarLabelStyle: { fontSize: 9, fontWeight: '600' },
         }}
