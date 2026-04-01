@@ -172,6 +172,9 @@ export const SIZES = {
   
   // Navbar height (for fixed headers with back button)
   NAVBAR_HEIGHT: 56,
+
+  // Bottom sheet keyboard overlap (keyboard covers this many px of sheet bottom)
+  KEYBOARD_OVERLAP: 30,
 };
 
 // Common header styles

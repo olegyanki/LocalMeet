@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -18,7 +18,7 @@ import { Clock } from 'lucide-react-native';
 import { createWalkRequest } from '@shared/lib/api';
 import Avatar from '@shared/components/Avatar';
 import { useI18n } from '@shared/i18n';
-import { COLORS } from '@shared/constants';
+import { COLORS, SIZES } from '@shared/constants';
 import { getEventImage } from '@shared/utils/eventImage';
 import { formatTime, getTimeColor, getSmartTimeDisplay } from '@shared/utils/time';
 import PrimaryButton from '@shared/components/PrimaryButton';
@@ -52,7 +52,17 @@ export default function ContactRequestBottomSheet({
   const [message, setMessage] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
   const { t } = useI18n();
+
+  useEffect(() => {
+    const showListener = Keyboard.addListener('keyboardDidShow', () => setIsKeyboardVisible(true));
+    const hideListener = Keyboard.addListener('keyboardDidHide', () => setIsKeyboardVisible(false));
+    return () => {
+      showListener.remove();
+      hideListener.remove();
+    };
+  }, []);
 
   const handleClose = () => {
     Keyboard.dismiss();
@@ -119,6 +129,7 @@ export default function ContactRequestBottomSheet({
       <KeyboardAvoidingView
         style={styles.modalContainer}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        keyboardVerticalOffset={-SIZES.KEYBOARD_OVERLAP}
       >
         <TouchableOpacity style={styles.backdrop} activeOpacity={1} onPress={handleClose}>
           {Platform.OS === 'ios' ? (
@@ -132,6 +143,7 @@ export default function ContactRequestBottomSheet({
           style={[
             styles.bottomSheet,
             {
+              paddingBottom: isKeyboardVisible ? SIZES.KEYBOARD_OVERLAP + 16 : 40,
               transform: [{ translateY: slideAnim }],
             },
           ]}
@@ -224,7 +236,6 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 24,
     paddingHorizontal: 20,
     paddingTop: 12,
-    paddingBottom: 40,
   },
   handle: {
     width: 40,

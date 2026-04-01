@@ -5,6 +5,7 @@ import {
   StyleSheet,
   TextInput,
   TouchableOpacity,
+  Keyboard,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Location from 'expo-location';
@@ -16,7 +17,7 @@ import { createLiveWalk } from '@shared/lib/api';
 
 import PrimaryButton from '@shared/components/PrimaryButton';
 
-import { COLORS, SHADOW } from '@shared/constants';
+import { COLORS, SHADOW, SIZES } from '@shared/constants';
 
 interface LiveScreenProps {
   onClose: () => void;
@@ -32,9 +33,19 @@ export default function LiveScreen({ onClose, onNavigateToCreateEvent }: LiveScr
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [location, setLocation] = useState<Location.LocationObject | null>(null);
+  const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
 
   useEffect(() => {
     loadLocation();
+  }, []);
+
+  useEffect(() => {
+    const showListener = Keyboard.addListener('keyboardDidShow', () => setIsKeyboardVisible(true));
+    const hideListener = Keyboard.addListener('keyboardDidHide', () => setIsKeyboardVisible(false));
+    return () => {
+      showListener.remove();
+      hideListener.remove();
+    };
   }, []);
 
   const loadLocation = async () => {
@@ -80,7 +91,7 @@ export default function LiveScreen({ onClose, onNavigateToCreateEvent }: LiveScr
     <View
       style={[
         styles.content,
-        { paddingBottom: insets.bottom + 16 },
+        { paddingBottom: isKeyboardVisible ? SIZES.KEYBOARD_OVERLAP + 16 : insets.bottom + 16 },
       ]}
     >
       <Text style={styles.title}>{t('liveTitle')}</Text>

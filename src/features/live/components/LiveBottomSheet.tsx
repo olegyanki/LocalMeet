@@ -1,22 +1,24 @@
-import React, { useRef, useEffect, useCallback, useState } from 'react';
+import React, { useRef, useEffect, useCallback } from 'react';
 import {
   View,
   Modal,
   Animated,
   PanResponder,
   TouchableOpacity,
+  KeyboardAvoidingView,
   Keyboard,
+  TouchableWithoutFeedback,
   Platform,
   Dimensions,
   StyleSheet,
 } from 'react-native';
+import { BlurView } from 'expo-blur';
 
 import { COLORS, SHADOW, SIZES } from '@shared/constants';
 
 import LiveScreen from './LiveScreen';
 
 const SCREEN_HEIGHT = Dimensions.get('window').height;
-const MAX_SHEET_HEIGHT = SCREEN_HEIGHT * 0.9;
 const SWIPE_THRESHOLD = 80;
 
 interface LiveBottomSheetProps {
@@ -31,8 +33,6 @@ export default function LiveBottomSheet({
   onNavigateToCreateEvent,
 }: LiveBottomSheetProps) {
   const translateY = useRef(new Animated.Value(SCREEN_HEIGHT)).current;
-  const keyboardOffset = useRef(new Animated.Value(0)).current;
-  const [keyboardHeight, setKeyboardHeight] = useState(0);
 
   const animateOpen = useCallback(() => {
     Animated.spring(translateY, {
@@ -57,45 +57,16 @@ export default function LiveBottomSheet({
   useEffect(() => {
     if (isVisible) {
       translateY.setValue(SCREEN_HEIGHT);
-      animateOpen();
+      requestAnimationFrame(() => {
+        animateOpen();
+      });
     }
   }, [isVisible, animateOpen, translateY]);
-
-  // Keyboard tracking — shift sheet up when keyboard appears
-  useEffect(() => {
-    const showEvent = Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow';
-    const hideEvent = Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide';
-
-    const showListener = Keyboard.addListener(showEvent, (e) => {
-      setKeyboardHeight(e.endCoordinates.height);
-      Animated.timing(keyboardOffset, {
-        toValue: -e.endCoordinates.height,
-        duration: Platform.OS === 'ios' ? e.duration : 250,
-        useNativeDriver: true,
-      }).start();
-    });
-
-    const hideListener = Keyboard.addListener(hideEvent, (e) => {
-      setKeyboardHeight(0);
-      Animated.timing(keyboardOffset, {
-        toValue: 0,
-        duration: Platform.OS === 'ios' ? (e?.duration ?? 250) : 250,
-        useNativeDriver: true,
-      }).start();
-    });
-
-    return () => {
-      showListener.remove();
-      hideListener.remove();
-    };
-  }, [keyboardOffset]);
 
   const panResponder = useRef(
     PanResponder.create({
       onStartShouldSetPanResponder: () => false,
-      onMoveShouldSetPanResponder: (_, gestureState) => {
-        return gestureState.dy > 10;
-      },
+      onMoveShouldSetPanResponder: (_, gestureState) => gestureState.dy > 10,
       onPanResponderMove: (_, gestureState) => {
         if (gestureState.dy > 0) {
           translateY.setValue(gestureState.dy);
@@ -127,35 +98,40 @@ export default function LiveBottomSheet({
       animationType="none"
       onRequestClose={animateClose}
     >
-      <View style={styles.modalContainer}>
-        <TouchableOpacity
-          style={styles.overlay}
-          activeOpacity={1}
-          onPress={animateClose}
-        />
+      <KeyboardAvoidingView
+        style={styles.modalContainer}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        keyboardVerticalOffset={-SIZES.KEYBOARD_OVERLAP}
+      >
+        <TouchableOpacity style={styles.backdrop} activeOpacity={1} onPress={animateClose}>
+          {Platform.OS === 'ios' ? (
+            <BlurView intensity={20} style={StyleSheet.absoluteFill} tint="dark" />
+          ) : (
+            <View style={styles.androidBackdrop} />
+          )}
+        </TouchableOpacity>
 
         <Animated.View
           style={[
             styles.sheetContainer,
-            {
-              maxHeight: MAX_SHEET_HEIGHT,
-              transform: [
-                { translateY: Animated.add(translateY, keyboardOffset) },
-              ],
-            },
+            { transform: [{ translateY }] },
           ]}
           {...panResponder.panHandlers}
         >
-          <View style={styles.handleContainer}>
-            <View style={styles.handle} />
-          </View>
+          <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+            <View>
+              <View style={styles.handleContainer}>
+                <View style={styles.handle} />
+              </View>
 
-          <LiveScreen
-            onClose={animateClose}
-            onNavigateToCreateEvent={onNavigateToCreateEvent}
-          />
+              <LiveScreen
+                onClose={animateClose}
+                onNavigateToCreateEvent={onNavigateToCreateEvent}
+              />
+            </View>
+          </TouchableWithoutFeedback>
         </Animated.View>
-      </View>
+      </KeyboardAvoidingView>
     </Modal>
   );
 }
@@ -165,9 +141,12 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'flex-end',
   },
-  overlay: {
+  backdrop: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0,0,0,0.5)',
+  },
+  androidBackdrop: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
   sheetContainer: {
     backgroundColor: COLORS.BG_SECONDARY,

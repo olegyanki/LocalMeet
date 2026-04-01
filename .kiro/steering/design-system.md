@@ -413,6 +413,7 @@ SIZES.NAVBAR_HEIGHT = 56
 SIZES.HEADER_SPACER_WIDTH = 60
 SIZES.EVENT_IMAGE_SIZE = 96
 SIZES.HOST_AVATAR_SIZE = 40
+SIZES.KEYBOARD_OVERLAP = 30
 ```
 
 ## Layout Rules
@@ -486,11 +487,54 @@ mapPreview: {
 ### Modals / Bottom Sheets
 - Background: `COLORS.BG_SECONDARY`
 - Border radius: 24px (top corners only)
-- Height: 88-92%
+- Height: content-driven (no fixed height), use `maxHeight: SCREEN_HEIGHT * 0.9` as safety cap
 - Handle: `SIZES.HANDLE_WIDTH x SIZES.HANDLE_HEIGHT` (40x4), `COLORS.GRAY_HANDLE` (#D1D1D1)
 - NO close buttons (use swipe-down gesture)
 - MUST be animated (never instant show/hide)
 - Shadow: `SHADOW.modal`
+
+#### Keyboard Handling in Bottom Sheets with TextInput
+When a bottom sheet contains a `TextInput`, use `SIZES.KEYBOARD_OVERLAP` to let the keyboard slightly overlap the sheet bottom. This prevents the iOS keyboard's rounded corners from revealing a mismatched background color behind the sheet.
+
+Two things must happen:
+
+1. **Bottom sheet wrapper** — negative `keyboardVerticalOffset` so the sheet sits slightly behind the keyboard:
+```tsx
+<KeyboardAvoidingView
+  style={{ flex: 1, justifyContent: 'flex-end' }}
+  behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+  keyboardVerticalOffset={-SIZES.KEYBOARD_OVERLAP}
+>
+  {/* backdrop + animated sheet */}
+</KeyboardAvoidingView>
+```
+
+2. **Content inside the sheet** — extra `paddingBottom` when keyboard is visible so content doesn't hide behind the overlap zone. Use `LayoutAnimation` for smooth transition:
+```tsx
+const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
+
+useEffect(() => {
+  const showListener = Keyboard.addListener('keyboardDidShow', () => {
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+    setIsKeyboardVisible(true);
+  });
+  const hideListener = Keyboard.addListener('keyboardDidHide', () => {
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+    setIsKeyboardVisible(false);
+  });
+  return () => { showListener.remove(); hideListener.remove(); };
+}, []);
+
+// Apply dynamic paddingBottom:
+// keyboard open:  SIZES.KEYBOARD_OVERLAP + basePadding
+// keyboard closed: insets.bottom + basePadding (or static value)
+```
+
+**Rules:**
+- Always use `SIZES.KEYBOARD_OVERLAP` from `@shared/constants` — never hardcode the value
+- Both the `keyboardVerticalOffset` (negative) and the content `paddingBottom` (positive) must use the same constant
+- Always use `LayoutAnimation.configureNext` before `setState` for smooth padding transitions
+- Bottom sheets WITHOUT TextInput don't need this pattern
 
 ### Social Media Inputs
 ```tsx
