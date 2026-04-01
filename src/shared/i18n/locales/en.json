@@ -319,5 +319,12 @@
   "badgeNotifications": "{{count}} notifications",
   "badgeAccessibilityLabel": "{{count}} notifications: {{unread}} unread messages and {{pending}} pending requests",
   "photo": "Photo",
-  "voiceMessage": "Voice message"
+  "voiceMessage": "Voice message",
+  "liveTitle": "I'm out walking",
+  "liveSubtitle": "Share what you're doing and find company nearby",
+  "livePlaceholder": "Going for coffee by the sea, join me",
+  "livePublishButton": "Show on map",
+  "liveSecondaryText": "Want to plan something?",
+  "liveSecondaryButton": "Create event →",
+  "livePublishError": "Failed to publish status"
 }

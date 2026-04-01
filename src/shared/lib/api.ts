@@ -32,6 +32,7 @@ export interface Walk {
   latitude: number;
   longitude: number;
   image_url: string | null;
+  type?: 'event' | 'live';
 }
 
 export interface WalkHost {
@@ -251,6 +252,37 @@ export async function createWalk(data: {
       latitude: data.latitude,
       longitude: data.longitude,
       image_url: data.imageUrl || null,
+    })
+    .select()
+    .single();
+
+  if (error) {
+    throw error;
+  }
+
+  return walk;
+}
+
+export interface CreateLiveWalkParams {
+  userId: string;
+  latitude: number;
+  longitude: number;
+  statusText: string;
+}
+
+export async function createLiveWalk(params: CreateLiveWalkParams): Promise<Walk> {
+  const { data: walk, error } = await supabase
+    .from('walks')
+    .insert({
+      user_id: params.userId,
+      title: params.statusText,
+      start_time: new Date().toISOString(),
+      duration: 7200,
+      description: null,
+      latitude: params.latitude,
+      longitude: params.longitude,
+      image_url: null,
+      type: 'live',
     })
     .select()
     .single();

@@ -320,5 +320,12 @@
   "badgeNotifications": "{{count}} сповіщень",
   "badgeAccessibilityLabel": "{{count}} сповіщень: {{unread}} непрочитаних повідомлень та {{pending}} запитів в очікуванні",
   "photo": "Фото",
-  "voiceMessage": "Голосове повідомлення"
+  "voiceMessage": "Голосове повідомлення",
+  "liveTitle": "Я зараз гуляю",
+  "liveSubtitle": "Поділись що робиш і знайди компанію поруч",
+  "livePlaceholder": "Йду пити каву біля моря, приєднуйтесь",
+  "livePublishButton": "Показати на карті",
+  "liveSecondaryText": "Хочеш щось запланувати?",
+  "liveSecondaryButton": "Створити івент →",
+  "livePublishError": "Не вдалося опублікувати статус"
 }

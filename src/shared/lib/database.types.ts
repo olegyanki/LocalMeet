@@ -271,6 +271,7 @@ export type Database = {
           longitude: number
           start_time: string
           title: string
+          type: string
           updated_at: string | null
           user_id: string
         }
@@ -285,6 +286,7 @@ export type Database = {
           longitude: number
           start_time: string
           title: string
+          type?: string
           updated_at?: string | null
           user_id: string
         }
@@ -299,6 +301,7 @@ export type Database = {
           longitude?: number
           start_time?: string
           title?: string
+          type?: string
           updated_at?: string | null
           user_id?: string
         }

@@ -1,12 +1,15 @@
-import { Tabs } from 'expo-router';
-import { Search, Plus, User, MessageCircle, Settings } from 'lucide-react-native';
+import { Tabs, useRouter } from 'expo-router';
+import { Search, User, MessageCircle, Settings } from 'lucide-react-native';
+import { useState, useEffect } from 'react';
+import { View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+
 import { useAuth } from '@shared/contexts/AuthContext';
 import { useBadgeCount } from '@shared/contexts/BadgeCountContext';
 import { useI18n } from '@shared/i18n';
-import { useRouter } from 'expo-router';
-import { useEffect } from 'react';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import TabIconWithBadge from '@shared/components/TabIconWithBadge';
+import PlusTabButton from '@features/live/components/PlusTabButton';
+import LiveBottomSheet from '@features/live/components/LiveBottomSheet';
 
 import { COLORS } from '@shared/constants';
 
@@ -16,6 +19,7 @@ export default function TabLayout() {
   const { t } = useI18n();
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
     if (!isLoading && !user) {
@@ -24,6 +28,7 @@ export default function TabLayout() {
   }, [isLoading, user]);
 
   return (
+    <View style={{ flex: 1 }}>
     <Tabs
       screenOptions={{
         headerShown: false,
@@ -58,7 +63,9 @@ export default function TabLayout() {
         name="create-event"
         options={{
           title: t('tabGoOnline').toUpperCase(),
-          tabBarIcon: ({ size, color }) => <Plus size={20} color={color} />,
+          tabBarButton: (props) => (
+            <PlusTabButton {...props} onPress={() => setIsVisible(true)} />
+          ),
           tabBarLabelStyle: { fontSize: 9, fontWeight: '600' },
         }}
       />
@@ -108,5 +115,11 @@ export default function TabLayout() {
         }}
       />
     </Tabs>
+    <LiveBottomSheet
+      isVisible={isVisible}
+      onClose={() => setIsVisible(false)}
+      onNavigateToCreateEvent={() => router.push('/create-event')}
+    />
+    </View>
   );
 }
