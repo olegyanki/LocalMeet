@@ -96,9 +96,12 @@ export default React.memo(function EventCard({
               borderRadius={34}
             />
           ) : (
-            <View style={[styles.eventImage, styles.imagePlaceholder]}>
-              <ImageIcon size={32} color={COLORS.GRAY_PLACEHOLDER} />
-            </View>
+            <Avatar
+              uri={hostAvatarUrl}
+              name={hostName}
+              size={96}
+              shape='square'
+            />
           )}
         </View>
         
