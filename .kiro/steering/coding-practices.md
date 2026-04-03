@@ -294,3 +294,26 @@ setLoading(true);
 - Empty data
 - Very long text
 - Special characters in input
+
+
+## Agent Delegation Rules
+
+### Supabase / Database Work → `supabase-expert` agent
+
+ALL tasks related to the database layer MUST be delegated to the `supabase-expert` sub-agent:
+
+- Writing or modifying SQL migrations
+- Creating/updating RPC functions
+- Creating/updating RLS policies
+- Adding/removing indexes
+- Modifying `src/shared/lib/api.ts` (API functions, interfaces, types)
+- Modifying `src/shared/lib/database.types.ts` (type regeneration)
+- Database performance optimization
+- Database security audit
+- Any direct Supabase queries or schema changes
+- Adding new tables, columns, or constraints
+- Writing database tests (`__tests__/database/`)
+
+**Do NOT** handle these tasks yourself — always use `invokeSubAgent` with `name: "supabase-expert"`.
+
+The only exception is trivial reads of api.ts for understanding context (e.g., checking which API function a component uses). Actual modifications always go through the agent.
