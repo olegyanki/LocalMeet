@@ -115,7 +115,7 @@ export default React.memo(function EventCard({
           
           {/* Description */}
           {item.walk?.description && (
-            <Text style={styles.description} numberOfLines={4} ellipsizeMode="tail">
+            <Text style={styles.description} numberOfLines={3} ellipsizeMode="tail">
               {item.walk.description}
             </Text>
           )}

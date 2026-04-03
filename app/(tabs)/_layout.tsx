@@ -119,6 +119,12 @@ export default function TabLayout() {
       isVisible={isVisible}
       onClose={() => setIsVisible(false)}
       onNavigateToCreateEvent={() => router.push('/create-event')}
+      onPublishSuccess={(walkId) => {
+        router.push({
+          pathname: '/(tabs)/(search)',
+          params: { reloadEvents: 'true', selectWalkId: walkId },
+        });
+      }}
     />
     </View>
   );

@@ -22,9 +22,10 @@ import { COLORS, SHADOW, SIZES } from '@shared/constants';
 interface LiveScreenProps {
   onClose: () => void;
   onNavigateToCreateEvent: () => void;
+  onPublishSuccess?: (walkId: string) => void;
 }
 
-export default function LiveScreen({ onClose, onNavigateToCreateEvent }: LiveScreenProps) {
+export default function LiveScreen({ onClose, onNavigateToCreateEvent, onPublishSuccess }: LiveScreenProps) {
   const insets = useSafeAreaInsets();
   const { t } = useI18n();
   const { user } = useAuth();
@@ -66,7 +67,7 @@ export default function LiveScreen({ onClose, onNavigateToCreateEvent }: LiveScr
 
       const loc = location ?? await Location.getCurrentPositionAsync({});
 
-      await createLiveWalk({
+      const walk = await createLiveWalk({
         userId: user.id,
         latitude: loc.coords.latitude,
         longitude: loc.coords.longitude,
@@ -74,6 +75,9 @@ export default function LiveScreen({ onClose, onNavigateToCreateEvent }: LiveScr
       });
 
       onClose();
+      if (onPublishSuccess) {
+        onPublishSuccess(walk.id);
+      }
     } catch (err) {
       console.error('Failed to publish live walk:', err);
       setError(t('livePublishError'));

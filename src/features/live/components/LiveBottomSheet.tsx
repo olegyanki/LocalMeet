@@ -25,12 +25,14 @@ interface LiveBottomSheetProps {
   isVisible: boolean;
   onClose: () => void;
   onNavigateToCreateEvent: () => void;
+  onPublishSuccess?: (walkId: string) => void;
 }
 
 export default function LiveBottomSheet({
   isVisible,
   onClose,
   onNavigateToCreateEvent,
+  onPublishSuccess,
 }: LiveBottomSheetProps) {
   const translateY = useRef(new Animated.Value(SCREEN_HEIGHT)).current;
 
@@ -127,6 +129,7 @@ export default function LiveBottomSheet({
               <LiveScreen
                 onClose={animateClose}
                 onNavigateToCreateEvent={onNavigateToCreateEvent}
+                onPublishSuccess={onPublishSuccess}
               />
             </View>
           </TouchableWithoutFeedback>
