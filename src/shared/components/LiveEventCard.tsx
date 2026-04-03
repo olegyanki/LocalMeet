@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Text, StyleSheet, Pressable } from 'react-native';
+import { View, Text, StyleSheet, Pressable, TouchableOpacity } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import Avatar from '@shared/components/Avatar';
 import { COLORS, SHADOW } from '@shared/constants';
 import { NearbyWalk } from '@shared/lib/api';
@@ -76,15 +77,31 @@ export default React.memo(function LiveEventCard({
       {/* Divider */}
       <View style={styles.divider} />
 
-      {/* Bottom bar — name + distance on left */}
+      {/* Bottom bar — name + distance on left, join button on right */}
       <View style={styles.metadataBar}>
         {isOwnEvent ? (
           <Text style={styles.ownEventText}>{t('yourEvent')}</Text>
         ) : (
-          <View style={styles.hostRow}>
-            <Text style={styles.hostName} numberOfLines={1}>{hostName}</Text>
-            <Text style={styles.metadataText}>{distanceText} {t('fromYou')}</Text>
-          </View>
+          <>
+            <View style={styles.hostRow}>
+              <Text style={styles.hostName} numberOfLines={1}>{hostName}</Text>
+              <Text style={styles.metadataText}>{distanceText} {t('fromYou')}</Text>
+            </View>
+            <TouchableOpacity
+              style={styles.joinButton}
+              onPress={onPress}
+              activeOpacity={0.6}
+            >
+              <LinearGradient
+                colors={COLORS.GRADIENT_ORANGE}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.joinGradient}
+              >
+                <Text style={styles.joinButtonText}>{t('liveWrite')}</Text>
+              </LinearGradient>
+            </TouchableOpacity>
+          </>
         )}
       </View>
     </Pressable>
@@ -180,5 +197,20 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     color: COLORS.ACCENT_ORANGE,
+  },
+  joinButton: {
+    borderRadius: 16,
+    overflow: 'hidden',
+  },
+  joinGradient: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  joinButtonText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: COLORS.CARD_BG,
   },
 });
