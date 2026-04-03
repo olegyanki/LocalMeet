@@ -667,6 +667,10 @@ export default function EventDetailsScreen() {
           walkStartTime={walk.start_time}
           walkImageUrl={walk.image_url}
           onRequestSent={handleRequestSent}
+          onOwnerPress={() => {
+            setShowContactRequestModal(false);
+            router.push(`/user/${walk.user_id}`);
+          }}
         />
       )}
     </View>

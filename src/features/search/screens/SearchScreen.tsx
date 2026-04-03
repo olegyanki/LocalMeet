@@ -52,6 +52,7 @@ export default function SearchScreen() {
   const [contactRequestVisible, setContactRequestVisible] = useState(false);
   const [contactRequestData, setContactRequestData] = useState<{
     walkId: string;
+    walkOwnerId: string;
     walkOwnerName: string;
     walkOwnerAvatar?: string | null;
     walkTitle: string;
@@ -504,9 +505,10 @@ export default function SearchScreen() {
                             : '';
                           setContactRequestData({
                             walkId: item.walk.id,
+                            walkOwnerId: item.walk.user_id,
                             walkOwnerName: hostName,
                             walkOwnerAvatar: item.host?.avatar_url,
-                            walkTitle: item.walk.description || item.walk.title || '',
+                            walkTitle: item.walk.title || item.walk.description || '',
                             walkStartTime: item.walk.start_time,
                             walkImageUrl: item.walk.image_url,
                           });
@@ -545,6 +547,11 @@ export default function SearchScreen() {
           walkImageUrl={contactRequestData.walkImageUrl}
           onRequestSent={() => {
             loadNearbyWalks();
+          }}
+          onOwnerPress={() => {
+            setContactRequestVisible(false);
+            setContactRequestData(null);
+            router.push(`/user/${contactRequestData.walkOwnerId}`);
           }}
         />
       )}

@@ -34,6 +34,7 @@ interface ContactRequestBottomSheetProps {
   walkStartTime?: string;
   walkImageUrl?: string | null;
   onRequestSent?: () => void;
+  onOwnerPress?: () => void;
 }
 
 export default function ContactRequestBottomSheet({
@@ -47,6 +48,7 @@ export default function ContactRequestBottomSheet({
   walkStartTime,
   walkImageUrl,
   onRequestSent,
+  onOwnerPress,
 }: ContactRequestBottomSheetProps) {
   const slideAnim = React.useRef(new Animated.Value(Dimensions.get('window').height)).current;
   const [message, setMessage] = useState('');
@@ -153,7 +155,11 @@ export default function ContactRequestBottomSheet({
               <View style={styles.handle} />
 
               <View style={styles.content}>
-            <View style={styles.eventCard}>
+            <TouchableOpacity
+              style={styles.eventCard}
+              activeOpacity={onOwnerPress ? 0.6 : 1}
+              onPress={onOwnerPress}
+            >
               <View style={styles.ownerSection}>
                 {(() => {
                   const walk = { image_url: walkImageUrl } as any;
@@ -179,7 +185,7 @@ export default function ContactRequestBottomSheet({
                   </Text>
                 </View>
               )}
-            </View>
+            </TouchableOpacity>
 
             <View style={styles.inputContainer}>
               <Text style={styles.label}>{t('yourMessageLabel')}</Text>
