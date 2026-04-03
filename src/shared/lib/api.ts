@@ -39,6 +39,7 @@ export interface WalkHost {
   first_name: string;
   last_name: string | null;
   avatar_url: string | null;
+  occupation?: string | null;
 }
 
 export interface NearbyWalk {
@@ -180,6 +181,7 @@ export async function getNearbyWalksFiltered(
         first_name: row.host_first_name,
         last_name: row.host_last_name ?? null,
         avatar_url: row.host_avatar_url ?? null,
+        occupation: row.host_occupation ?? null,
       },
     }));
   } catch (error) {

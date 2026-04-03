@@ -326,5 +326,7 @@
   "livePublishButton": "Show on map",
   "liveSecondaryText": "Want to plan something?",
   "liveSecondaryButton": "Create event →",
-  "livePublishError": "Failed to publish status"
+  "livePublishError": "Failed to publish status",
+  "liveCardTitle": "{{name}} is walking now",
+  "liveActiveNow": "Walking now"
 }

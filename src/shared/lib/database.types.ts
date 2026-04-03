@@ -411,6 +411,7 @@ export type Database = {
           host_first_name: string
           host_interests: string[]
           host_last_name: string
+          host_occupation: string
           id: string
           image_url: string
           latitude: number
