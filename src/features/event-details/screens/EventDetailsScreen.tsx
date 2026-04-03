@@ -444,7 +444,7 @@ export default function EventDetailsScreen() {
             style={[styles.headerTitle, { position: 'absolute', opacity: 0 }]}
             onTextLayout={handleTitleLayout}
           >
-            {walk.title}
+            {walk.title || ''}
           </Text>
           
           {/* Visible title with dynamic alignment */}
@@ -457,7 +457,7 @@ export default function EventDetailsScreen() {
             adjustsFontSizeToFit
             minimumFontScale={0.85}
           >
-            {walk.title}
+            {walk.title || ''}
           </Text>
           <View style={styles.headerSpacer} />
         </View>
@@ -663,10 +663,14 @@ export default function EventDetailsScreen() {
           requesterId={currentUser.id}
           walkOwnerName={getDisplayName(userProfile)}
           walkOwnerAvatar={userProfile.avatar_url}
-          walkTitle={walk.title}
+          walkTitle={walk.title || ''}
           walkStartTime={walk.start_time}
           walkImageUrl={walk.image_url}
           onRequestSent={handleRequestSent}
+          onOwnerPress={() => {
+            setShowContactRequestModal(false);
+            router.push(`/user/${walk.user_id}`);
+          }}
         />
       )}
     </View>

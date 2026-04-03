@@ -8,6 +8,7 @@ import { NearbyWalk } from '@shared/lib/api';
 import { TranslationKey } from '@shared/i18n/translations';
 import { formatHHMM, formatDateAndTime, getTimeColor } from '@shared/utils/time';
 import { getDisplayName, getShortDisplayName } from '@shared/utils/profile';
+import { formatDistance } from '@shared/utils/location';
 
 interface EventCardProps {
   // Data
@@ -96,9 +97,12 @@ export default React.memo(function EventCard({
               borderRadius={34}
             />
           ) : (
-            <View style={[styles.eventImage, styles.imagePlaceholder]}>
-              <ImageIcon size={32} color={COLORS.GRAY_PLACEHOLDER} />
-            </View>
+            <Avatar
+              uri={hostAvatarUrl}
+              name={hostName}
+              size={96}
+              shape='square'
+            />
           )}
         </View>
         
@@ -111,7 +115,7 @@ export default React.memo(function EventCard({
           
           {/* Description */}
           {item.walk?.description && (
-            <Text style={styles.description} numberOfLines={4} ellipsizeMode="tail">
+            <Text style={styles.description} numberOfLines={3} ellipsizeMode="tail">
               {item.walk.description}
             </Text>
           )}
@@ -155,7 +159,7 @@ export default React.memo(function EventCard({
           <View style={styles.metadataItem}>
             <MapPin size={14} color={COLORS.TEXT_LIGHT} />
             <Text style={styles.metadataText}>
-              {(item.distance / 1000).toFixed(1)} km
+              {formatDistance(item.distance, t as any)}
             </Text>
           </View>
           

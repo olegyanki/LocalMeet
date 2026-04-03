@@ -270,7 +270,8 @@ export type Database = {
           latitude: number
           longitude: number
           start_time: string
-          title: string
+          title: string | null
+          type: string
           updated_at: string | null
           user_id: string
         }
@@ -284,7 +285,8 @@ export type Database = {
           latitude: number
           longitude: number
           start_time: string
-          title: string
+          title?: string | null
+          type?: string
           updated_at?: string | null
           user_id: string
         }
@@ -298,7 +300,8 @@ export type Database = {
           latitude?: number
           longitude?: number
           start_time?: string
-          title?: string
+          title?: string | null
+          type?: string
           updated_at?: string | null
           user_id?: string
         }
@@ -408,6 +411,7 @@ export type Database = {
           host_first_name: string
           host_interests: string[]
           host_last_name: string
+          host_occupation: string
           id: string
           image_url: string
           latitude: number
@@ -416,6 +420,7 @@ export type Database = {
           title: string
           updated_at: string
           user_id: string
+          walk_type: string
         }[]
       }
       is_chat_owner: {

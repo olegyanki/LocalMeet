@@ -51,6 +51,9 @@
   "noEventsNearby": "No people walking nearby",
   "yourEvent": "Your event",
   "kmFromYou": "km from you",
+  "fromYou": "from you",
+  "metersShort": "m",
+  "kmShort": "km",
   "time": "Time",
   "sorting": "Sorting",
   "all": "All",
@@ -319,5 +322,16 @@
   "badgeNotifications": "{{count}} notifications",
   "badgeAccessibilityLabel": "{{count}} notifications: {{unread}} unread messages and {{pending}} pending requests",
   "photo": "Photo",
-  "voiceMessage": "Voice message"
+  "voiceMessage": "Voice message",
+  "liveTitle": "I'm out walking",
+  "liveSubtitle": "Share what you're doing and find company nearby",
+  "livePlaceholder": "I’m having coffee by the sea — anyone nearby?",
+  "livePublishButton": "Show on map",
+  "liveSecondaryText": "Want to plan something?",
+  "liveSecondaryButton": "Create event →",
+  "livePublishError": "Failed to publish status",
+  "liveTimeOverlap": "You already have an active event at this time",
+  "liveCardTitle": "{{name}} is walking now",
+  "liveActiveNow": "Online",
+  "liveWrite": "Write"
 }

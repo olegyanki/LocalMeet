@@ -24,6 +24,7 @@ import { COLORS, SIZES } from '@shared/constants';
 import { isWalkActive } from '@shared/utils/time';
 import LocationPin from '@shared/components/LocationPin';
 import EventCard from '@shared/components/EventCard';
+import LiveEventCard from '@shared/components/LiveEventCard';
 import FilterBottomSheet, { TimeFilter, SortBy } from '@features/search/components/FilterBottomSheet';
 import NativeMap from '@features/search/maps/NativeMap';
 import ContactRequestBottomSheet from '@features/events/modals/ContactRequestBottomSheet';
@@ -51,6 +52,7 @@ export default function SearchScreen() {
   const [contactRequestVisible, setContactRequestVisible] = useState(false);
   const [contactRequestData, setContactRequestData] = useState<{
     walkId: string;
+    walkOwnerId: string;
     walkOwnerName: string;
     walkOwnerAvatar?: string | null;
     walkTitle: string;
@@ -486,25 +488,44 @@ export default function SearchScreen() {
             </View>
           ) : (
             <>
-              {nearbyWalks.map((item) => (
-                <EventCard
-                  key={`walk-${item.walk?.id}`}
-                  item={item}
-                  currentUserId={user?.id || ''}
-                  width={cardWidth}
-                  t={(key, params) => t(key as any, params)}
-                  onPress={() => {
-                    if (item.walk?.id) {
-                      router.push(`/event/${item.walk.id}`);
-                    }
-                  }}
-                  onAvatarPress={() => {
-                    if (item.walk) {
-                      router.push(`/user/${item.walk.user_id}`);
-                    }
-                  }}
-                />
-              ))}
+              {nearbyWalks.map((item) => {
+                const CardComponent = item.walk?.type === 'live' ? LiveEventCard : EventCard;
+                return (
+                  <CardComponent
+                    key={`walk-${item.walk?.id}`}
+                    item={item}
+                    currentUserId={user?.id || ''}
+                    width={cardWidth}
+                    t={(key, params) => t(key as any, params)}
+                    onPress={() => {
+                      if (item.walk?.id) {
+                        if (item.walk.type === 'live' && item.walk.user_id !== user?.id) {
+                          const hostName = item.host
+                            ? `${item.host.first_name}${item.host.last_name ? ' ' + item.host.last_name : ''}`
+                            : '';
+                          setContactRequestData({
+                            walkId: item.walk.id,
+                            walkOwnerId: item.walk.user_id,
+                            walkOwnerName: hostName,
+                            walkOwnerAvatar: item.host?.avatar_url,
+                            walkTitle: item.walk.title || item.walk.description || '',
+                            walkStartTime: item.walk.start_time,
+                            walkImageUrl: item.walk.image_url,
+                          });
+                          setContactRequestVisible(true);
+                        } else {
+                          router.push(`/event/${item.walk.id}`);
+                        }
+                      }
+                    }}
+                    onAvatarPress={() => {
+                      if (item.walk) {
+                        router.push(`/user/${item.walk.user_id}`);
+                      }
+                    }}
+                  />
+                );
+              })}
             </>
           )}
           </ScrollView>
@@ -526,6 +547,11 @@ export default function SearchScreen() {
           walkImageUrl={contactRequestData.walkImageUrl}
           onRequestSent={() => {
             loadNearbyWalks();
+          }}
+          onOwnerPress={() => {
+            setContactRequestVisible(false);
+            setContactRequestData(null);
+            router.push(`/user/${contactRequestData.walkOwnerId}`);
           }}
         />
       )}

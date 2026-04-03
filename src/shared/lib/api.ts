@@ -25,19 +25,21 @@ export interface UserProfile {
 export interface Walk {
   id: string;
   user_id: string;
-  title: string;
+  title: string | null;
   start_time: string;
   duration: number;
   description: string | null;
   latitude: number;
   longitude: number;
   image_url: string | null;
+  type?: 'event' | 'live';
 }
 
 export interface WalkHost {
   first_name: string;
   last_name: string | null;
   avatar_url: string | null;
+  occupation?: string | null;
 }
 
 export interface NearbyWalk {
@@ -173,11 +175,13 @@ export async function getNearbyWalksFiltered(
         latitude: row.latitude,
         longitude: row.longitude,
         image_url: row.image_url ?? null,
+        type: (row.walk_type as 'event' | 'live') ?? 'event',
       },
       host: {
         first_name: row.host_first_name,
         last_name: row.host_last_name ?? null,
         avatar_url: row.host_avatar_url ?? null,
+        occupation: row.host_occupation ?? null,
       },
     }));
   } catch (error) {
@@ -256,6 +260,40 @@ export async function createWalk(data: {
     .single();
 
   if (error) {
+    throw error;
+  }
+
+  return walk;
+}
+
+export interface CreateLiveWalkParams {
+  userId: string;
+  latitude: number;
+  longitude: number;
+  statusText: string;
+}
+
+export async function createLiveWalk(params: CreateLiveWalkParams): Promise<Walk> {
+  const { data: walk, error } = await supabase
+    .from('walks')
+    .insert({
+      user_id: params.userId,
+      title: null,
+      start_time: new Date().toISOString(),
+      duration: 7200,
+      description: params.statusText || null,
+      latitude: params.latitude,
+      longitude: params.longitude,
+      image_url: null,
+      type: 'live',
+    })
+    .select()
+    .single();
+
+  if (error) {
+    if (error.message?.includes('TIME_OVERLAP')) {
+      throw new Error('TIME_OVERLAP');
+    }
     throw error;
   }
 
