@@ -174,6 +174,7 @@ export async function getNearbyWalksFiltered(
         latitude: row.latitude,
         longitude: row.longitude,
         image_url: row.image_url ?? null,
+        type: (row.walk_type as 'event' | 'live') ?? 'event',
       },
       host: {
         first_name: row.host_first_name,

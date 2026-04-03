@@ -419,6 +419,7 @@ export type Database = {
           title: string
           updated_at: string
           user_id: string
+          walk_type: string
         }[]
       }
       is_chat_owner: {
