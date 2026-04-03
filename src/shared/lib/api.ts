@@ -291,6 +291,9 @@ export async function createLiveWalk(params: CreateLiveWalkParams): Promise<Walk
     .single();
 
   if (error) {
+    if (error.message?.includes('TIME_OVERLAP')) {
+      throw new Error('TIME_OVERLAP');
+    }
     throw error;
   }
 

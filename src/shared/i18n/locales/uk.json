@@ -331,6 +331,7 @@
   "liveSecondaryText": "Хочеш щось запланувати?",
   "liveSecondaryButton": "Створити івент →",
   "livePublishError": "Не вдалося опублікувати статус",
+  "liveTimeOverlap": "У вас вже є активний івент в цей час",
   "liveCardTitle": "{{name}} зараз гуляє",
   "liveActiveNow": "Онлайн",
   "liveWrite": "Написати"

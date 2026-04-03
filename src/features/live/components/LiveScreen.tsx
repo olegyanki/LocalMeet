@@ -78,9 +78,13 @@ export default function LiveScreen({ onClose, onNavigateToCreateEvent, onPublish
       if (onPublishSuccess) {
         onPublishSuccess(walk.id);
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error('Failed to publish live walk:', err);
-      setError(t('livePublishError'));
+      if (err.message === 'TIME_OVERLAP') {
+        setError(t('liveTimeOverlap'));
+      } else {
+        setError(t('livePublishError'));
+      }
     } finally {
       setIsSubmitting(false);
     }
