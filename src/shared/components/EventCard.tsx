@@ -8,6 +8,7 @@ import { NearbyWalk } from '@shared/lib/api';
 import { TranslationKey } from '@shared/i18n/translations';
 import { formatHHMM, formatDateAndTime, getTimeColor } from '@shared/utils/time';
 import { getDisplayName, getShortDisplayName } from '@shared/utils/profile';
+import { formatDistance } from '@shared/utils/location';
 
 interface EventCardProps {
   // Data
@@ -158,7 +159,7 @@ export default React.memo(function EventCard({
           <View style={styles.metadataItem}>
             <MapPin size={14} color={COLORS.TEXT_LIGHT} />
             <Text style={styles.metadataText}>
-              {(item.distance / 1000).toFixed(1)} km
+              {formatDistance(item.distance, t as any)}
             </Text>
           </View>
           

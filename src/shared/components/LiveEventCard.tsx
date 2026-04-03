@@ -1,11 +1,11 @@
 import React from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
-import { MapPin } from 'lucide-react-native';
 import Avatar from '@shared/components/Avatar';
 import { COLORS, SHADOW } from '@shared/constants';
 import { NearbyWalk } from '@shared/lib/api';
 import { TranslationKey } from '@shared/i18n/translations';
 import { getShortDisplayName } from '@shared/utils/profile';
+import { formatDistance } from '@shared/utils/location';
 
 interface LiveEventCardProps {
   item: NearbyWalk;
@@ -27,9 +27,8 @@ export default React.memo(function LiveEventCard({
   const isOwnEvent = item.walk?.user_id === currentUserId;
   const hostAvatarUrl = item.host?.avatar_url;
   const hostName = item.host ? getShortDisplayName(item.host) : t('unknownHost');
-  const occupation = item.host?.occupation || '';
   const description = item.walk?.description || '';
-  const distanceKm = (item.distance / 1000).toFixed(1);
+  const distanceText = formatDistance(item.distance, t as any);
 
   const handleAvatarPress = (e: any) => {
     e.stopPropagation();
@@ -67,7 +66,7 @@ export default React.memo(function LiveEventCard({
 
           {/* Description */}
           {description ? (
-            <Text style={styles.description} numberOfLines={3} ellipsizeMode="tail">
+            <Text style={styles.description} numberOfLines={2} ellipsizeMode="tail">
               {description}
             </Text>
           ) : null}
@@ -77,23 +76,16 @@ export default React.memo(function LiveEventCard({
       {/* Divider */}
       <View style={styles.divider} />
 
-      {/* Bottom bar — name + occupation on left, distance on right */}
+      {/* Bottom bar — name + distance on left */}
       <View style={styles.metadataBar}>
         {isOwnEvent ? (
           <Text style={styles.ownEventText}>{t('yourEvent')}</Text>
         ) : (
-          <View style={styles.hostInfo}>
+          <View style={styles.hostRow}>
             <Text style={styles.hostName} numberOfLines={1}>{hostName}</Text>
-            {occupation ? (
-              <Text style={styles.hostOccupation} numberOfLines={1}>{occupation}</Text>
-            ) : null}
+            <Text style={styles.metadataText}>{distanceText} {t('fromYou')}</Text>
           </View>
         )}
-
-        <View style={styles.metadataItem}>
-          <MapPin size={14} color={COLORS.TEXT_LIGHT} />
-          <Text style={styles.metadataText}>{distanceKm} km</Text>
-        </View>
       </View>
     </Pressable>
   );
@@ -171,7 +163,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     paddingHorizontal: 16,
   },
-  hostInfo: {
+  hostRow: {
     flex: 1,
     gap: 2,
   },
@@ -179,16 +171,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     color: COLORS.TEXT_DARK,
-  },
-  hostOccupation: {
-    fontSize: 12,
-    fontWeight: '500',
-    color: COLORS.TEXT_LIGHT,
-  },
-  metadataItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
   },
   metadataText: {
     fontSize: 12,

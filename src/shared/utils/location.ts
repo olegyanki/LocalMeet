@@ -20,3 +20,22 @@ export const calculateDistance = (
 const toRad = (degrees: number): number => {
   return degrees * (Math.PI / 180);
 };
+
+
+/**
+ * Format distance to human-readable string.
+ * Accepts distance in kilometers (as returned by RPC).
+ * < 1km → meters (e.g. "450 м"), >= 1km → km (e.g. "2.3 км")
+ * Requires t function for localized units.
+ */
+export const formatDistance = (
+  distanceInKm: number,
+  t?: (key: string) => string
+): string => {
+  const mUnit = t ? t('metersShort') : 'm';
+  const kmUnit = t ? t('kmShort') : 'km';
+  if (distanceInKm < 1) {
+    return `${Math.round(distanceInKm * 1000)} ${mUnit}`;
+  }
+  return `${distanceInKm.toFixed(1)} ${kmUnit}`;
+};
