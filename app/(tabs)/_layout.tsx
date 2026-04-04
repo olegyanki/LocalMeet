@@ -48,6 +48,7 @@ export default function TabLayout() {
           paddingTop: 6,
           borderTopLeftRadius: 20,
           borderTopRightRadius: 20,
+          overflow: 'visible',
         },
       }}
     >
@@ -79,11 +80,10 @@ export default function TabLayout() {
       <Tabs.Screen
         name="create-event"
         options={{
-          title: t('tabGoOnline').toUpperCase(),
+          title: '',
           tabBarButton: (props) => (
             <PlusTabButton {...props} onPress={() => setIsVisible(true)} />
           ),
-          tabBarLabelStyle: { fontSize: 9, fontWeight: '600' },
         }}
       />
       <Tabs.Screen
