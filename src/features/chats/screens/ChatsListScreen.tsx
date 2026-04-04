@@ -13,7 +13,7 @@ import {
   updateWalkRequestStatus, 
   ChatWithDetails,
 } from '@shared/lib/api';
-import { formatRelativeTime } from '@shared/utils/time';
+import { formatRelativeTime, formatDateLabel } from '@shared/utils/time';
 import { getDisplayName } from '@shared/utils/profile';
 
 // Components
@@ -142,8 +142,23 @@ export default function ChatsScreen() {
     let avatarUrl: string | null = null;
     let participantAvatars: string[] = [];
     
-    if (isGroupChat) {
-      // Group chat: show event title
+    if (isGroupChat && item.walk_type === 'live') {
+      // Live event chat: show creator-based name and avatar
+      const isOwner = item.walk_user_id === user?.id;
+      
+      if (isOwner) {
+        const dateLabel = formatDateLabel(item.walk_start_time, t);
+        displayName = dateLabel 
+          ? `${t('yourWalk')} · ${dateLabel}` 
+          : t('yourWalk');
+      } else {
+        displayName = item.creator_first_name 
+          ? t('walkOfName', { name: item.creator_first_name }) 
+          : (item.walk_title || t('groupChat'));
+      }
+      avatarUrl = item.creator_avatar_url || null;
+    } else if (isGroupChat) {
+      // Regular event chat: existing logic unchanged
       displayName = item.walk_title || t('groupChat');
       avatarUrl = item.walk_image_url || null;
       // Get participant avatars (excluding current user)
@@ -182,11 +197,14 @@ export default function ChatsScreen() {
     
     const isUnread = item.lastMessage && !item.lastMessage.read && item.lastMessage.sender_id !== user?.id;
 
-    // For group chats, use event image or first participant avatar
+    // For live event chats, use creator avatar
+    // For regular group chats, use event image or first participant avatar
     // For direct chats, use other participant's avatar
-    const imageUrl = isGroupChat 
-      ? (item.walk_image_url || participantAvatars[0] || null)
-      : avatarUrl;
+    const imageUrl = isGroupChat && item.walk_type === 'live'
+      ? (item.creator_avatar_url || null)
+      : isGroupChat 
+        ? (item.walk_image_url || participantAvatars[0] || null)
+        : avatarUrl;
 
     const timeAgo = item.lastMessage ? formatRelativeTime(item.lastMessage.created_at) : '';
 

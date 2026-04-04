@@ -122,11 +122,17 @@ app/
 - Auto-delete after event time
 
 ### Group Chat System & Direct Messaging
-- **Group Chats**: Automatically created for each event
+- **Group Chats (Regular Events, `type = 'event'`)**: Automatically created when event is created
   - Event creator becomes chat owner
   - Participants added when walk requests are accepted
   - Owner can remove participants
   - Ownership transfers if owner leaves
+- **Group Chats (Live Events, `type = 'live'`)**: Created lazily (not on event creation)
+  - Chat is created when first walk request is accepted (via DB trigger)
+  - Or when owner opens chat via `getOrCreateChatForWalk(walkId, userId)`
+  - Empty chats of finished live events are hidden from chat list (filtered in RPC, not deleted)
+  - Chat name: non-owner sees "Прогулянка [owner name]", owner sees "Твоя прогулянка · [date]"
+  - Chat avatar: owner's profile avatar instead of event image
 - **Direct Chats**: Migrated from old 1-on-1 system
   - Both participants have equal member status
   - Preserved from previous chat system
@@ -139,6 +145,7 @@ app/
 - Ukrainian (uk) and English (en)
 - All text via `t('key')` from `useI18n()`
 - Translations in `src/shared/i18n/locales/`
+- Live event chat keys: `walkTitle` ("Walk"/"Прогулянка"), `walkOfName` ("{{name}}'s walk"/"Прогулянка {{name}}"), `yourWalk` ("Your walk"/"Твоя прогулянка")
 
 ## Important Patterns
 
@@ -155,7 +162,8 @@ import {
   sendMessage,
   leaveChat,
   removeChatParticipant,
-  markChatAsRead
+  markChatAsRead,
+  getOrCreateChatForWalk
 } from '@shared/lib/api';
 
 // Update profile
@@ -190,6 +198,9 @@ await sendMessage(chatId, userId, {
 await leaveChat(chatId, userId);
 await removeChatParticipant(chatId, participantId); // Owner only
 await markChatAsRead(chatId, userId);
+
+// Get or create chat for live events (lazy creation)
+const chatId = await getOrCreateChatForWalk(walkId, userId);
 
 // Legacy functions (deprecated)
 // await createChatFromRequest() - REMOVED

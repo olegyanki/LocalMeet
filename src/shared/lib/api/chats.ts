@@ -40,6 +40,10 @@ export interface ChatWithDetails {
   walk_title?: string;
   walk_image_url?: string | null;
   walk_start_time?: string;
+  walk_type?: string;
+  walk_user_id?: string;
+  creator_avatar_url?: string | null;
+  creator_first_name?: string;
   participants: ChatParticipant[];
   lastMessage?: {
     content: string;
@@ -91,6 +95,10 @@ export async function getMyChats(userId: string): Promise<ChatWithDetails[]> {
     walk_title: row.walk_title,
     walk_image_url: row.walk_image_url,
     walk_start_time: row.walk_start_time,
+    walk_type: row.walk_type,
+    walk_user_id: row.walk_user_id,
+    creator_avatar_url: row.creator_avatar_url,
+    creator_first_name: row.creator_first_name,
     participants: row.participant_ids.map((id: string, index: number) => ({
       id: `${row.chat_id}-${id}`, // Generate participant record ID
       chat_id: row.chat_id,
@@ -155,6 +163,10 @@ export async function getChatDetails(chatId: string, userId: string): Promise<Ch
     walk_title: firstRow.walk_title,
     walk_image_url: firstRow.walk_image_url,
     walk_start_time: firstRow.walk_start_time,
+    walk_type: firstRow.walk_type,
+    walk_user_id: firstRow.walk_user_id,
+    creator_avatar_url: firstRow.creator_avatar_url,
+    creator_first_name: firstRow.creator_first_name,
     participants: data.map((row: GetChatDetailsRow) => ({
       id: row.participant_id,
       chat_id: firstRow.chat_id,
@@ -221,6 +233,55 @@ export async function leaveChat(chatId: string, userId: string): Promise<void> {
     console.error('Error leaving chat:', error);
     throw new Error(`Failed to leave chat: ${error.message}`);
   }
+}
+
+/**
+ * Get or create a group chat for a walk (used for live events).
+ * 
+ * For live events, group chats are created lazily — only when the owner
+ * explicitly opens the chat or when the first walk request is accepted.
+ * This function handles the "owner opens chat" path.
+ * 
+ * 1. Tries to find an existing group chat for the walk
+ * 2. If found, returns the existing chat_id
+ * 3. If not found, creates a new group chat and adds the user as owner
+ * 
+ * @param walkId - The walk/event ID to get or create chat for
+ * @param userId - The user ID (walk owner) to add as chat owner
+ * @returns Promise<string> - The chat ID (existing or newly created)
+ * @throws Error if chat creation or participant insertion fails
+ */
+export async function getOrCreateChatForWalk(
+  walkId: string,
+  userId: string
+): Promise<string> {
+  // 1. Try to find existing group chat
+  const existingChatId = await getChatByWalkId(walkId);
+  if (existingChatId) return existingChatId;
+
+  // 2. Create new group chat linked to the walk
+  const { data: chat, error: chatError } = await supabase
+    .from('chats')
+    .insert({ type: 'group', walk_id: walkId })
+    .select('id')
+    .single();
+
+  if (chatError || !chat) {
+    console.error('Error creating chat for walk:', chatError);
+    throw new Error(`Failed to create chat: ${chatError?.message ?? 'No data returned'}`);
+  }
+
+  // 3. Add the user as chat owner
+  const { error: participantError } = await supabase
+    .from('chat_participants')
+    .insert({ chat_id: chat.id, user_id: userId, role: 'owner' });
+
+  if (participantError) {
+    console.error('Error adding owner to chat:', participantError);
+    throw new Error(`Failed to add owner to chat: ${participantError.message}`);
+  }
+
+  return chat.id;
 }
 
 /**

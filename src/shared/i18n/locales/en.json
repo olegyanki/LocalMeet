@@ -333,5 +333,8 @@
   "liveTimeOverlap": "You already have an active event at this time",
   "liveCardTitle": "{{name}} is walking now",
   "liveActiveNow": "Online",
-  "liveWrite": "Write"
+  "liveWrite": "Write",
+  "walkTitle": "Walk",
+  "walkOfName": "{{name}}'s walk",
+  "yourWalk": "Your walk"
 }

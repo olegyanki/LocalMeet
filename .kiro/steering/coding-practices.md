@@ -296,6 +296,25 @@ setLoading(true);
 - Special characters in input
 
 
+## Live Event Chat Rules
+
+### Type Checking
+- All chat-related changes for live events MUST check `walk_type === 'live'`
+- If `walk_type` is undefined or missing, treat as `'event'` (fallback to existing behavior)
+- Never assume `walk_type` exists — always use optional chaining or fallback
+
+### Chat Creation
+- Live events use lazy chat creation — chat is NOT created when event is created
+- Chat is created either by DB trigger (on first accepted request) or by `getOrCreateChatForWalk`
+- Use `getOrCreateChatForWalk(walkId, userId)` when owner opens chat from EventDetailsScreen
+- Use `getChatByWalkId(walkId)` for regular events (chat always exists)
+
+### Display Rules
+- Live event chat name: non-owner → `t('walkOfName', { name: creator_first_name })`, owner → `t('yourWalk')`
+- Live event chat avatar: `creator_avatar_url` (owner's profile avatar), NOT `walk_image_url`
+- Regular event chats: no changes to existing display logic
+
+
 ## Agent Delegation Rules
 
 ### Supabase / Database Work → `supabase-expert` agent

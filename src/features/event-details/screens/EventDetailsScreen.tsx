@@ -26,6 +26,7 @@ import {
   getWalkById,
   getProfile,
   getChatByWalkId,
+  getOrCreateChatForWalk,
   getWalkParticipants,
   WalkRequest, 
   Walk,
@@ -291,10 +292,15 @@ export default function EventDetailsScreen() {
   };
 
   const handleOpenGroupChat = async () => {
-    if (!walk?.id) return;
+    if (!walk?.id || !currentUser?.id) return;
 
     try {
-      const chatId = await getChatByWalkId(walk.id);
+      let chatId: string | null;
+      if (walk.type === 'live') {
+        chatId = await getOrCreateChatForWalk(walk.id, currentUser.id);
+      } else {
+        chatId = await getChatByWalkId(walk.id);
+      }
       
       if (chatId) {
         router.push(`/chat/${chatId}`);
@@ -413,7 +419,7 @@ export default function EventDetailsScreen() {
               <ChevronLeft size={24} color={COLORS.TEXT_DARK} />
             </TouchableOpacity>
             <Text style={styles.headerTitle} numberOfLines={2}>
-              {walk?.title || t('walkNotFound')}
+              {walk?.type === 'live' ? t('walkTitle') : (walk?.title || t('walkTitle'))}
             </Text>
             <View style={styles.headerSpacer} />
           </View>
@@ -444,7 +450,7 @@ export default function EventDetailsScreen() {
             style={[styles.headerTitle, { position: 'absolute', opacity: 0 }]}
             onTextLayout={handleTitleLayout}
           >
-            {walk.title || ''}
+            {walk.type === 'live' ? t('walkTitle') : (walk.title || '')}
           </Text>
           
           {/* Visible title with dynamic alignment */}
@@ -457,7 +463,7 @@ export default function EventDetailsScreen() {
             adjustsFontSizeToFit
             minimumFontScale={0.85}
           >
-            {walk.title || ''}
+            {walk.type === 'live' ? t('walkTitle') : (walk.title || '')}
           </Text>
           <View style={styles.headerSpacer} />
         </View>

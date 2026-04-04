@@ -173,6 +173,34 @@ export const getTimeText = (
 };
 
 /**
+ * Format date as Today/Yesterday/short date for display labels
+ * @param dateString - ISO date string
+ * @param t - Translation function from useI18n()
+ * @returns "Today"/"Yesterday" or short date like "25.02"
+ */
+export const formatDateLabel = (
+  dateString: string | undefined | null,
+  t: (key: any, params?: Record<string, any>) => string
+): string => {
+  if (!dateString) return '';
+
+  const date = new Date(dateString);
+  if (isNaN(date.getTime())) return '';
+
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const target = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+  const diffDays = Math.round((today.getTime() - target.getTime()) / (1000 * 60 * 60 * 24));
+
+  if (diffDays === 0) return t('today');
+  if (diffDays === 1) return t('yesterday');
+
+  const day = date.getDate().toString().padStart(2, '0');
+  const month = (date.getMonth() + 1).toString().padStart(2, '0');
+  return `${day}.${month}`;
+};
+
+/**
  * Format relative time for display (e.g., "2m ago", "3h ago", "5d ago")
  * Used for displaying timestamps in chat requests and other relative time contexts
  * @param dateString - ISO date string
