@@ -253,17 +253,35 @@ When making changes, ALWAYS update relevant context files in `.kiro/steering/`:
 | Change code structure pattern | `code-structure.md` |
 | Add coding rule | `coding-practices.md` |
 
+### CRITICAL: Always Update Project Documentation
+
+When making significant changes, ALWAYS update relevant files in `docs/`:
+
+| Change | Update File |
+|--------|-------------|
+| New feature | Create `docs/features/<feature>.md` + update `docs/README.md` |
+| Change DB schema (tables, columns, triggers, RPC) | Update `docs/architecture/database.md` |
+| Change navigation structure | Update `docs/architecture/navigation.md` |
+| Change project architecture or add new modules | Update `docs/architecture/overview.md` |
+| Modify existing feature behavior | Update corresponding `docs/features/<feature>.md` |
+| Non-trivial architectural decision | Create `docs/decisions/XXX-<name>.md` + update `docs/README.md` |
+| New common problem/solution discovered | Update `docs/guides/debugging.md` |
+
+Use templates from `docs/README.md` for new files. Write in Ukrainian.
+
 ### Why This Matters
-- Context files help AI understand the project
+- Context files (`.kiro/steering/`) help AI understand the project
+- Documentation (`docs/`) helps the developer understand the project
+- Both must stay in sync with the actual code
 - Keeps patterns consistent across codebase
 - Prevents duplicate code
 - Makes onboarding easier
 
 ### Update Process
 1. Make code changes
-2. Identify which context files are affected
+2. Identify which context files AND docs are affected
 3. Update those files immediately
-4. Commit context files WITH code changes
+4. Commit context files, docs, AND code changes together
 
 ### Code Comments
 - Explain WHY, not WHAT
