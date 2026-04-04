@@ -1,4 +1,4 @@
-import { Tabs, useRouter } from 'expo-router';
+import { Tabs, useRouter, useSegments } from 'expo-router';
 import { Search, User, MessageCircle, Settings } from 'lucide-react-native';
 import { useState, useEffect } from 'react';
 import { View } from 'react-native';
@@ -20,6 +20,8 @@ export default function TabLayout() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const [isVisible, setIsVisible] = useState(false);
+  const segments = useSegments();
+  const isCreateEventActive = isVisible || segments.includes('create-event' as never);
 
   useEffect(() => {
     if (!isLoading && !user) {
@@ -82,7 +84,7 @@ export default function TabLayout() {
         options={{
           title: '',
           tabBarButton: (props) => (
-            <PlusTabButton {...props} onPress={() => setIsVisible(true)} />
+            <PlusTabButton {...props} isActive={isCreateEventActive} onPress={() => setIsVisible(true)} />
           ),
         }}
       />

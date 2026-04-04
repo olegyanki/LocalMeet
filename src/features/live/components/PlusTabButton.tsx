@@ -9,13 +9,15 @@ interface PlusTabButtonProps {
   accessibilityState?: { selected?: boolean };
   onPress?: () => void;
   style?: any;
+  isActive?: boolean;
 }
 
 const CIRCLE_SIZE = 46;
 const BORDER_WIDTH = 3;
 
-export default function PlusTabButton({ accessibilityState, onPress, style }: PlusTabButtonProps) {
+export default function PlusTabButton({ accessibilityState, onPress, style, isActive }: PlusTabButtonProps) {
   const { t } = useI18n();
+  const selected = isActive || accessibilityState?.selected;
 
   return (
     <TouchableOpacity
@@ -30,7 +32,7 @@ export default function PlusTabButton({ accessibilityState, onPress, style }: Pl
           <Plus size={26} color={COLORS.WHITE} strokeWidth={2.5} />
         </GradientView>
       </View>
-      <Text style={styles.label}>
+      <Text style={[styles.label, { color: selected ? COLORS.ACCENT_ORANGE : COLORS.TEXT_LIGHT }]}>
         {t('tabGoOnline').toUpperCase()}
       </Text>
     </TouchableOpacity>
@@ -68,6 +70,6 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 9,
     fontWeight: '600',
-    color: COLORS.ACCENT_ORANGE,
+    color: COLORS.TEXT_LIGHT,
   },
 });
