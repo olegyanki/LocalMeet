@@ -1,10 +1,11 @@
 import { View, Text, StyleSheet, TouchableOpacity, FlatList, ActivityIndicator, RefreshControl, ScrollView } from 'react-native';
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 
 // Contexts & Hooks
 import { useAuth } from '@shared/contexts/AuthContext';
+import { useBadgeCount } from '@shared/contexts/BadgeCountContext';
 import { useI18n } from '@shared/i18n';
 import { useChatsData } from '@features/chats/hooks/useChatsData';
 
@@ -34,9 +35,10 @@ export default function ChatsScreen() {
   const router = useRouter();
   const { user } = useAuth();
   const { t } = useI18n();
+  const { forceRefresh: refreshBadgeCounts } = useBadgeCount();
 
   // Use custom hook for data loading
-  const { chats, requests, isLoading, refresh, refreshSilently } = useChatsData({
+  const { chats, requests, isLoading, refresh } = useChatsData({
     userId: user?.id || '',
     shouldLoad: !!user,
   });
@@ -91,9 +93,14 @@ export default function ChatsScreen() {
     return pendingRequests.length;
   }, [pendingRequests]);
 
+  // Sync badge counts when screen mounts (covers cases where realtime missed an update)
+  useEffect(() => {
+    refreshBadgeCounts();
+  }, []);
+
   const onRefresh = async () => {
     setRefreshing(true);
-    await refresh();
+    await Promise.all([refresh(), refreshBadgeCounts()]);
     setRefreshing(false);
   };
 
@@ -109,6 +116,9 @@ export default function ChatsScreen() {
       
       // Refresh data to update the UI
       await refresh();
+      
+      // Sync badge counts with tab bar
+      refreshBadgeCounts();
 
       // Navigate to the group chat for this event
       const { getChatByWalkId } = await import('@shared/lib/api');
@@ -128,6 +138,9 @@ export default function ChatsScreen() {
       
       // Refresh data to update the UI
       await refresh();
+      
+      // Sync badge counts with tab bar
+      refreshBadgeCounts();
     } catch (error) {
       console.error('Error rejecting request:', error);
     }

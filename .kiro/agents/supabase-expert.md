@@ -100,7 +100,7 @@ Always respond in the same language the user used (Ukrainian or English).
 ### Existing RPC Functions
 - `get_nearby_walks(p_latitude, p_longitude, p_radius_km)` — Geospatial walk search
 - `get_nearby_walks_filtered(...)` — Filtered geospatial search with interests/time
-- `get_my_chats_optimized(p_user_id)` — All user chats in single query
+- `get_my_chats_optimized(p_user_id)` — All user chats in single query. Filters: (1) hides chats linked to soft-deleted walks, (2) hides empty finished live event chats
 - `get_chat_details(p_chat_id, p_user_id)` — Chat with participants
 - `get_badge_counts_optimized(p_user_id)` — Unread messages + pending requests count
 - `get_database_stats()` — Database statistics

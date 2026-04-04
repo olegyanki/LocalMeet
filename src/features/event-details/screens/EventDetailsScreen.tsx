@@ -17,6 +17,7 @@ import * as Location from 'expo-location';
 
 // Contexts & Hooks
 import { useAuth } from '@shared/contexts';
+import { useBadgeCount } from '@shared/contexts/BadgeCountContext';
 import { useI18n } from '@shared/i18n';
 
 // API & Utils
@@ -53,6 +54,7 @@ export default function EventDetailsScreen() {
   const insets = useSafeAreaInsets();
   const { t, locale } = useI18n();
   const { user: currentUser } = useAuth();
+  const { forceRefresh: refreshBadgeCounts } = useBadgeCount();
   const params = useLocalSearchParams();
 
   // State
@@ -275,13 +277,11 @@ export default function EventDetailsScreen() {
       
       setShowDeleteModal(false);
       
-      // Navigate back and trigger refresh
-      router.back();
+      // Sync badge counts after deletion
+      refreshBadgeCounts();
       
-      // Trigger refresh on search screen via params
-      setTimeout(() => {
-        router.setParams({ refresh: Date.now().toString() });
-      }, 100);
+      // Pop to root — dismisses all pushed screens (chat, event details, etc.)
+      router.dismissAll();
     } catch (error) {
       console.error('Failed to delete walk:', error);
       setError(t('errorDeleting'));

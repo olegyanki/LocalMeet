@@ -67,6 +67,7 @@ EventDetailsScreen
 ## Нюанси
 
 - `duration` зберігається в **секундах** (не хвилинах)
-- Soft delete: `deleted = true` замість фізичного видалення
+- Soft delete: `deleted = true` замість фізичного видалення. Чати видалених подій автоматично приховуються з RPC `get_my_chats_optimized`
+- Після видалення події: `router.dismissAll()` повертає на кореневий екран, badge counts синхронізуються
 - Live events мають обмеження на одночасність (TIME_OVERLAP error)
 - Nearby walks використовують `earth_distance` для геопошуку (PostgreSQL earthdistance extension)

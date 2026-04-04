@@ -32,7 +32,8 @@
 ChatsListScreen
   → useChatsData() хук
     → getMyChats(userId) — RPC get_my_chats_optimized
-    → Real-time підписка на messages, chat_participants
+    → Real-time підписки на: messages, chat_participants, walks (UPDATE)
+  → Badge count sync при mount та pull-to-refresh
   → рендерить список ChatWithDetails
 ```
 
@@ -67,3 +68,6 @@ ChatScreen
 - При видаленні чату — messages і participants видаляються каскадно (ON DELETE CASCADE)
 - Walk request скидається на `pending` коли учасник покидає чат (тригер)
 - `getOrCreateChatForWalk` — ідемпотентна, безпечно викликати кілька разів
+- Чати прив'язані до soft-deleted подій (`deleted = true`) автоматично приховуються з RPC
+- `useChatsData` підписується на зміни в `messages`, `chat_participants` та `walks` (UPDATE) для real-time оновлень
+- Badge counts синхронізуються при mount екрану чатів та при accept/reject запитів
