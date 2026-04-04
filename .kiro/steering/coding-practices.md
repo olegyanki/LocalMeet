@@ -320,7 +320,11 @@ The only exception is trivial reads of api.ts for understanding context (e.g., c
 
 ### Post-Task Review → `post-task-reviewer` agent
 
-The `post-task-reviewer` agent runs automatically after every agent task (via `agentStop` hook). It:
+The `post-task-reviewer` agent runs via a Kiro hook (`.kiro/hooks/`):
+
+1. **`pre-commit-review.kiro.hook`** (`userTriggered`) — manual trigger before committing
+
+It:
 
 - Reviews all changed/created files for code quality (TypeScript, error handling, performance, i18n)
 - Checks design system compliance (colors, shadows, animations, spacing)

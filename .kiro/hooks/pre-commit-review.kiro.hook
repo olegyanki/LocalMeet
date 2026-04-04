@@ -1,0 +1,13 @@
+{
+  "enabled": true,
+  "name": "Pre-Commit Review",
+  "description": "Ручний запуск ревʼю перед комітом. Перевіряє всі змінені файли (git diff), якість коду, дизайн-систему та оновлює документацію якщо потрібно.",
+  "version": "1",
+  "when": {
+    "type": "userTriggered"
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "Запусти post-task-reviewer агента через invokeSubAgent. Він має використати git diff та git status щоб знайти всі змінені файли, перевірити якість коду та дизайн-систему, і оновити steering/agent файли якщо зміни це вимагають."
+  }
+}
