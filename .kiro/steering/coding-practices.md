@@ -317,3 +317,13 @@ ALL tasks related to the database layer MUST be delegated to the `supabase-exper
 **Do NOT** handle these tasks yourself — always use `invokeSubAgent` with `name: "supabase-expert"`.
 
 The only exception is trivial reads of api.ts for understanding context (e.g., checking which API function a component uses). Actual modifications always go through the agent.
+
+### Post-Task Review → `post-task-reviewer` agent
+
+The `post-task-reviewer` agent runs automatically after every agent task (via `agentStop` hook). It:
+
+- Reviews all changed/created files for code quality (TypeScript, error handling, performance, i18n)
+- Checks design system compliance (colors, shadows, animations, spacing)
+- Updates steering files (`.kiro/steering/`) and agent configs (`.kiro/agents/`) if changes require it
+
+**Do NOT** manually invoke code-reviewer or design-reviewer — they no longer exist. The `post-task-reviewer` handles both.
