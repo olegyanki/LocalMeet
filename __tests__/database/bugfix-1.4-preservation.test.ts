@@ -225,7 +225,7 @@ describe('Bug 1.4: Preservation Property Tests', () => {
       
       const fs = require('fs');
       const path = require('path');
-      const apiPath = path.join(__dirname, '../src/shared/lib/api.ts');
+      const apiPath = path.join(__dirname, '../../src/shared/lib/api.ts');
       const apiContent = fs.readFileSync(apiPath, 'utf8');
       
       // Verify API function exists and calls RPC
@@ -268,7 +268,7 @@ describe('Bug 1.4: Preservation Property Tests', () => {
       
       const fs = require('fs');
       const path = require('path');
-      const apiPath = path.join(__dirname, '../src/shared/lib/api.ts');
+      const apiPath = path.join(__dirname, '../../src/shared/lib/api.ts');
       const apiContent = fs.readFileSync(apiPath, 'utf8');
       
       expect(apiContent).toContain('distance: row.distance');

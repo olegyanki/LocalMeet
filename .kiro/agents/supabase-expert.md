@@ -17,9 +17,10 @@ Always respond in the same language the user used (Ukrainian or English).
 **Tech Stack**: React Native + Expo, TypeScript, Supabase (PostgreSQL), Expo Router
 
 **Key Files**:
-- `src/shared/lib/api.ts` — All API functions (TypeScript). Every DB interaction goes through here.
+- `src/shared/lib/api.ts` — Re-exports all API functions from domain modules (backward-compatible entry point)
+- `src/shared/lib/api/` — Domain modules: `profiles.ts`, `walks.ts`, `walk-requests.ts`, `chats.ts`, `messages.ts`, `storage.ts`, `badges.ts`
 - `src/shared/lib/database.types.ts` — Auto-generated types from DB schema
-- `src/shared/lib/supabase.ts` — Supabase client (should be typed with `Database` generic)
+- `src/shared/lib/supabase.ts` — Supabase client (typed with `Database` generic)
 - `supabase/migrations/` — Migration files
 - `__tests__/database/` — Database tests
 
@@ -103,6 +104,10 @@ Always respond in the same language the user used (Ukrainian or English).
 - `get_chat_details(p_chat_id, p_user_id)` — Chat with participants
 - `get_badge_counts_optimized(p_user_id)` — Unread messages + pending requests count
 - `get_database_stats()` — Database statistics
+- `get_walks_by_user_id(p_user_id)` — User's active walks (deleted=false), sorted by start_time ASC. SECURITY DEFINER.
+- `get_walk_requests_for_owner(p_user_id, p_status)` — Walk requests with requester profiles & walk data in single JOIN. p_status: 'pending' or 'past'. SECURITY DEFINER.
+- `get_walk_participants(p_walk_id)` — Profiles of accepted walk participants. SECURITY DEFINER.
+- `get_chat_messages_cursor(p_chat_id, p_limit, p_cursor)` — Messages with sender profiles, cursor-based pagination. Returns has_more. SECURITY DEFINER.
 
 ### Existing Triggers
 - `create_group_chat_on_walk_insert` — Auto-creates group chat when walk is created
@@ -125,19 +130,32 @@ Always respond in the same language the user used (Ukrainian or English).
 - `chat-images` — Chat image messages
 - `chat-audio` — Chat audio messages
 
+### Key Indexes
+- `idx_chat_participants_user_chat` — Composite on chat_participants(user_id, chat_id)
+- `messages_unread_by_chat_idx` — Composite on messages(chat_id, sender_id, created_at) WHERE read = false
+- `idx_messages_sender_id` — On messages(sender_id) for JOIN with profiles
+- `idx_chats_type` — On chats(type)
+- `idx_chats_walk_id` — On chats(walk_id) WHERE walk_id IS NOT NULL
+
+### RLS Policy Notes
+- All RLS policies use `(select auth.uid())` (cached, not per-row)
+- INSERT on `chat_participants`: `WITH CHECK (user_id = (select auth.uid()))` — users can only add themselves
+- INSERT on `chats`: `WITH CHECK (type = 'direct')` — only direct chats via client; group chats created by SECURITY DEFINER triggers
+- System operations (group chat creation, participant addition on accept) use SECURITY DEFINER trigger functions that bypass RLS
+
 ---
 
 ## Known Issues (Current State)
 
-These are real issues found by Supabase linter. Be aware of them and fix when relevant:
+All previously known issues have been resolved in the production-db-optimization spec:
 
-1. **RLS Performance**: 7+ policies use `auth.uid()` without `(select ...)` wrapper — causes per-row re-evaluation
-2. **Duplicate Indexes**: `chat_participants_user_chat_idx` = `idx_chat_participants_user_chat`; `idx_messages_badge_counts` = `messages_unread_by_chat_idx`
-3. **Missing Index**: `messages.sender_id` FK has no covering index
-4. **Overly Permissive RLS**: `"System can insert participants"` and `"System can create chats"` use `WITH CHECK (true)` — any authenticated user can insert
-5. **Mutable search_path**: `reset_walk_request_on_leave_chat` function missing `SET search_path TO 'public'`
-6. **Extensions in public**: `cube` and `earthdistance` should be in `extensions` schema
-7. **Legacy columns on chats**: `requester_id`, `walker_id`, `walk_request_id` are legacy from old direct chat system
+1. ~~**RLS Performance**: 7+ policies use `auth.uid()` without `(select ...)` wrapper~~ → **FIXED**: All policies now use `(select auth.uid())`
+2. ~~**Duplicate Indexes**: `chat_participants_user_chat_idx` = `idx_chat_participants_user_chat`; `idx_messages_badge_counts` = `messages_unread_by_chat_idx`~~ → **FIXED**: Duplicates dropped
+3. ~~**Missing Index**: `messages.sender_id` FK has no covering index~~ → **FIXED**: `idx_messages_sender_id` added
+4. ~~**Overly Permissive RLS**: `"System can insert participants"` and `"System can create chats"` use `WITH CHECK (true)`~~ → **FIXED**: Replaced with restricted policies
+5. ~~**Mutable search_path**: `reset_walk_request_on_leave_chat` function missing `SET search_path TO 'public'`~~ → **FIXED**: search_path added
+6. ~~**Extensions in public**: `cube` and `earthdistance` should be in `extensions` schema~~ → **FIXED**: Moved to `extensions` schema
+7. **Legacy columns on chats**: `requester_id`, `walker_id`, `walk_request_id` are legacy from old direct chat system (kept for backward compatibility)
 
 ---
 
@@ -325,9 +343,9 @@ SELECT indexname, indexdef FROM pg_indexes WHERE tablename = 'table_name';
 
 ---
 
-## Rules for TypeScript API Functions (api.ts)
+## Rules for TypeScript API Functions (api/ modules)
 
-When a migration changes the schema, you MUST also update `src/shared/lib/api.ts`:
+When a migration changes the schema, you MUST also update the appropriate module in `src/shared/lib/api/`:
 
 ### Pattern for API Functions
 ```typescript
@@ -455,6 +473,42 @@ For every migration, verify:
 - [ ] Foreign keys have appropriate ON DELETE behavior
 - [ ] No sensitive data exposed in RPC return types
 - [ ] Extensions not in public schema
+
+---
+
+## Production Best Practices (Enforced)
+
+These rules were established during the production-db-optimization and MUST be followed for all new code:
+
+### 1. Complex Reads → RPC Functions (not direct table queries)
+Any query involving JOINs, aggregations, or multi-table reads MUST be implemented as an RPC function. Direct `supabase.from('table').select('*, related_table(*)')` is NOT allowed for complex reads. Simple single-table CRUD (insert, update, delete one row) can still use direct queries.
+
+### 2. Pagination → Cursor-based (keyset), not offset
+Pagination for messages and other large lists MUST use cursor-based (keyset) pagination. Never use offset-based pagination — it degrades on large tables and produces inconsistent results with concurrent writes. Pattern: `WHERE created_at < p_cursor ORDER BY created_at DESC LIMIT p_limit`.
+
+### 3. RLS Policies → `(select auth.uid())`, not `auth.uid()`
+ALL RLS policies MUST use `(select auth.uid())` instead of bare `auth.uid()`. The subquery wrapper caches the result once per query instead of re-evaluating on every row, which is critical for performance on large tables.
+
+### 4. INSERT/UPDATE/DELETE RLS → No `WITH CHECK (true)`
+RLS policies for INSERT/UPDATE/DELETE MUST NOT use `WITH CHECK (true)`. This is overly permissive and allows any authenticated user to perform the operation. System operations (e.g., creating group chats, adding participants on accept) should use SECURITY DEFINER trigger functions that bypass RLS.
+
+### 5. API Functions → Generated types from Database_Types, not `any`
+New API functions MUST use generated types from `Database['public']['Functions']['function_name']['Returns'][number]`. Never use `any` for RPC return types. The Supabase client in `supabase.ts` is typed with `Database` generic.
+
+### 6. API Module Structure → Domain modules in `src/shared/lib/api/`
+The `api.ts` file is split into domain modules. New functions go into the appropriate module:
+- `profiles.ts` — updateProfile, getProfile, getProfiles
+- `walks.ts` — createWalk, createLiveWalk, deleteWalk, getWalksByUserId, getWalkById
+- `walk-requests.ts` — createWalkRequest, updateWalkRequestStatus, getWalkRequests, getPastWalkRequests, getWalkParticipants
+- `chats.ts` — getMyChats, getChatDetails, getChatByWalkId, leaveChat, removeChatParticipant, deleteChat
+- `messages.ts` — getChatMessages, sendMessage, markChatAsRead
+- `storage.ts` — uploadImage, uploadAvatar, uploadEventImage, takePhotoAndUploadAvatar
+- `badges.ts` — getBadgeCounts, setupBadgeSubscriptions
+
+The main `api.ts` re-exports everything for backward compatibility: `export * from './api/profiles'` etc.
+
+### 7. Before Creating Indexes → Check for duplicates
+Before creating a new index, MUST check existing indexes for duplicates via `mcp_supabase_get_advisors` with type "performance". Duplicate indexes waste disk space and slow down writes without providing any read benefit.
 
 ---
 
