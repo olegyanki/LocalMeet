@@ -14,6 +14,7 @@ import {
   PanResponder,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import GradientView from '@shared/components/GradientView';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Location from 'expo-location';
 import { useAuth } from '@shared/contexts/AuthContext';
@@ -446,7 +447,7 @@ export default function SearchScreen() {
           style={styles.handleWrapper}
           {...panResponder.panHandlers}
         >
-          <View style={styles.cardsHandle} />
+          <GradientView style={styles.cardsHandle} />
         </View>
         <ScrollView
           ref={scrollViewRef}
@@ -632,7 +633,6 @@ const styles = StyleSheet.create({
     width: 60,
     height: 4,
     borderRadius: 2,
-    backgroundColor: COLORS.ACCENT_ORANGE,
   },
   cardsScrollContent: {
     paddingHorizontal: 20,

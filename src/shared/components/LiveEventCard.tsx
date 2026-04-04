@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, Pressable, TouchableOpacity } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
 import Avatar from '@shared/components/Avatar';
+import GradientView from '@shared/components/GradientView';
 import { COLORS, SHADOW } from '@shared/constants';
 import { NearbyWalk } from '@shared/lib/api';
 import { TranslationKey } from '@shared/i18n/translations';
@@ -106,14 +106,9 @@ export default React.memo(function LiveEventCard({
                 }}
                 activeOpacity={0.6}
               >
-                <LinearGradient
-                  colors={COLORS.GRADIENT_ORANGE}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 1 }}
-                  style={styles.joinGradient}
-                >
+                <GradientView style={styles.joinGradient}>
                   <Text style={styles.joinButtonText}>{t('liveWrite')}</Text>
-                </LinearGradient>
+                </GradientView>
               </TouchableOpacity>
             )}
           </>

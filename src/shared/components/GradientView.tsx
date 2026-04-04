@@ -1,21 +1,22 @@
 import React from 'react';
-import { View, ViewStyle } from 'react-native';
+import { ViewStyle } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { COLORS } from '@shared/constants';
 
 interface GradientViewProps {
-  children: React.ReactNode;
+  children?: React.ReactNode;
   style?: ViewStyle;
-  colors?: string[];
+  colors?: readonly string[];
 }
 
 export default function GradientView({
   children,
   style,
-  colors = ['#FFB84D', '#FF8C26', '#FF5500'],
+  colors = COLORS.GRADIENT_ORANGE,
 }: GradientViewProps) {
   return (
     <LinearGradient
-      colors={colors}
+      colors={colors as any}
       start={{ x: 0, y: 0 }}
       end={{ x: 1, y: 1 }}
       style={style}

@@ -4,6 +4,7 @@ import { BlurView } from 'expo-blur';
 import { Check } from 'lucide-react-native';
 import { useI18n } from '@shared/i18n';
 import { COLORS } from '@shared/constants';
+import GradientView from '@shared/components/GradientView';
 import { router } from 'expo-router';
 
 interface SuccessModalProps {
@@ -106,9 +107,9 @@ export default function SuccessModal({ visible, walkId, onClose }: SuccessModalP
             />
             
             {/* Icon circle */}
-            <View style={styles.iconCircle}>
+            <GradientView style={styles.iconCircle}>
               <Check size={52} color={COLORS.WHITE} strokeWidth={4} />
-            </View>
+            </GradientView>
           </View>
           
           <Text style={styles.title}>{t('eventPublished')}</Text>
@@ -118,7 +119,9 @@ export default function SuccessModal({ visible, walkId, onClose }: SuccessModalP
             style={styles.primaryButton}
             onPress={handleButtonPress}
           >
-            <Text style={styles.primaryButtonText}>{t('viewEvent')}</Text>
+            <GradientView style={styles.primaryButtonGradient}>
+              <Text style={styles.primaryButtonText}>{t('viewEvent')}</Text>
+            </GradientView>
           </Pressable>
         </Animated.View>
       </Pressable>
@@ -173,7 +176,6 @@ const styles = StyleSheet.create({
     width: 80,
     height: 80,
     borderRadius: 40,
-    backgroundColor: COLORS.ACCENT_ORANGE,
     alignItems: 'center',
     justifyContent: 'center',
     shadowColor: COLORS.ACCENT_ORANGE,
@@ -201,15 +203,18 @@ const styles = StyleSheet.create({
   },
   primaryButton: {
     width: '100%',
-    backgroundColor: COLORS.ACCENT_ORANGE,
-    paddingVertical: 16,
     borderRadius: 16,
-    alignItems: 'center',
+    overflow: 'hidden',
     shadowColor: COLORS.ACCENT_ORANGE,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.2,
     shadowRadius: 8,
     elevation: 4,
+  },
+  primaryButtonGradient: {
+    paddingVertical: 16,
+    alignItems: 'center',
+    borderRadius: 16,
   },
   primaryButtonText: {
     fontSize: 17,

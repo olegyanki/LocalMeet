@@ -1,6 +1,6 @@
 import React from 'react';
 import { TouchableOpacity, Text, StyleSheet, ActivityIndicator, ViewStyle, TextStyle } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
+import GradientView from '@shared/components/GradientView';
 import { BUTTON_STYLES } from '@shared/constants/styles';
 import { COLORS } from '@shared/constants';
 
@@ -46,14 +46,9 @@ export default function PrimaryButton({
         activeOpacity={0.8}
         style={[styles.buttonWrapper, style]}
       >
-        <LinearGradient
-          colors={COLORS.GRADIENT_ORANGE}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          style={styles.gradient}
-        >
+        <GradientView style={styles.gradient}>
           {buttonContent}
-        </LinearGradient>
+        </GradientView>
       </TouchableOpacity>
     );
   }

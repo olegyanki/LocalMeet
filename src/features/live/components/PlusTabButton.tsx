@@ -1,6 +1,6 @@
 import React from 'react';
 import { TouchableOpacity, Text, View, StyleSheet } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
+import GradientView from '@shared/components/GradientView';
 import { Plus } from 'lucide-react-native';
 import { useI18n } from '@shared/i18n';
 import { COLORS } from '@shared/constants';
@@ -26,14 +26,9 @@ export default function PlusTabButton({ accessibilityState, onPress, style }: Pl
       accessibilityState={accessibilityState}
     >
       <View style={styles.circleOuter}>
-        <LinearGradient
-          colors={COLORS.GRADIENT_ORANGE as any}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          style={styles.circleInner}
-        >
+        <GradientView style={styles.circleInner}>
           <Plus size={26} color={COLORS.WHITE} strokeWidth={2.5} />
-        </LinearGradient>
+        </GradientView>
       </View>
       <Text style={styles.label}>
         {t('tabGoOnline').toUpperCase()}
