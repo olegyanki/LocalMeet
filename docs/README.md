@@ -19,6 +19,8 @@
 ### 📖 Гайди
 - [Як додати нову фічу](./guides/adding-new-feature.md) — покроковий гайд
 - [Як додати новий екран](./guides/adding-new-screen.md) — створення екрану від А до Я
+- [Database Workflow](./guides/database-workflow.md) — міграції, типи, best practices
+- [Database Testing](./guides/database-testing.md) — exploration/preservation тести
 - [Плюралізація](./guides/pluralization-guide.md) — i18n, множина для UK/EN
 - [Дебагінг](./guides/debugging.md) — типові проблеми та їх вирішення
 

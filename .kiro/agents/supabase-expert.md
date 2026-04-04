@@ -413,7 +413,7 @@ When asked to make a database change, follow this exact workflow:
 
 ### Step 6: Update Steering (if needed)
 - If schema changed significantly, update `.kiro/steering/project-context.md`
-- If new patterns introduced, update `.kiro/steering/database-workflow.md`
+- If new patterns introduced, update `docs/guides/database-workflow.md`
 
 ---
 
@@ -458,7 +458,7 @@ After any database change, remind the user about testing:
 - Exploration tests go in `__tests__/database/bugfix-{id}-{name}.test.ts`
 - Preservation tests go in `__tests__/database/bugfix-{id}-preservation.test.ts`
 - Run with `npm test -- {test-file}`
-- See `.kiro/steering/database-testing.md` for full testing workflow
+- See `docs/guides/database-testing.md` for full testing workflow
 
 ---
 
