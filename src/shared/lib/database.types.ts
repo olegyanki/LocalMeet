@@ -89,7 +89,7 @@ export type Database = {
             foreignKeyName: "chats_requester_id_fkey"
             columns: ["requester_id"]
             isOneToOne: false
-            referencedRelation: "profiles"
+            referencedRelation: "chats"
             referencedColumns: ["id"]
           },
           {
@@ -434,6 +434,7 @@ export type Database = {
           p_max_distance_km?: number
           p_radius_km?: number
           p_time_filter?: string
+          p_user_id?: string
         }
         Returns: {
           created_at: string
@@ -449,6 +450,7 @@ export type Database = {
           image_url: string
           latitude: number
           longitude: number
+          my_request_status: string
           start_time: string
           title: string
           updated_at: string

@@ -152,6 +152,34 @@ Modal for selecting user interests.
 />
 ```
 
+## Cards
+
+### LiveEventCard
+`src/shared/components/LiveEventCard.tsx`
+
+Card for live events on the map. Shows host avatar, "Active Now" badge, description, and join button with request status.
+
+```tsx
+<LiveEventCard
+  item={nearbyWalk}
+  currentUserId={user.id}
+  onPress={() => router.push(`/event/${walk.id}`)}
+  onButtonPress={() => openContactRequest()}
+  onAvatarPress={() => router.push(`/user/${walk.user_id}`)}
+  requestStatus={item.my_request_status}
+  width={cardWidth}
+  t={t}
+/>
+```
+
+**Props:**
+- `requestStatus` — `'pending' | 'accepted' | 'rejected' | null` — shows "Запит надіслано" when set
+- `onButtonPress` — separate handler for the join button (optional, falls back to `onPress`)
+- `onAvatarPress` — navigate to host profile
+
+**Use for:** Live event cards on the search map
+**Don't use for:** Regular events (use EventCard), chat list items
+
 ## Map
 
 ### MapPreview

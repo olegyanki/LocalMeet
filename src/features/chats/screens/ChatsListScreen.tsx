@@ -205,7 +205,9 @@ export default function ChatsScreen() {
         lastMessageText = item.lastMessage.content;
       }
     } else {
-      lastMessageText = isGroupChat ? t('groupChatCreated') : displayName;
+      lastMessageText = isGroupChat 
+        ? (item.walk_type === 'live' ? t('walkChatCreated') : t('groupChatCreated')) 
+        : displayName;
     }
     
     const isUnread = item.lastMessage && !item.lastMessage.read && item.lastMessage.sender_id !== user?.id;

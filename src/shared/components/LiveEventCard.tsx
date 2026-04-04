@@ -12,7 +12,9 @@ interface LiveEventCardProps {
   item: NearbyWalk;
   currentUserId: string;
   onPress: () => void;
+  onButtonPress?: () => void;
   onAvatarPress: () => void;
+  requestStatus?: 'pending' | 'accepted' | 'rejected' | null;
   width?: number;
   t: (key: TranslationKey, params?: Record<string, any>) => string;
 }
@@ -21,11 +23,14 @@ export default React.memo(function LiveEventCard({
   item,
   currentUserId,
   onPress,
+  onButtonPress,
   onAvatarPress,
+  requestStatus,
   width,
   t,
 }: LiveEventCardProps) {
   const isOwnEvent = item.walk?.user_id === currentUserId;
+  const hasRequest = requestStatus === 'pending' || requestStatus === 'accepted' || requestStatus === 'rejected';
   const hostAvatarUrl = item.host?.avatar_url;
   const hostName = item.host ? getShortDisplayName(item.host) : t('unknownHost');
   const description = item.walk?.description || '';
@@ -87,20 +92,30 @@ export default React.memo(function LiveEventCard({
               <Text style={styles.hostName} numberOfLines={1}>{hostName}</Text>
               <Text style={styles.metadataText}>{distanceText} {t('fromYou')}</Text>
             </View>
-            <TouchableOpacity
-              style={styles.joinButton}
-              onPress={onPress}
-              activeOpacity={0.6}
-            >
-              <LinearGradient
-                colors={COLORS.GRADIENT_ORANGE}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
-                style={styles.joinGradient}
+            {hasRequest ? (
+              <View style={styles.sentButton}>
+                <Text style={styles.sentButtonText}>{t('requestSentStatus')}</Text>
+              </View>
+            ) : (
+              <TouchableOpacity
+                style={styles.joinButton}
+                onPress={(e) => {
+                  e.stopPropagation();
+                  if (onButtonPress) onButtonPress();
+                  else onPress();
+                }}
+                activeOpacity={0.6}
               >
-                <Text style={styles.joinButtonText}>{t('liveWrite')}</Text>
-              </LinearGradient>
-            </TouchableOpacity>
+                <LinearGradient
+                  colors={COLORS.GRADIENT_ORANGE}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                  style={styles.joinGradient}
+                >
+                  <Text style={styles.joinButtonText}>{t('liveWrite')}</Text>
+                </LinearGradient>
+              </TouchableOpacity>
+            )}
           </>
         )}
       </View>
@@ -109,7 +124,8 @@ export default React.memo(function LiveEventCard({
 }, (prevProps, nextProps) => {
   return (
     prevProps.item.walk?.id === nextProps.item.walk?.id &&
-    prevProps.currentUserId === nextProps.currentUserId
+    prevProps.currentUserId === nextProps.currentUserId &&
+    prevProps.requestStatus === nextProps.requestStatus
   );
 });
 
@@ -212,5 +228,18 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: '600',
     color: COLORS.CARD_BG,
+  },
+  sentButton: {
+    borderRadius: 16,
+    backgroundColor: COLORS.BG_SECONDARY,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  sentButtonText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: COLORS.TEXT_LIGHT,
   },
 });

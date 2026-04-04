@@ -336,5 +336,6 @@
   "liveWrite": "Write",
   "walkTitle": "Walk",
   "walkOfName": "{{name}}'s walk",
-  "yourWalk": "Your walk"
+  "yourWalk": "Your walk",
+  "walkChatCreated": "Walk chat created"
 }

@@ -337,5 +337,6 @@
   "liveWrite": "Написати",
   "walkTitle": "Прогулянка",
   "walkOfName": "Прогулянка {{name}}",
-  "yourWalk": "Твоя прогулянка"
+  "yourWalk": "Твоя прогулянка",
+  "walkChatCreated": "Чат прогулянки створено"
 }

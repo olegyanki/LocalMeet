@@ -21,6 +21,12 @@ Regular events потребують планування: назва, час, о
 1. **Тригер**: коли перший walk request приймається (`add_participant_on_request_accept`)
 2. **Вручну**: коли owner відкриває чат через `getOrCreateChatForWalk(walkId, userId)`
 
+### Відображення на карті
+- `LiveEventCard` показує аватарку хоста, бейдж "Зараз активний", опис
+- Кнопка "Написати" відкриває модалку запиту на приєднання
+- Якщо запит вже надіслано (`my_request_status` з RPC) — показується лейбл "Запит надіслано" замість кнопки
+- `SearchScreen` передає `requestStatus` в `LiveEventCard` з даних `getNearbyWalksFiltered`
+
 ### Відображення в списку чатів
 - Порожні чати завершених live-подій **приховуються** (фільтр в RPC `get_my_chats_optimized`)
 - Назва чату:
@@ -34,6 +40,7 @@ Regular events потребують планування: назва, час, о
 |---|---|
 | `src/shared/lib/api/walks.ts` → `createLiveWalk()` | Створення live walk |
 | `src/shared/lib/api/chats.ts` → `getOrCreateChatForWalk()` | Lazy chat creation |
+| `src/shared/components/LiveEventCard.tsx` | Картка live-події на карті (з `requestStatus`) |
 | `src/features/live/components/LiveScreen.tsx` | UI live-прогулянки |
 | `src/features/live/components/LiveBottomSheet.tsx` | Bottom sheet зі статусом |
 | `src/features/live/components/PlusTabButton.tsx` | Кнопка "+" в tab bar |

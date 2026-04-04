@@ -89,7 +89,7 @@ app/
 - `UserProfile` - User profile data (id, username, display_name, bio, avatar_url, etc.)
 - `Walk` - Event/walk data (id, user_id, title, start_time, location, etc.)
   - **duration**: number (in seconds)
-- `NearbyWalk` - Walk with distance (distance, walk)
+- `NearbyWalk` - Walk with distance (distance, walk, host, my_request_status)
 - `WalkRequest` - Join request (id, walk_id, requester_id, status, message)
 - `Chat` - Universal chat interface (works for both group and direct chats)
 - `ChatParticipant` - Chat participant with profile information
@@ -104,6 +104,7 @@ app/
 
 ### RPC Functions
 - `get_nearby_walks(lat, lng, radius_km)` - Get walks within radius with distance
+- `get_nearby_walks_filtered(lat, lng, radius_km, interests, time_filter, max_distance, user_id)` - Filtered geospatial search. Optional `user_id` returns `my_request_status` per walk
 - `get_my_chats_optimized(user_id)` - Get all user chats with details (optimized single query)
 - `get_chat_details(chat_id, user_id)` - Get chat details with participants
 
@@ -145,7 +146,7 @@ app/
 - Ukrainian (uk) and English (en)
 - All text via `t('key')` from `useI18n()`
 - Translations in `src/shared/i18n/locales/`
-- Live event chat keys: `walkTitle` ("Walk"/"Прогулянка"), `walkOfName` ("{{name}}'s walk"/"Прогулянка {{name}}"), `yourWalk` ("Your walk"/"Твоя прогулянка")
+- Live event chat keys: `walkTitle` ("Walk"/"Прогулянка"), `walkOfName` ("{{name}}'s walk"/"Прогулянка {{name}}"), `yourWalk` ("Your walk"/"Твоя прогулянка"), `walkChatCreated` ("Walk chat created"/"Чат прогулянки створено")
 
 ## Important Patterns
 
