@@ -1,8 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { 
   getMyChats, 
-  getPendingWalkRequests,
-  getPastWalkRequests,
+  getWalkRequests,
   ChatWithDetails,
   WalkRequestWithProfile 
 } from '@shared/lib/api';
@@ -49,8 +48,8 @@ export function useChatsData(params: UseChatsDataParams): UseChatsDataReturn {
       // Load chats and requests in parallel
       const [chatsData, pendingRequests, pastRequests] = await Promise.all([
         getMyChats(userId),
-        getPendingWalkRequests(userId),
-        getPastWalkRequests(userId),
+        getWalkRequests(userId, 'pending'),
+        getWalkRequests(userId, 'past'),
       ]);
 
       setChats(chatsData);

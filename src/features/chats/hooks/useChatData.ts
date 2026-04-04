@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { getChatDetails, getChatMessages, markChatAsRead } from '@shared/lib/api';
 import type { ChatWithDetails, Message } from '@shared/lib/api';
 
@@ -11,12 +11,13 @@ export function useChatData(chatId: string, userId: string | undefined) {
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasMoreMessages, setHasMoreMessages] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const cursorRef = useRef<string | undefined>(undefined);
 
   const loadChatData = useCallback(async () => {
     if (!userId) return;
     
     try {
-      const [chatData, messagesData] = await Promise.all([
+      const [chatData, result] = await Promise.all([
         getChatDetails(chatId, userId),
         getChatMessages(chatId, 50),
       ]);
@@ -25,8 +26,13 @@ export function useChatData(chatId: string, userId: string | undefined) {
         setChat(chatData);
       }
 
-      setMessages(messagesData);
-      setHasMoreMessages(messagesData.length === 50);
+      setMessages(result.messages);
+      setHasMoreMessages(result.hasMore);
+
+      // Set cursor to oldest message's created_at for next page
+      if (result.messages.length > 0) {
+        cursorRef.current = result.messages[result.messages.length - 1].created_at;
+      }
 
       await markChatAsRead(chatId, userId);
     } catch (err) {
@@ -42,12 +48,12 @@ export function useChatData(chatId: string, userId: string | undefined) {
 
     try {
       setLoadingMore(true);
-      const offset = messages.length;
-      const olderMessages = await getChatMessages(chatId, 50, offset);
+      const result = await getChatMessages(chatId, 50, cursorRef.current);
 
-      if (olderMessages.length > 0) {
-        setMessages(prev => [...prev, ...olderMessages]);
-        setHasMoreMessages(olderMessages.length === 50);
+      if (result.messages.length > 0) {
+        setMessages(prev => [...prev, ...result.messages]);
+        setHasMoreMessages(result.hasMore);
+        cursorRef.current = result.messages[result.messages.length - 1].created_at;
       } else {
         setHasMoreMessages(false);
       }
@@ -56,7 +62,7 @@ export function useChatData(chatId: string, userId: string | undefined) {
     } finally {
       setLoadingMore(false);
     }
-  }, [chatId, loadingMore, hasMoreMessages, messages.length]);
+  }, [chatId, loadingMore, hasMoreMessages]);
 
   useEffect(() => {
     loadChatData();

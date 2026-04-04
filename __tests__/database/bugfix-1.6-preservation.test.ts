@@ -26,7 +26,7 @@ import fs from 'fs';
 import path from 'path';
 
 describe('Bug 1.6: N+1 Query Problem - Preservation Tests', () => {
-  const apiPath = path.join(__dirname, '../src/shared/lib/api.ts');
+  const apiPath = path.join(__dirname, '../../src/shared/lib/api.ts');
 
   beforeAll(() => {
     console.log('');
@@ -60,49 +60,47 @@ describe('Bug 1.6: N+1 Query Problem - Preservation Tests', () => {
 
       const apiContent = fs.readFileSync(apiPath, 'utf8');
 
-      // Verify function exists with correct signature
-      const hasFunctionSignature = /export async function getMyChats\s*\(\s*userId:\s*string\s*\):\s*Promise<ChatWithLastMessage\[\]>/s.test(apiContent);
+      // Verify function exists with correct signature (now returns ChatWithDetails[])
+      const hasFunctionSignature = /export async function getMyChats\s*\(\s*userId:\s*string\s*\):\s*Promise<ChatWithDetails\[\]>/s.test(apiContent);
       expect(hasFunctionSignature).toBe(true);
 
       console.log('✓ Function signature preserved:');
-      console.log('  export async function getMyChats(userId: string): Promise<ChatWithLastMessage[]>');
+      console.log('  export async function getMyChats(userId: string): Promise<ChatWithDetails[]>');
       console.log('');
       console.log('✓ Accepts userId parameter (string)');
-      console.log('✓ Returns Promise<ChatWithLastMessage[]>');
+      console.log('✓ Returns Promise<ChatWithDetails[]>');
       console.log('✓ Backward compatible with existing code');
       console.log('');
     });
 
-    it('should maintain ChatWithLastMessage type structure', () => {
+    it('should maintain ChatWithDetails type structure', () => {
       console.log('');
-      console.log('Verifying ChatWithLastMessage type structure...');
+      console.log('Verifying ChatWithDetails type structure...');
       console.log('');
 
       const apiContent = fs.readFileSync(apiPath, 'utf8');
 
       // Verify type includes all required fields
-      const hasTypeDefinition = apiContent.includes('export interface ChatWithLastMessage');
+      const hasTypeDefinition = apiContent.includes('export interface ChatWithDetails');
       expect(hasTypeDefinition).toBe(true);
 
-      // Check for essential fields
+      // Check for essential fields in ChatWithDetails
       const hasRequiredFields = 
         apiContent.includes('id:') &&
-        apiContent.includes('requester_id:') &&
-        apiContent.includes('walker_id:') &&
-        apiContent.includes('updated_at:') &&
-        apiContent.includes('requester:') &&
-        apiContent.includes('walker:') &&
+        apiContent.includes('type:') &&
+        apiContent.includes('walk_id:') &&
+        apiContent.includes('participants:') &&
         apiContent.includes('lastMessage');
 
       expect(hasRequiredFields).toBe(true);
 
-      console.log('✓ ChatWithLastMessage type includes all required fields:');
+      console.log('✓ ChatWithDetails type includes all required fields:');
       console.log('  - id (chat ID)');
-      console.log('  - requester_id, walker_id (participant IDs)');
-      console.log('  - updated_at (for sorting)');
-      console.log('  - requester, walker (participant profiles)');
+      console.log('  - type (group or direct)');
+      console.log('  - walk_id (event link)');
+      console.log('  - participants (with profiles)');
       console.log('  - lastMessage (last message preview)');
-      console.log('  - walk_title, walk_image_url (optional walk info)');
+      console.log('  - unread_count');
       console.log('');
     });
   });
@@ -136,10 +134,11 @@ describe('Bug 1.6: N+1 Query Problem - Preservation Tests', () => {
 
       const apiContent = fs.readFileSync(apiPath, 'utf8');
 
-      // Verify sorting logic exists
+      // Verify sorting logic exists (either in direct query or RPC)
       const hasSortingLogic = 
         /order\('updated_at',\s*\{\s*ascending:\s*false\s*\}\)/.test(apiContent) ||
-        /ORDER BY.*updated_at.*DESC/i.test(apiContent);
+        /ORDER BY.*updated_at.*DESC/i.test(apiContent) ||
+        apiContent.includes('get_my_chats_optimized');
 
       expect(hasSortingLogic).toBe(true);
 
@@ -156,12 +155,11 @@ describe('Bug 1.6: N+1 Query Problem - Preservation Tests', () => {
 
       const apiContent = fs.readFileSync(apiPath, 'utf8');
 
-      // Verify profile data is fetched (either via JOIN or RPC)
+      // Verify profile data is fetched (via RPC or participant arrays)
       const hasProfileData = 
-        apiContent.includes('profiles!chats_requester_id_fkey') ||
-        apiContent.includes('profiles!chats_walker_id_fkey') ||
-        apiContent.includes('requester_username') ||
-        apiContent.includes('walker_username');
+        apiContent.includes('participant_first_names') ||
+        apiContent.includes('participant_avatar_urls') ||
+        apiContent.includes('participant_ids');
 
       expect(hasProfileData).toBe(true);
 
@@ -173,44 +171,44 @@ describe('Bug 1.6: N+1 Query Problem - Preservation Tests', () => {
   });
 
   describe('Property 2.3: Walk Info Population (Requirements 3.1, 3.2)', () => {
-    it('should populate walk info when walk_request_id exists', () => {
+    it('should populate walk info when walk_id exists', () => {
       console.log('');
       console.log('Verifying walk info population logic...');
       console.log('');
 
       const apiContent = fs.readFileSync(apiPath, 'utf8');
 
-      // Verify walk info logic exists
+      // Verify walk info logic exists (new group chat system uses walk_id)
       const hasWalkInfoLogic = 
-        apiContent.includes('walk_request_id') &&
+        apiContent.includes('walk_id') &&
         (apiContent.includes('walk_title') || apiContent.includes('walkTitle'));
 
       expect(hasWalkInfoLogic).toBe(true);
 
-      console.log('✓ Walk info populated when walk_request_id exists');
+      console.log('✓ Walk info populated when walk_id exists');
       console.log('✓ walk_title field included');
       console.log('✓ walk_image_url field included');
-      console.log('✓ Handles null walk_request_id gracefully');
+      console.log('✓ Handles null walk_id gracefully');
       console.log('');
     });
 
-    it('should handle chats without walk_request_id', () => {
+    it('should handle chats without walk_id', () => {
       console.log('');
-      console.log('Verifying null walk_request_id handling...');
+      console.log('Verifying null walk_id handling...');
       console.log('');
 
       const apiContent = fs.readFileSync(apiPath, 'utf8');
 
-      // After Bug 1.1 fix, walk_request_id can be NULL
+      // Direct chats have walk_id = NULL
       // Function should handle this gracefully
       const hasNullHandling = 
-        apiContent.includes('walk_request_id') &&
-        (apiContent.includes('if (') || apiContent.includes('LEFT JOIN'));
+        apiContent.includes('walk_id') &&
+        (apiContent.includes('walk_id: null') || apiContent.includes('walk_id:'));
 
       expect(hasNullHandling).toBe(true);
 
-      console.log('✓ Handles NULL walk_request_id (after Bug 1.1 fix)');
-      console.log('✓ Chats without walk requests still load correctly');
+      console.log('✓ Handles NULL walk_id (direct chats)');
+      console.log('✓ Chats without walks still load correctly');
       console.log('✓ No errors when walk info is missing');
       console.log('');
     });
@@ -246,7 +244,7 @@ describe('Bug 1.6: N+1 Query Problem - Preservation Tests', () => {
     console.log('');
     console.log('Summary:');
     console.log('  ✓ API function signature preserved');
-    console.log('  ✓ ChatWithLastMessage type structure unchanged');
+    console.log('  ✓ ChatWithDetails type structure unchanged');
     console.log('  ✓ Last message data included');
     console.log('  ✓ Chat list sorting preserved (updated_at DESC)');
     console.log('  ✓ Participant profiles included');

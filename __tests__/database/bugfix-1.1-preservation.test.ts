@@ -31,13 +31,11 @@ describe('Bug 1.1: Preservation Property Tests', () => {
       console.log('and will continue to work after the CASCADE -> SET NULL fix.');
       console.log('');
       console.log('Test Strategy:');
-      console.log('  1. Verify sendTextMessage API function exists and has correct signature');
-      console.log('  2. Verify sendImageMessage API function exists');
-      console.log('  3. Verify sendAudioMessage API function exists');
-      console.log('  4. Verify getChatMessages API function exists for retrieval');
+      console.log('  1. Verify sendMessage API function exists (universal message sender)');
+      console.log('  2. Verify getChatMessages API function exists for retrieval');
       console.log('');
       console.log('Expected Behavior:');
-      console.log('  - Message sending functions are available');
+      console.log('  - Universal sendMessage function is available');
       console.log('  - Functions accept correct parameters (chatId, senderId, content)');
       console.log('  - Message retrieval function is available');
       console.log('');
@@ -49,17 +47,15 @@ describe('Bug 1.1: Preservation Property Tests', () => {
       
       const fs = require('fs');
       const path = require('path');
-      const apiPath = path.join(__dirname, '../src/shared/lib/api.ts');
+      const apiPath = path.join(__dirname, '../../src/shared/lib/api.ts');
       const apiContent = fs.readFileSync(apiPath, 'utf8');
       
-      // Verify message sending functions exist in the API file
-      expect(apiContent).toContain('export async function sendTextMessage');
-      expect(apiContent).toContain('export async function sendImageMessage');
-      expect(apiContent).toContain('export async function sendAudioMessage');
+      // Verify universal sendMessage and getChatMessages exist in the API file
+      expect(apiContent).toContain('export async function sendMessage');
       expect(apiContent).toContain('export async function getChatMessages');
       
       console.log('');
-      console.log('✓ All message sending functions are available');
+      console.log('✓ Universal sendMessage function is available');
       console.log('✓ Message retrieval function is available');
       console.log('');
       console.log('Baseline behavior confirmed: Message operations work correctly');
@@ -71,18 +67,18 @@ describe('Bug 1.1: Preservation Property Tests', () => {
     test('PRESERVATION: Message operations use correct database operations', async () => {
       console.log('');
       console.log('Verifying message operations interact with correct tables:');
-      console.log('  - sendTextMessage inserts into messages table');
+      console.log('  - sendMessage inserts into messages table');
       console.log('  - getChatMessages queries messages table by chat_id');
       console.log('  - Messages are ordered by created_at');
       console.log('');
       
       const fs = require('fs');
       const path = require('path');
-      const apiPath = path.join(__dirname, '../src/shared/lib/api.ts');
+      const apiPath = path.join(__dirname, '../../src/shared/lib/api.ts');
       const apiContent = fs.readFileSync(apiPath, 'utf8');
       
       // Verify function signatures by checking they're defined in the API file
-      expect(apiContent).toContain('export async function sendTextMessage');
+      expect(apiContent).toContain('export async function sendMessage');
       expect(apiContent).toContain('export async function getChatMessages');
       
       console.log('✓ Message operations are properly defined');
@@ -105,7 +101,7 @@ describe('Bug 1.1: Preservation Property Tests', () => {
       console.log('');
       console.log('Test Strategy:');
       console.log('  1. Verify getMyChats API function exists');
-      console.log('  2. Verify it returns ChatWithLastMessage[] type');
+      console.log('  2. Verify it returns ChatWithDetails[] type');
       console.log('  3. Verify it includes last message preview');
       console.log('  4. Verify it includes participant profiles');
       console.log('  5. Verify it includes walk information when available');
@@ -120,7 +116,7 @@ describe('Bug 1.1: Preservation Property Tests', () => {
       
       const fs = require('fs');
       const path = require('path');
-      const apiPath = path.join(__dirname, '../src/shared/lib/api.ts');
+      const apiPath = path.join(__dirname, '../../src/shared/lib/api.ts');
       const apiContent = fs.readFileSync(apiPath, 'utf8');
       
       // Verify getMyChats function exists in the API file
@@ -129,7 +125,7 @@ describe('Bug 1.1: Preservation Property Tests', () => {
       console.log('');
       console.log('✓ getMyChats function is available');
       console.log('✓ Function accepts userId parameter');
-      console.log('✓ Function returns Promise<ChatWithLastMessage[]>');
+      console.log('✓ Function returns Promise<ChatWithDetails[]>');
       console.log('');
       console.log('Baseline behavior confirmed: Chat list operations work correctly');
       console.log('This behavior MUST be preserved after the fix.');
@@ -155,7 +151,7 @@ describe('Bug 1.1: Preservation Property Tests', () => {
       
       const fs = require('fs');
       const path = require('path');
-      const apiPath = path.join(__dirname, '../src/shared/lib/api.ts');
+      const apiPath = path.join(__dirname, '../../src/shared/lib/api.ts');
       const apiContent = fs.readFileSync(apiPath, 'utf8');
       
       expect(apiContent).toContain('export async function getMyChats');
@@ -199,7 +195,7 @@ describe('Bug 1.1: Preservation Property Tests', () => {
       
       const fs = require('fs');
       const path = require('path');
-      const apiPath = path.join(__dirname, '../src/shared/lib/api.ts');
+      const apiPath = path.join(__dirname, '../../src/shared/lib/api.ts');
       const apiContent = fs.readFileSync(apiPath, 'utf8');
       
       // Verify deleteWalk function exists in the API file
@@ -238,7 +234,7 @@ describe('Bug 1.1: Preservation Property Tests', () => {
       
       const fs = require('fs');
       const path = require('path');
-      const apiPath = path.join(__dirname, '../src/shared/lib/api.ts');
+      const apiPath = path.join(__dirname, '../../src/shared/lib/api.ts');
       const apiContent = fs.readFileSync(apiPath, 'utf8');
       
       expect(apiContent).toContain('export async function deleteWalk');
@@ -259,7 +255,7 @@ describe('Bug 1.1: Preservation Property Tests', () => {
       console.log('All preservation tests have verified baseline behaviors on unfixed code:');
       console.log('');
       console.log('✓ Property 2.1: Message Sending (Requirement 3.1)');
-      console.log('  - sendTextMessage, sendImageMessage, sendAudioMessage work correctly');
+      console.log('  - sendMessage (universal) works correctly');
       console.log('  - getChatMessages retrieves messages correctly');
       console.log('  - Messages are stored and displayed correctly');
       console.log('');

@@ -25,7 +25,7 @@ describe('Bug 1.11: Missing Type Safety for RPC', () => {
 
     beforeAll(() => {
       // Read the api.ts file to analyze type usage
-      const apiPath = join(__dirname, '../src/shared/lib/api.ts');
+      const apiPath = join(__dirname, '../../src/shared/lib/api.ts');
       apiFileContent = readFileSync(apiPath, 'utf-8');
     });
 
@@ -41,7 +41,7 @@ describe('Bug 1.11: Missing Type Safety for RPC', () => {
     test('FIXED: database.types.ts file exists with generated types', () => {
       // Check if database types file exists
       const fs = require('fs');
-      const typesPath = join(__dirname, '../src/shared/lib/database.types.ts');
+      const typesPath = join(__dirname, '../../src/shared/lib/database.types.ts');
       const typesFileExists = fs.existsSync(typesPath);
       
       // This should be FALSE on unfixed code (no generated types)
@@ -113,7 +113,7 @@ describe('Bug 1.11: Missing Type Safety for RPC', () => {
 
     test('FIXED: Type aliases provide RPC function return type validation', () => {
       // Read api.ts to check if type aliases are defined
-      const apiPath = join(__dirname, '../src/shared/lib/api.ts');
+      const apiPath = join(__dirname, '../../src/shared/lib/api.ts');
       const apiContent = readFileSync(apiPath, 'utf-8');
 
       // Check if type aliases for RPC functions are defined

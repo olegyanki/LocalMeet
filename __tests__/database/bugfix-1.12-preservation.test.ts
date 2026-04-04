@@ -106,6 +106,7 @@ describe('Bug 1.12: Duplicate Data Loading Logic - Preservation Tests', () => {
         
         const loadsChats = hookContent.includes('getMyChats');
         const loadsRequests = 
+          hookContent.includes('getWalkRequests') ||
           hookContent.includes('getPendingWalkRequests') ||
           hookContent.includes('getPastWalkRequests');
         
@@ -113,7 +114,7 @@ describe('Bug 1.12: Duplicate Data Loading Logic - Preservation Tests', () => {
         expect(loadsRequests).toBe(true);
         
         console.log('✓ Hook loads chats via getMyChats');
-        console.log('✓ Hook loads requests via getPendingWalkRequests/getPastWalkRequests');
+        console.log('✓ Hook loads requests via getWalkRequests/getPendingWalkRequests/getPastWalkRequests');
         console.log('✓ Both data types loaded in parallel');
         console.log('');
       } else {

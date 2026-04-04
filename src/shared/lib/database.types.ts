@@ -321,7 +321,6 @@ export type Database = {
         }
         Returns: string
       }
-      earth: { Args: never; Returns: number }
       get_badge_counts_optimized: {
         Args: { p_user_id: string }
         Returns: {
@@ -332,6 +331,7 @@ export type Database = {
       get_chat_details: {
         Args: { p_chat_id: string; p_user_id: string }
         Returns: {
+          chat_created_at: string
           chat_id: string
           chat_type: string
           participant_avatar_url: string
@@ -344,6 +344,31 @@ export type Database = {
           walk_image_url: string
           walk_start_time: string
           walk_title: string
+        }[]
+      }
+      get_chat_messages_cursor: {
+        Args: { p_chat_id: string; p_cursor?: string; p_limit?: number }
+        Returns: {
+          audio_duration: number
+          audio_url: string
+          chat_id: string
+          content: string
+          created_at: string
+          has_more: boolean
+          id: string
+          image_urls: Json
+          read: boolean
+          sender_avatar_url: string
+          sender_bio: string
+          sender_first_name: string
+          sender_gender: string
+          sender_id: string
+          sender_interests: string[]
+          sender_languages: string[]
+          sender_last_name: string
+          sender_occupation: string
+          sender_social_instagram: string
+          sender_social_telegram: string
         }[]
       }
       get_database_stats: {
@@ -421,6 +446,68 @@ export type Database = {
           updated_at: string
           user_id: string
           walk_type: string
+        }[]
+      }
+      get_walk_participants: {
+        Args: { p_walk_id: string }
+        Returns: {
+          avatar_url: string
+          bio: string
+          first_name: string
+          gender: string
+          id: string
+          interests: string[]
+          languages: string[]
+          last_name: string
+          occupation: string
+          social_instagram: string
+          social_telegram: string
+        }[]
+      }
+      get_walk_requests_for_owner: {
+        Args: { p_status: string; p_user_id: string }
+        Returns: {
+          message: string
+          request_created_at: string
+          request_id: string
+          request_updated_at: string
+          requester_avatar_url: string
+          requester_bio: string
+          requester_first_name: string
+          requester_gender: string
+          requester_id: string
+          requester_interests: string[]
+          requester_languages: string[]
+          requester_last_name: string
+          requester_occupation: string
+          requester_social_instagram: string
+          requester_social_telegram: string
+          status: string
+          walk_description: string
+          walk_duration: number
+          walk_id: string
+          walk_image_url: string
+          walk_latitude: number
+          walk_longitude: number
+          walk_start_time: string
+          walk_title: string
+          walk_type: string
+          walk_user_id: string
+        }[]
+      }
+      get_walks_by_user_id: {
+        Args: { p_user_id: string }
+        Returns: {
+          description: string
+          duration: number
+          id: string
+          image_url: string
+          latitude: number
+          longitude: number
+          start_time: string
+          title: string
+          type: string
+          user_id: string
         }[]
       }
       is_chat_owner: {
