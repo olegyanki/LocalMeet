@@ -80,6 +80,7 @@ export default function EventDetailsScreen() {
 
   // Derived state
   const walkId = Array.isArray(params.id) ? params.id[0] : params.id;
+  const fromChat = params.fromChat === '1';
   const isOwnEvent = walk?.user_id === currentUser?.id;
 
   // Load walk data
@@ -293,6 +294,12 @@ export default function EventDetailsScreen() {
 
   const handleOpenGroupChat = async () => {
     if (!walk?.id || !currentUser?.id) return;
+
+    // If we came from a chat screen, just go back instead of pushing a new one
+    if (fromChat) {
+      router.back();
+      return;
+    }
 
     try {
       let chatId: string | null;

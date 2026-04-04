@@ -82,7 +82,7 @@ export default function ChatHeader({
           style={styles.headerTitleContainer}
           onPress={() => {
             if (isGroupChat && chat.walk_id) {
-              router.push(`/event-details/${chat.walk_id}`);
+              router.push(`/event-details/${chat.walk_id}?fromChat=1`);
             } else if (otherUser) {
               router.push(`/user/${otherUser.id}`);
             }
@@ -118,7 +118,7 @@ export default function ChatHeader({
                     style={styles.dropdownOption}
                     onPress={() => {
                       setShowOptionsMenu(false);
-                      router.push(`/event-details/${chat.walk_id}`);
+                      router.push(`/event-details/${chat.walk_id}?fromChat=1`);
                     }}
                   >
                     <Info size={20} color={COLORS.TEXT_LIGHT} />
