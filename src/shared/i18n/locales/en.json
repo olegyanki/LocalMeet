@@ -129,6 +129,8 @@
   "registerLink": "Sign Up",
   "newAccount": "New Account",
   "registerSubtitle": "Join us",
+  "authFillAllFields": "Please fill in all fields",
+  "authPasswordTooShort": "Password must be at least 6 characters",
   "displayName": "Name",
   "registerButton": "Sign Up",
   "haveAccount": "Already have an account?",

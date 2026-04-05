@@ -7,11 +7,9 @@ import {
   TextInput,
   KeyboardAvoidingView,
   Platform,
-  ActivityIndicator,
   ScrollView,
 } from 'react-native';
 import { useRouter } from 'expo-router';
-import { useNavigationState } from '@react-navigation/native';
 import { signUp } from '@shared/lib/auth';
 import { COLORS, INPUT_STYLES } from '@shared/constants';
 import { useI18n } from '@shared/i18n';
@@ -22,44 +20,34 @@ import { Eye, EyeOff } from 'lucide-react-native';
 export default function RegisterScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [isPasswordFocused, setIsPasswordFocused] = useState(false);
+
   const router = useRouter();
   const { t } = useI18n();
-  const routes = useNavigationState((state) => state?.routes ?? []);
-
-  const handleGoToLogin = () => {
-    const prevRoute = routes[routes.length - 2];
-    if (prevRoute?.name?.includes('login')) {
-      router.back();
-    } else {
-      router.push('/auth/login');
-    }
-  };
   const insets = useSafeAreaInsets();
 
   const handleRegister = async () => {
     setError('');
-    if (!email || !password || !firstName) {
-      setError('Please fill in all required fields');
+
+    if (!email.trim() || !password) {
+      setError(t('authFillAllFields'));
       return;
     }
 
     if (password.length < 6) {
-      setError('Password must be at least 6 characters');
+      setError(t('authPasswordTooShort'));
       return;
     }
 
     try {
       setIsLoading(true);
-      await signUp({ email, password, first_name: firstName, last_name: lastName });
+      await signUp({ email: email.trim(), password, first_name: '' });
       router.replace('/(tabs)');
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Registration failed');
+    } catch (err: any) {
+      setError(err?.message ?? t('error'));
     } finally {
       setIsLoading(false);
     }
@@ -70,9 +58,10 @@ export default function RegisterScreen() {
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       style={styles.container}
     >
-      <ScrollView 
-        contentContainerStyle={[styles.scrollContent, { paddingTop: insets.top + 60 }]}
+      <ScrollView
+        contentContainerStyle={[styles.content, { paddingTop: insets.top + 60 }]}
         keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
       >
         <View style={styles.header}>
           <Text style={styles.title}>{t('newAccount')}</Text>
@@ -87,34 +76,6 @@ export default function RegisterScreen() {
           ) : null}
 
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>{t('firstName').toUpperCase()}</Text>
-            <View style={styles.inputWrapper}>
-              <TextInput
-                style={styles.input}
-                placeholder={t('firstNamePlaceholder')}
-                placeholderTextColor={COLORS.GRAY_PLACEHOLDER}
-                value={firstName}
-                onChangeText={setFirstName}
-                editable={!isLoading}
-              />
-            </View>
-          </View>
-
-          <View style={styles.inputGroup}>
-            <Text style={styles.label}>{t('lastName').toUpperCase()}</Text>
-            <View style={styles.inputWrapper}>
-              <TextInput
-                style={styles.input}
-                placeholder={t('lastNamePlaceholder')}
-                placeholderTextColor={COLORS.GRAY_PLACEHOLDER}
-                value={lastName}
-                onChangeText={setLastName}
-                editable={!isLoading}
-              />
-            </View>
-          </View>
-
-          <View style={styles.inputGroup}>
             <Text style={styles.label}>{t('email').toUpperCase()}</Text>
             <View style={styles.inputWrapper}>
               <TextInput
@@ -122,7 +83,7 @@ export default function RegisterScreen() {
                 placeholder={t('email')}
                 placeholderTextColor={COLORS.GRAY_PLACEHOLDER}
                 value={email}
-                onChangeText={setEmail}
+                onChangeText={(v) => { setEmail(v); setError(''); }}
                 editable={!isLoading}
                 keyboardType="email-address"
                 autoCapitalize="none"
@@ -138,7 +99,7 @@ export default function RegisterScreen() {
                 placeholder={t('password')}
                 placeholderTextColor={COLORS.GRAY_PLACEHOLDER}
                 value={password}
-                onChangeText={setPassword}
+                onChangeText={(v) => { setPassword(v); setError(''); }}
                 secureTextEntry={!showPassword}
                 editable={!isLoading}
                 onFocus={() => setIsPasswordFocused(true)}
@@ -165,7 +126,7 @@ export default function RegisterScreen() {
 
           <View style={styles.loginSection}>
             <Text style={styles.loginText}>{t('haveAccount')}</Text>
-            <TouchableOpacity onPress={handleGoToLogin} disabled={isLoading}>
+            <TouchableOpacity onPress={() => router.push('/auth')} disabled={isLoading}>
               <Text style={styles.loginLink}>{t('loginLink')}</Text>
             </TouchableOpacity>
           </View>
@@ -180,7 +141,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: COLORS.BG_SECONDARY,
   },
-  scrollContent: {
+  content: {
     flexGrow: 1,
     padding: 24,
     paddingBottom: 40,
@@ -235,7 +196,6 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   loginSection: {
-    marginTop: 12,
     alignItems: 'center',
     flexDirection: 'row',
     justifyContent: 'center',

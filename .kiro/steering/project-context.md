@@ -46,13 +46,12 @@ app/
 │   ├── create-event.tsx    # Create event screen
 │   ├── chats.tsx           # Chats list screen
 │   ├── settings.tsx        # Settings screen
-│   └── onboarding.tsx      # Onboarding (hidden from tabs)
 ├── chat/                    # Chat screens (outside tabs)
 │   └── [id].tsx            # Individual chat screen
 ├── user/                    # User profile screens (outside tabs)
 │   └── [id].tsx            # Other user's profile screen
 └── auth/                    # Auth screens (outside tabs)
-    ├── login.tsx
+    ├── index.tsx           # Login screen
     └── register.tsx
 ```
 

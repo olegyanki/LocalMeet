@@ -17,49 +17,30 @@ export async function signUp({ email, password, first_name, last_name }: SignUpD
     email,
     password,
     options: {
-      data: {
-        first_name,
-        last_name,
-      },
+      data: { first_name, last_name },
     },
   });
 
-  if (authError) {
-    throw authError;
-  }
-
-  if (!authData.user) {
-    throw new Error('User not created');
-  }
+  if (authError) throw authError;
+  if (!authData.user) throw new Error('User not created');
 
   return authData.user;
 }
 
 export async function signIn({ email, password }: SignInData) {
-  const { data, error } = await supabase.auth.signInWithPassword({
-    email,
-    password,
-  });
-
-  if (error) {
-    throw error;
-  }
-
+  const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+  if (error) throw error;
   return data.user;
 }
 
 export async function signOut() {
   const { error } = await supabase.auth.signOut();
-  if (error) {
-    throw error;
-  }
+  if (error) throw error;
 }
 
 export async function getCurrentUser() {
   const { data, error } = await supabase.auth.getUser();
-  if (error) {
-    throw error;
-  }
+  if (error) throw error;
   return data.user;
 }
 

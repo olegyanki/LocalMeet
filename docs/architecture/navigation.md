@@ -20,7 +20,6 @@ app/
 │   ├── create-event.tsx     # Створення події
 │   ├── chats.tsx            # Список чатів
 │   ├── settings.tsx         # Налаштування
-│   └── onboarding.tsx       # Онбордінг (прихований з табів)
 ├── chat/                    # Екран чату (без tab bar)
 │   └── [id].tsx
 ├── user/                    # Профіль іншого юзера (без tab bar)
@@ -61,11 +60,10 @@ router.push(`/user/${userId}`);
 router.back();
 
 // Заміна (без можливості повернутися)
-router.replace('/auth/login');
+router.replace('/auth/register');
 ```
 
 ## Нюанси
 
 - Event details дублюється в `(search)` і `(profile)` стеках — це навмисно, щоб tab bar не зникав при переході з різних табів
-- `onboarding.tsx` живе в `(tabs)`, але прихований з tab bar через конфігурацію layout
 - Чат-екран винесений за `(tabs)`, бо при відкритті чату tab bar має зникати для максимального простору
