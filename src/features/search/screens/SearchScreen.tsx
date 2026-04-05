@@ -14,6 +14,7 @@ import {
   PanResponder,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import GradientView from '@shared/components/GradientView';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Location from 'expo-location';
 import { useAuth } from '@shared/contexts/AuthContext';
@@ -214,14 +215,15 @@ export default function SearchScreen() {
     try {
       setIsLoadingWalks(true);
       
-      // Use filtered API with current filter state
+      // Use filtered API with current filter state (userId for my_request_status)
       const walks = await getNearbyWalksFiltered(
         location.coords.latitude,
         location.coords.longitude,
         15, // radius
         selectedInterests.length > 0 ? selectedInterests : undefined,
         mapTimeFilterToAPI(timeFilter),
-        distanceFilter
+        distanceFilter,
+        user.id
       );
 
       // Separate own walks from other walks
@@ -252,7 +254,8 @@ export default function SearchScreen() {
         15, // radius
         selectedInterests.length > 0 ? selectedInterests : undefined,
         mapTimeFilterToAPI(timeFilter),
-        distanceFilter
+        distanceFilter,
+        user.id
       );
 
       // Sort walks (own walks first)
@@ -444,7 +447,7 @@ export default function SearchScreen() {
           style={styles.handleWrapper}
           {...panResponder.panHandlers}
         >
-          <View style={styles.cardsHandle} />
+          <GradientView style={styles.cardsHandle} />
         </View>
         <ScrollView
           ref={scrollViewRef}
@@ -489,17 +492,24 @@ export default function SearchScreen() {
           ) : (
             <>
               {nearbyWalks.map((item) => {
-                const CardComponent = item.walk?.type === 'live' ? LiveEventCard : EventCard;
-                return (
-                  <CardComponent
-                    key={`walk-${item.walk?.id}`}
-                    item={item}
-                    currentUserId={user?.id || ''}
-                    width={cardWidth}
-                    t={(key, params) => t(key as any, params)}
-                    onPress={() => {
-                      if (item.walk?.id) {
-                        if (item.walk.type === 'live' && item.walk.user_id !== user?.id) {
+                const isLive = item.walk?.type === 'live';
+                const isOtherUser = item.walk?.user_id !== user?.id;
+                if (isLive) {
+                  return (
+                    <LiveEventCard
+                      key={`walk-${item.walk?.id}`}
+                      item={item}
+                      currentUserId={user?.id || ''}
+                      width={cardWidth}
+                      t={(key, params) => t(key as any, params)}
+                      requestStatus={(item.my_request_status as 'pending' | 'accepted' | 'rejected') ?? null}
+                      onPress={() => {
+                        if (item.walk?.id) {
+                          router.push(`/event/${item.walk.id}`);
+                        }
+                      }}
+                      onButtonPress={isOtherUser ? () => {
+                        if (item.walk?.id) {
                           const hostName = item.host
                             ? `${item.host.first_name}${item.host.last_name ? ' ' + item.host.last_name : ''}`
                             : '';
@@ -513,9 +523,26 @@ export default function SearchScreen() {
                             walkImageUrl: item.walk.image_url,
                           });
                           setContactRequestVisible(true);
-                        } else {
-                          router.push(`/event/${item.walk.id}`);
                         }
+                      } : undefined}
+                      onAvatarPress={() => {
+                        if (item.walk) {
+                          router.push(`/user/${item.walk.user_id}`);
+                        }
+                      }}
+                    />
+                  );
+                }
+                return (
+                  <EventCard
+                    key={`walk-${item.walk?.id}`}
+                    item={item}
+                    currentUserId={user?.id || ''}
+                    width={cardWidth}
+                    t={(key, params) => t(key as any, params)}
+                    onPress={() => {
+                      if (item.walk?.id) {
+                        router.push(`/event/${item.walk.id}`);
                       }
                     }}
                     onAvatarPress={() => {
@@ -606,7 +633,6 @@ const styles = StyleSheet.create({
     width: 60,
     height: 4,
     borderRadius: 2,
-    backgroundColor: COLORS.ACCENT_ORANGE,
   },
   cardsScrollContent: {
     paddingHorizontal: 20,

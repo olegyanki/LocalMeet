@@ -1,5 +1,5 @@
-import { Tabs, useRouter } from 'expo-router';
-import { Search, User, MessageCircle, Settings } from 'lucide-react-native';
+import { Tabs, useRouter, useSegments } from 'expo-router';
+import { MapPin, User, MessageCircle, Settings } from 'lucide-react-native';
 import { useState, useEffect } from 'react';
 import { View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -20,6 +20,8 @@ export default function TabLayout() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const [isVisible, setIsVisible] = useState(false);
+  const segments = useSegments();
+  const isCreateEventActive = isVisible || segments.includes('create-event' as never);
 
   useEffect(() => {
     if (!isLoading && !user) {
@@ -48,6 +50,7 @@ export default function TabLayout() {
           paddingTop: 6,
           borderTopLeftRadius: 20,
           borderTopRightRadius: 20,
+          overflow: 'visible',
         },
       }}
     >
@@ -55,7 +58,7 @@ export default function TabLayout() {
         name="(search)"
         options={{
           title: t('tabSearch').toUpperCase(),
-          tabBarIcon: ({ size, color }) => <Search size={20} color={color} />,
+          tabBarIcon: ({ size, color }) => <MapPin size={20} color={color} />,
           tabBarLabelStyle: { fontSize: 9, fontWeight: '600' },
         }}
       />
@@ -79,11 +82,10 @@ export default function TabLayout() {
       <Tabs.Screen
         name="create-event"
         options={{
-          title: t('tabGoOnline').toUpperCase(),
+          title: '',
           tabBarButton: (props) => (
-            <PlusTabButton {...props} onPress={() => setIsVisible(true)} />
+            <PlusTabButton {...props} isActive={isCreateEventActive} onPress={() => setIsVisible(true)} />
           ),
-          tabBarLabelStyle: { fontSize: 9, fontWeight: '600' },
         }}
       />
       <Tabs.Screen

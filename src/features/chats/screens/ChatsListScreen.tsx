@@ -1,10 +1,11 @@
 import { View, Text, StyleSheet, TouchableOpacity, FlatList, ActivityIndicator, RefreshControl, ScrollView } from 'react-native';
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 
 // Contexts & Hooks
 import { useAuth } from '@shared/contexts/AuthContext';
+import { useBadgeCount } from '@shared/contexts/BadgeCountContext';
 import { useI18n } from '@shared/i18n';
 import { useChatsData } from '@features/chats/hooks/useChatsData';
 
@@ -13,7 +14,7 @@ import {
   updateWalkRequestStatus, 
   ChatWithDetails,
 } from '@shared/lib/api';
-import { formatRelativeTime } from '@shared/utils/time';
+import { formatRelativeTime, formatDateLabel } from '@shared/utils/time';
 import { getDisplayName } from '@shared/utils/profile';
 
 // Components
@@ -34,9 +35,10 @@ export default function ChatsScreen() {
   const router = useRouter();
   const { user } = useAuth();
   const { t } = useI18n();
+  const { forceRefresh: refreshBadgeCounts } = useBadgeCount();
 
   // Use custom hook for data loading
-  const { chats, requests, isLoading, refresh, refreshSilently } = useChatsData({
+  const { chats, requests, isLoading, refresh } = useChatsData({
     userId: user?.id || '',
     shouldLoad: !!user,
   });
@@ -91,9 +93,14 @@ export default function ChatsScreen() {
     return pendingRequests.length;
   }, [pendingRequests]);
 
+  // Sync badge counts when screen mounts (covers cases where realtime missed an update)
+  useEffect(() => {
+    refreshBadgeCounts();
+  }, []);
+
   const onRefresh = async () => {
     setRefreshing(true);
-    await refresh();
+    await Promise.all([refresh(), refreshBadgeCounts()]);
     setRefreshing(false);
   };
 
@@ -109,6 +116,9 @@ export default function ChatsScreen() {
       
       // Refresh data to update the UI
       await refresh();
+      
+      // Sync badge counts with tab bar
+      refreshBadgeCounts();
 
       // Navigate to the group chat for this event
       const { getChatByWalkId } = await import('@shared/lib/api');
@@ -128,6 +138,9 @@ export default function ChatsScreen() {
       
       // Refresh data to update the UI
       await refresh();
+      
+      // Sync badge counts with tab bar
+      refreshBadgeCounts();
     } catch (error) {
       console.error('Error rejecting request:', error);
     }
@@ -142,8 +155,23 @@ export default function ChatsScreen() {
     let avatarUrl: string | null = null;
     let participantAvatars: string[] = [];
     
-    if (isGroupChat) {
-      // Group chat: show event title
+    if (isGroupChat && item.walk_type === 'live') {
+      // Live event chat: show creator-based name and avatar
+      const isOwner = item.walk_user_id === user?.id;
+      
+      if (isOwner) {
+        const dateLabel = formatDateLabel(item.walk_start_time, t);
+        displayName = dateLabel 
+          ? `${t('yourWalk')} · ${dateLabel}` 
+          : t('yourWalk');
+      } else {
+        displayName = item.creator_first_name 
+          ? t('walkOfName', { name: item.creator_first_name }) 
+          : (item.walk_title || t('groupChat'));
+      }
+      avatarUrl = item.creator_avatar_url || null;
+    } else if (isGroupChat) {
+      // Regular event chat: existing logic unchanged
       displayName = item.walk_title || t('groupChat');
       avatarUrl = item.walk_image_url || null;
       // Get participant avatars (excluding current user)
@@ -177,16 +205,21 @@ export default function ChatsScreen() {
         lastMessageText = item.lastMessage.content;
       }
     } else {
-      lastMessageText = isGroupChat ? t('groupChatCreated') : displayName;
+      lastMessageText = isGroupChat 
+        ? (item.walk_type === 'live' ? t('walkChatCreated') : t('groupChatCreated')) 
+        : displayName;
     }
     
     const isUnread = item.lastMessage && !item.lastMessage.read && item.lastMessage.sender_id !== user?.id;
 
-    // For group chats, use event image or first participant avatar
+    // For live event chats, use creator avatar
+    // For regular group chats, use event image or first participant avatar
     // For direct chats, use other participant's avatar
-    const imageUrl = isGroupChat 
-      ? (item.walk_image_url || participantAvatars[0] || null)
-      : avatarUrl;
+    const imageUrl = isGroupChat && item.walk_type === 'live'
+      ? (item.creator_avatar_url || null)
+      : isGroupChat 
+        ? (item.walk_image_url || participantAvatars[0] || null)
+        : avatarUrl;
 
     const timeAgo = item.lastMessage ? formatRelativeTime(item.lastMessage.created_at) : '';
 

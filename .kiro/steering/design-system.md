@@ -7,8 +7,8 @@ Minimalist, clean, modern aesthetic. Focus on content and usability. No unnecess
 Always use constants from `@shared/constants/colors.ts`:
 
 ### Primary
-- `COLORS.ACCENT_ORANGE` (#FF7A00) - Primary actions, active states, icons in inputs
-- `COLORS.GRADIENT_ORANGE` - Array `['#FFB84D', '#FF8C26', '#FF5500']` for gradient backgrounds
+- `COLORS.ACCENT_ORANGE` (#FF7A00) - Text color, icon tint, small elements (badges, dots)
+- `COLORS.GRADIENT_ORANGE` - Array `['#FFB84D', '#FF8C26', '#FF5500']` for gradient backgrounds. Use via `GradientView` component, never directly with `LinearGradient`
 - `COLORS.TEXT_DARK` (#333333) - Primary text, headings
 - `COLORS.TEXT_LIGHT` (#999999) - Secondary text, labels (uppercase labels above inputs)
 
@@ -770,6 +770,7 @@ Animated.spring(buttonScale, { toValue: 1, useNativeDriver: true, tension: 300, 
 
 ### DO
 ✅ Use constants from `@shared/constants` (COLORS, SIZES, BUTTON_STYLES, etc.)
+✅ Use `GradientView` for orange gradient backgrounds (buttons, active segments, chips, handles)
 ✅ Use `gap` property for spacing between flex children
 ✅ Use `SHADOW.standard` for cards/inputs
 ✅ Use gray backgrounds for screens, white for cards
@@ -787,6 +788,8 @@ Animated.spring(buttonScale, { toValue: 1, useNativeDriver: true, tension: 300, 
 ❌ Don't use colored shadows (except error state and active segment)
 ❌ Don't add icons to buttons (unless essential)
 ❌ Don't hardcode colors (use COLORS constants)
+❌ Don't use `LinearGradient` with `GRADIENT_ORANGE` directly (use `GradientView`)
+❌ Don't use `backgroundColor: COLORS.ACCENT_ORANGE` — ALWAYS replace with `GradientView` wrapper
 ❌ Don't use marginBottom (use gap in flex containers)
 ❌ Don't add close buttons to modals (swipe to dismiss)
 ❌ Don't use white backgrounds for screens

@@ -27,6 +27,7 @@ import { updateProfile } from '@shared/lib/api';
 import AvatarPicker from '@shared/components/AvatarPicker';
 import PrimaryButton from '@shared/components/PrimaryButton';
 import Chip from '@shared/components/Chip';
+import GradientView from '@shared/components/GradientView';
 import LanguagePickerModal from '@features/profile/modals/LanguagePickerModal';
 import InterestPickerModal from '@features/profile/modals/InterestPickerModal';
 
@@ -289,14 +290,15 @@ export default function ProfileScreen() {
               ]}
               onPress={() => setGender('male')}
             >
-              <Text
-                style={[
-                  styles.segmentButtonText,
-                  gender === 'male' && styles.segmentButtonTextActive,
-                ]}
-              >
-                {t('genderMale')}
-              </Text>
+              {gender === 'male' ? (
+                <GradientView style={styles.segmentGradient}>
+                  <Text style={[styles.segmentButtonText, styles.segmentButtonTextActive]}>
+                    {t('genderMale')}
+                  </Text>
+                </GradientView>
+              ) : (
+                <Text style={styles.segmentButtonText}>{t('genderMale')}</Text>
+              )}
             </TouchableOpacity>
             <TouchableOpacity
               style={[
@@ -305,14 +307,15 @@ export default function ProfileScreen() {
               ]}
               onPress={() => setGender('female')}
             >
-              <Text
-                style={[
-                  styles.segmentButtonText,
-                  gender === 'female' && styles.segmentButtonTextActive,
-                ]}
-              >
-                {t('genderFemale')}
-              </Text>
+              {gender === 'female' ? (
+                <GradientView style={styles.segmentGradient}>
+                  <Text style={[styles.segmentButtonText, styles.segmentButtonTextActive]}>
+                    {t('genderFemale')}
+                  </Text>
+                </GradientView>
+              ) : (
+                <Text style={styles.segmentButtonText}>{t('genderFemale')}</Text>
+              )}
             </TouchableOpacity>
             <TouchableOpacity
               style={[
@@ -321,14 +324,15 @@ export default function ProfileScreen() {
               ]}
               onPress={() => setGender('other')}
             >
-              <Text
-                style={[
-                  styles.segmentButtonText,
-                  gender === 'other' && styles.segmentButtonTextActive,
-                ]}
-              >
-                {t('genderOther')}
-              </Text>
+              {gender === 'other' ? (
+                <GradientView style={styles.segmentGradient}>
+                  <Text style={[styles.segmentButtonText, styles.segmentButtonTextActive]}>
+                    {t('genderOther')}
+                  </Text>
+                </GradientView>
+              ) : (
+                <Text style={styles.segmentButtonText}>{t('genderOther')}</Text>
+              )}
             </TouchableOpacity>
           </View>
         </View>
@@ -630,12 +634,18 @@ const styles = StyleSheet.create({
     // No specific right styling needed with gap
   },
   segmentButtonActive: {
-    backgroundColor: COLORS.ACCENT_ORANGE,
     ...SHADOW.elevated,
     shadowColor: COLORS.ACCENT_ORANGE,
     shadowOpacity: 0.2,
     shadowRadius: 8,
     elevation: 4,
+    overflow: 'hidden',
+  },
+  segmentGradient: {
+    ...StyleSheet.absoluteFillObject,
+    borderRadius: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   segmentButtonText: {
     fontSize: 14,

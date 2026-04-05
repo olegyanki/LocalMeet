@@ -31,16 +31,32 @@ Primary action button with loading state and optional check icon.
 ### GradientView
 `src/shared/components/GradientView.tsx`
 
-Wrapper for gradient backgrounds (uses `COLORS.GRADIENT_ORANGE` by default).
+Wrapper for gradient backgrounds. Uses `COLORS.GRADIENT_ORANGE` and diagonal direction by default — no props needed for the standard orange gradient.
 
 ```tsx
-<GradientView style={styles.chip}>
-  <Text style={styles.chipText}>Active</Text>
+// Default — orange gradient, no props needed
+<GradientView style={styles.button}>
+  <Text style={styles.buttonText}>Action</Text>
+</GradientView>
+
+// Without children (decorative element)
+<GradientView style={styles.handle} />
+
+// Custom colors (non-standard gradient)
+<GradientView colors={['#FF0000', '#0000FF']} style={styles.custom}>
+  <Text>Custom</Text>
 </GradientView>
 ```
 
-**Use for:** Active chips/tags, special highlights
-**Don't use for:** Buttons (use PrimaryButton), large backgrounds (performance)
+**Rules:**
+- ALWAYS use `GradientView` instead of `LinearGradient` with `GRADIENT_ORANGE` directly
+- NEVER pass `colors`, `start`, `end` for the standard orange gradient — defaults handle it
+- Only pass `colors` when you need a non-orange gradient
+- For non-orange gradients (e.g. backdrop fades), use `LinearGradient` directly
+- `children` is optional — can be used as a decorative element without children
+
+**Use for:** Active segments, buttons, chips, badges, decorative handles, success icons
+**Don't use for:** Buttons (use PrimaryButton which uses GradientView internally), text color gradients
 
 ## Avatars
 
@@ -151,6 +167,34 @@ Modal for selecting user interests.
   onConfirm={setInterests}
 />
 ```
+
+## Cards
+
+### LiveEventCard
+`src/shared/components/LiveEventCard.tsx`
+
+Card for live events on the map. Shows host avatar, "Active Now" badge, description, and join button with request status.
+
+```tsx
+<LiveEventCard
+  item={nearbyWalk}
+  currentUserId={user.id}
+  onPress={() => router.push(`/event/${walk.id}`)}
+  onButtonPress={() => openContactRequest()}
+  onAvatarPress={() => router.push(`/user/${walk.user_id}`)}
+  requestStatus={item.my_request_status}
+  width={cardWidth}
+  t={t}
+/>
+```
+
+**Props:**
+- `requestStatus` — `'pending' | 'accepted' | 'rejected' | null` — shows "Запит надіслано" when set
+- `onButtonPress` — separate handler for the join button (optional, falls back to `onPress`)
+- `onAvatarPress` — navigate to host profile
+
+**Use for:** Live event cards on the search map
+**Don't use for:** Regular events (use EventCard), chat list items
 
 ## Map
 
@@ -316,6 +360,8 @@ import { ChevronLeft } from 'lucide-react-native';
 ## Anti-Patterns
 
 ❌ Inline gradient buttons → ✅ Use `PrimaryButton`
+❌ `LinearGradient` with `GRADIENT_ORANGE` → ✅ Use `GradientView` (no props needed)
+❌ `backgroundColor: COLORS.ACCENT_ORANGE` → ✅ ALWAYS use `GradientView` wrapper instead
 ❌ Hardcoded colors → ✅ Use `COLORS` constants
 ❌ Duplicate avatar logic → ✅ Use `Avatar` component
 ❌ Custom input styles → ✅ Use `INPUT_STYLES` constants

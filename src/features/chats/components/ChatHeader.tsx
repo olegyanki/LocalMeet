@@ -36,6 +36,7 @@ export default function ChatHeader({
   locale,
 }: ChatHeaderProps) {
   const router = useRouter();
+  const isLiveEvent = isGroupChat && chat.walk_type === 'live';
 
   return (
     <>
@@ -49,7 +50,13 @@ export default function ChatHeader({
 
         <View style={styles.headerAvatarContainer}>
           {isGroupChat ? (
-            chat.walk_image_url ? (
+            isLiveEvent ? (
+              <Avatar
+                uri={chat.creator_avatar_url}
+                size={40}
+                name={chat.creator_first_name || ''}
+              />
+            ) : chat.walk_image_url ? (
               <CachedImage
                 uri={chat.walk_image_url}
                 style={styles.headerEventImage}
@@ -75,14 +82,18 @@ export default function ChatHeader({
           style={styles.headerTitleContainer}
           onPress={() => {
             if (isGroupChat && chat.walk_id) {
-              router.push(`/event-details/${chat.walk_id}`);
+              router.push(`/event-details/${chat.walk_id}?fromChat=1`);
             } else if (otherUser) {
               router.push(`/user/${otherUser.id}`);
             }
           }}
         >
           <Text style={styles.headerTitle} numberOfLines={1}>
-            {isGroupChat ? (chat.walk_title || t('groupChat')) : (getDisplayName(otherUser) || t('unknown'))}
+            {isGroupChat
+              ? (isLiveEvent
+                  ? (isOwner ? t('yourWalk') : t('walkOfName', { name: chat.creator_first_name }))
+                  : (chat.walk_title || t('groupChat')))
+              : (getDisplayName(otherUser) || t('unknown'))}
           </Text>
           {isGroupChat && (
             <Text style={styles.headerSubtitle}>
@@ -107,7 +118,7 @@ export default function ChatHeader({
                     style={styles.dropdownOption}
                     onPress={() => {
                       setShowOptionsMenu(false);
-                      router.push(`/event-details/${chat.walk_id}`);
+                      router.push(`/event-details/${chat.walk_id}?fromChat=1`);
                     }}
                   >
                     <Info size={20} color={COLORS.TEXT_LIGHT} />

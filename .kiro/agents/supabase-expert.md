@@ -99,8 +99,8 @@ Always respond in the same language the user used (Ukrainian or English).
 
 ### Existing RPC Functions
 - `get_nearby_walks(p_latitude, p_longitude, p_radius_km)` — Geospatial walk search
-- `get_nearby_walks_filtered(...)` — Filtered geospatial search with interests/time
-- `get_my_chats_optimized(p_user_id)` — All user chats in single query
+- `get_nearby_walks_filtered(...)` — Filtered geospatial search with interests/time. Optional `p_user_id` returns `my_request_status` per walk via LEFT JOIN on walk_requests.
+- `get_my_chats_optimized(p_user_id)` — All user chats in single query. Filters: (1) hides chats linked to soft-deleted walks, (2) hides empty finished live event chats
 - `get_chat_details(p_chat_id, p_user_id)` — Chat with participants
 - `get_badge_counts_optimized(p_user_id)` — Unread messages + pending requests count
 - `get_database_stats()` — Database statistics
@@ -411,9 +411,23 @@ When asked to make a database change, follow this exact workflow:
 - Check for new warnings introduced by the migration
 - Fix any issues before finishing
 
-### Step 6: Update Steering (if needed)
-- If schema changed significantly, update `.kiro/steering/project-context.md`
-- If new patterns introduced, update `.kiro/steering/database-workflow.md`
+### Step 6: Update Documentation (MANDATORY)
+
+After every migration, you MUST update `docs/architecture/database.md` to reflect the current state of the database. This is critical because Supabase is a black box — the main agent and the developer cannot see what changed in the DB just from code.
+
+Update the following sections as needed:
+- **Tables**: New/modified tables, columns, constraints
+- **RPC functions**: New/modified functions with their signatures and purpose
+- **Triggers**: New/modified triggers
+- **Storage Buckets**: If any were added
+
+Also update if needed:
+- `.kiro/steering/project-context.md` — if schema changed significantly (new tables, new RPC, new types)
+- `docs/features/<feature>.md` — if the change affects a specific feature's behavior
+- `docs/decisions/` — if a non-trivial architectural decision was made (create new ADR)
+- Your own agent config (`.kiro/agents/supabase-expert.md`) — update "Current Database Schema" section if tables/triggers/RPC/indexes changed
+
+Write documentation in Ukrainian (except agent config which stays in English).
 
 ---
 
@@ -458,7 +472,7 @@ After any database change, remind the user about testing:
 - Exploration tests go in `__tests__/database/bugfix-{id}-{name}.test.ts`
 - Preservation tests go in `__tests__/database/bugfix-{id}-preservation.test.ts`
 - Run with `npm test -- {test-file}`
-- See `.kiro/steering/database-testing.md` for full testing workflow
+- See `docs/guides/database-testing.md` for full testing workflow
 
 ---
 
@@ -520,6 +534,8 @@ Before creating a new index, MUST check existing indexes for duplicates via `mcp
 - After applying migration, always regenerate types
 - After regenerating types, update api.ts if interfaces changed
 - Run advisors after every migration to catch new issues
+- **ALWAYS update `docs/architecture/database.md` after every migration** — this is the single source of truth about the DB for the developer and the main agent. Supabase is a black box; without this file, nobody knows what changed.
+- Update your own schema section in `.kiro/agents/supabase-expert.md` when tables, triggers, RPC functions, or indexes change
 - Be conservative with destructive operations (DROP, DELETE, ALTER TYPE)
 - For complex migrations, break into steps and explain each one
 - Never assume — verify with SQL queries when unsure about current state

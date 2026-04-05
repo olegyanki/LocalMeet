@@ -24,6 +24,7 @@ export interface NearbyWalk {
   distance: number; // in meters
   walk: Walk | null;
   host?: WalkHost;
+  my_request_status?: string | null;
 }
 
 export interface CreateLiveWalkParams {
@@ -190,7 +191,8 @@ export async function getNearbyWalksFiltered(
   radiusKm: number = 15,
   interests?: string[],
   timeFilter?: 'now' | 'today' | 'tomorrow' | 'this_week' | 'all',
-  maxDistanceKm?: number
+  maxDistanceKm?: number,
+  userId?: string
 ): Promise<NearbyWalk[]> {
   try {
     const { data, error } = await supabase.rpc('get_nearby_walks_filtered', {
@@ -200,6 +202,7 @@ export async function getNearbyWalksFiltered(
       p_interests: interests,
       p_time_filter: timeFilter,
       p_max_distance_km: maxDistanceKm,
+      p_user_id: userId,
     });
 
     if (error) {
@@ -231,6 +234,7 @@ export async function getNearbyWalksFiltered(
         avatar_url: row.host_avatar_url ?? null,
         occupation: row.host_occupation ?? null,
       },
+      my_request_status: row.my_request_status ?? null,
     }));
   } catch (error) {
     console.error('Error fetching filtered nearby walks:', error);

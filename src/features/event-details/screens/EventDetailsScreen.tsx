@@ -17,6 +17,7 @@ import * as Location from 'expo-location';
 
 // Contexts & Hooks
 import { useAuth } from '@shared/contexts';
+import { useBadgeCount } from '@shared/contexts/BadgeCountContext';
 import { useI18n } from '@shared/i18n';
 
 // API & Utils
@@ -26,6 +27,7 @@ import {
   getWalkById,
   getProfile,
   getChatByWalkId,
+  getOrCreateChatForWalk,
   getWalkParticipants,
   WalkRequest, 
   Walk,
@@ -52,6 +54,7 @@ export default function EventDetailsScreen() {
   const insets = useSafeAreaInsets();
   const { t, locale } = useI18n();
   const { user: currentUser } = useAuth();
+  const { forceRefresh: refreshBadgeCounts } = useBadgeCount();
   const params = useLocalSearchParams();
 
   // State
@@ -77,6 +80,7 @@ export default function EventDetailsScreen() {
 
   // Derived state
   const walkId = Array.isArray(params.id) ? params.id[0] : params.id;
+  const fromChat = params.fromChat === '1';
   const isOwnEvent = walk?.user_id === currentUser?.id;
 
   // Load walk data
@@ -274,13 +278,11 @@ export default function EventDetailsScreen() {
       
       setShowDeleteModal(false);
       
-      // Navigate back and trigger refresh
-      router.back();
+      // Sync badge counts after deletion
+      refreshBadgeCounts();
       
-      // Trigger refresh on search screen via params
-      setTimeout(() => {
-        router.setParams({ refresh: Date.now().toString() });
-      }, 100);
+      // Pop to root — dismisses all pushed screens (chat, event details, etc.)
+      router.dismissAll();
     } catch (error) {
       console.error('Failed to delete walk:', error);
       setError(t('errorDeleting'));
@@ -291,10 +293,21 @@ export default function EventDetailsScreen() {
   };
 
   const handleOpenGroupChat = async () => {
-    if (!walk?.id) return;
+    if (!walk?.id || !currentUser?.id) return;
+
+    // If we came from a chat screen, just go back instead of pushing a new one
+    if (fromChat) {
+      router.back();
+      return;
+    }
 
     try {
-      const chatId = await getChatByWalkId(walk.id);
+      let chatId: string | null;
+      if (walk.type === 'live') {
+        chatId = await getOrCreateChatForWalk(walk.id, currentUser.id);
+      } else {
+        chatId = await getChatByWalkId(walk.id);
+      }
       
       if (chatId) {
         router.push(`/chat/${chatId}`);
@@ -413,7 +426,7 @@ export default function EventDetailsScreen() {
               <ChevronLeft size={24} color={COLORS.TEXT_DARK} />
             </TouchableOpacity>
             <Text style={styles.headerTitle} numberOfLines={2}>
-              {walk?.title || t('walkNotFound')}
+              {walk?.type === 'live' ? t('walkTitle') : (walk?.title || t('walkTitle'))}
             </Text>
             <View style={styles.headerSpacer} />
           </View>
@@ -444,7 +457,7 @@ export default function EventDetailsScreen() {
             style={[styles.headerTitle, { position: 'absolute', opacity: 0 }]}
             onTextLayout={handleTitleLayout}
           >
-            {walk.title || ''}
+            {walk.type === 'live' ? t('walkTitle') : (walk.title || '')}
           </Text>
           
           {/* Visible title with dynamic alignment */}
@@ -457,7 +470,7 @@ export default function EventDetailsScreen() {
             adjustsFontSizeToFit
             minimumFontScale={0.85}
           >
-            {walk.title || ''}
+            {walk.type === 'live' ? t('walkTitle') : (walk.title || '')}
           </Text>
           <View style={styles.headerSpacer} />
         </View>

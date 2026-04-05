@@ -89,7 +89,7 @@ export type Database = {
             foreignKeyName: "chats_requester_id_fkey"
             columns: ["requester_id"]
             isOneToOne: false
-            referencedRelation: "profiles"
+            referencedRelation: "chats"
             referencedColumns: ["id"]
           },
           {
@@ -334,6 +334,8 @@ export type Database = {
           chat_created_at: string
           chat_id: string
           chat_type: string
+          creator_avatar_url: string
+          creator_first_name: string
           participant_avatar_url: string
           participant_first_name: string
           participant_id: string
@@ -344,6 +346,8 @@ export type Database = {
           walk_image_url: string
           walk_start_time: string
           walk_title: string
+          walk_type: string
+          walk_user_id: string
         }[]
       }
       get_chat_messages_cursor: {
@@ -386,6 +390,8 @@ export type Database = {
           chat_id: string
           chat_type: string
           chat_updated_at: string
+          creator_avatar_url: string
+          creator_first_name: string
           last_message_audio_url: string
           last_message_content: string
           last_message_created_at: string
@@ -401,6 +407,8 @@ export type Database = {
           walk_image_url: string
           walk_start_time: string
           walk_title: string
+          walk_type: string
+          walk_user_id: string
         }[]
       }
       get_nearby_walks: {
@@ -426,6 +434,7 @@ export type Database = {
           p_max_distance_km?: number
           p_radius_km?: number
           p_time_filter?: string
+          p_user_id?: string
         }
         Returns: {
           created_at: string
@@ -441,6 +450,7 @@ export type Database = {
           image_url: string
           latitude: number
           longitude: number
+          my_request_status: string
           start_time: string
           title: string
           updated_at: string

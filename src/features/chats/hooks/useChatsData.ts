@@ -124,6 +124,28 @@ export function useChatsData(params: UseChatsDataParams): UseChatsDataReturn {
           debouncedRefresh();
         }
       )
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'chat_participants',
+        },
+        () => {
+          debouncedRefresh();
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'walks',
+        },
+        () => {
+          debouncedRefresh();
+        }
+      )
       .subscribe();
 
     return () => {

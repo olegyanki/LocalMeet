@@ -253,17 +253,35 @@ When making changes, ALWAYS update relevant context files in `.kiro/steering/`:
 | Change code structure pattern | `code-structure.md` |
 | Add coding rule | `coding-practices.md` |
 
+### CRITICAL: Always Update Project Documentation
+
+When making significant changes, ALWAYS update relevant files in `docs/`:
+
+| Change | Update File |
+|--------|-------------|
+| New feature | Create `docs/features/<feature>.md` + update `docs/README.md` |
+| Change DB schema (tables, columns, triggers, RPC) | Update `docs/architecture/database.md` |
+| Change navigation structure | Update `docs/architecture/navigation.md` |
+| Change project architecture or add new modules | Update `docs/architecture/overview.md` |
+| Modify existing feature behavior | Update corresponding `docs/features/<feature>.md` |
+| Non-trivial architectural decision | Create `docs/decisions/XXX-<name>.md` + update `docs/README.md` |
+| New common problem/solution discovered | Update `docs/guides/debugging.md` |
+
+Use templates from `docs/README.md` for new files. Write in Ukrainian.
+
 ### Why This Matters
-- Context files help AI understand the project
+- Context files (`.kiro/steering/`) help AI understand the project
+- Documentation (`docs/`) helps the developer understand the project
+- Both must stay in sync with the actual code
 - Keeps patterns consistent across codebase
 - Prevents duplicate code
 - Makes onboarding easier
 
 ### Update Process
 1. Make code changes
-2. Identify which context files are affected
+2. Identify which context files AND docs are affected
 3. Update those files immediately
-4. Commit context files WITH code changes
+4. Commit context files, docs, AND code changes together
 
 ### Code Comments
 - Explain WHY, not WHAT
@@ -294,6 +312,25 @@ setLoading(true);
 - Empty data
 - Very long text
 - Special characters in input
+
+
+## Live Event Chat Rules
+
+### Type Checking
+- All chat-related changes for live events MUST check `walk_type === 'live'`
+- If `walk_type` is undefined or missing, treat as `'event'` (fallback to existing behavior)
+- Never assume `walk_type` exists — always use optional chaining or fallback
+
+### Chat Creation
+- Live events use lazy chat creation — chat is NOT created when event is created
+- Chat is created either by DB trigger (on first accepted request) or by `getOrCreateChatForWalk`
+- Use `getOrCreateChatForWalk(walkId, userId)` when owner opens chat from EventDetailsScreen
+- Use `getChatByWalkId(walkId)` for regular events (chat always exists)
+
+### Display Rules
+- Live event chat name: non-owner → `t('walkOfName', { name: creator_first_name })`, owner → `t('yourWalk')`
+- Live event chat avatar: `creator_avatar_url` (owner's profile avatar), NOT `walk_image_url`
+- Regular event chats: no changes to existing display logic
 
 
 ## Agent Delegation Rules
