@@ -244,6 +244,14 @@ SHADOW.xl: {         // EventCards
   shadowRadius: 24,
   elevation: 8,
 }
+
+SHADOW.md: {         // Subtle elevation (between standard and elevated)
+  shadowColor: '#000',
+  shadowOffset: { width: 0, height: 4 },
+  shadowOpacity: 0.1,
+  shadowRadius: 6,
+  elevation: 3,
+}
 ```
 
 **NEVER** use colored shadows except for error states on Profile-style inputs.
@@ -327,14 +335,25 @@ segmentButton: {
   borderRadius: 16,
 },
 segmentButtonActive: {
-  backgroundColor: COLORS.ACCENT_ORANGE,
+  // overflow: 'hidden' needed for GradientView to clip to borderRadius
+  overflow: 'hidden',
   ...SHADOW.elevated,
-  // Exception: colored shadow for active segment
-  shadowColor: COLORS.ACCENT_ORANGE,
+  shadowColor: COLORS.ACCENT_ORANGE,  // Exception: colored shadow for active segment
   shadowOpacity: 0.2,
 },
 segmentButtonText: { fontSize: 14, fontWeight: '600', color: COLORS.TEXT_LIGHT },
 segmentButtonTextActive: { color: COLORS.CARD_BG, fontWeight: '700' },
+```
+
+Active segment uses `GradientView` with `StyleSheet.absoluteFillObject`:
+```tsx
+{isActive ? (
+  <GradientView style={StyleSheet.absoluteFillObject}>
+    <Text style={[styles.segmentButtonText, styles.segmentButtonTextActive]}>{label}</Text>
+  </GradientView>
+) : (
+  <Text style={styles.segmentButtonText}>{label}</Text>
+)}
 ```
 
 ### Headers

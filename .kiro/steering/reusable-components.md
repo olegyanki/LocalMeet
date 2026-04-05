@@ -51,12 +51,39 @@ Wrapper for gradient backgrounds. Uses `COLORS.GRADIENT_ORANGE` and diagonal dir
 **Rules:**
 - ALWAYS use `GradientView` instead of `LinearGradient` with `GRADIENT_ORANGE` directly
 - NEVER pass `colors`, `start`, `end` for the standard orange gradient — defaults handle it
-- Only pass `colors` when you need a non-orange gradient
-- For non-orange gradients (e.g. backdrop fades), use `LinearGradient` directly
+- Only pass `colors` when you need a non-orange gradient (e.g. gray placeholder: `['#F5F5F5', '#E0E0E0']`)
+- For non-orange gradients that are NOT decorative wrappers (e.g. backdrop fades), use `LinearGradient` directly
 - `children` is optional — can be used as a decorative element without children
 
 **Use for:** Active segments, buttons, chips, badges, decorative handles, success icons
 **Don't use for:** Buttons (use PrimaryButton which uses GradientView internally), text color gradients
+
+## Images
+
+### CachedImage
+`src/shared/components/CachedImage.tsx`
+
+Image component with shimmer loading animation and memory-disk caching via `expo-image`.
+
+```tsx
+<CachedImage
+  uri={imageUrl}
+  style={styles.coverImage}
+  contentFit="cover"
+  borderRadius={16}
+  showShimmer={true}  // default: true
+/>
+```
+
+**Props:**
+- `uri` — image URL
+- `style` — ViewStyle (applied to container)
+- `contentFit` — `'cover' | 'contain' | ...` (default: `'cover'`)
+- `borderRadius` — applied to both container and image (default: 12)
+- `showShimmer` — show shimmer while loading (default: true), set to `false` for background/decorative images
+
+**Use for:** Event cover images, any remote image that needs caching
+**Don't use for:** Avatars (use `Avatar` or `AvatarPicker`), local assets
 
 ## Avatars
 
@@ -78,15 +105,24 @@ User avatar with fallback to initials.
 ### AvatarPicker
 `src/shared/components/AvatarPicker.tsx`
 
-Avatar with edit functionality for profile screens.
+Avatar with edit functionality for profile screens. Handles both camera and gallery upload.
 
 ```tsx
 <AvatarPicker
-  uri={avatarUrl}
-  onImageSelected={setAvatarUrl}
-  size={100}
+  currentAvatar={avatarUrl}
+  displayName={firstName || 'User'}
+  userId={user.id}
+  onAvatarChange={setAvatarUrl}
+  isEditing={true}
 />
 ```
+
+**Props:**
+- `currentAvatar` — current avatar URL or null
+- `displayName` — used for initials placeholder
+- `userId` — required for upload
+- `onAvatarChange` — callback with new URL after upload
+- `isEditing` — shows camera icon and tap hint when true
 
 ## Audio
 

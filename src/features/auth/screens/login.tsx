@@ -13,7 +13,7 @@ import {
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { signIn } from '@shared/lib/auth';
-import { COLORS } from '@shared/constants';
+import { COLORS, SHADOW, INPUT_STYLES } from '@shared/constants';
 import { useI18n } from '@shared/i18n';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import PrimaryButton from '@shared/components/PrimaryButton';
@@ -72,26 +72,28 @@ export default function LoginScreen() {
           ) : null}
 
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>{t('email')}</Text>
-            <TextInput
-              style={styles.input}
-              placeholder={t('email')}
-              placeholderTextColor={COLORS.TEXT_LIGHT}
-              value={email}
-              onChangeText={setEmail}
-              editable={!isLoading}
-              keyboardType="email-address"
-              autoCapitalize="none"
-            />
+            <Text style={styles.label}>{t('email').toUpperCase()}</Text>
+            <View style={styles.inputWrapper}>
+              <TextInput
+                style={styles.input}
+                placeholder={t('email')}
+                placeholderTextColor={COLORS.GRAY_PLACEHOLDER}
+                value={email}
+                onChangeText={setEmail}
+                editable={!isLoading}
+                keyboardType="email-address"
+                autoCapitalize="none"
+              />
+            </View>
           </View>
 
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>{t('password')}</Text>
-            <View style={styles.passwordWrapper}>
+            <Text style={styles.label}>{t('password').toUpperCase()}</Text>
+            <View style={styles.inputWrapper}>
               <TextInput
-                style={styles.passwordInput}
+                style={[styles.input, styles.passwordInput]}
                 placeholder={t('password')}
-                placeholderTextColor={COLORS.TEXT_LIGHT}
+                placeholderTextColor={COLORS.GRAY_PLACEHOLDER}
                 value={password}
                 onChangeText={setPassword}
                 secureTextEntry={!showPassword}
@@ -138,7 +140,7 @@ const styles = StyleSheet.create({
   },
   content: {
     flexGrow: 1,
-    padding: 20,
+    padding: 24,
     paddingBottom: 40,
   },
   header: {
@@ -161,42 +163,19 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   label: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: COLORS.TEXT_DARK,
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
+    ...INPUT_STYLES.label,
   },
-  input: {
-    backgroundColor: COLORS.CARD_BG,
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    fontSize: 16,
-    color: COLORS.TEXT_DARK,
-    shadowColor: COLORS.SHADOW_BLACK,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 8,
-    elevation: 2,
-  },
-  passwordWrapper: {
+  inputWrapper: {
+    ...INPUT_STYLES.wrapper,
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: COLORS.CARD_BG,
-    borderRadius: 12,
-    shadowColor: COLORS.SHADOW_BLACK,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 8,
-    elevation: 2,
+  },
+  input: {
+    ...INPUT_STYLES.input,
+    flex: 1,
   },
   passwordInput: {
-    flex: 1,
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    fontSize: 16,
-    color: COLORS.TEXT_DARK,
+    paddingRight: 8,
   },
   eyeButton: {
     padding: 14,
@@ -204,7 +183,7 @@ const styles = StyleSheet.create({
   errorContainer: {
     backgroundColor: COLORS.ERROR_BG,
     padding: 12,
-    borderRadius: 12,
+    borderRadius: 16,
   },
   errorText: {
     color: COLORS.ERROR_RED,

@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, ActivityIndicator, Alert } from 'react-native';
 import { Image } from 'expo-image';
-import { Camera, ImageIcon } from 'lucide-react-native';
-import { pickAndUploadAvatar, takePhotoAndUploadAvatar } from '@shared/lib';
+import { Camera } from 'lucide-react-native';
+import { takePhotoAndUploadAvatar } from '@shared/lib/api/storage';
+import * as ImagePicker from 'expo-image-picker';
+import { uploadAvatar } from '@shared/lib/api/storage';
 import { useI18n } from '@shared/i18n';
 import { COLORS } from '@shared/constants';
-import { LinearGradient } from 'expo-linear-gradient';
+import GradientView from '@shared/components/GradientView';
 
 const AVATAR_PLACEHOLDER = 'https://api.dicebear.com/7.x/initials/svg?seed=';
 const AVATAR_SIZE = 128;
@@ -13,9 +15,6 @@ const AVATAR_BORDER_RADIUS = 32;
 const CAMERA_ICON_SIZE = 40;
 const CAMERA_ICON_BORDER_RADIUS = 20;
 const HINT_MARGIN_TOP = 12;
-const GRADIENT_COLORS = ['#F5F5F5', '#E0E0E0'] as const;
-const GRADIENT_START = { x: 0, y: 0 };
-const GRADIENT_END = { x: 1, y: 1 };
 const PLACEHOLDER_OPACITY = 0.3;
 
 interface AvatarPickerProps {
@@ -76,8 +75,17 @@ export default function AvatarPicker({
   const handlePickImage = async () => {
     try {
       setUploading(true);
-      const avatarUrl = await pickAndUploadAvatar(userId);
-      if (avatarUrl) {
+      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (status !== 'granted') {
+        throw new Error('Permission denied');
+      }
+      const result = await ImagePicker.launchImageLibraryAsync({
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 0.8,
+      });
+      if (!result.canceled) {
+        const avatarUrl = await uploadAvatar(userId, result.assets[0].uri);
         onAvatarChange(avatarUrl);
       }
     } catch (error: any) {
@@ -104,17 +112,12 @@ export default function AvatarPicker({
             cachePolicy="memory-disk"
           />
         ) : (
-          <LinearGradient
-            colors={GRADIENT_COLORS}
-            start={GRADIENT_START}
-            end={GRADIENT_END}
-            style={styles.gradientBackground}
-          >
+          <GradientView colors={['#F5F5F5', '#E0E0E0']} style={styles.gradientBackground}>
             <Image 
               source={{ uri: avatarUri }} 
               style={[styles.avatar, { opacity: PLACEHOLDER_OPACITY }]} 
             />
-          </LinearGradient>
+          </GradientView>
         )}
         {isEditing && !currentAvatar && (
           <View style={styles.editBadge}>
