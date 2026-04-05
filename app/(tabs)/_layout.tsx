@@ -1,5 +1,5 @@
 import { Tabs, useRouter, useSegments } from 'expo-router';
-import { Search, User, MessageCircle, Settings } from 'lucide-react-native';
+import { MapPin, User, MessageCircle, Settings } from 'lucide-react-native';
 import { useState, useEffect } from 'react';
 import { View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -58,7 +58,7 @@ export default function TabLayout() {
         name="(search)"
         options={{
           title: t('tabSearch').toUpperCase(),
-          tabBarIcon: ({ size, color }) => <Search size={20} color={color} />,
+          tabBarIcon: ({ size, color }) => <MapPin size={20} color={color} />,
           tabBarLabelStyle: { fontSize: 9, fontWeight: '600' },
         }}
       />
