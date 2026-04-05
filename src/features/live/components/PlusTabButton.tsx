@@ -1,7 +1,6 @@
 import React from 'react';
 import { TouchableOpacity, Text, View, StyleSheet } from 'react-native';
-import GradientView from '@shared/components/GradientView';
-import { Plus } from 'lucide-react-native';
+import WalkingPersonIcon from '@shared/components/WalkingPersonIcon';
 import { useI18n } from '@shared/i18n';
 import { COLORS } from '@shared/constants';
 
@@ -11,9 +10,6 @@ interface PlusTabButtonProps {
   style?: any;
   isActive?: boolean;
 }
-
-const CIRCLE_SIZE = 46;
-const BORDER_WIDTH = 3;
 
 export default function PlusTabButton({ accessibilityState, onPress, style, isActive }: PlusTabButtonProps) {
   const { t } = useI18n();
@@ -27,10 +23,8 @@ export default function PlusTabButton({ accessibilityState, onPress, style, isAc
       accessibilityRole="button"
       accessibilityState={accessibilityState}
     >
-      <View style={styles.circleOuter}>
-        <GradientView style={styles.circleInner}>
-          <Plus size={26} color={COLORS.WHITE} strokeWidth={2.5} />
-        </GradientView>
+      <View style={styles.iconWrapper}>
+        <WalkingPersonIcon size={56} />
       </View>
       <Text style={[styles.label, { color: selected ? COLORS.ACCENT_ORANGE : COLORS.TEXT_LIGHT }]}>
         {t('tabGoOnline').toUpperCase()}
@@ -44,28 +38,19 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 2,
+    gap: 4,
   },
-  circleOuter: {
-    width: CIRCLE_SIZE + BORDER_WIDTH * 2,
-    height: CIRCLE_SIZE + BORDER_WIDTH * 2,
-    borderRadius: (CIRCLE_SIZE + BORDER_WIDTH * 2) / 2,
-    backgroundColor: COLORS.WHITE,
-    alignItems: 'center',
-    justifyContent: 'center',
+  iconWrapper: {
     marginTop: -26,
     shadowColor: COLORS.SHADOW_BLACK,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
     shadowRadius: 8,
-    elevation: 4,
-  },
-  circleInner: {
-    width: CIRCLE_SIZE,
-    height: CIRCLE_SIZE,
-    borderRadius: CIRCLE_SIZE / 2,
-    alignItems: 'center',
-    justifyContent: 'center',
+    elevation: 6,
+    borderRadius: 31,
+    overflow: 'visible',
+    borderWidth: 3,
+    borderColor: COLORS.WHITE,
   },
   label: {
     fontSize: 9,
