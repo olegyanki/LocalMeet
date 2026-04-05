@@ -21,7 +21,7 @@ export default function SettingsScreen() {
   const handleLogout = async () => {
     try {
       await signOut();
-      router.replace('/auth/register');
+      router.replace('/auth');
     } catch (err) {
       console.error('Failed to logout:', err);
     }

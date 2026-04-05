@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { signUp } from '@shared/lib/auth';
+import { markLoggedIn } from '@shared/lib/authPreference';
 import { COLORS, INPUT_STYLES } from '@shared/constants';
 import { useI18n } from '@shared/i18n';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -29,6 +30,14 @@ export default function RegisterScreen() {
   const { t } = useI18n();
   const insets = useSafeAreaInsets();
 
+  const handleGoToLogin = () => {
+    if (router.canGoBack()) {
+      router.back();
+    } else {
+      router.push('/auth/login');
+    }
+  };
+
   const handleRegister = async () => {
     setError('');
 
@@ -45,6 +54,7 @@ export default function RegisterScreen() {
     try {
       setIsLoading(true);
       await signUp({ email: email.trim(), password, first_name: '' });
+      await markLoggedIn();
       router.replace('/(tabs)');
     } catch (err: any) {
       setError(err?.message ?? t('error'));
@@ -126,7 +136,7 @@ export default function RegisterScreen() {
 
           <View style={styles.loginSection}>
             <Text style={styles.loginText}>{t('haveAccount')}</Text>
-            <TouchableOpacity onPress={() => router.push('/auth')} disabled={isLoading}>
+            <TouchableOpacity onPress={handleGoToLogin} disabled={isLoading}>
               <Text style={styles.loginLink}>{t('loginLink')}</Text>
             </TouchableOpacity>
           </View>

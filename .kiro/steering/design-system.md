@@ -127,7 +127,7 @@ Always use constants from `@shared/constants/colors.ts`:
 The project uses **two distinct input patterns** depending on context:
 
 ### Profile Style (shadow wrapper, no border)
-Used in: ProfileScreen, auth screens, onboarding
+Used in: ProfileScreen, auth screens
 
 ```tsx
 // Outer wrapper — white card with shadow, no border

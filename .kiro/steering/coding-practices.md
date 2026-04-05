@@ -368,3 +368,24 @@ It:
 - Updates steering files (`.kiro/steering/`) and agent configs (`.kiro/agents/`) if changes require it
 
 **Do NOT** manually invoke code-reviewer or design-reviewer — they no longer exist. The `post-task-reviewer` handles both.
+
+### Documentation Updates → `doc-updater` agent
+
+When the user asks to update docs/context files, invoke the `doc-updater` agent via `invokeSubAgent`:
+
+- `name`: `"doc-updater"`
+- `contextFiles`: all steering files + relevant docs files + changed code files from the session
+- `prompt`: detailed description of changes made in the current session — what was added, removed, what logic changed, which files were modified
+
+**The prompt must include:**
+```
+## Зміни в цій сесії
+
+[What was done — which files changed, what logic was added/removed]
+
+## Змінені файли
+
+[List of changed files]
+```
+
+The agent will read the actual files and update only what's outdated in docs/ and .kiro/steering/.

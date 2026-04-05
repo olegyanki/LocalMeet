@@ -14,7 +14,7 @@
 - [Події (Events)](./features/events.md) — створення, відображення, типи подій
 - [Live-прогулянки](./features/live-events.md) — live events, lazy chat creation
 - [Карта та пошук](./features/map-search.md) — карта, фільтри, nearby walks
-- [Авторизація та онбордінг](./features/auth-onboarding.md) — auth flow, onboarding
+- [Авторизація](./features/auth-onboarding.md) — auth flow, authPreference routing
 
 ### 📖 Гайди
 - [Як додати нову фічу](./guides/adding-new-feature.md) — покроковий гайд

@@ -27,6 +27,7 @@ app/
 ├── event-details/           # Деталі події (без tab bar)
 │   └── [id].tsx
 └── auth/                    # Авторизація (без tab bar)
+    ├── index.tsx            # Router: читає AsyncStorage → replace на login або register
     ├── login.tsx
     └── register.tsx
 ```
@@ -60,7 +61,7 @@ router.push(`/user/${userId}`);
 router.back();
 
 // Заміна (без можливості повернутися)
-router.replace('/auth/register');
+router.replace('/auth'); // index вирішує: login або register залежно від AsyncStorage
 ```
 
 ## Нюанси

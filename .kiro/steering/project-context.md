@@ -17,7 +17,7 @@ src/
 │   ├── chats/        # Chat list, chat screen
 │   ├── events/       # Create event screen
 │   ├── event-details/# Event details screen
-│   ├── onboarding/   # Onboarding flow
+│   ├── live/         # Live walks
 │   ├── profile/      # Profile, settings screens
 │   └── search/       # Map search screen
 └── shared/           # Shared resources
@@ -51,8 +51,9 @@ app/
 ├── user/                    # User profile screens (outside tabs)
 │   └── [id].tsx            # Other user's profile screen
 └── auth/                    # Auth screens (outside tabs)
-    ├── index.tsx           # Login screen
-    └── register.tsx
+    ├── index.tsx           # Router: reads AsyncStorage → replace to login or register
+    ├── login.tsx           # Login screen
+    └── register.tsx        # Register screen
 ```
 
 **Navigation Rules:**
@@ -64,6 +65,7 @@ app/
 - Use `router.push('/event/[id]')` to navigate to event details (works from any context)
 - Use `router.push('/chat/[id]')` for chat (hides tab bar)
 - Use `router.push('/user/[id]')` for user profile (hides tab bar)
+- Unauthenticated redirect: `router.replace('/auth')` — index reads AsyncStorage and decides login vs register
 
 ### Path Aliases
 - `@features/*` → `src/features/*`
@@ -218,6 +220,18 @@ const { user, profile, isLoading, refreshProfile } = useAuth();
 // user - Supabase auth user
 // profile - User profile from database
 // refreshProfile() - Reload profile data
+```
+
+Auth preference (first-launch routing):
+
+```tsx
+import { hasLoggedInBefore, markLoggedIn } from '@shared/lib/authPreference';
+
+// Check on app/auth/index.tsx to decide login vs register
+const hasBefore = await hasLoggedInBefore(); // reads AsyncStorage 'auth_has_logged_in'
+
+// Call after successful login or registration
+await markLoggedIn();
 ```
 
 ### Real-time Subscriptions

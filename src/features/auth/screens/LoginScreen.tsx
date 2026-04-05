@@ -11,15 +11,16 @@ import {
   Keyboard,
   ScrollView,
 } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useRouter, useNavigationContainerRef } from 'expo-router';
 import { signIn } from '@shared/lib/auth';
+import { markLoggedIn } from '@shared/lib/authPreference';
 import { COLORS, INPUT_STYLES } from '@shared/constants';
 import { useI18n } from '@shared/i18n';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import PrimaryButton from '@shared/components/PrimaryButton';
 import { Eye, EyeOff } from 'lucide-react-native';
 
-export default function AuthScreen() {
+export default function LoginScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -41,11 +42,21 @@ export default function AuthScreen() {
     try {
       setIsLoading(true);
       await signIn({ email: email.trim(), password });
+      await markLoggedIn();
       router.replace('/(tabs)');
     } catch (err: any) {
       setError(err?.message ?? t('error'));
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleGoToRegister = () => {
+    // If we came from register (via push), go back. Otherwise push register.
+    if (router.canGoBack()) {
+      router.back();
+    } else {
+      router.push('/auth/register');
     }
   };
 
@@ -123,7 +134,7 @@ export default function AuthScreen() {
 
             <View style={styles.registerSection}>
               <Text style={styles.registerText}>{t('noAccount')}</Text>
-              <TouchableOpacity onPress={() => router.back()} disabled={isLoading}>
+              <TouchableOpacity onPress={handleGoToRegister} disabled={isLoading}>
                 <Text style={styles.registerLink}>{t('registerLink')}</Text>
               </TouchableOpacity>
             </View>

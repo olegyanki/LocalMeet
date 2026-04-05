@@ -23,7 +23,6 @@ src/
 │   ├── events/            # Створення подій
 │   ├── event-details/     # Деталі події
 │   ├── live/              # Live-прогулянки
-│   ├── onboarding/        # Онбордінг нових користувачів
 │   ├── profile/           # Профіль, налаштування
 │   └── search/            # Карта + пошук подій
 └── shared/                # Спільні ресурси
@@ -61,6 +60,7 @@ src/shared/lib/
 │   ├── walk-requests.ts # Запити на приєднання
 │   └── walks.ts        # CRUD подій, nearby walks
 ├── auth.ts             # Auth helpers
+├── authPreference.ts   # AsyncStorage флаг першого запуску (hasLoggedInBefore, markLoggedIn)
 ├── database.types.ts   # Автогенеровані типи з Supabase
 └── supabase.ts         # Supabase client instance
 ```
